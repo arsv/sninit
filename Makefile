@@ -7,7 +7,7 @@
 # dietlibc etc), ditch configure and edit this file directly.
 
 # Building
-CC = ~/diet/bin/diet gcc
+CC = diet gcc
 CFLAGS = -Wall -g
 LDFLAGS = 
 LIBS = 
