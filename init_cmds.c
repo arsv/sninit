@@ -6,7 +6,6 @@
 extern int state;
 extern int currlevel;
 extern int nextlevel;
-extern int sublevels;
 extern int rbcode;
 
 extern struct config* cfg;
