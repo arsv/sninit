@@ -1,0 +1,11 @@
+#!/bin/sh
+
+sbindir=$(grep ^sbindir Makefile | sed -e 's/.*=\s*//')
+initctl=$(grep '^#define INITCTL' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
+inittab=$(grep '^#define INITTAB' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
+
+exec sed \
+	-e "s!{/sbin}!$sbindir!g" \
+	-e "s!{@initctl}!$initctl!g" \
+	-e "s!{/etc/inittab}!$inittab!g" \
+	"$@"

@@ -1,0 +1,64 @@
+Generic instructions
+~~~~~~~~~~~~~~~~~~~~
+Check Makefile and/or config.h for build-time setup.
+Specifically, check INITCTL, INITTAB, LOGDIR in config.h,
+compiler setup and installation directories in Makefile.
+
+Run make, then make install.
+
+Alternatively, run mostly-autotools-compatible configure.
+
+If you are cross-compiling, or using something other than your
+system libc (in particular dietlibc), adjust CC, CFLAGS
+and possibly SYS in Makefile.
+
+Use SYS variable in Makefile to choose which modules to build.
+Check sys_* files for possible options.
+At least one of sys_time_* files must be used.
+
+
+Which libc to use
+~~~~~~~~~~~~~~~~~
+sinit does not need dynamic libc, and will not benefit from using one.
+The smallest sinit executable is the one linked statically against dietlibc.
+
+sinit also does not need anything other than basic syscalls and a handful
+of bog-standard string manipulation function from libc.
+It will not benefit from using anything fancier than dietlibc.
+
+Pretty much in all cases sinit should be built with dietlibc.
+Settings for other libc-s are only provided for completeness,
+for testing, and for unusual cases not considered here.
+
+
+Building with dietlibc
+~~~~~~~~~~~~~~~~~~~~~~
+Recommended settings:
+	CC = diet gcc
+or
+	CC = diet clang
+
+Dietlibc up to and including 0.33 does not provide ppoll(2) system call.
+Either use sys_ppoll.c (indirect syscall, via syscall(2)), or patch dietlibc.
+Note syscall(2) is in libcompat.a, so you'll need
+	LIBS = -lcompat
+
+Because dietlibc implies static linkage and small executable size, consider using
+sys_printf.c and sys_strerror.c. See comments in those files.
+Size optimization (-Os) helps in most cases.
+Link-time optimization (-flto) may or may not help, check for yourself.
+
+
+Building with musl
+~~~~~~~~~~~~~~~~~~
+Use CC = musl-gcc; no other settings should be necessary.
+
+If musl-gcc complains about linux/*.h, you probably have no linux headers in musl-gcc path.
+Symlink /usr/include/linux and /usr/include/asm to resp. $MUSL/include/linux
+and $MUSL/include/asm.
+
+
+Building with glibc
+~~~~~~~~~~~~~~~~~~~
+glibc does not provide getdents(2), even thought it is a linux system call.
+Use sys_getdents.c instead.

@@ -1,0 +1,77 @@
+.TH telinit 8
+'''
+.SH NAME
+telinit \- pass commands to a running \fBinit\fR(8) process.
+'''
+.SH SYNOPSIS
+\fBtelinit\fR \fIrunlevel\fR
+.br
+\fBtelinit\fR {\fB?\fR|\fBq\fR|\fBstatus\fR|\fBreload\fR}
+.br
+\fBtelinit\fR {\fBpoweroff\fR|\fBhalt\fR|\fBreboot\fR|\fBsleep\fR|\fBsuspend\fR}
+.br
+\fBtelinit\fR {\fBstart\fR|\fBstop\fR} \fIname\fR [\fIname\fR ... ]
+'''
+.SH DESCRIPTION
+The only way to contact a running init is via @initctl socket.
+telinit does exactly that, providing also readable shortcuts
+for raw init commands.
+.P
+Whatever output init may produce is passed to telinit's stdout.
+'''
+.SH COMMANDS
+.IP [0123456789]
+Initiate a switch to specified runlevel.
+.IP "?, status" 4
+Request current status and process list from init.
+.IP "q, reload" 4
+Reload configuration.
+.IP "halt, reboot, poweroff" 4
+Stop the system, possibly requesting reboot or poweroff.
+All three commands request a switch to runlevel 0, followed
+by \fBreboot\fR(2) call with LINUX_REBOOT_CMD_HALT, LINUX_REBOOT_CMD_RESTART
+or LINUX_REBOOT_CMD_POWER_OFF argument respectively.
+.IP "sleep, suspend" 4
+Initiate a switch to runlevels 8 and 9 respectively.
+For these commands to work properly, relevant actions must be configured in inittab;
+init itself will not put the system to sleep.
+.IP "start, stop" 4
+Start or stop specified processes. Name is the first field from \fBinittab\fR(5) line,
+or file basename in \fBinitdir\fR(5). Both commands re-assign process runlevels mask
+internally: start is equivalent to "^0" while stop is "0". See \fBinittab\fR(5).
+'''
+.SH FILES
+.IP {@initctl}
+Unix domain socket telinit uses to contact init
+'''
+.SH CAVEATS
+Runlevel change and process status change commands sent by telinit
+are only executed after telinit has terminated the connection.
+The only errors reported for these commands are those apparent immediately
+by examining process record. Something like "named entry not found" will
+be reported, but execve(2) failure won't, at least not by telinit (syslog
+will probably have it).
+.P
+Runlevel switch requests only start the move to another runlevel.
+If some of the commands take long enough, it maybe be possible to see
+init in-between runlevels with telinit q, and even change the target runlevel
+before the switch is completed.
+.P
+On the other hand, telinit does wait for reconfiguration to finish before
+exiting, and will show all configuration errors.
+'''
+.SH NOTES
+This page describes telinit from \fBsinit\fR package. Telinits from other init implementations
+may behave differently.
+.P
+In particular, this version of telinit is not compatible with sysvinit.
+Most sysvinit options are not supported.
+Runlevel change and configuation reload commands are same in both implementations however.
+.P
+Runlevel 0 is treated as a special case by sinit, prompting a reboot(2) call.
+This is unlike sysvinit, for which "0 means halt" is merely a configuration convention.
+On the other hand, runlevel 6 is not a special runlevel for sinit, and "telinit 6" will
+not reboot the system unless configuration explicitly prompts so. Use "telinit reboot" instead.
+'''
+.SH SEE ALSO
+\fBinit\fR(8), \fBinittab\fR(5)

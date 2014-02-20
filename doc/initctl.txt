@@ -1,0 +1,38 @@
+initctl protocol
+~~~~~~~~~~~~~~~~
+Communication between init and telinit happens via a SOCK_STREAM
+unix domain socket, usually named @initctl ("\0initctl", see unix(7)).
+
+Only one command is transmitted per connection. To transmit more,
+telinit must reconnect.
+Whenever applicable, only one argument is transmitted per connection.
+In other words, "telinit stop httpd ftpd ntpd" opens connection 3 times
+and sends 3 commands: "stop httpd", "stop ftpd", "stop ntpd", one
+for each connection.
+
+Telinit (client) talks first, sending the command and write-closing
+its side of the connection. Init (server) replies with a free-form
+stream of data, which telinit is expected to pass to stderr.
+
+Commands themselves consist of one-letter command code, followed by
+optinal argument.
+
+Possible commands (see init_cmds.c for a full list):
+
+	?	output current state and list of running processes
+	=N	switch to (primary) runlevel N
+	+L	activate secondary runlevel L
+	-L	deactivate secondary runlevel L
+	rname	stop process "name"
+	dname	disable/stop process "name"
+	ename	enable/start process "name"
+	q	reconfigure
+	R	reboot   = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_REBOOT)
+	H	halt     = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_HALT)
+	P	poweroff = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_POWEROFF)
+
+Current implementation does not indicate whether the command failed or not,
+so telinit always exits with code 0. This is almost inevitable, given most
+commands are deferred: the command itself only sets a flag, and the action
+is performed during initpass() (see init_pass.c) after closing telinit
+connection.

@@ -1,0 +1,14 @@
+tags
+*.o
+*.ho
+builtin.c
+init
+telinit
+statictab
+test/*
+!test/*.[ch]
+!test/*.txt
+!test/*.px
+!test/Makefile
+test/proto.c
+*.[58]

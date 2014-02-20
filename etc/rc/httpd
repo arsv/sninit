@@ -1,0 +1,12 @@
+#!/bin/sh
+#:2435:log
+
+# This is a example of an executable script used as a service file.
+# Note #! on the first line, and #: on the second line.
+# When sinit detects both, it will use #: line for runlevels as flags,
+# but the command will be "/path/to/this/httpd"
+#
+# The equivalent initline is
+# httpd:2345:log:/path/to/this/httpd
+
+exec /sbin/httpd

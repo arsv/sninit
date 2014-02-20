@@ -1,0 +1,88 @@
+.TH inittab 5
+'''
+.SH NAME
+{/etc/inittab} - \fBinit\fR(8) configuration file.
+'''
+.SH DESCRIPTION
+Inittab lists processes init should run, along with environment to pass to them.
+.P
+Upon startup, and each time reconfiguration request is received from \fBtelinit\fR(8),
+init parses inittab and stores it in its memory. During normal operation init does not
+make any attempts to read inittab.
+.P
+Init only accepts fully valid inittabs. In case init encounters incorrect syntax
+while parsing inittab, it reports error via \fBtelinit\fR(8) and/or \fBsyslog\fR(3)
+and retains its internal configuration. All parts of inittab parsed before the error
+are discarded.
+'''
+.SH SYNTAX
+Inittab is a text file parsed in linewise manner. Empty lines are ignored.
+.IP "# \fIcomment\fR" 4
+Lines starting with # are ignored by init
+.IP "\fIvariable\fR=\fIvalue\fR" 4
+Add \fIvariable\fR to the environment to be passed to processes started by init.
+Note init itself does not use environment variables in any way.
+.IP "\fIname\fR:\fIrunlevels\fR:\fIflags\fR:\fIcommand\fR" 4
+Define a process to be started by init. Each process entry carries a single pid value,
+so there can be at most one running process for each entry at any given time.
+.IP "\fB@\fIdirectory" 4
+Include service files from \fIdirectory\fR.
+.P
+All lines are processes top-to-bottom. The relative order of environment and process lines
+is irrelevant, all spawned processes will get exactly the same environment. Processes from
+included service files are placed at the point where relevant \fB@\fIdirectory\fR line was.
+However, the order of files within directory is not defined.
+'''
+.SS Naming entries
+\fIname\fR is a string used to identify this entry, in particular when stopping/starting
+processes with \fBtelinit\fR(8) and during reconfiguration. May be empty. If non-empty,
+should be unique, however init does not enforce this.
+'''
+.SS Runlevels
+\fIrunlevels\fR field defines runlevel bitmask for this entry: \fB234\fR means the process
+will be started on runlevels 2, 3 and 4, and stopped when not in any of these runleves.
+Empty value is allowed, meaning "all but 0".
+'''
+.SS Process Flags
+\fIflags\fR is a comma-separated list of process flags:
+.IP "wait" 4
+Do not restart the process, and do not proceed further until it dies. If there are 
+proccesses with "once" flag set, wait until all of the die before running a "wait" process.
+.IP "once" 4
+Do not restart the process. Unlike \fBwait\fR, do proceed to run subsequent processes.
+.IP "respawn" 4
+Restart the process in case it dies. This flag does nothing, restarting is the default
+mode of operation for init.
+.IP "null" 4
+Open /dev/null on file descriptors 0, 1 and 2 (stdin, stdout and stderr) for the spawned process.
+Without this flag, the process inherits init's descriptors, typically /dev/console.
+.IP "log" 4
+Redirect file descriptors 1 and 2 to {/var/log}\fIname\fR for the spawned process.
+.IP "abort" 4
+Send SIGABRT instead of SIGTERM when stopping the process. Use if the process in question
+fails to die on SIGTERM.
+.IP "tty" 4
+Set up controlling tty for the process. See TIOCSCTTY in tty_ioctl(4). Use for interactive
+shells started by init. This flag is equivalent to "-" before the command is sysvinit and
+some other init implementations. 
+'''
+.SS Commands
+The last field, \fIcommand\fR, is the command to run. The field is parsed and passed as
+the second argument to \fBexecve\fR(2) call.
+
+Unless specifically told otherwise, init does not call \fBsh\fR(1) to handle the command,
+and only does limited command parsing on its own. Single and double quotes are handled
+properly, but variable substitution, output redirects, compound statements etc. and not
+supported. Also, $PATH, even if set, has no effect; use absolute names for executables
+instead.
+
+To use sh, prepend ! to the command. This will cause init to pass the command directly to
+/bin/sh -c without any parsing.
+'''
+.SH NOTES
+This page describes inittab format for \fBsinit\fR package.
+Other init implementations, in particular sysvinit, use different conventions
+and in some cases different syntax.
+'''
+.SH SEE ALSO
+\fBinit\fR(8), \fBtelinit\fR(8)

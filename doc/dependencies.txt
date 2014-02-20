@@ -1,0 +1,120 @@
+On systemd-style dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Early in the project there were plans to have systemd-style dependecies
+between initrecs.  This idea has been abandoned completely in favor
+of much simplier w/o/s-type initrecs.
+
+My opinion is that it's a bad solution looking for a problem.
+
+1. Strict dependencies can not be implemented reliably in unix.
+2. Weak dependencies make no sense during system startup,
+   and later can be better implemented outside of init.
+3. I'm yet to see any good use case.
+
+Strict dependency here means a dependency that can prevent a service
+from starting, or suspend/delay startup.
+Any other dependency is a weak dependency.
+In systemd terms:
+	strict: Requires, Requisite, BindsTo, Before, After
+	weak: Wants and PartOf
+
+Weak dependencies are equivalent to aliasing telinit commands:
+
+	telinit (action) web = telinit (action) httpd named mysqld,
+
+with action being start, stop, restart and so on.
+
+The only kind of dependency that can be implemented reliably
+is start-once-process-dies for wait-type processes (w- and o-type
+in sinit terms). Initrec ordering is enought to handle w-type
+records. For o-type records, external script can be used (chained
+execution).
+
+
+
+#1: No init-enforced strict dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See http://en.wikipedia.org/wiki/Time_of_check_to_time_of_use
+
+Processes in unix are timed independently.
+Init can never rely on process state data it has, except for
+status part of (pid, status) pair returned by wait(2).
+
+In particular, "(process) is running" condition is invalid in init,
+and there's no way to tell between a process that failed to start
+and process that started but failed later.
+
+This is an inherent feature of unix, and most daemons are written
+with this assumption is mind. All init should do is to start a daemon,
+and let it sort things out.
+In case daemon dies, init should restart it.
+Why did the daemon die? Not init's business.
+
+Timing condition may be imposed externally to distinguish between
+running and failing processes. Sysvinit does it, as well as systemd.
+However, like pretty much any timed thing in non-realtime unix,
+those conditions are both artificial and unreliable.
+
+
+#2: Weak dependencies
+~~~~~~~~~~~~~~~~~~~~~
+These only make sense in telinit commands after the system has been
+brought up. Because they are purely syntactic and do not affect init
+operation at all, they can be done using shell aliases and/or shell scripts.
+
+Atop of that, who needs them? Which leads to...
+
+
+#3: Use cases
+~~~~~~~~~~~~~
+When are dependencies needed?
+
+* It makes sense to start syslogd before anything else, to catch all messages.
+  However, it hardly makes sense to abort boot process if syslogd fails to start.
+  So, not a dependency.
+  Note "fails to start" = "goes down" due to independent process timing.
+
+* Some daemons need network to start. Or do they? 
+  Network can go down at any moment, and daemons must be able to handle it.
+  See "goes down" above.
+
+* In some pathological cases daemons may depend on each other.
+  I can only recall one such pair, smbd/nmbd, and those were fixed years ago.
+  Again, consider one of the daemons going down.
+
+* Parts of system state configuration (network interfaces, netfilter, time, sysctl,
+  proc, sys and so on) are generally independent from each other, and most of the time
+  are special cases anyway.
+
+* Mountpoints are a part of system state, see the point above.
+  The idea is that filesystem must be set up early (as a part of the system state)
+  and daemons should not care about its layout.
+  And once again, time of check time of use.
+
+I can't think of anything else.
+Bottom line: set up system state, then start everything.
+No need to babysit daemons, they are quite capable on their own.
+
+
+On mountpoints
+~~~~~~~~~~~~~~
+It can be argued that mountpoints (specifically, successfully mounting something
+somewhere) do make (half-)valid dependencies that can be useful.
+
+A simple example: solid-state / with system, /var/cache/squid on rotating media,
+and squid that should only be started if the cache partition is available.
+
+sinit approach in cases like this is to start everything, regardless.
+Upon not finding its cache directories, squid will die. Or upon finding them read-only.
+There's always a way to move relevant checks to the daemon and/or its startup scripts.
+
+Proceeding as far as possible gives root an option to access the host and fix the system.
+This is opposite of a really annoying Arch initscripts feature,
+which would shut down the system if there was a minor problem during startup.
+
+There is possibility that proceeding can compromise system security.
+Think of iptables failing while the rest of the system including network does start.
+This however requires extensive damage to the system, and thus makes the point
+of protecting it from within moot. Think of iptables.conf being readable but truncated.
+So it is not something that should be done in init.

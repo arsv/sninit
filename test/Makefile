@@ -1,0 +1,85 @@
+# Top (default) rule, to override whatever ../Makefile will bring
+TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
+	t_addinitrec t_conf t_scratch t_itostr t_printf \
+	t_addstringarray t_addstrargarray t_fileblock \
+	t_mkreldirname t_tzinit t_initpass_pri t_initpass_sec \
+	t_setrunlevels
+tests: $(TESTS)
+
+# Get CC, CFLAGS etc.
+# This will also bring some things useless here, like init and telinit rules.
+# That's ok however. Alternative is to have a second set of CC etc. here,
+# or have Makefile.config in the top dir, both extremely ungraceful for
+# a small project like this.
+include ../Makefile
+
+# Allow overriding functions with test stubs
+LDFLAGS += -Wl,-z,muldefs
+
+# Recompile init files in test/
+# This may look redundant, but this way "make clean" in test can work
+# properly without affecting the top directory, and atop of that
+# is it possible to have a different compiler and/or different options
+# here. Up to -DDEBUG and resp. conditionals in init_*.c, though this
+# possibility is not used currently.
+init_%.o: ../init_%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+sys_%.o: ../sys_%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Prototype checks
+
+protocheck: proto.c
+	$(CC) $(CFLAGS) -fsyntax-only -c $<
+
+proto.c: ../init*.[ch] | protocheck.px
+	./protocheck.px $^ > $@
+
+clean: clean-proto clean-tests
+
+clean-proto:
+	rm -f proto.c	
+
+clean-tests:
+	rm -f $(TESTS)
+
+# Ok, now the tests themselves
+
+t_mblocks: LIBS += $(LIBS_syscall)
+t_mblocks: t_mblocks.o init_conf_mem.o test.o
+
+t_prepargv: t_prepargv.o init_conf_mem.o init_conf_rec.o test.o
+
+t_addinitrec: t_addinitrec.o init_conf_mem.o init_conf_rec.o test.o
+
+t_parseinitline: t_parseinitline.o \
+	init_conf_mem.o init_conf_tab.o test.o
+
+t_parsesrvfile: t_parsesrvfile.o init_conf_dir.o init_conf_mem.o \
+	test.o $(SYS)
+
+t_conf: t_conf.o init_conf.o init_conf_mem.o init_conf_tab.o \
+	init_conf_dir.o init_conf_rec.o test.o $(SYS)
+
+t_scratch: t_scratch.o init_conf.o init_conf_mem.o init_conf_rec.o \
+	init_conf_tab.o init_conf_dir.o test.o $(SYS)
+
+t_itostr: t_itostr.o sys_printf.o test.o
+
+t_printf: t_printf.o sys_printf.o test.o
+
+t_addstringarray: t_addstringarray.o init_conf_mem.o test.o
+
+t_addstrargarray: t_addstrargarray.o init_conf_mem.o test.o
+
+t_fileblock: t_fileblock.o init_conf_mem.o test.o
+
+t_mkreldirname: t_mkreldirname.o init_conf_dir.o test.o
+
+t_tzinit: t_tzinit.o sys_time_tz.o sys_timestamp.o
+
+t_initpass_pri: t_initpass_pri.o t_initpass.o init_pass.o test.o
+t_initpass_sec: t_initpass_sec.o t_initpass.o init_pass.o test.o
+
+t_setrunlevels: t_setrunlevels.o init_conf_rec.o test.o

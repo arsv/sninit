@@ -1,0 +1,253 @@
+#!/bin/sh
+
+# This script is indended to provide GNU autoconf compatible behavior.
+# Do not rely too much on it. If unsure, go edit Makefile and/or config.h
+
+# Unlike actualy autoconf scripts, this script does not test anything.
+# Testing makes little sense for a small, very linux-specific tool
+# like sinit which has no way of handling unusual evironments.
+
+unset target diet cc
+unset cctype libc 
+unset libs libs_syscall
+unset tstype
+
+lto=
+optimize=-Os
+debug=
+builtin=
+hostcc=gcc
+
+unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
+unset initctl inittab
+
+die() { echo "$@"; exit 1; }
+dieifnot() { test -n "$1" && return; shift; die "$@"; }
+
+while [ $# -gt 0 ]; do
+	arg="$1"; shift;
+	# Separate LHS and RHS in --option=value or VAR=val cases
+	case "$arg" in
+		*=*)
+			val=`echo "$arg" | sed -e 's/^[^=]*=//'`
+			arg=`echo "$arg" | sed -e 's/=.*//'`
+			;;
+		*)
+			val="" ;;
+	esac
+	# Now the arguments. We're aiming at being moderately autoconf-compatible,
+	# so it's ./configure --with-dietlibc instead of much more logical in this case
+	# ./configure dietlibc
+	case "$arg" in
+		--sysconfdir|--configdir) sysconfdir=$val ;;
+		--sbindir) sbindir=$val ;;
+		--logdir) logdir=$val ;;
+		--mandir) mandir=$val ;;
+		--man5dir) mandir=$val ;;
+		--man8dir) mandir=$val ;;
+		--prefix) prefix=$val ;;
+
+		--initctl)
+			dieifnot "$val" "$arg: value must be supplied"
+			initctl=$val
+			;;
+		--inittab)
+			dieifnot "$val" "$arg: value must be supplied"
+			inittab=$val
+			;;
+		--builtin|--with-builtin)
+			dieifnot "$val" "$arg: value must be supplied"
+			builtin="$val"
+			;;
+		--target|--host)
+			dieifnot "$val" "$arg: value must be supplied"
+			target=$val
+			cross=$target-
+			;;
+		--build)
+			dieifnot "$val" "$arg: value must be supplied"
+			build=$val
+			hostcc=$val-gcc
+			;;
+		--with-cc)
+			cc=$val
+			;;
+		--with-clang)
+			cc=$val
+			cctype=clang
+			;;
+		--with-musl)
+			cctype=musl
+			;;
+		--with-dietlibc)
+			diet=${val:-diet}
+			libc=dietlibc
+			;;
+		--with-dietlibc-fixed)
+			# fixed = with ppoll(2) support
+			diet=${val:-diet}
+			libc=dietlibc-fixed
+			;;
+		--with-libc|libc)
+			libc=${val:-syslibc}
+			;;
+		--with-syslibc|--with-glibc|syslibc|libc)
+			libc=syslibc
+			;;
+		--with-timestamps)
+			dieifnot "$val" "$arg: argument required"
+			tstype=$val
+			;;
+		--enable-debug)
+			debug=${val:-"-Wall -g"}
+			;;
+		--enable-lto)
+			lto=${val:-"-flto"}
+			;;
+		--disable-optimization)
+			optimize=
+			lto=
+			;;
+		--with-optimization)
+			optimize=${val:-$optimize}
+			;;
+		[A-Z]*)
+			eval $arg=$val
+			;;
+		*)
+			die "Unknown option $arg"
+			;;
+	esac
+done
+
+# Could be done in the loop above, if not for option order issues.
+# i.e. --with-clang --with-dietlibc vs --with-dietlibc --with-clang
+
+if [ -n "$optimize" ]; then
+	cflags=${cflags:+$cflags }$optimize
+fi
+if [ -n "$lto" ]; then
+	cflags=${cflags:+$cflags }$lto
+	ldflags=${ldflags:+$ldflags }$lto
+fi
+if [ -n "$debug" ]; then
+	cflags=${cflags:+$cflags }$debug
+fi
+
+test "$target" = "$build" || HOSTCC=${HOSTCC:-$hostcc}
+
+case "${cctype:-gcc}" in
+	# gcc handles target with prefixed executables, like arm-linux-eabi-gcc
+	gcc)	CC=${cc:-${cross}gcc} ;;
+	cc)	CC=${cc:-${cross}cc} ;;
+	# clang makes no difference between native and cross-compilation, and only needs
+	# an option to select desired arch.
+	clang)
+		CC=${cc:-clang}
+		# this is sinit-specific, so should not be expected in the environment
+		cflags=${cflags:+$cflags }-Wno-empty-body
+		[ -n "$target" ] && cflags="-arch $target $cflags"
+		;;
+	# Unlike dietlibc, musl replaces compiler.
+	# No idea how they handle cross-builds, perhaps with different musl-executables?
+	musl)
+		CC=${cc:-musl-gcc}
+		[ -n "$target" ] && die -e "Can't use --host/--target with musl\n"\
+			"Use --with-musl=ARCH-musl-gcc or something similar instead."
+		;;
+esac
+
+unset sysi syst
+case "${libc:-syslibc}" in
+	musl)
+		tsdefault=libc
+		;;
+	syslibc)
+		sysi="sys_getdents.o"
+		tsdefault=libc
+		;;
+	dietlibc-fixed)
+		CC="$diet $CC"
+		sysi="sys_printf.o sys_err_init.o"
+		syst="sys_printf.o sys_err_telinit.o"
+		libs_syscall="-lcompat"
+		tsdefault=tz
+		;;
+	dietlibc)
+		CC="$diet $CC"
+		libs=-lcompat
+		sysi="sys_ppoll.o sys_printf.o sys_err_init.o"
+		syst="sys_printf.o sys_err_telinit.o"
+		tsdefault=tz
+		;;
+	*)
+		die "Unknown libc type $libc"
+		;;
+esac
+
+case "${tstype:-$tsdefault}" in
+	libc)
+		sysi="${sysi:+$sysi }sys_time_libc.o"
+		;;
+	null)
+		sysi="${sysi:+$sysi }sys_time_null.o"
+		;;
+	tz)
+		sysi="${sysi:+$sysi }sys_time_tz.o sys_timestamp.o"
+		;;
+	notz|utc)
+		sysi="${sysi:+$sysi }sys_time_notz.o sys_timestamp.o"
+		;;
+esac
+
+# Allow complete overwriting for these variables
+CFLAGS=${CFLAGS:-$cflags}
+LDFLAGS=${LDFLAGS:-$ldflags}
+LIBS=${LIBS:-$libs}
+
+# Default values for directory options, defined late because of $prefix dependency
+subprefix=${prefix:-/usr}
+prefix=${prefix:-/}
+test "$prefix" = '/' && prefix=''
+mandir=${mandir:-$subprefix/share/man}
+man5dir=${man5dir:-$mandir/man5}
+man8dir=${man8dir:-$mandir/man8}
+sbindir=${sbindir:-$prefix/sbin}
+logdir=${logdir:-$prefix/var/log}
+sysconfdir=${sysconfdir:-$prefix/etc}
+initctl=${initctl:-@initctl}
+inittab=${inittab:-$sysconfdir/inittab}
+
+sed -i \
+	-e "/^CC =/s#=.*#= $CC#"\
+	-e "/^CFLAGS =/s#=.*#= $CFLAGS#"\
+	-e "/^LDFLAGS =/s#=.*#= $LDFLAGS#"\
+	-e "/^LIBS =/s#=.*#= $LIBS#"\
+	-e "/^LIBS_syscall =/s#=.*#= $libs_syscall#"\
+	-e "/^SYS_init =/s#=.*#= $sysi#"\
+	-e "/^SYS_telinit =/s#=.*#= $syst#"\
+	-e "/^builtin =/s#=.*#= $builtin#"\
+	-e "/^HOSTCC =/s#=.*#= $HOSTCC#"\
+	Makefile
+
+sed -i \
+	-e "/#define INITTAB/s#\".*#\"$inittab\"#" \
+	-e "/#define LOGDIR/s#\".*#\"$logdir\"#" \
+	-e "/#define INITCTL/s#\".*#\"$initctl\"#" \
+	config.h
+
+echo "Configuration updated. Check the values below, then run make."
+echo
+echo "	CC=$CC"
+echo "	CFLAGS=$CFLAGS"
+echo "	LDFLAGS=$LDFLAGS"
+echo "	LIBS=$LIBS"
+echo
+echo "	inittab location: $inittab"
+echo "	control socket name: $initctl"
+echo "	logdir location: $logdir"
+echo
+echo "	binaries path: $sbindir"
+echo "	man section 5 path: $man5dir"
+echo "	man section 8 path: $man8dir"
+echo

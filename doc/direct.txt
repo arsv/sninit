@@ -1,0 +1,82 @@
+Direct configuration
+~~~~~~~~~~~~~~~~~~~~
+Traditionaly sysvinit-based systems leaned towards data-only configuration
+files supplemented by generic configuration scripts.
+
+Let's see how linux console charset and keyboard layout was configured in
+(pre-systemd) Arch linux.
+
+	/etc/rc.conf	(host-specific file)
+		CHARSET=utf-8
+		KEYMAP="ru-utf"
+		FONT=UniCyr_8x16
+
+	/etc/rc.sysinit	(common for all Arch systems)
+		if [ -n "$FONT" ]; then
+			if [ -n "$KEYMAP" ]; then
+				loadfont -m $KEYMAP $FONT
+			else
+				loadfont $FONT
+			fi
+		fi
+
+Now loadkeys source contains basically the same if() statemnt:
+
+		/* load font */
+		if(/* -m option was supplied */)
+			/* load keymap */
+
+rc.conf adds a wrapper atop of loadfont, without actually changing (simplifying) anything.
+The above code can simply be replaced with
+
+	/etc/rc.local	(host-specific file)
+		loadfont -m ru-utf UniCyr_8x16
+
+or maybe just
+		loadfont UniCyr_8x16
+
+or maybe just skipped if there's no need to load font (empty FONT nor KEYMAP is set in rc.conf).
+
+Writing "loadfont -m ru-utf UniCyr_8x16" in an executable startup file is what
+I call "direct configuration", as opposed to setting variables which indirectly affect
+loadkeys call later.
+
+Direct configuration is always simplier, but it's not the only advantage.
+It's much less system-dependent, more versatile, and generally much better documented.
+
+In this example, loadkeys is pretty much a standard Linux utility, coming from either
+kbd package or busybox. There's loadkeys(1) man page in almost any system.
+On the other hand, rc.conf is Arch-specific. It's necessary to consult Arch wiki to
+find out which variables to set, and in most non-trivial cases also check /etc/rc.sysinit
+for the actual commands.
+And then you go to some Ubuntu system, and start digging through its own, ridiculously complicated,
+indirect configuration scripts just to find out how the same utility (loadkeys) is started on that
+particular system.
+
+Adding a level of abstraction over loadkeys could make sense if loadkeys were ridiculously
+difficult to use. It is not, and even if it were, the Linux way to fix that is rewriting loadkeys,
+not adding wrappers atop.
+
+Few people seem to get it, but Linux is very easy to boot.
+Most of the time one needs just a handful of mostly independed commands to get a fully
+usable system.
+Still, most distributions tend to push unnecessary complex, poorly documented
+startup scripts. Sometimes to ridiculous degrees, like this little pearl from my Arch system:
+
+	/etc/config/ntpd	(host-specific file)
+
+	# arguments passed to ntpd when started
+	NTPD_ARGS="-g -u ntp"
+
+Just making /etc/rc.d/ntpd (which currently loads /etc/config/ntpd) a configuration file
+and editing that file would have the same effect.
+
+Direct configuration can be implemented with pretty much any init, it is not sinit-specific.
+However, sinit was written with direct configuration in mind. With relatively sane configuration,
+sinit should be able to boot directly-configured system without calling sh at all, or when it's
+inevitable, reduce the number of sh -c calls to minimum.
+
+On the other hand, some things usual for indirect configuration are handled differently in sinit.
+In particular, sinit does not provide a simple way to set per-process environment variables.
+The assumption is that the simple things should be done directly in inittab, while more
+complicated case are to be handled using sh, and (sh-)interpreted service files.

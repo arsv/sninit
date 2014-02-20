@@ -1,0 +1,55 @@
+#!/usr/bin/perl
+
+# sinit does not follow the usual practice of stuffing all function
+# prototypes in a header file and #including that header whenever
+# the functions are used.
+#
+# Instead, prototypes are declared in all .c files that use those
+# particular functions. This makes inter-file dependecies explicit,
+# which is something header file approach lacks.
+#
+# The problem is, this way we lose any warnings about mismatching prototypes.
+# And since the linker does not care, get nasty errors when caller pushes
+# one thing to the stand and callee expects something else there.
+# 
+# This problem, however, is easy fix, while making dependencies explicit
+# with common headers is anything but easy.
+#
+# The idea here is to filter all applicable declarations, put them
+# in a single file, pass that to gcc -fsyntax-only and see if
+# it will report conflicting definitions.
+
+# This all depends a lot on the writing style of course, but then again,
+# this is sinit/test/protocheck, not a generic tool.
+
+foreach $ARGV (@ARGV)
+{
+	open(F, '<', $ARGV) || (warn("$ARGV: $!"), next);
+	$line = 0;
+	while(<F>) {
+		chomp; s!\s*//.*!!; s!/\*.*!!; s/\s*$//;
+		$line++;
+		if($ARGV =~ /\.h$/ && !/;$/ && /^(struct\s+[\S^{]+)/) {
+			push @struct,	[ $ARGV, $line, "$1;" ] 
+		} elsif($ARGV =~ /\.h$/ && /^typedef/) {
+			push @struct,	[ $ARGV, $line, $_ ];
+		} elsif(/^extern/) {
+			push @extern,	[ $ARGV, $line, $_ ];
+		} elsif(/^(int|void).*\(/) {
+			s/$/;/ unless /;$/;
+			push @funcs,	[ $ARGV, $line, $_ ];
+		} elsif(/^(int|struct|const|weak).*;$/) {
+			s/=.*;?$/;/;
+			s/^weak/extern/;
+			push @vars,	[ $ARGV, $line, $_ ];
+		}
+	};
+}
+
+print "#include <signal.h>\n";
+foreach(@struct, @vars, @funcs, @extern) {
+	($file, $line, $decl) = @$_;
+	print "#line $line \"$file\"\n" unless $lfile eq $file and $lline+1 == $line;
+	($lfile, $lline) = ($file, $line);
+	print "$decl\n";
+}

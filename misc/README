@@ -1,0 +1,4 @@
+ppoll(2) patch for dietlibc. Versions up 0.33 do not provide this call.
+
+When building against dietlibc with ppoll support, skip sys_ppoll.c and -lcompat.
+With configure, use dietlibc-fixed instead of dietlibc.

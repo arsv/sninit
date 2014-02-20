@@ -1,0 +1,17 @@
+This a sample initdir both possible formats of service files. 
+
+    xinetd
+	A simple service file. The command in the file will
+	be parsed and stored the same way with lines in inittab.
+
+    httpd	
+	A shell script (interpreted executable) used as a service
+	file. Note #! on the first line and #: on the second.
+
+    README
+	Just a text file that is neither a script nor a service
+	file; sinit will ignore it. 
+
+    sys/	
+	An unrelated directory. This, too, will be ignored by sinit.
+	In particular, sinit will read anything in that directory.

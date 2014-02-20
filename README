@@ -1,0 +1,87 @@
+Overview
+~~~~~~~~
+sinit is a small init implementation for linux.
+
+sinit was written as a smaller, cleaner replacement for sysvinit,
+fixing latter's inability of stopping/start services on the fly.
+
+To a lesser degree, it was also a repsonse to a horrific,
+overbloated beast called systemd making its way into Arch linux.
+
+
+Features
+~~~~~~~~
+Key things sinit does have:
+
+* Runlevels for process management
+* Starting/stopping individual processes manually
+  "telinit stop httpd" and so on
+* Sleep/suspend/hibernate as runlevels
+* Support for initdirs (one file per process),
+  as opposed to sysvinit inittab (one line per process)
+* Small size; sinit is expected to be linked statically with dietlibc
+* Simplified memory management;
+  no malloc, memory allocation only while reconfiguring
+
+Things sinit does NOT have:
+
+- in-place restarting a-la sysvinit
+- wall(8), shutdown(8) and some other sysvinit-style utilities
+- inter-process dependencies, systemd-style
+- system state management, including network, mounts, sysconfig and ulimits
+- support for kernels other than linux-2.6+
+- dbus, xml and other bloat
+
+Things sinit has which are not in any way exceptional:
+
++ parallel startups
+  (busybox init allows it, never mind sysvinit)
+
+
+What is init
+~~~~~~~~~~~~
+init is process 1 in Linux and other Unix-like systems.
+
+Upon booting itself, the kernel starts one process, typically /sbin/init .
+This process is expected to initialize the system and start everything else,
+including user interface.
+This process is not expected to exit; in case it does, the kernel panics.
+
+Typically init starts several processes in sequence, waiting for them
+to finish, mounting filesystems, initializiing devices and so on.
+Once the system is ready, daemon-like processes are spawned;
+when such process dies, it is respawned.
+
+Daemon-like processes usually include getty (with login as a subprocess),
+xinit or X display manager, as well as actual daemons in foreground mode.
+
+
+Building sinit
+~~~~~~~~~~~~~~
+See INSTALL file.
+
+
+Documentation
+~~~~~~~~~~~~~
+See files in doc/ directory.
+
+
+Credits
+~~~~~~~
+sinit draws ideas from busybox init, minit and the original sysvinit.
+
+"No-malloc" approach to memory management was inspired by rockbox,
+though in rockbox itself it means a different thing.
+
+Small size and static linkage is mostly due to dietlibc and busybox.
+(see "Writing Small and Fast Software" by F. von Leitner).
+
+
+Licensing
+~~~~~~~~~
+GPLv3, see COPYING file.
+
+
+Author
+~~~~~~
+Alex Suykov <alex.suykov@gmail.com>
