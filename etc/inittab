@@ -1,29 +1,12 @@
-# Inittabl syntax:
-#
-#	VARIABLE=value
-# 	name:rlvls:flags:cmd
-#	@initdir
+# inittab for in-place testing
 
-# Environment
-PATH=/bin:/sbin:/usr/bin
-LOCALE=C
+PATH=/bin
+VAR=value
 
-# System initialization
-::wait:/sbin/mount -o remount,rw /
-syslog:::/sbin/syslogd -n
-::once:/sbin/hwlock -s
+::once:sbin/ini1
+::once:sbin/ini2
+::wait:sbin/ini3
 
-# VTs
-su:1::/sbin/sulogin
-tty1:2345::/sbin/agetty --noclear -8 -s 38400 tty1 linux
-tty2:2345::/sbin/agetty -8 -s 38400 tty2 linux
-tty3:2345::/sbin/agetty -8 -s 38400 tty3 linux
-tty4:2345::/sbin/agetty -8 -s 38400 tty4 linux
-tty5:2345::/sbin/agetty -8 -s 38400 tty5 linux
-tty6:2345::/sbin/agetty -8 -s 38400 tty6 linux
-
-# Shutdown
-:0:wait:/sbin/mount -o remount,ro /
-
-# Pick up service files
-@/etc/rc
+s1:::sbin/srv1
+s2:::sbin/srv2
+s3:a::sbin/srv3
