@@ -1,0 +1,77 @@
+ACPI sleep and slippery runlevels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Switching between ACPI sleep modes (suspend-to-ram, suspend-to-disk)
+is in many ways similar to switching between sysvinit runlevels.
+Some services should be stopped, some tasks must be run before entering
+sleep mode, some tasks must be run after exiting sleep mode.
+
+It is tempting to implement sleep modes as runlevels, ditching the
+run-scripts part of pm-tools and moving it all to init.
+
+The problem is that the state of "sleeping" is not controlled by init.
+From init's point of view, "sleeping" is a running process, a w-type
+entry specifically. With pm-tools, it's "pm-suspend", and without
+pm-tools, it's something like "echo mem > /sys/power/state".
+
+Let the sleep mode be runlevel 8, and normal (awake) mode is runlevel 3.
+When init starts pm-suspend, it is still switching runlevels 3 -> 8.
+But when pm-suspend exits, the system has already woken up and init
+should be switching 8 -> 3.
+
+       telinit sleep
+       v
+       3 ---> 3-8 ---> fork ---> 3-8 ---> waitpid ---> 8-3 ---> 3
+                       |                  ^
+                       v                  |
+                       +--- pm-suspend ---+
+
+Note the state between fork and waitpid is 3-8, not 8.
+Init can't reach runlevel 8 until all w-type entries, including pm-suspend,
+have exited. But when pm-suspend exists, sleep is over, and init's state
+should be 8-3.
+
+To solve this problem, some runlevels are marked as "slippery".
+Init can't stay in a slippery runlevel; once such runlevel is reached,
+init starts switching back to the runlevel it came from.
+
+Internally, there is currlevel and nextlevel.
+	currlevel = nextlevel = 3	means init is in runlevel 3
+	currlevel = 3, nextlevel = 8	means init is switching from 3 to 8
+
+When non-slippery runlevel is reached, init sets nextlevel = currlevel.
+However, when a slippery runlevel is reached, init instead exchanges
+currlevel and nextlevel, prompting immediate return to the original runlevel.
+
+Unless changed in config.h, slippery runlevels are 7, 8 and 9,
+and in telinit, commands "sleep" and "suspend" are hard-coded to request a switch
+to runlevels 8 and 9 respectively.
+The intended usage is:
+	9	suspend-to-disk
+	8	suspend-to-memory
+	7	(hybrid mode)
+At present, the list of slippery modes is a build-time setting only,
+mostly due to lack of any use cases that would require setting them in inittab.
+
+
+Pre- and post-sleep hooks
+~~~~~~~~~~~~~~~~~~~~~~~~~
+With slippery states, this part is actually quite simple.
+All hooks are o-/w-type entries.
+Pre-sleep have 8 in runlevels field, post-sleep hooks have ~8.
+(In more general situation, it's "all-sleep" and "all-but-sleep")
+
+A complete configuration should look like this:
+
+	:8:once:/sbin/usb off
+	:8:once:/sbin/network down
+	:8:wait:!echo mem > /sys/power/state
+	:~8:once:/sbin/vcreset
+	:~8:once:/sbin/network up
+	:~8:once:/sbin/usb on
+
+Commands shown are only for illustration, real system will probably have
+something system-specific.
+
+Note the use of "once": in most cases, the hooks are independent,
+and "wait" on the sleep-trigger command ensures it will only be run after all
+o-type entries have exited.
