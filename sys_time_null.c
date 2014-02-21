@@ -15,6 +15,11 @@
 
 int timestamp(char* buf, int len)
 {
+	/* Timestamp must be followed by a space according to RFC 3164.
+	   When actual timestamp is present, this rule is not enforced
+	   apparently because timestamp itself provides a good anchor
+	   for parsing. However, with no timestamp, a space after <PRI> 
+	   is necessary. */
 	*buf = ' ';
 	return 1;
 }
