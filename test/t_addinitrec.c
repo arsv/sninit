@@ -4,7 +4,7 @@
 #include "test.h"
 
 struct memblock newblock;
-extern int addinitrec(struct fileblock* fb, char* name, int diri, char* runlvl, char* flags, char* cmd, int exe);
+extern int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char* cmd, int exe);
 extern int mmapblock(struct memblock* m, int length);
 
 int main(void)
@@ -25,7 +25,7 @@ int main(void)
 	newblock.ptr = off;
 	memset(newblock.addr, newblock.len, 0x00);
 
-	T(addinitrec(&fb, "foo", 2, "12", "", strdup("/bin/sh -c true"), 0));
+	T(addinitrec(&fb, "foo", "12", "", strdup("/bin/sh -c true"), 0));
 	pptr = blockptr(&newblock, SCR->newend, struct initrec*);
 
 	/* make sure the pointer is ok */

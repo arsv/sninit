@@ -28,7 +28,7 @@ void dropinitrec(offset entryoff);
 
 /* fb is the block we're parsing currently, used solely for error reporting */
 
-int addinitrec(struct fileblock* fb, char* name, int diri, char* runlvl, char* flags, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char* cmd, int exe)
 {
 	offset entryoff;
 	struct initrec* entry;
@@ -47,7 +47,6 @@ int addinitrec(struct fileblock* fb, char* name, int diri, char* runlvl, char* f
 
 	memset(entry->name, 0, NAMELEN);
 	strncpy(entry->name, name, NAMELEN - 1);
-	entry->diri = diri;
 
 	entry->flags = 0;
 	entry->rlvl = 0;

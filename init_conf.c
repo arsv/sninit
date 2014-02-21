@@ -123,15 +123,11 @@ void initcfgblocks(void)
 int finishenvp(void)
 {
 	int envoff;
-	int diroff;
 
 	if((envoff = addstringptrs(&newblock, &SCR->env)) < 0)
 		return -1;
-	if((diroff = addstringptrs(&newblock, &SCR->dir)) < 0)
-		return -1;
 
 	NCF->env = NULL + envoff;
-	NCF->dir = NULL + diroff;
 	
 	return 0;
 }
@@ -165,7 +161,6 @@ void rewirepointers()
 	}
 
 	rewireenvp(&(NCF->env));
-	rewireenvp(&(NCF->dir));
 }
 
 void rewireenvp(char*** envp)

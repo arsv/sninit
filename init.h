@@ -39,8 +39,6 @@ struct initrec {
 	struct initrec* next;
 
 	char name[NAMELEN];
-	int diri;		// directory index, see config.dir;
-				// -1 for entries coming from inittab
 
 	unsigned short rlvl;	// bitmask: [FEDCBA9876543210]
 	int flags;		// per-process flags, see S_ constants above
@@ -63,7 +61,6 @@ struct config {
 
 	struct initrec* inittab;	/* list head */
 	char** env;			/* to be passed to execve in children */
-	char** dir;			/* list of compiled initdirs, for initrec.diri */
 
 	/* time_* values are in seconds */
 	int time_to_restart;

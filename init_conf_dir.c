@@ -15,7 +15,7 @@
 #include "init_conf.h"
 #include "sys.h"
 
-extern int addinitrec(struct fileblock* fb, char* name, int diri, char* rlvl, char* flags, char* cmd, int exe);
+extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* flags, char* cmd, int exe);
 extern int mextendblock(struct memblock* m, int size, int blocksize);
 extern int scratchstring(char listcode, const char* string);
 
@@ -24,8 +24,8 @@ extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
 int allocdirbuf(int desize, int fnsize, int extralen);
-int readsrvfile(char* fullname, char* basename, int diri);
-int parsesrvfile(struct fileblock* fb, char* basename, int diri);
+int readsrvfile(char* fullname, char* basename);
+int parsesrvfile(struct fileblock* fb, char* basename);
 int mkreldirname(char* buf, int len, const char* base, const char* dir);
 
 /* bb = base block, for the file that included this directory */
@@ -35,7 +35,6 @@ int readinitdir(struct fileblock* bb, const char* dir, int strict)
 	struct dirent64* de;
 	char dt;		/* dirent type; XXX: 0 to keep valgrind happy */
 	int nr, ni;		/* getdents ret and index */
-	int diri;		/* index in SCR->dir list */
 	int ret = -1;
 
 	char debuf[DENTBUFSIZE];
@@ -55,9 +54,6 @@ int readinitdir(struct fileblock* bb, const char* dir, int strict)
 	if((dirfd = open(fname, O_RDONLY | O_DIRECTORY)) < 0)
 		retwarn(ret, "%s:%i: can't open %s, skipping", bb->name, bb->line, fname);
 
-	if((diri = scratchstring('D', dir)) < 0)
-		gotowarn(out, "%s:%i: can't add directory to dirlist", bb->name, bb->line, dir);
-
 	/* Warning: both fn and de->d_name iside the loop reside in scratch.
 	   Any reallocations of scratch block invalidate these pointers.
 	   readsrvfile/parsesrvfile must decouple both
@@ -75,7 +71,7 @@ int readinitdir(struct fileblock* bb, const char* dir, int strict)
 				continue;
 
 			strncpy(fname + bnoff, de->d_name, bnlen);
-			ret = readsrvfile(fname, de->d_name, diri);
+			ret = readsrvfile(fname, de->d_name);
 
 			if(ret)
 				warn("%s:%i: skipping %s", bb->name, bb->line, de->d_name);
@@ -132,20 +128,20 @@ int mkreldirname(char* buf, int len, const char* base, const char* dir)
 	return p - buf;
 }
 
-int readsrvfile(char* fullname, char* basename, int diri)
+int readsrvfile(char* fullname, char* basename)
 {
 	struct fileblock fb = { .name = fullname };
 
 	if(mmapfile(&fb, 1024))
 		return -1;
 
-	int ret = parsesrvfile(&fb, basename, diri);
+	int ret = parsesrvfile(&fb, basename);
 	munmapfile(&fb);
 
 	return ret;
 }
 
-int parsesrvfile(struct fileblock* fb, char* basename, int diri)
+int parsesrvfile(struct fileblock* fb, char* basename)
 {
 	int shebang;
 	char* rlvls;
@@ -195,5 +191,5 @@ int parsesrvfile(struct fileblock* fb, char* basename, int diri)
 		   That's ok and will be handled later in or near prepargv(). */
 	}
 
-	return addinitrec(fb, basename, diri, rlvls, flags, cmd, shebang);
+	return addinitrec(fb, basename, rlvls, flags, cmd, shebang);
 }

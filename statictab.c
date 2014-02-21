@@ -52,7 +52,6 @@ void dump_inittab(const char* base, struct initrec* head)
 		else
 			printf("\t.next = NULL,\n");
 		printf("\t.name = %s,\n", quote(rec->name));
-		printf("\t.diri = %i,\n", rec->diri);
 		printf("\t.rlvl = %i,\n", rec->rlvl);
 		printf("\t.flags = %i,\n", rec->flags);
 		printf("\t.pid = %i,\n", rec->pid);
@@ -71,8 +70,6 @@ void dump_config(struct config* cfg)
 
 	if(cfg->inittab)
 		dump_inittab("irec", cfg->inittab);
-	if(cfg->dir)
-		dump_envp("dir", cfg->dir);
 	if(cfg->env)
 		dump_envp("env", cfg->env);
 
@@ -81,7 +78,6 @@ void dump_config(struct config* cfg)
 	printf("\t.slippery = %i,\n", cfg->slippery);
 	printf("\t.inittab = %s,\n", cfg->inittab ? "&irec0" : "NULL");
 	printf("\t.env = %s,\n", cfg->env ? "env" : "NULL");
-	printf("\t.dir = %s,\n", cfg->dir ? "dir" : "NULL");
 	printf("\t.time_to_restart = %i,\n", cfg->time_to_restart);
 	printf("\t.time_to_SIGKILL = %i,\n", cfg->time_to_SIGKILL);
 	printf("\t.time_to_skip = %i,\n", cfg->time_to_skip);

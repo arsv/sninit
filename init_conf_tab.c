@@ -8,7 +8,7 @@
 
 extern struct memblock scratch;
 
-extern int addinitrec(struct fileblock* fb, char* name, int diri, char* rlvl, char* flags, char* cmd, int exe);
+extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* flags, char* cmd, int exe);
 extern int scratchstring(char listcode, const char* string);
 extern int readinitdir(struct fileblock* fb, const char* dir, int strict);
 extern int mmapfile(struct fileblock* fb, int maxlen);
@@ -66,5 +66,5 @@ int parseinitline(struct fileblock* fb, int strict)
 	if(!flags || !runlvl)
 		return -1;
 
-	return addinitrec(fb, name, -1, runlvl, flags, p, 0);
+	return addinitrec(fb, name, runlvl, flags, p, 0);
 }
