@@ -126,6 +126,7 @@ void dropinitrec(offset entryoff)
 int setrunlevels(struct initrec* entry, char* runlevels, struct fileblock* fb)
 {
 	char* p;
+	char neg = (*runlevels == '~' ? *(runlevels++) : 0);
 
 	entry->rlvl = 0;
 
@@ -137,6 +138,10 @@ int setrunlevels(struct initrec* entry, char* runlevels, struct fileblock* fb)
 
 	if(!(entry->rlvl & PRIMASK))
 		entry->rlvl |= (PRIMASK & ~1);
+
+	if(neg)
+		/* Due to the way sublevels are handled, negating them makes no sense */
+		entry->rlvl = (~(entry->rlvl & PRIMASK) & PRIMASK) | (entry->rlvl & SUBMASK);
 
 	return 0;
 }

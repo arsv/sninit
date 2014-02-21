@@ -96,3 +96,15 @@ For the laptop power mode problem, it is not really relevant. Laptop can very we
 on battery, so it's always a matter of checking the state during startup.
 
 For other cases, the only solution for now is having some of sublevels set in INITDEFAULT.
+
+
+Negated primary runlevels mask
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Tilde in inittab affects primary runlevels only.
+That is, "123a" means "levels 1, 2 or 3 with sublevel a active",
+and "~123a" means "any level except 1, 2 or 3 with sublevel a active", or equivalently,
+"levels 0, 4, 5, 6, 7, 8, 9 with sublevel a active".
+
+As stated above, negating sublevels mask makes little sense.
+Atop of that, the intended usage implies adding "a" to "~123" should work more or less
+the same way as adding "a" to "0456789".
