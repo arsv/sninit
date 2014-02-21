@@ -1,7 +1,7 @@
 Direct configuration
 ~~~~~~~~~~~~~~~~~~~~
-Traditionaly sysvinit-based systems leaned towards data-only configuration
-files supplemented by generic configuration scripts.
+Traditionaly sysvinit-based systems leaned towards data-only
+configuration files supplemented by generic configuration scripts.
 
 Let's see how linux console charset and keyboard layout was configured in
 (pre-systemd) Arch linux.
