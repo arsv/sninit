@@ -107,7 +107,7 @@ void initcfgblocks(void)
 	struct config* cfg = (struct config*) newblock.addr;
 	/* newblock has enough space for struct config, see configure() */
 	newblock.ptr += sizeof(struct config) + sizeof(struct scratch);
-	memset(newblock.addr, sizeof(struct config) + sizeof(struct scratch), 0);
+	memset(newblock.addr, 0, sizeof(struct config) + sizeof(struct scratch));
 
 	cfg->inittab = NULL;
 	cfg->env = NULL;
