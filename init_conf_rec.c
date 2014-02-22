@@ -15,6 +15,7 @@ extern int addstrargarray(struct memblock* m, ...);
 extern int mextendblock(struct memblock* m, int size, int blocksize);
 void linkinitrec(offset entryoff);
 void dropinitrec(offset entryoff);
+int checkdupname(const char* name);
 
 /* Arguments:
 	   name="httpd", runlvl="2345", flags="log,null"
@@ -33,6 +34,11 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 	offset entryoff;
 	struct initrec* entry;
 	int ret;
+
+	/* This can (and should) be done early, since it's easier to do when the new
+	   initrec is not yet linked to the list. */
+	if(checkdupname(name))
+		retwarn(-1, "%s:%i: duplicate name %s", fb->name, fb->line, name);
 
 	if(mextendblock(&newblock, sizeof(struct initrec), IRALLOC))	
 		return -1;
@@ -266,4 +272,20 @@ int scratchstring(char listcode, const char* string)
 	newblock.ptr += size;
 
 	return list->count++;
+}
+
+#define ptroff(p) (((void*)p) - NULL)
+
+int checkdupname(const char* name)
+{
+	struct initrec* p;
+	offset po;
+
+	for(po = ptroff(NCF->inittab); po; po = ptroff(initrecat(&newblock, po)->next)) {
+		p = initrecat(&newblock, po);
+		if(p->name[0] && !strcmp(p->name, name))
+			return -1;
+	}
+		
+	return 0;
 }
