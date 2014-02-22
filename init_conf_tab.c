@@ -9,7 +9,7 @@
 extern struct memblock scratch;
 
 extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* flags, char* cmd, int exe);
-extern int scratchstring(char listcode, const char* string);
+extern int scratchenv(const char* string);
 extern int readinitdir(struct fileblock* fb, const char* dir, int strict);
 extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
@@ -58,7 +58,7 @@ int parseinitline(struct fileblock* fb, int strict)
 	if(!p)
 		retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
 	else if(*p == '=')
-		return (scratchstring('E', l) >= 0 ? 0 : -1);
+		return (scratchenv(l) >= 0 ? 0 : -1);
 
 	*(p++) = '\0'; name = l;
 	runlvl = strsep(&p, ":");

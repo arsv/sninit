@@ -241,9 +241,8 @@ int prepargv(char* str, char** end)
 }
 
 /* Add a string to one of scratcblock lists (envp and initdir) */
-int scratchstring(char listcode, const char* string)
+int scratchenv(const char* string)
 {
-	struct stringlist* list = NULL;
 	struct stringnode* node;
 	int slen = strlen(string);
 	int size = sizeof(struct stringnode) + slen + 1;
@@ -252,11 +251,7 @@ int scratchstring(char listcode, const char* string)
 		return -1;
 
 	/* mextendblock above MAY move scratch.addr! */
-	switch(listcode) {
-		case 'E': list = &SCR->env; break;
-		case 'D': list = &SCR->dir; break;
-		default: return -1;
-	}
+	struct stringlist* list = &SCR->env;
 
 	node = (struct stringnode*)(newblock.addr + newblock.ptr);
 	strncpy(node->str, string, slen);

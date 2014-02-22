@@ -15,7 +15,6 @@ struct scratch {
 	int newend;
 	int oldend;
 	struct stringlist env;
-	struct stringlist dir;
 };
 
 /* mmaped blocks -- see sinit_mmem.c */
@@ -51,7 +50,6 @@ Now NCF/SCR should have looked like this:
 		// struct scratch contents
 		int newend;
 		struct stringlist env;
-		struct stringlist dir;
 	}
 
 but this is apparently considered waaay-non-standard and requires -fms-extensions
