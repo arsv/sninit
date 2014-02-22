@@ -40,39 +40,28 @@ void initpass(void)
 				   in a switch to an appropriate runlevel will occur later */
 				p->pid = 0;
 			}
-			continue;
-		} else if(waitfor & DYING)
+		} else if(waitfor & DYING) {
 			/* something from currlevel is not dead yet, do not hurry with nextlevel */
-			continue;
-
-		if(p->pid > 0) {
+		} else if(p->pid > 0) {
 			/* process is running and it's ok */
 			if(p->flags & C_WAIT)
 				return;
 			if(p->flags & C_ONCE)
 				waitfor |= RUNNING;
-			continue;
-		}
-
-		/* here we only have processes that are not running and do belong in this rl */
-
-		if((p->flags & (C_ONCE | C_WAIT)) && (p->pid < 0))
+		} else if(p->pid < 0 && (p->flags & (C_ONCE | C_WAIT))) {
 			/* has been run already */
-			continue;
-
-		/* by this point only processes that need to be spawned left,
-		   and we're definitely not waiting for any w-type entries */
-
-		if(p->flags & C_WAIT && waitfor)
+		} else if(waitfor && (p->flags & C_WAIT)) {
 			/* wait for o-entries before starting a w-entry */
 			return;
+		} else {
+			/* ok, now we're absolutely sure $p should be spawned */
+			spawn(p);
 
-		spawn(p);
-
-		if(p->flags & C_WAIT)
-			return;			/* off to wait for this process */
-		if(p->flags & C_ONCE)
-			waitfor |= RUNNING;	/* we're not in nextlevel yet */
+			if(p->flags & C_ONCE)
+				waitfor |= RUNNING;	/* we're not in nextlevel yet */
+			if(p->flags & C_WAIT)
+				return;			/* off to wait for this process */
+		}
 	}
 
 	if(waitfor || currlevel == nextlevel)
