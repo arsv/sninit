@@ -105,7 +105,7 @@ static inline void setsublevel(int add, char* arg)
 			warn("bad sublevel %c", c);
 }
 
-void mask2str(char* str, int len, int mask)
+void rlstr(char* str, int len, int mask)
 {
 	char* p = str;	
 	char* end = str + len - 1;
@@ -121,27 +121,57 @@ void mask2str(char* str, int len, int mask)
 	*p = '\0';
 }
 
+#define MAXREPORTCMD 50
+/* join argv into a single string to be reported by telinit ? */
+char* makecmd(char* buf, int len, char** argv)
+{
+	char** arg;
+	int arglen;
+	int cpylen;
+	char* ret = buf;
+
+	len -= 5;
+	for(arg = argv; *arg && len; arg++) {
+		arglen = strlen(*arg);
+		strncpy(buf, *arg, cpylen = (arglen <= len ? arglen : len));
+		buf += cpylen;
+		len -= cpylen;
+		if(!len) break;
+		*(buf++) = ' ';
+		len--;
+	} if(*arg) {
+		strncpy(buf, " ...", cpylen = 4);
+		buf += cpylen;
+	}
+	*buf = '\0';
+
+	return ret;
+}
+
 /* "telinit ?" output, the list of services and their current state */
 static inline void dumpstate(void)
 {
 	struct initrec* p;
 	char currstr[16];
 	char nextstr[16];
+	char cmdbuf[MAXREPORTCMD+5];		// " ...\0"
+	char* reportcmd;
 	
-	mask2str(currstr, 16, currlevel);
-	mask2str(nextstr, 16, nextlevel);
+	rlstr(currstr, 16, currlevel);
+	rlstr(nextstr, 16, nextlevel);
 	if(currlevel == nextlevel)
 		warn("Runlevel %s", currstr);
 	else
 		warn("Switching %s to %s", currstr, nextstr);
 
 	for(p = cfg->inittab; p; p = p->next) {
-		if(p->flags & C_WAIT)
+		if(p->flags & (C_ONCE | C_WAIT))
 			if(currlevel == nextlevel)
 				continue;
+		reportcmd = p->name[0] ? p->name : makecmd(cmdbuf, sizeof(cmdbuf), p->argv);
 		if(p->pid > 0)
-			warn("%i\t%s", p->pid, p->name);
+			warn("%i\t%s", p->pid, reportcmd);
 		else
-			warn("%s\t%s", "-", p->name);
+			warn("%s\t%s", "-", reportcmd);
 	}
 }
