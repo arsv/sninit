@@ -83,8 +83,8 @@ int warn(const char* fmt, ...)
 		mode = W_STDERR;		/* do not even try syslog */
 
 	if(mode & W_SYSLOG) {
-		hdrlen = snprintf(buf, HDRBUF, "<%d>", LOG_DAEMON | LOG_NOTICE);
-		hdrlen += timestamp(buf, HDRBUF - hdrlen);
+		hdrlen = snprintf(buf, HDRBUF, "<%i>", LOG_DAEMON | LOG_NOTICE);
+		hdrlen += timestamp(buf + hdrlen, HDRBUF - hdrlen);
 	} else {
 		hdrlen = 0;
 	}
