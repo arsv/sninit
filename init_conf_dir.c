@@ -33,7 +33,7 @@ int readinitdir(struct fileblock* bb, const char* dir, int strict)
 {
 	int dirfd;
 	struct dirent64* de;
-	char dt;		/* dirent type; XXX: 0 to keep valgrind happy */
+	char dt;		/* dirent type */
 	int nr, ni;		/* getdents ret and index */
 	int ret = -1;
 
@@ -54,10 +54,6 @@ int readinitdir(struct fileblock* bb, const char* dir, int strict)
 	if((dirfd = open(fname, O_RDONLY | O_DIRECTORY)) < 0)
 		retwarn(ret, "%s:%i: can't open %s, skipping", bb->name, bb->line, fname);
 
-	/* Warning: both fn and de->d_name iside the loop reside in scratch.
-	   Any reallocations of scratch block invalidate these pointers.
-	   readsrvfile/parsesrvfile must decouple both
-	   if addinitrec() does anything with scratchblock (it doesn't currently) */
 	while((nr = getdents64(dirfd, (void*)debuf, delen)) > 0) {
 		for(ni = 0; ni < nr; ni += de->d_reclen) {
 			de = (struct dirent64*)(debuf + ni);
