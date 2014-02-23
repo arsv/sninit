@@ -135,18 +135,22 @@ int addstringptrs(struct memblock* m, struct stringlist* list)
 {
 	int off;
 	int ret = m->ptr;
+	int rem = list->count;
 	char** a;
 
+	if(rem < 0)
+		return -1;
+
 	/* check how much space is needed, and allocate it */
-	if(mextendblock(m, (list->count+1)*sizeof(char*), IRALLOC))
+	if(mextendblock(m, (rem+1)*sizeof(char*), IRALLOC))
 		return -1;
 
 	/* "allocate" the structure */
 	a = (char**)(m->addr + m->ptr);
-	m->ptr += (list->count+1)*sizeof(char*);
+	m->ptr += (rem+1)*sizeof(char*);
 
 	/* set up offsets; repoiting will happen later */
-	for(off = list->head; off; off = blockptr(m, off, struct stringnode*)->next)
+	for(off = list->head; rem && off; off = blockptr(m, off, struct stringnode*)->next, rem--)
 		*(a++) = NULL + off + offsetof(struct stringnode, str);
 	*a = NULL; /* terminating pointer */
 
