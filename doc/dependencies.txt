@@ -88,8 +88,8 @@ When are dependencies needed?
   are special cases anyway.
 
 * Mountpoints are a part of system state, see the point above.
-  The idea is that filesystem must be set up early (as a part of the system state)
-  and daemons should not care about its layout.
+  The idea is that the filesystem must be set up early (as a part of the global
+  system state) and daemons should not care about its layout.
   And once again, time of check time of use.
 
 I can't think of anything else.
@@ -107,13 +107,14 @@ and squid that should only be started if the cache partition is available.
 
 sinit approach in cases like this is to start everything, regardless.
 Upon not finding its cache directories, squid will die. Or upon finding them read-only.
-There's always a way to move relevant checks to the daemon and/or its startup scripts.
+There is always a way to move relevant checks to the daemon and/or its startup scripts,
+closer to the point of actual use.
 
 Proceeding as far as possible gives root an option to access the host and fix the system.
 This is opposite of a really annoying Arch initscripts feature,
 which would shut down the system if there was a minor problem during startup.
 
-There is possibility that proceeding can compromise system security.
+There is possibility that proceeding may compromise system security.
 Think of iptables failing while the rest of the system including network does start.
 This however requires extensive damage to the system, and thus makes the point
 of protecting it from within moot. Think of iptables.conf being readable but truncated.
