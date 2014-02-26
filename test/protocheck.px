@@ -1,20 +1,17 @@
 #!/usr/bin/perl
 
 # sinit does not follow the usual practice of stuffing all function
-# prototypes in a header file and #including that header whenever
+# prototypes in one header file and #including that header whenever
 # the functions are used.
 #
 # Instead, prototypes are declared in all .c files that use those
 # particular functions. This makes inter-file dependecies explicit,
-# which is something header file approach lacks.
+# which is something the header file approach lacks.
 #
-# The problem is, this way we lose any warnings about mismatching prototypes.
-# And since the linker does not care, get nasty errors when caller pushes
-# one thing to the stand and callee expects something else there.
+# The problem is, this way we lose any warnings about mismatching prototypes,
+# possibly resulting in nasty runtime errors.
 # 
-# This problem, however, is easy fix, while making dependencies explicit
-# with common headers is anything but easy.
-#
+# This problem, however, is easy fix.
 # The idea here is to filter all applicable declarations, put them
 # in a single file, pass that to gcc -fsyntax-only and see if
 # it will report conflicting definitions.
