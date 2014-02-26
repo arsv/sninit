@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#define L(fmt, ...) printf("# " fmt "\n", ## __VA_ARGS__);
+
 /* test if success (zero) */
 #define T(a) {\
 	int r = a;\
@@ -28,6 +30,8 @@
 	const char* r = a;\
 	if(b == NULL && r == NULL)\
 		printf("%s:%i: OK %s = NULL\n", __FILE__, __LINE__, #a);\
+	else if(b == NULL) \
+		printf("%s:%i: FAIL %s = \"%s\"\n", __FILE__, __LINE__, #a, r);\
 	else if(r == NULL) \
 		printf("%s:%i: FAIL %s = NULL\n", __FILE__, __LINE__, #a);\
 	else if(strcmp(r, b)) \

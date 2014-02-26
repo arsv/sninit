@@ -7,6 +7,6 @@
 # but the command will be "/path/to/this/httpd"
 #
 # The equivalent initline is
-# httpd:2345:log:/path/to/this/httpd
+# httpd:2345:log:!/sbin/httpd
 
 exec /sbin/httpd

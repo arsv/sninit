@@ -3,7 +3,7 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_scratch t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock \
 	t_mkreldirname t_tzinit t_initpass_pri t_initpass_sec \
-	t_setrunlevels
+	t_setrunlevels t_readinitdir
 tests: $(TESTS)
 
 # Get CC, CFLAGS etc.
@@ -33,7 +33,7 @@ sys_%.o: ../sys_%.c
 protocheck: proto.c
 	$(CC) $(CFLAGS) -fsyntax-only -c $<
 
-proto.c: ../init*.[ch] | protocheck.px
+proto.c: ../init*.[ch] ../sys.h | protocheck.px
 	./protocheck.px $^ > $@
 
 clean: clean-proto clean-tests
@@ -83,3 +83,5 @@ t_initpass_pri: t_initpass_pri.o t_initpass.o init_pass.o test.o
 t_initpass_sec: t_initpass_sec.o t_initpass.o init_pass.o test.o
 
 t_setrunlevels: t_setrunlevels.o init_conf_rec.o test.o
+
+t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_mem.o test.o

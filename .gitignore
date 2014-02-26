@@ -11,4 +11,5 @@ test/*
 !test/*.px
 !test/Makefile
 test/proto.c
+!test/etc
 *.[58]

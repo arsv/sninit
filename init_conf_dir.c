@@ -23,17 +23,16 @@ extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
-int allocdirbuf(int desize, int fnsize, int extralen);
-int readsrvfile(char* fullname, char* basename);
+static inline int skipdirent(struct dirent64* de);
+int readsrvfile(char* fullname, char* basename, unsigned short defrlvl);
 int parsesrvfile(struct fileblock* fb, char* basename);
 int mkreldirname(char* buf, int len, const char* base, const char* dir);
 
 /* bb = base block, for the file that included this directory */
-int readinitdir(struct fileblock* bb, const char* dir, int strict)
+int readinitdir(struct fileblock* bb, const char* dir, int defrlvl, int strict)
 {
 	int dirfd;
 	struct dirent64* de;
-	char dt;		/* dirent type */
 	int nr, ni;		/* getdents ret and index */
 	int ret = -1;
 
@@ -43,6 +42,7 @@ int readinitdir(struct fileblock* bb, const char* dir, int strict)
 	const int fnlen = sizeof(fname);
 	int bnoff;		/* basename offset in fname */
 	int bnlen;
+	struct fileblock fb = { .name = fname, .rlvl = defrlvl };
 
 	/*        |            |<---- bnlen ---->| */
 	/* fname: |/path/to/dir/filename         | */
@@ -58,27 +58,44 @@ int readinitdir(struct fileblock* bb, const char* dir, int strict)
 		for(ni = 0; ni < nr; ni += de->d_reclen) {
 			de = (struct dirent64*)(debuf + ni);
 
-			/* skip hidden files */
-			if(de->d_name[0] == '.')
-				continue;
-
-			/* skip non-regular files early if the kernel was kind enough to warn us */
-			if((dt = de->d_type) && dt != DT_LNK && dt != DT_REG)
+			if(skipdirent(de))
 				continue;
 
 			strncpy(fname + bnoff, de->d_name, bnlen);
-			ret = readsrvfile(fname, de->d_name);
 
-			if(ret)
-				warn("%s:%i: skipping %s", bb->name, bb->line, de->d_name);
-			if(ret && strict)
+			if(!(ret = mmapfile(&fb, 1024))) {
+				ret = parsesrvfile(&fb, de->d_name);
+				munmapfile(&fb);
+			} if(ret && strict)
 				goto out;
+			else if(ret)
+				warn("%s:%i: skipping %s", bb->name, bb->line, de->d_name);
 		}
 	}
 
 	ret = 0;
 out:	close(dirfd);
 	return ret;
+}
+
+static inline int skipdirent(struct dirent64* de)
+{
+	char dt;
+	int len = strlen(de->d_name);
+
+	/* skip hidden files */
+	if(de->d_name[0] == '.')
+		return 1;
+
+	/* skip temp files */
+	if(len > 0 && de->d_name[len - 1] == '~')
+		return 1;
+
+	/* skip non-regular files early if the kernel was kind enough to warn us */
+	if((dt = de->d_type) && dt != DT_LNK && dt != DT_REG)
+		return 1;
+
+	return 0;
 }
 
 /* Make a full directory name for $dir when included from a file named $base.
@@ -124,43 +141,31 @@ int mkreldirname(char* buf, int len, const char* base, const char* dir)
 	return p - buf;
 }
 
-int readsrvfile(char* fullname, char* basename)
-{
-	struct fileblock fb = { .name = fullname };
-
-	if(mmapfile(&fb, 1024))
-		return -1;
-
-	int ret = parsesrvfile(&fb, basename);
-	munmapfile(&fb);
-
-	return ret;
-}
-
 int parsesrvfile(struct fileblock* fb, char* basename)
 {
-	int shebang;
-	char* rlvls;
-	char* flags;
+	int shebang = 0;
+	char* rlvls = NULL;
+	char* flags = NULL;
 	char* cmd;
 
 	if(!nextline(fb))
 		retwarn(-1, "%s: empty file", fb->name);
 
+	/* Check for, and skip #! line if present */
 	if(!strncmp(fb->ls, "#!", 2)) {
 		shebang = 1;
 		if(!nextline(fb))
 			retwarn(-1, "%s: empty script", fb->name);
-	} else {
-		shebang = 0;
 	}
 
-	if(strncmp(fb->ls, "#:", 2))
-		retwarn(0, "%s: doesn't look like a service file, skipping", fb->name);
-
-	char* il = fb->ls + 2;		/* initline, the part following #: */
-	rlvls = strsep(&il, ":");
-	flags = strsep(&il, ":");
+	/* Do we have #: line? If so, note runlevels and flags */
+	if(!strncmp(fb->ls, "#:", 2)) {
+		char* il = fb->ls + 2;		/* skip #: */
+		rlvls = strsep(&il, ":");
+		flags = strsep(&il, ":");
+		if(!nextline(fb))
+			retwarn(-1, "%s: no command found", fb->name);
+	}
 
 	if(shebang) {
 		/* No need to parse anything anymore, it's a script. */
@@ -168,23 +173,13 @@ int parsesrvfile(struct fileblock* fb, char* basename)
 		   and thus writable */
 		cmd = (char*)fb->name;
 	} else {
-		char* ilend = fb->le;
-		char* fbend = fb->buf + fb->len;
+		/* Get to first non-comment line, and that's it, the rest
+		   will be done in addinitrec. */
+		while(!*(fb->ls) || *(fb->ls) == '#')
+			if(!nextline(fb))
+				retwarn(-1, "%s: no command found", fb->name);
 
-		cmd = il;	/* il != NULL after strsep()s above means there was command part in il */
-
-		/* in case of a mixed command (both in and after initline), revert line-end terinator
-		   so that addinitrec() later would see a continous multi-line string */
-		if(ilend < fbend && cmd)		/*	#:123:null:!	*/
-			*ilend = '\n';			/*	echo $PATH	*/
-
-		else if(ilend < fbend)			/*	#:123:null 	and something on the next line */
-			cmd = ilend + 1;
-
-		/* else do nothing, cmd is either the command, or NULL if there's no command at all */
-
-		/* Now, this all may leave some extra spaces/newlines in cmd.
-		   That's ok and will be handled later in or near prepargv(). */
+		cmd = fb->ls;
 	}
 
 	return addinitrec(fb, basename, rlvls, flags, cmd, shebang);

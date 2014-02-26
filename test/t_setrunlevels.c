@@ -9,7 +9,7 @@ void addstrargarray(void) { };
 void addstringarray(void) { };
 void mextendblock(void) { };
 
-extern int setrunlevels(struct initrec* entry, char* runlevels, struct fileblock* fb);
+extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
 
 #define R0 (1<<0)
 #define R1 (1<<1)
@@ -31,17 +31,18 @@ void test(char* runlevels, int mask)
 		.line = 0,
 		.buf = NULL,
 		.ls = NULL,
-		.le = NULL
+		.le = NULL,
+		.rlvl = (PRIMASK & ~1)
 	};
-	struct initrec entry;
+	unsigned short rlvl;
 
 	printf("%-6s", runlevels);
-	if(setrunlevels(&entry, runlevels, &fb)) {
+	if(setrunlevels(&fb, &rlvl, runlevels)) {
 		printf("failed\n");
-	} else if(entry.rlvl != mask) {
-		printf("got 0x%04X expected 0x%04X\n", entry.rlvl, mask);
+	} else if(rlvl != mask) {
+		printf("got 0x%04X expected 0x%04X\n", rlvl, mask);
 	} else {
-		printf("ok 0x%04X\n", entry.rlvl);
+		printf("ok 0x%04X\n", rlvl);
 	}
 }
 

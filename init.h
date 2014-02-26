@@ -14,15 +14,15 @@
 #define C_WAIT		(1<<1)		/* w-type entry; wait before starting, wait until finished */
 #define C_CHAIN		(1<<2)		/* chained to previous o-type entry */
 #define C_DISABLED	(1<<3)		/* this process has been explicitly stopped via telinit */
-#define C_USEABRT	(1<<8)		/* use SIGABRT instead of SIGINT when stopping process */
-#define C_NULL		(1<<9)		/* redirect stdout & stderr to /dev/null */
-#define C_LOG		(1<<10)		/* redirect stdout & stderr to /var/log/(name) */
-#define C_SH		(1<<11)		/* argv = [ /bin/sh -c "command" ]; for reference only, exec(argv) still works */
-#define C_TTY		(1<<12)		/* setup controlling tty for this process (aka interactive) */
+#define C_USEABRT	(1<<5)		/* use SIGABRT instead of SIGINT when stopping process */
+#define C_NULL		(1<<6)		/* redirect stdout & stderr to /dev/null */
+#define C_LOG		(1<<7)		/* redirect stdout & stderr to /var/log/(name) */
+#define C_SH		(1<<8)		/* argv = [ /bin/sh -c "command" ]; for reference only, exec(argv) still works */
+#define C_TTY		(1<<9)		/* setup controlling tty for this process (aka interactive) */
 
-#define P_SIGTERM	(1<<16)		/* SIGTERM (or SIGABRT) has been sent to this process */
-#define P_SIGKILL	(1<<17)		/* SIGKILL has been sent to this process */
-#define P_ZOMBIE	(1<<18)		/* process failed to die after SIGKILL */
+#define P_SIGTERM	(1<<10)		/* SIGTERM (or SIGABRT) has been sent to this process */
+#define P_SIGKILL	(1<<11)		/* SIGKILL has been sent to this process */
+#define P_ZOMBIE	(1<<12)		/* process failed to die after SIGKILL */
 
 /* Sublevels mask (struct initrec.rlvls) */
 #define PRIMASK		0x03FF
@@ -41,7 +41,7 @@ struct initrec {
 	char name[NAMELEN];
 
 	unsigned short rlvl;	// bitmask: [FEDCBA9876543210]
-	int flags;		// per-process flags, see S_ constants above
+	unsigned short flags;	// per-process flags, see S_ constants above
 
 	int pid;	/* >0: the process is running
 			   =0: the process hasn't been started

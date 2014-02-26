@@ -34,6 +34,11 @@ struct fileblock {
 
 	char* ls;
 	char* le;
+
+	/* Default runlevel mask. Looks completely out of place here,
+	   but actually fits quite well, given struct fileblock is more
+	   like parsing context than just an arbitrary mmaped file. */
+	unsigned short rlvl;
 };
 
 #define CFG ((struct config*) cfgblock.addr)

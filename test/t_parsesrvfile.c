@@ -7,7 +7,6 @@
 #define RET 0xAB
 
 //struct memblock newblock;	/* to keep the linker happy */
-struct memblock scratch;
 
 struct {
 	int called;
@@ -18,7 +17,7 @@ struct {
 	int exe;
 } U;
 
-extern int parsesrvfile(struct fileblock* fb, char* basename, int diri);
+extern int parsesrvfile(struct fileblock* fb, char* basename);
 extern int mmapblock(struct memblock* m, int size);
 
 int scratchstring(char listcode, const char* string)
@@ -31,11 +30,11 @@ char* strdupnull(const char* str)
 	return str ? strdup(str) : NULL;
 }
 
-int addinitrec(struct fileblock* fb, char* name, int diri, char* rlvls, char* flags, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* name, char* runlevels, char* flags, char* cmd, int exe)
 {
 	U.called++;
 	U.name = strdupnull(name);
-	U.rlvls = strdupnull(rlvls);
+	U.rlvls = strdupnull(runlevels);
 	U.flags = strdupnull(flags);
 	U.cmd = strdupnull(cmd);
 	U.exe = exe;
@@ -60,7 +59,7 @@ void test(input, rlvls, flags, cmd, exe)
 	};
 
 	memset(&U, 0, sizeof(U));
-	A(parsesrvfile(&fb, base, -1) == RET);
+	A(parsesrvfile(&fb, base) == RET);
 	A(U.called == 1);
 	S(U.name, base);
 	S(U.rlvls, rlvls);
@@ -72,33 +71,58 @@ void test(input, rlvls, flags, cmd, exe)
 
 int main(void)
 {
-	T(mmapblock(&scratch, sizeof(struct scratch)));
-	memset(scratch.addr, sizeof(struct scratch), 0);
-
-	/* one-liner */
-	test(	"#:123:wait,log:/bin/echo -n foo\n",
-		"123", "wait,log", "/bin/echo -n foo\n", 0);
-
-	/* one-liner, sh */
-	test(	"#:123:wait,log:!echo -n foo\n",
-		"123", "wait,log", "!echo -n foo\n", 0);
-
-	/* multi-line */
+	L("non-shebang, with flags");
 	test(	"#:123:wait,log\n"
 		"/bin/echo -n foo\n",
-		"123", "wait,log", "/bin/echo -n foo\n", 0);
+		"123", "wait,log", "/bin/echo -n foo", 0);
 
-	/* multi-line, sh */
-	test(	"#:123:wait,log:!\n"
-		"echo -n foo\n",
-		"123", "wait,log", "!\necho -n foo\n", 0);
+	L("non-shebang, shell, with flags");
+	test(	"#:123:wait,log\n"
+		"! echo -n foo\n",
+		"123", "wait,log", "! echo -n foo", 0);
 
-	/* shebang */
+	L("non-shebang, flags but no runlevels");
+	test(	"#::wait,log\n"
+		"/bin/echo -n foo\n",
+		"", "wait,log", "/bin/echo -n foo", 0);
+
+	L("non-shebang, runlevels w/o flags");
+	test(	"#:123\n"
+		"/bin/echo -n foo\n",
+		"123", NULL, "/bin/echo -n foo", 0);
+
+	L("non-shebang, runlevels followed by comments");
+	test(	"#:123\n"
+		"# something goes here\n"
+		"\n"
+		"# one more comment line\n"
+		"\n"
+		"/bin/echo -n foo\n",
+
+		"123", NULL, "/bin/echo -n foo", 0);
+
+	L("non-shebang, no #: line");
+	test(	"/bin/echo -n foo\n",
+		NULL, NULL, "/bin/echo -n foo", 0);
+	
+	L("non-shebang, comments but no #: line");
+	test(	"# some comment goes here\n"
+		"\n"
+		"/bin/echo -n foo\n",
+		NULL, NULL, "/bin/echo -n foo", 0);
+
+	L("shebang, runlevels, flags");
 	test(	"#!/bin/sh\n"
 		"#:123:wait,log\n"
 		"echo -n foo\n",
 
 		"123", "wait,log", "/etc/rc/foo", 1);
+
+	L("shebang, no #: line");
+	test(	"#!/bin/sh\n"
+		"echo -n foo\n",
+
+		NULL, NULL, "/etc/rc/foo", 1);
 
 	return 0;
 }

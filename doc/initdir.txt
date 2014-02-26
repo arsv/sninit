@@ -1,0 +1,98 @@
+Notes on initdir implementation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The format of initdir files was chosen to make common usage simple.
+Common use case for initdir is assumed to be this:
+	
+	@2345:/etc/rc
+
+That is, running all "common" daemons from a given directory on
+all applicable runlevels.
+
+Configurability for initdir entries is not considered a priority.
+
+
+== Wait-type entries in initdir
+
+Having an option to use w- or o-type initdirs was considered with
+the following application mimicing pm-tools hooks:
+
+	@8:wait:/etc/rc/sleep
+	@~8:wait:/etc/rc/wakeup
+
+This turned out to be rather ugly (note 8 and ~8 dirs), and, keeping
+in line with direct configuration approach, not necessary.
+
+Managing power states is very host-specific, not disto-specific,
+and it's one of the cases when order of things (sometimes) matters,
+so it was decided to keep it all in /etc/inittab
+
+
+== Fixed initdir path
+
+Most of the time there will be exactly one initdir.
+Why not make it a fixed path, like /etc/inittab?
+That is, make init always read /etc/rc as an initdir.
+
+Well, that's how early implementation worked. Turns out it's not
+so good. It's one more fixed path. It's better to have a way to
+disable it. Some way is needed to set runlevels. All that combined
+pretty much define a @rlvls:/dir line anyway.
+
+
+== Considerations for initdir entries format
+
+Should initdir entries like /etc/rc/httpd be executable?
+It can help debugging things, that is, allow running
+
+	/etc/rc/httpd
+
+manually to check why the damn thing refuses to start properly.
+
+On the other hand, putting too much effort into executability
+does not look like a good idea. After all, these are primarily
+init configuration files.
+
+In the end, the decision was to keep them executable, leaving
+shebang line as is and placing command in non-shebang files
+on a separate line.
+
+Another key point is allowing comments in all inidir files.
+With shell scripts, it's easy, but in non-shebang files
+comments do not fit naturally.
+
+Alternative considered:
+
+	#:123!/bin/sh
+	# shell script follows
+
+	#:123:/sbin/httpd
+
+this would allow laying initrec out in one line just like in inittab.
+However, files like this would probably require an utility for test runs.
+
+
+== Runlevels in @dir line
+
+In the common use case (see above) all or nearly all services have
+the same runlevels mask. Thus, it makes sense to specify it in
+inittab when including a directory. This makes init-specific line in
+shebang scripts completely optional, and allows using :: for runlevels
+in distro-supplied startup files while leaving runlevels configuration
+host-specific.
+
+Why wasn't the default runlevels mask for services hard-coded?
+Well, it's not clear what it should be. The default value for inittab, ~0,
+is generally not what one wants for services, most should not be running
+in single-user mode. And while runlevel 0 is a very special runlevel for sinit,
+runlevel 1 isn't. So it was left for the user to decide.
+
+
+== No flags in @dir line
+
+Wait entries are not considered fit for initdirs, which leaves a grand
+total of two process flags: null and log. Both are quite process-specific,
+esp. once shell scripts are considered.
+
+Pretty much any other per-process values that were considered, line uid
+or ulimits, are too process-specific and make no sense when specified
+for the whole directory.

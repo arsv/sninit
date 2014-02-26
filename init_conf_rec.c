@@ -7,8 +7,8 @@
 extern struct memblock newblock;
 
 int prepargv(char* str, char** end);
-int setrunlevels(struct initrec* entry, char* runlevels, struct fileblock* fb);
-int setflags(struct initrec* entry, char* flagstring, struct fileblock* fb);
+int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
+int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
 extern int addstringarray(struct memblock* m, int n, const char* str, const char* end);
 extern int addstrargarray(struct memblock* m, ...);
@@ -66,8 +66,9 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 
 	if(exe) {
 		ret = addstrargarray(&newblock, cmd, NULL);
-	} else if(cmd[0] == '!') {
-		ret = addstrargarray(&newblock, "/bin/sh", "-c", cmd + 1, NULL);
+	} else if(*cmd == '!') {
+		for(cmd++; *cmd && *cmd == ' '; cmd++);
+		ret = addstrargarray(&newblock, "/bin/sh", "-c", cmd, NULL);
 	} else {
 		char* arge; int argc = prepargv(cmd, &arge);
 		ret = addstringarray(&newblock, argc, cmd, arge);
@@ -76,9 +77,9 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 
 	/* add*array() calls above could very well change newblock.addr, invalidating existing entry value */
 	entry = initrecat(&newblock, entryoff); 
-	if(setrunlevels(entry, runlvl, fb))
+	if(setrunlevels(fb, &(entry->rlvl), runlvl))
 		goto out;
-	if(setflags(entry, flags, fb))
+	if(setflags(fb, entry, flags))
 		goto out;
 
 	return 0;
@@ -126,27 +127,33 @@ void dropinitrec(offset entryoff)
    This is because (1 << runlevel) is never zero, i.e. there's always one active
    primary level, but zero mask for sublevels is quite possible.
 
-   See doc/sublevels.txt for why sublevels are treated like this. */ 
+   That's all assuming fb->rlvl = (PRIMASK & ~1), which it is for all inittab
+   entries. For initdir entries, fb->rlvl may have different value, in which case
+   leaving out pri or sub part means using resp. pri or sub part of fb->rlvl.
 
-int setrunlevels(struct initrec* entry, char* runlevels, struct fileblock* fb)
+   See doc/sublevels.txt for considerations re. sublevels handling. */ 
+
+int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels)
 {
 	char* p;
 	char neg = (*runlevels == '~' ? *(runlevels++) : 0);
 
-	entry->rlvl = 0;
+	*rlvl = 0;
 
 	for(p = runlevels; *p; p++)
 		if(*p >= '0' && *p <= '9')
-			entry->rlvl |= (1 << (*p - '0'));
+			*rlvl |= (1 << (*p - '0'));
 		else if(*p >= 'a' && *p <= 'f')
-			entry->rlvl |= (1 << (*p - 'a' + 0xa));
+			*rlvl |= (1 << (*p - 'a' + 0xa));
 
-	if(!(entry->rlvl & PRIMASK))
-		entry->rlvl |= (PRIMASK & ~1);
+	/* The tricky part, handling default runlevels. */
+	if(!(*rlvl & PRIMASK))
+		*rlvl |= fb->rlvl & PRIMASK;
+	if(!(*rlvl & SUBMASK))
+		*rlvl |= fb->rlvl & SUBMASK;
 
-	if(neg)
-		/* Due to the way sublevels are handled, negating them makes no sense */
-		entry->rlvl = (~(entry->rlvl & PRIMASK) & PRIMASK) | (entry->rlvl & SUBMASK);
+	/* Due to the way sublevels are handled, negating them makes no sense */
+	if(neg) *rlvl = (~(*rlvl & PRIMASK) & PRIMASK) | (*rlvl & SUBMASK);
 
 	return 0;
 }
@@ -171,7 +178,7 @@ static struct flagrec {
 	{ NULL }
 };
 
-int setflags(struct initrec* entry, char* flagstring, struct fileblock* fb)
+int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring)
 {
 	char* p;
 	struct flagrec* f;

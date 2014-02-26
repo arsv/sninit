@@ -1,8 +1,17 @@
 Direct configuration
 ~~~~~~~~~~~~~~~~~~~~
 Traditionaly sysvinit-based systems leaned towards data-only
-configuration files supplemented by generic configuration scripts.
+configuration files supplemented by generic distro-supplied
+configuration scripts. The script use the data from configuration
+files to call system utilities.
 
+In contrast to that, "direct configuration" means treating
+the commands itself as configuration keywords, and using immediate
+values instead of referencing variables.
+
+
+Example and motivation
+~~~~~~~~~~~~~~~~~~~~~~
 Let's see how linux console charset and keyboard layout was configured in
 (pre-systemd) Arch linux.
 
@@ -41,6 +50,9 @@ Writing "loadfont -m ru-utf UniCyr_8x16" in an executable startup file is what
 I call "direct configuration", as opposed to setting variables which indirectly affect
 loadkeys call later.
 
+
+Why direct configuration?
+~~~~~~~~~~~~~~~~~~~~~~~~~
 Direct configuration is always simplier, but it's not the only advantage.
 It's much less system-dependent, more versatile, and generally much better documented.
 
@@ -53,10 +65,13 @@ And then you go to some Ubuntu system, and start digging through its own, ridicu
 indirect configuration scripts just to find out how the same utility (loadkeys) is started on that
 particular system.
 
-Adding a level of abstraction over loadkeys could make sense if loadkeys were ridiculously
-difficult to use. It is not, and even if it were, the Linux way to fix that is rewriting loadkeys,
-not adding wrappers atop.
+Adding a level of abstraction over loadkeys could make sense if loadkeys was ridiculously
+difficult to use. It is not, and even if it were, the Linux way to fix that is rewriting
+loadkeys, not adding wrappers atop.
 
+
+Keeping startup scripts simple
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Few people seem to get it, but Linux is very easy to boot.
 Most of the time one needs just a handful of mostly independed commands to get a fully
 usable system.
@@ -71,12 +86,33 @@ startup scripts. Sometimes to ridiculous degrees, like this little pearl from my
 Just making /etc/rc.d/ntpd (which currently loads /etc/config/ntpd) a configuration file
 and editing that file would have the same effect.
 
-Direct configuration can be implemented with pretty much any init, it is not sinit-specific.
-However, sinit was written with direct configuration in mind. With relatively sane configuration,
-sinit should be able to boot directly-configured system without calling sh at all, or when it's
-inevitable, reduce the number of sh -c calls to minimum.
 
-On the other hand, some things usual for indirect configuration are handled differently in sinit.
-In particular, sinit does not provide a simple way to set per-process environment variables.
-The assumption is that the simple things should be done directly in inittab, while more
-complicated case are to be handled using sh, and (sh-)interpreted service files.
+Implications for sinit
+~~~~~~~~~~~~~~~~~~~~~~
+Direct configuration can be implemented with pretty much any init, it is not sinit-specific.
+However, sinit was written with direct configuration in mind.
+
+sinit strongly assumes /etc/inittab is a host-specific configuration file.
+This was the key consideration for @dir lines syntax, in particular (not) implenting sleep
+hooks as a w-type initdir.
+
+If inittab was a distro-specific, distro-updatable and generally non-changeable file,
+it would make sense to do something like this:
+
+	@8:once:/etc/rc/sleep
+
+with said directory containing basically what pm-tools call "hooks". Configuration like
+this would allow users to add their own hooks without changing the (distro-supplied) inittab.
+
+(It would also allow the distro to install additional hooks without the need for users
+to do any manual configuration, as it is done with services. However, for sleep hooks it
+is NOT relevant. Sleep hooks depend on hardware configuration more than on anything else,
+and hardware is specific to each individual system.)
+
+Now assiming direct configuration approach, having a directory like this makes no sense.
+Since /etc/inittab is assumed to be editable for each individual system, all sleep-related
+configuration goes there. This keeps things readable.
+
+Having ordered things in a file also removes the need to order files in a directory,
+thus removing the need for all those 10-sd.sh, 20-network.sh and other lingering shadows
+of our ZX BASIC past.
