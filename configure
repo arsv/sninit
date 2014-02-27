@@ -172,7 +172,7 @@ case "${libc:-syslibc}" in
 	dietlibc-fixed)
 		CC="$diet $CC"
 		sysi="sys_printf.o sys_err_init.o"
-		syst="sys_printf.o sys_err_telinit.o"
+		syst="sys_err_telinit.o"
 		libs_syscall="-lcompat"
 		tsdefault=tz
 		;;
@@ -180,7 +180,7 @@ case "${libc:-syslibc}" in
 		CC="$diet $CC"
 		libs=-lcompat
 		sysi="sys_ppoll.o sys_printf.o sys_err_init.o"
-		syst="sys_printf.o sys_err_telinit.o"
+		syst="sys_err_telinit.o"
 		tsdefault=tz
 		;;
 	*)

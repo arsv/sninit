@@ -13,7 +13,7 @@ LDFLAGS =
 LIBS = 
 LIBS_syscall = -lcompat
 SYS_init = sys_printf.o sys_err_init.o sys_time_tz.o sys_timestamp.o
-SYS_telinit = sys_printf.o sys_err_telinit.o
+SYS_telinit = sys_err_telinit.o
 
 # Installation directories. Check config.h for runtime paths.
 sbindir = /sbin

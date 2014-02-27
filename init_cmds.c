@@ -38,49 +38,36 @@ void parsecmd(char* cmd)
 		case 'r':
 		case 'd':
 		case 'e':
-			if(!(p = findentry(arg))) {
-				warn("can't find %s in inittab", arg);
-				return;
-			}
+			if(!(p = findentry(arg)))
+				retwarn_("can't find %s in inittab", arg);
 	}
 	switch(*cmd) {
+		/* primary levels */
+		case '=': setrunlevel(*arg); break;
+		case 'y': setrunlevel('7'); break;
+		case 'p': setrunlevel('8'); break;
+		case 'z': setrunlevel('9'); break;
+		/* sublevels */
 		case '+':
-		case '-':
-			setsublevel(*cmd == '+', arg);
-			break;
-		case '=':
-			setrunlevel(*arg);
-			break;
-		case 'r':
-			stop(p);
-			break;
-		case 'd':
-			p->flags |= C_DISABLED;
-			break;
-		case 'e':
-			p->flags &= ~C_DISABLED;
-			break;
+		case '-': setsublevel(*cmd == '+', arg); break;
+		/* process ops */
+		case 'r': stop(p); break;
+		case 'd': p->flags |=  C_DISABLED; break;
+		case 'e': p->flags &= ~C_DISABLED; break;
+		/* reconfigure */
 		case 'q':
 			if(configure(1))
 				warn("!configure failed");
 			else
 				state |= S_RECONFIG;
 			break;
-		case 'H':
-			rbcode = LINUX_REBOOT_CMD_HALT;
-			nextlevel = 0;
-			break;
-		case 'P':
-			rbcode = LINUX_REBOOT_CMD_POWER_OFF;
-			nextlevel = 0;
-			break;
-		case 'R':
-			rbcode = LINUX_REBOOT_CMD_RESTART;
-			nextlevel = 0;
-			break;
-		case '?':
-			dumpstate();
-			break;
+		/* halt */
+		case 'H': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_HALT;      break;
+		case 'P': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_POWER_OFF; break;
+		case 'R': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_RESTART;   break;
+		/* state query */
+		case '?': dumpstate(); break;
+
 		default:
 			warn("unknown command");
 	}

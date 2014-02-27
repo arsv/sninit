@@ -1,138 +1,78 @@
 #define	_GNU_SOURCE
 #include <unistd.h>
 #include <fcntl.h>
-#include <err.h>
-#include <poll.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
+#include <errno.h>
 
 #include "config.h"
 
-#define BUF 256
+#define ERR ((void*) -1)
 
-static char cmdname(const char* cmd);
 static int runcmd(const char* cmd);
-static void die(const char* msg, ...);
-
-static int rlcmd(char cmd, char* rl);
-static int noargcmd(char cc);
-static int argrepeatcmd(char cc, int argc, char** arg);
-
-int main(int argc, char** argv)
-{
-	char cc = 0;
-
-	if(argc < 2)
-		die("Usage: telinit cmd [args]\n");
-
-	cc = cmdname(argv[1]);
-	if(!cc)
-		die("telinit: unknown command %s\n", argv[1]);
-
-	switch(cc) {
-		case '=':
-			return rlcmd(cc, argv[1]);
-		case '+':
-		case '-':
-			return rlcmd(cc, argv[1]+1);
-		case 'd':
-		case 'e':
-			return argrepeatcmd(cc, argc, argv);
-		default:
-			return noargcmd(cc);
-	}
-
-	return 0;
-}
+static void diee(const char* msg, const char* arg);
 
 static struct cmdrec {
 	char* name;
-	char cmd;
+	char cc;
+	char arg;
 } cmdtbl[] = {
-	{ "reload",	'r' },
-	{ "start",	'e' },
-	{ "stop",	'd' },
-	{ "enable",	'e' },
-	{ "disable",	'd' },
-	{ "poweroff",	'P' },
-	{ "halt",	'H' },
-	{ "reboot",	'R' },
-	{ "sleep",	'8' },
-	{ "suspend",	'9' },
+	{ "reload",	'r', 0 },
+	{ "start",	'e', 1 },
+	{ "stop",	'd', 1 },
+	{ "poweroff",	'P', 0 },
+	{ "halt",	'H', 0 },
+	{ "reboot",	'R', 0 },
+	{ "sleep",	'p', 0 },
+	{ "suspend",	'u', 0 },
+	{ "?",		'?', 0 },
 	{ NULL }
 };
 
-static char cmdname(const char* cmd)
+// .bss is zero-initialized, so no need to call memset() later
+static char buf[NAMELEN+2];
+
+int main(int argc, char** argv)
 {
-	struct cmdrec* p;
+	struct cmdrec* cr = NULL;
 
-	if(*cmd >= '0' && *cmd <= '9')
-		return '=';
-	if(*cmd == '-' || *cmd == '+')
-		return *cmd;
-	if(*cmd && cmd[1] == '\0')
-		return *cmd;
-
-	for(p = cmdtbl; p->name; p++)
-		if(!strcmp(cmd, p->name))
-			return p->cmd;
-
-	return 0;
-}
-
-static int cmdbuflen(int argc, char** argv)
-{
-	int cl, cm = 1;
+	int arg = 0;
+	char* ptr = buf;
+	char* cmd = argv[1];
 	int i;
 
-	for(i = 2; i < argc; i++) {
-		cl = strlen(argv[i]) + 2;
-		if(cl > cm) cm = cl;
+	if(argc < 2)
+		diee("Usage: telinit cmd [args]", NULL);
+
+	if(*cmd >= '0' && *cmd <= '9' && !*(cmd+1)) {
+		buf[0] = '=';
+		buf[1] = *cmd;
+	} else if(*cmd == '+' || *cmd == '-' || *cmd == '=') {
+		ptr = cmd;
+	} else {
+		for(cr = cmdtbl; cr->name; cr++) {
+			if(!*(cmd+1) && *cmd == cr->cc)
+				break;
+			if(!strcmp(cmd, cr->name))
+				break;
+		}
+		if(cr->name) {
+			buf[0] = cr->cc;
+			arg = cr->arg;
+		} else {
+			diee("Unknown command ", cmd);
+		}
 	}
 
-	return cm + 2;	/* command code, arg, newline */
-}
+	if(!arg)
+		runcmd(ptr);
+	else for(i = 2; i < argc; i++) {
+		strncpy(buf + 1, argv[i], sizeof(buf)-2);
+		runcmd(buf);
+	}
 
-static int rlcmd(char cmd, char* rl)
-{
-	int len = strlen(rl);
-	char buf[len + 4];
-
-	buf[0] = cmd;
-	strncpy(buf + 1, rl, len);
-	buf[len+2] = '\0';
-	buf[len+3] = '\0';
-
-	return runcmd(buf);
-}
-
-static int noargcmd(char cc)
-{
-	char buf[3];
-	buf[0] = cc;
-	buf[1] = '\0';
-	buf[2] = '\0';
-	return runcmd(buf);
-}
-
-static int argrepeatcmd(char cc, int argc, char** argv)
-{
-	int cm = cmdbuflen(argc, argv);
-	char buf[cm+1];
-	int r = -1;
-	int i;
-
-	for(i = 2; i < argc; i++) {
-		buf[0] = cc;
-		strcpy(buf+1, argv[i]);
-		if((r = runcmd(buf)))
-			return r;
-	};
-	
-	return r;
+	return 0;
 }
 
 static int opensocket(void)
@@ -148,9 +88,9 @@ static int opensocket(void)
 
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);	
 	if(fd < 0)
-		die("Can't create socket: %m\n");
+		diee("Can't create socket: ", ERR);
 	if(connect(fd, (struct sockaddr*)&addr, sizeof(addr)))
-		die("Can't connect to %s: %m\n", INITCTL);
+		diee("Can't connect to " INITCTL ": ", ERR);
 
 	return fd;
 }
@@ -186,17 +126,17 @@ static int sendcmd(int fd, const char* cmd)
 	memcpy((int *)CMSG_DATA(cmsg), &cred, sizeof(cred));
 
 	if(sendmsg(fd, &mhdr, 0) < 0)
-		die("sendmsg failed: %m\n");
+		diee("sendmsg failed: ", ERR);
 	
 	return 0;
 }
 
 static void recvreply(int fd)
 {
-	char buf[BUF];
+	char buf[100];
 	int rr;
 
-	while((rr = read(fd, buf, BUF)) > 0)
+	while((rr = read(fd, buf, sizeof(buf))) > 0)
 		write(2, buf, rr);
 }
 
@@ -213,15 +153,22 @@ static int runcmd(const char* cmd)
 	return 0;
 };
 
-static void die(const char* msg, ...)
+static void diee(const char* msg, const char* arg)
 {
-	va_list ap;
 	char buf[256];
+	int len = strlen(msg);
+	int max = sizeof(buf) - 2;
 
-	va_start(ap, msg);
-	vsnprintf(buf, 256, msg, ap);
-	va_end(ap);
+	strncpy(buf, msg, max);
 
-	write(2, buf, strlen(buf));
+	if(arg == ERR)
+		arg = strerror(errno);
+	if(arg)
+		strncpy(buf + len, arg, max - len);
+
+	len = strlen(buf);
+	buf[len++] = '\n';
+
+	write(2, buf, len);
 	_exit(-1);
 }
