@@ -36,10 +36,10 @@ sigset_t defsigset;	// default sigset, to supply to spawned processes,
 			// and also to use outside of ppoll in init itself
 
 /* --------------------------------------------------------------------------- */
-int setup(int argc, char** argv);
-int setup_initctl(void);
-void setup_signals(void);
-void setup_args(int argc, char** argv);
+static int setup(int argc, char** argv);
+static int setinitctl(void);
+static void setsignals(void);
+static void setargs(int argc, char** argv);
 
 extern int configure(int);
 extern void setnewconf(void);
@@ -49,8 +49,7 @@ extern void pollfds(void);
 extern void acceptctl(void);
 extern void waitpids(void);
 
-void handle(int sig, void (*handler)(int), int flags);
-void sighandler(int sig);
+static void sighandler(int sig);
 
 /* --------------------------------------------------------------------------- */
 
@@ -100,7 +99,7 @@ reboot:
 	return 0xFE; /* feh */
 };
 
-int setup(int argc, char** argv)
+static int setup(int argc, char** argv)
 {
 	currlevel = 0;
 	nextlevel = INITDEFAULT;
@@ -112,13 +111,13 @@ int setup(int argc, char** argv)
 
 	ioctl(0, KDSIGACCEPT, SIGWINCH);
 
-	if(setup_initctl())
+	if(setinitctl())
 		/* Not having telinit is bad, but aborting system startup
 		   for this mere reason is likely even worse. */
 		warn("can't initialize initctl, init will be uncontrollable");
 
-	setup_signals();
-	setup_args(argc, argv);
+	setsignals();
+	setargs(argc, argv);
 
 	if(configure(0))
 		retwarn(-1, "initial configuration error");
@@ -131,7 +130,7 @@ int setup(int argc, char** argv)
 /* init gets the whole kernel command line, "root=... rw initrd=... console=..." etc.
    The only relevant part there is possible initial runlevel indication, either
    a (single-digit) number or a word "single". */
-void setup_args(int argc, char** argv)
+static void setargs(int argc, char** argv)
 {
 	char** argi;
 
@@ -148,7 +147,7 @@ void setup_args(int argc, char** argv)
    getting them, aside from SIGCHLD and maybe SIGPIPE/SIGALARM during telinit
    communication. If anything else is sent (SIGSEGV?), then we're already well out
    of normal operation range and should accept whatever default action is. */
-void setup_signals(void)
+static void setsignals(void)
 {
 	/* Restarting read() etc is ok, the calls init needs interrupted
 	   will be interrupted anyway.
@@ -187,7 +186,7 @@ void setup_signals(void)
 	sigaction(SIGALRM, &sa, NULL);
 }
 
-int setup_initctl(void)
+static int setinitctl(void)
 {
 	struct sockaddr_un addr = {
 		.sun_family = AF_UNIX,
@@ -214,7 +213,7 @@ close:
 }
 
 /* A single handler for all four signals we care about. */
-void sighandler(int sig)
+static void sighandler(int sig)
 {
 	switch(sig)
 	{
@@ -231,7 +230,7 @@ void sighandler(int sig)
 		case SIGHUP:
 			if(initctlfd >= 0)
 				close(initctlfd);
-			setup_initctl();
+			setinitctl();
 			break;
 	}
 }

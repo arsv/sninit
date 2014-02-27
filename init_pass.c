@@ -18,8 +18,8 @@ extern struct config* cfg;
 
 extern void sexec(struct initrec* p);
 
-void spawn(struct initrec* p);
-void stop(struct initrec* p);
+static void spawn(struct initrec* p);
+global void stop(struct initrec* p);
 
 static inline void swapi(int* a, int* b);
 static inline int shouldberunning(struct initrec* p);
@@ -118,7 +118,7 @@ static inline int shouldberunning(struct initrec* p)
 
 /* check whether *last was at least $wait seconds ago; if not, update timetowait
    and write a message */
-int waitneeded(struct initrec* p, time_t* last, time_t wait, const char* msg)
+static int waitneeded(struct initrec* p, time_t* last, time_t wait, const char* msg)
 {
 	time_t curtime = time(NULL);
 	int ttw = *last + wait - curtime;
@@ -135,7 +135,7 @@ int waitneeded(struct initrec* p, time_t* last, time_t wait, const char* msg)
 /* both spawn() and stop() should check relevant timeouts, do their resp.
    actions if that's ok to do, or update timetowait via waitneeded call
    to ensure initpass() will be performed once the timeout expires */
-void spawn(struct initrec* p)
+static void spawn(struct initrec* p)
 {
 	int pid;
 

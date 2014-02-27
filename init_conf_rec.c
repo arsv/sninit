@@ -6,16 +6,19 @@
 
 extern struct memblock newblock;
 
-int prepargv(char* str, char** end);
-int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
-int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
+static int prepargv(char* str, char** end);
+global int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
+static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
+
+global int scratchenv(const char* string);
 
 extern int addstringarray(struct memblock* m, int n, const char* str, const char* end);
 extern int addstrargarray(struct memblock* m, ...);
 extern int mextendblock(struct memblock* m, int size, int blocksize);
-void linkinitrec(offset entryoff);
-void dropinitrec(offset entryoff);
-int checkdupname(const char* name);
+
+static void linkinitrec(offset entryoff);
+static void dropinitrec(offset entryoff);
+static int checkdupname(const char* name);
 
 /* Arguments:
 	   name="httpd", runlvl="2345", flags="log,null"
@@ -90,7 +93,7 @@ out:	dropinitrec(entryoff);
 }
 
 /* Update initrec list pointers, including the entry at entryoff in the list */
-void linkinitrec(offset entryoff)
+static void linkinitrec(offset entryoff)
 {
 	SCR->oldend = SCR->newend;
 
@@ -107,7 +110,7 @@ void linkinitrec(offset entryoff)
 /* In case new initrec was not accepted (due to errors etc), it is removed from
    newblock. Because data is added to newblock sequentially, it is enough to
    revert newblock.ptr, and fix whatever changes were done by linkinitrec(). */
-void dropinitrec(offset entryoff)
+static void dropinitrec(offset entryoff)
 {
 	if(!SCR->oldend)
 		NCF->inittab = NULL;
@@ -178,7 +181,7 @@ static struct flagrec {
 	{ NULL }
 };
 
-int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring)
+static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring)
 {
 	char* p;
 	struct flagrec* f;
@@ -203,11 +206,11 @@ int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring)
    marking them by placing \0 in appropriate places. */
 /* Note: str is always 0-terminated, see parseinitline */
 /* Note: this changes *str */
-void strpull(char* p) { for(;*p;p++) *p = *(p+1); }
+static void strpull(char* p) { for(;*p;p++) *p = *(p+1); }
 /* Input:  |/sbin/foo -a 30 -b "foo bar" -c some\ thing₀| */
 /* Output: |/sbin/foo₀-a₀30₀-b₀foo bar₀-c₀some thing₀₀₀₀| */
 /* Return: 7 */
-int prepargv(char* str, char** end)
+static int prepargv(char* str, char** end)
 {
 	char* p;
 	int argc = 0;
@@ -278,7 +281,7 @@ int scratchenv(const char* string)
 
 #define ptroff(p) (((void*)p) - NULL)
 
-int checkdupname(const char* name)
+static int checkdupname(const char* name)
 {
 	struct initrec* p;
 	offset po;

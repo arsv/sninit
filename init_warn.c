@@ -35,8 +35,8 @@ struct sockaddr syslogaddr = {
 	.sa_data = SYSLOG
 };
 
-int writefullnl(int fd, char *buf, size_t count);
-int writesyslog(const char* buf, int count);
+static int writefullnl(int fd, char *buf, size_t count);
+static int writesyslog(const char* buf, int count);
 
 extern int timestamp(char* buf, int len);
 
@@ -116,7 +116,7 @@ int warn(const char* fmt, ...)
 	return 0;
 }
 
-int writefullnl(int fd, char *buf, size_t count)
+static int writefullnl(int fd, char *buf, size_t count)
 {
 	int r = 0;
 
@@ -140,7 +140,7 @@ static int tryconnectsyslog(type)
 	return connect(syslogfd, &syslogaddr, sizeof(syslogaddr));
 }
 
-int writesyslog(const char* buf, int count)
+static int writesyslog(const char* buf, int count)
 {
 	if(syslogfd < 0) {
 		if(!tryconnectsyslog(SOCK_DGRAM))

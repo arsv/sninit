@@ -24,9 +24,13 @@ extern int timetowait;
 extern sigset_t defsigset;
 extern int warnfd;
 
+global void pollfds(void);
+global void acceptctl(void);
+
 extern void parsecmd(char* cmd);
-int setsockopt_int(int fd, int opt, int val);
-void readcmd(int fd);
+static inline int setsockopti(int fd, int opt, int val);
+static void readcmd(int fd);
+
 
 /* called from the main loop */
 /* timetowait may be set by start() and spawn() */
@@ -82,7 +86,7 @@ void acceptctl(void)
 	
 	/* initctlfd is SOCK_NONBLOCK */
 	while((fd = accept(initctlfd, (struct sockaddr*)&addr, &addr_len)) > 0) {
-		setsockopt_int(fd, SO_PASSCRED, 1);
+		setsockopti(fd, SO_PASSCRED, 1);
 		readcmd(fd);
 		shutdown(fd, SHUT_WR);
 		close(fd);
@@ -91,7 +95,7 @@ void acceptctl(void)
 	state &= ~S_INITCTL;
 }
 
-void readcmd(int fd)
+static void readcmd(int fd)
 {
 	char cbuf[CMDBUF];
 	char mbuf[CMSG_SPACE(sizeof(struct ucred))];
@@ -140,7 +144,7 @@ void readcmd(int fd)
 	warnfd = 2;
 }
 
-int setsockopt_int(int fd, int opt, int val)
+static inline int setsockopti(int fd, int opt, int val)
 {
 	return setsockopt(fd, SOL_SOCKET, opt, &val, sizeof(val));
 }

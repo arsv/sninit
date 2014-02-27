@@ -15,21 +15,21 @@
 #include <stdarg.h>
 #include <errno.h>
 
-int skiptofmt(const char* s)
+static inline int skiptofmt(const char* s)
 {
 	const char* p;
 	for(p = s; *p && *p != '%'; p++);
 	return p - s;
 }
 
-int strlncpy(char* dst, size_t dstspace, const char* src, size_t srclen)
+static int strlncpy(char* dst, size_t dstspace, const char* src, size_t srclen)
 {
 	int cpn = srclen < dstspace ? srclen : dstspace;
 	memcpy(dst, src, cpn);
 	return cpn;
 }
 
-int itostr(char* buf, size_t len, int n)
+static int itostr(char* buf, size_t len, int n)
 {
 	short i;
 	short w = 0;

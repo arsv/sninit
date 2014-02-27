@@ -13,13 +13,13 @@
 
 #define BUF 256
 
-char cmdname(const char* cmd);
-int runcmd(const char* cmd);
-void die(const char* msg, ...);
+static char cmdname(const char* cmd);
+static int runcmd(const char* cmd);
+static void die(const char* msg, ...);
 
-int rlcmd(char cmd, char* rl);
-int noargcmd(char cc);
-int argrepeatcmd(char cc, int argc, char** arg);
+static int rlcmd(char cmd, char* rl);
+static int noargcmd(char cc);
+static int argrepeatcmd(char cc, int argc, char** arg);
 
 int main(int argc, char** argv)
 {
@@ -65,7 +65,7 @@ static struct cmdrec {
 	{ NULL }
 };
 
-char cmdname(const char* cmd)
+static char cmdname(const char* cmd)
 {
 	struct cmdrec* p;
 
@@ -83,7 +83,7 @@ char cmdname(const char* cmd)
 	return 0;
 }
 
-int cmdbuflen(int argc, char** argv)
+static int cmdbuflen(int argc, char** argv)
 {
 	int cl, cm = 1;
 	int i;
@@ -96,7 +96,7 @@ int cmdbuflen(int argc, char** argv)
 	return cm + 2;	/* command code, arg, newline */
 }
 
-int rlcmd(char cmd, char* rl)
+static int rlcmd(char cmd, char* rl)
 {
 	int len = strlen(rl);
 	char buf[len + 4];
@@ -109,7 +109,7 @@ int rlcmd(char cmd, char* rl)
 	return runcmd(buf);
 }
 
-int noargcmd(char cc)
+static int noargcmd(char cc)
 {
 	char buf[3];
 	buf[0] = cc;
@@ -118,7 +118,7 @@ int noargcmd(char cc)
 	return runcmd(buf);
 }
 
-int argrepeatcmd(char cc, int argc, char** argv)
+static int argrepeatcmd(char cc, int argc, char** argv)
 {
 	int cm = cmdbuflen(argc, argv);
 	char buf[cm+1];
@@ -135,7 +135,7 @@ int argrepeatcmd(char cc, int argc, char** argv)
 	return r;
 }
 
-int opensocket(void)
+static int opensocket(void)
 {
 	int fd;
 	struct sockaddr_un addr = {
@@ -155,7 +155,7 @@ int opensocket(void)
 	return fd;
 }
 
-int sendcmd(int fd, const char* cmd)
+static int sendcmd(int fd, const char* cmd)
 {
 	char mbuf[CMSG_SPACE(sizeof(struct ucred))];
 	struct iovec iov[1] = { {
@@ -191,7 +191,7 @@ int sendcmd(int fd, const char* cmd)
 	return 0;
 }
 
-void recvreply(int fd)
+static void recvreply(int fd)
 {
 	char buf[BUF];
 	int rr;
@@ -200,7 +200,7 @@ void recvreply(int fd)
 		write(2, buf, rr);
 }
 
-int runcmd(const char* cmd)
+static int runcmd(const char* cmd)
 {
 	int fd;
 
@@ -213,7 +213,7 @@ int runcmd(const char* cmd)
 	return 0;
 };
 
-void die(const char* msg, ...)
+static void die(const char* msg, ...)
 {
 	va_list ap;
 	char buf[256];

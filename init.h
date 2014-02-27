@@ -34,6 +34,7 @@
 #define gotowarn(r, ...) { warn(__VA_ARGS__); goto r; }
 
 #define weak __attribute__((weak))
+#define global
 
 struct initrec {
 	struct initrec* next;

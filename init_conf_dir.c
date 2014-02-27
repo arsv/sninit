@@ -24,9 +24,8 @@ extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
 static inline int skipdirent(struct dirent64* de);
-int readsrvfile(char* fullname, char* basename, unsigned short defrlvl);
-int parsesrvfile(struct fileblock* fb, char* basename);
-int mkreldirname(char* buf, int len, const char* base, const char* dir);
+static int parsesrvfile(struct fileblock* fb, char* basename);
+static int mkreldirname(char* buf, int len, const char* base, const char* dir);
 
 /* bb = base block, for the file that included this directory */
 int readinitdir(struct fileblock* bb, const char* dir, int defrlvl, int strict)
@@ -107,7 +106,7 @@ static inline int skipdirent(struct dirent64* de)
    and INITBASE="/etc/"), and also since it changes almost nothing, this function
    does not make any assumption regarding $base value. */
 
-int mkreldirname(char* buf, int len, const char* base, const char* dir)
+static int mkreldirname(char* buf, int len, const char* base, const char* dir)
 {
 	int dirlen = strlen(dir);
 	char* p = buf;
@@ -141,7 +140,7 @@ int mkreldirname(char* buf, int len, const char* base, const char* dir)
 	return p - buf;
 }
 
-int parsesrvfile(struct fileblock* fb, char* basename)
+static int parsesrvfile(struct fileblock* fb, char* basename)
 {
 	int shebang = 0;
 	char* rlvls = NULL;

@@ -14,6 +14,8 @@ extern struct initrec* findentry(const char* name);
 extern void stop(struct initrec* p);
 extern int configure(int strict);
 
+global void parsecmd(char* cmd);
+
 static inline void setsublevel(int add, char* arg);
 static inline void setrunlevel(char rl);
 static inline void dumpstate(void);
@@ -105,7 +107,7 @@ static inline void setsublevel(int add, char* arg)
 			warn("bad sublevel %c", c);
 }
 
-void rlstr(char* str, int len, int mask)
+static void rlstr(char* str, int len, int mask)
 {
 	char* p = str;	
 	char* end = str + len - 1;
@@ -123,7 +125,7 @@ void rlstr(char* str, int len, int mask)
 
 #define MAXREPORTCMD 50
 /* join argv into a single string to be reported by telinit ? */
-char* makecmd(char* buf, int len, char** argv)
+static char* makecmd(char* buf, int len, char** argv)
 {
 	char** arg;
 	int arglen;
@@ -149,7 +151,7 @@ char* makecmd(char* buf, int len, char** argv)
 }
 
 /* "telinit ?" output, the list of services and their current state */
-static inline void dumpstate(void)
+static void dumpstate(void)
 {
 	struct initrec* p;
 	char currstr[16];

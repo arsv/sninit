@@ -15,8 +15,8 @@ extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
-int parseinitline(struct fileblock* fb, int strict);
-int parsedirline(struct fileblock* fb, char* line, int strict);
+static int parseinitline(struct fileblock* fb, int strict);
+static int parsedirline(struct fileblock* fb, char* line, int strict);
 
 extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
 
@@ -45,7 +45,7 @@ int readinittab(const char* file, int strict)
 }
 
 /* Parse current line from fb, the one marked by fb->ls and fb->le. */
-int parseinitline(struct fileblock* fb, int strict)
+static int parseinitline(struct fileblock* fb, int strict)
 {
 	char* p;
 	char *name, *runlvl, *flags;
@@ -73,7 +73,7 @@ int parseinitline(struct fileblock* fb, int strict)
 	return addinitrec(fb, name, runlvl, flags, p, 0);
 }
 
-int parsedirline(struct fileblock* fb, char* l, int strict)
+static int parsedirline(struct fileblock* fb, char* l, int strict)
 {
 	char* p = strpbrk(l, ":");
 	char* name = p ? p + 1 : l + 1;

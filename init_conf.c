@@ -50,18 +50,17 @@ struct memblock newblock = { NULL };
 /* top-level functions handling sinit configuration */
 int readinittab(const char* file, int strict);		/* /etc/inittab */
 
-void initcfgblocks(void);	/* set initial values for struct config */
-int finishenvp(void);		/* copy the contents of newenviron to newblock */
-void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
+static void initcfgblocks(void);	/* set initial values for struct config */
+static int finishenvp(void);		/* copy the contents of newenviron to newblock */
+static void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
 					   assuming it won't be mremapped anymore */
-void transferpids(void);
+static void transferpids(void);
 struct initrec* findentry(const char* name);
+static void rewireenvp(char*** envp);
 
 extern int mmapblock(struct memblock* m, int size);
 extern void munmapblock(struct memblock* m);
 extern int addstringptrs(struct memblock* m, struct stringlist* l);
-
-void rewireenvp(char*** envp);
 
 
 int configure(int strict)
@@ -102,7 +101,7 @@ void setnewconf(void)
 	newblock.addr = NULL;
 }
 
-void initcfgblocks(void)
+static void initcfgblocks(void)
 {
 	struct config* cfg = (struct config*) newblock.addr;
 	/* newblock has enough space for struct config, see configure() */
@@ -120,7 +119,7 @@ void initcfgblocks(void)
 	cfg->logdir = NULL;
 }
 
-int finishenvp(void)
+static int finishenvp(void)
 {
 	int envoff;
 
@@ -135,14 +134,14 @@ int finishenvp(void)
 /* parseinittab() fills all pointers in initrecs with offsets from newblock
    to allow using MREMAP_MAYMOVE. Once newblock and newenviron are all
    set up, we need to make those offsets into real pointers */
-void* repoint(struct memblock* m, void* p)
+static inline void* repoint(struct memblock* m, void* p)
 {
 	return p ? (m->addr + (p - NULL)) : p;
 }
 #define REPOINT(p) p = repoint(&newblock, p)
 
 /* Run repoint() on all relevant pointers within newblock */
-void rewirepointers()
+static void rewirepointers()
 {
 	struct initrec* p;
 	char** a;
@@ -163,7 +162,7 @@ void rewirepointers()
 	rewireenvp(&(NCF->env));
 }
 
-void rewireenvp(char*** envp)
+static void rewireenvp(char*** envp)
 {
 	char** a;
 
@@ -178,7 +177,7 @@ void rewireenvp(char*** envp)
 /* move child state info from cfgblock to newblock */
 /* old inittab is CFG->inittab */
 /* new inittab is NCF->inittab */
-void transferpids(void)
+static void transferpids(void)
 {
 	struct initrec* p;
 	struct initrec* q;

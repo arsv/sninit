@@ -15,6 +15,8 @@ include ../Makefile
 
 # Allow overriding functions with test stubs
 LDFLAGS += -Wl,-z,muldefs
+# Disregard "static" and "inline", do not need them while testing
+CFLAGS += -Dstatic= -Dinline=
 
 # Recompile init files in test/
 # This may look redundant, but this way "make clean" in test can work

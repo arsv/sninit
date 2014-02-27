@@ -30,8 +30,8 @@ struct {
 
 extern int mktimestamp(char* p, int l, time_t ts);
 
-void tzinit(void);
-void tzparse(unsigned char* buf, int len, time_t t0);
+static void tzinit(void);
+static void tzparse(unsigned char* buf, int len, time_t t0);
 
 /* This is somewhat illogical to do heavy file operations
    within a call that is supposed to make a simple timestamp.
@@ -63,7 +63,7 @@ ts:	return mktimestamp(buf, len, t + tzinfo.dt);
 /* Load /etc/localtime, initializing tzinfo structure above */
 /* Should have been (strong) void tzset(), but alas, tzset happens
    to be a strong symbol in dietlibc. */
-void tzinit(void)
+static void tzinit(void)
 {
 	int fd;
 	struct stat st;
@@ -86,7 +86,7 @@ out:	close(fd);
 }
 
 /* big endian 4-byte int at */
-static int beint32(unsigned char* p)
+static inline int beint32(unsigned char* p)
 {
 	return (p[0] << 3*8) | (p[1] << 2*8) | (p[2] << 1*8) | p[3];
 };
@@ -129,7 +129,7 @@ struct tzfile
 
 /* buf is mmaped /etc/localtime; t is current/reference time */
 /* Warning: called from warn()! No error reporting here. */
-void tzparse(unsigned char* tzfile, int len, time_t t)
+static void tzparse(unsigned char* tzfile, int len, time_t t)
 {
 	int i;
 
