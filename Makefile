@@ -19,6 +19,10 @@ SYS_telinit = sys_printf.o sys_err_telinit.o
 sbindir = /sbin
 man5dir = /usr/share/man/man5
 man8dir = /usr/share/man/man8
+# Installation basenames
+init = init
+telinit = telinit
+inittab = inittab
 
 # Built-in inittab
 builtin = 
@@ -38,13 +42,13 @@ telinit: telinit.o $(SYS_telinit)
 install: install-bin install-man
 
 install-bin:
-	install -m 0755 -D init $(DESTDIR)$(sbindir)/init
-	install -m 0755 -D telinit $(DESTDIR)$(sbindir)/telinit
+	install -m 0755 -D init $(DESTDIR)$(sbindir)/$(init)
+	install -m 0755 -D telinit $(DESTDIR)$(sbindir)/$(telinit)
 
 install-man:
-	install -m 0644 -D init.8 $(DESTDIR)$(man8dir)/init.8
-	install -m 0644 -D telinit.8 $(DESTDIR)$(man8dir)/telinit.8
-	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/inittab.8
+	install -m 0644 -D init.8 $(DESTDIR)$(man8dir)/$(init).8
+	install -m 0644 -D telinit.8 $(DESTDIR)$(man8dir)/$(telinit).8
+	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/$(inittab).5
 
 clean:
 	rm -f *.o *.ho builtin.c

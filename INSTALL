@@ -16,6 +16,12 @@ Use SYS variable in Makefile to choose which modules to build.
 Check sys_* files for possible options.
 At least one of sys_time_* files must be used.
 
+To try it on a system with another init installed, run
+
+	configure --with-s
+
+You will get sinit, stelinit and /etc/sinittab.
+
 
 Which libc to use
 ~~~~~~~~~~~~~~~~~

@@ -19,7 +19,7 @@ builtin=
 hostcc=gcc
 
 unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
-unset initctl inittab
+unset initctl inittab pprefix
 
 die() { echo "$@"; exit 1; }
 dieifnot() { test -n "$1" && return; shift; die "$@"; }
@@ -46,6 +46,9 @@ while [ $# -gt 0 ]; do
 		--man5dir) mandir=$val ;;
 		--man8dir) mandir=$val ;;
 		--prefix) prefix=$val ;;
+
+		--program-prefix) pprefix=$val ;;
+		--with-s) pprefix=s ;;
 
 		--initctl)
 			dieifnot "$val" "$arg: value must be supplied"
@@ -216,7 +219,12 @@ sbindir=${sbindir:-$prefix/sbin}
 logdir=${logdir:-$prefix/var/log}
 sysconfdir=${sysconfdir:-$prefix/etc}
 initctl=${initctl:-@initctl}
-inittab=${inittab:-$sysconfdir/inittab}
+inittab=${inittab:-$sysconfdir/${pprefix}inittab}
+
+tabbase=`basename "$inittab"`
+init=${pprefix}init
+telinit=${pprefix}telinit
+
 
 sed -i \
 	-e "/^CC =/s#=.*#= $CC#"\
@@ -228,6 +236,9 @@ sed -i \
 	-e "/^SYS_telinit =/s#=.*#= $syst#"\
 	-e "/^builtin =/s#=.*#= $builtin#"\
 	-e "/^HOSTCC =/s#=.*#= $HOSTCC#"\
+	-e "/^init =/s#=.*#= $init#"\
+	-e "/^telinit =/s#=.*#= $telinit#"\
+	-e "/^inittab =/s#=.*#= $tabbase#"\
 	Makefile
 
 sed -i \
@@ -248,6 +259,7 @@ echo "	control socket name: $initctl"
 echo "	logdir location: $logdir"
 echo
 echo "	binaries path: $sbindir"
+echo "	executable names: $init $telinit"
 echo "	man section 5 path: $man5dir"
 echo "	man section 8 path: $man8dir"
 echo

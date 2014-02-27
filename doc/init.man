@@ -1,13 +1,13 @@
 .TH init 8
 '''
 .SH NAME
-init \- system supervisor.
+{init} \- system supervisor.
 '''
 .SH SYNOPSIS
-{/sbin}/init [\fIkernel options\fR]
+{/sbin}/{init} [\fIkernel options\fR]
 '''
 .SH DESCRIPTION
-\fBinit\fR is the first and only process kernel starts.
+\fB{init}\fR is the first and only process kernel starts.
 It is expected to bring up the system, start daemons and user interface.
 .P
 During normal operation, init starts processes listed in inittab, and keeps
@@ -18,7 +18,7 @@ Upon startup, init switches to its default runlevel, initdefault.
 Runlevel can be changed at any time, prompting a change in the running
 processes.  Individual processes can be started or stopped on demand.
 .P
-All communication with init occurs via a socket, see \fBtelinit\fR(8).
+All communication with init occurs via a socket, see \fB{telinit}\fR(8).
 Kernel does not expect init to exit, ever. In case it does, kernel panics.
 '''
 .SH USAGE
@@ -34,10 +34,10 @@ During startup, init must be able to read its configuration files, {/etc/inittab
 it has a fallback inittab built in.
 .P
 The only way to contact a running init instance is to write to its control socket, {@initctl}.
-See \fBtelinit\fR(8).
+See \fB{telinit}\fR(8).
 '''
 .SH CONFIGURATION
-Primary configuration file is {/etc/inittab}, see \fBinittab\fR(8). The only other
+Primary configuration file is {/etc/inittab}, see \fB{inittab}\fR(8). The only other
 files init will read are those explicitly mentioned in inittab.
 
 During startup and upon recieving a reconfiguration request, init stores the data read
@@ -47,7 +47,7 @@ from inittab in memory and does not try to re-read any of the files later.
 init does not use any environment variables and does not pass any inherited environment
 to child processes.
 .P
-The only variables processes spawned by init see are those set in \fBinittab\fR(8).
+The only variables processes spawned by init see are those set in \fB{inittab}\fR(8).
 All spawned processes get exactly the same environment.
 .P
 It is advised to set PATH value in inittab.
@@ -55,19 +55,19 @@ In most cases this is also enough for normal operation.
 '''
 .SH SIGNALS
 Init reopens its control socket on SIGHUP.
-However, configuration is not reloaded, use \fBtelinit\fR(8) for that.
+However, configuration is not reloaded, use \fB{telinit}\fR(8) for that.
 .P
 Other user signals are ignored.
 '''
 .SH FILES
 .IP "{/etc/inittab}" 4
-Primary configuration file. See \fBinittab\fR(5).
+Primary configuration file. See \fB{inittab}\fR(5).
 .IP "{@initctl}"
-Unix domain socket, for telinit communication. See \fBtelinit\fR(8) and \fBunix\fR(7).
+Unix domain socket, for telinit communication. See \fB{telinit}\fR(8) and \fBunix\fR(7).
 '''
 .SH NOTES
 This page describes init from sinit package. Other implementations, in particular
 sysvinit, behave somewhat differently.
 '''
 .SH SEE ALSO
-\fBtelinit\fR(8), \fBinittab\fR(5).
+\fB{telinit}\fR(8), \fB{inittab}\fR(5).

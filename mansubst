@@ -1,11 +1,17 @@
 #!/bin/sh
 
 sbindir=$(grep ^sbindir Makefile | sed -e 's/.*=\s*//')
+init=$(grep ^init\ = Makefile | sed -e 's/.*=\s*//')
+telinit=$(grep ^telinit\ = Makefile | sed -e 's/.*=\s*//')
+tabbase=$(grep ^inittab\ = Makefile | sed -e 's/.*=\s*//')
 initctl=$(grep '^#define INITCTL' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
 inittab=$(grep '^#define INITTAB' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
 
 exec sed \
 	-e "s!{/sbin}!$sbindir!g" \
+	-e "s!{init}!$init!g" \
+	-e "s!{telinit}!$telinit!g" \
+	-e "s!{inittab}!$tabbase!g" \
 	-e "s!{@initctl}!$initctl!g" \
 	-e "s!{/etc/inittab}!$inittab!g" \
 	"$@"
