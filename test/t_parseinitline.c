@@ -30,7 +30,7 @@ char* strdupnull(const char* str)
 	return str ? strdup(str) : NULL;
 }
 
-int addinitrec(struct fileblock* fb, char* name, int diri, char* rlvls, char* flags, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* name, char* rlvls, char* flags, char* cmd, int exe)
 {
 	U.called++;
 	U.name = strdupnull(name);
@@ -41,7 +41,12 @@ int addinitrec(struct fileblock* fb, char* name, int diri, char* rlvls, char* fl
 	return RET;
 }
 
-int scratchstring(char listcode, const char* string)
+int scratchenv(const char* string)
+{
+	return -1;
+}
+
+int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels)
 {
 	return -1;
 }
