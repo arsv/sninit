@@ -33,7 +33,7 @@ all: init telinit init.8 telinit.8 inittab.5
 init: init.o \
 	init_pass.o init_poll.o init_wait.o \
 	init_exec.o init_warn.o init_cmds.o \
-	init_conf.o init_conf_mem.o\
+	init_find.o init_conf.o init_conf_mem.o\
 	init_conf_tab.o init_conf_dir.o \
 	init_conf_rec.o $(SYS_init)
 
@@ -82,13 +82,15 @@ distclean: clean
 
 statictab = statictab.o init_conf.o init_conf_mem.o\
 	init_conf_tab.o init_conf_dir.o init_conf_rec.o\
-	sys_getdents.o
+	init_find.o
 
 ifndef HOSTCC
 
 statictab: $(statictab)
 
 else
+
+statictab += sys_getdents.o
 
 statictab: $(statictab:.o=.ho)
 	$(HOSTCC) -o $@ $(filter %.ho,$^)

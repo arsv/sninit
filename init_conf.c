@@ -55,7 +55,7 @@ static int finishenvp(void);		/* copy the contents of newenviron to newblock */
 static void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
 					   assuming it won't be mremapped anymore */
 static void transferpids(void);
-struct initrec* findentry(const char* name);
+extern struct initrec* findentry(const char* name);
 static void rewireenvp(char*** envp);
 
 extern int mmapblock(struct memblock* m, int size);
@@ -205,18 +205,4 @@ static void transferpids(void)
 		q->lastrun = p->lastrun;
 		q->lastsig = p->lastsig;
 	}
-}
-
-/* Note: an entry from the primary inittab, cfg->inittab, the one that initpass uses.
-   It may or may not be located in cfgblock, depends on whether it's a static initial
-   config or something compiled by configure() */
-struct initrec* findentry(const char* name)
-{
-	struct initrec* p;
-
-	for(p = cfg->inittab; p; p = p->next)
-		if(p->name && !strcmp(p->name, name))
-			return p;
-
-	return NULL;
 }

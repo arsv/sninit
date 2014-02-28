@@ -39,6 +39,7 @@ int main(int argc, char** argv)
 void dump_inittab(const char* base, struct initrec* head)
 {
 	struct initrec* rec;
+	char** p;
 	int i;
 
 	for(rec = head, i = 0; rec; rec = rec->next, i++) {
@@ -57,7 +58,11 @@ void dump_inittab(const char* base, struct initrec* head)
 		printf("\t.pid = %i,\n", rec->pid);
 		printf("\t.lastrun = %li,\n", rec->lastrun);
 		printf("\t.lastsig = %li,\n", rec->lastsig);
-
+		printf("\t.argv = { ");
+		for(p = rec->argv; *p; p++)
+			// no quoting for now
+			printf("\"%s\", ", *p);
+		printf(" NULL }\n");
 		printf("};\n\n");	
 	}
 }
@@ -74,7 +79,6 @@ void dump_config(struct config* cfg)
 		dump_envp("env", cfg->env);
 
 	printf("static struct config builtin = {\n");
-	printf("\t.initdefault = %i,\n", cfg->initdefault);
 	printf("\t.slippery = %i,\n", cfg->slippery);
 	printf("\t.inittab = %s,\n", cfg->inittab ? "&irec0" : "NULL");
 	printf("\t.env = %s,\n", cfg->env ? "env" : "NULL");

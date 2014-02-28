@@ -119,10 +119,10 @@ static int setup(int argc, char** argv)
 	setsignals();
 	setargs(argc, argv);
 
-	if(configure(0))
-		retwarn(-1, "initial configuration error");
-	else
+	if(!configure(0))
 		setnewconf();
+	else if(!cfg)
+		retwarn(-1, "initial configuration error");
 
 	return 0;
 }

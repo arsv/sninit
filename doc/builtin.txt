@@ -1,0 +1,44 @@
+Builtin fallback inittab
+~~~~~~~~~~~~~~~~~~~~~~~~
+During normal startup, sinit reads /etc/inittab and initializes its internal
+struct config with the data from initab. In case something goes wrong, like
+/etc/inittab being unreadable, init dies.
+
+It is possible to have a static initial value for the struct config,
+a "built-in inittab", to fall back if /etc/inittab is unreadable.
+
+The idea is to have some equivalent of sulogin built-in, to give the root
+a chance to fix the system manually, possibly calling telinit q later
+for another attempt to load inittab.
+
+
+Building init with static inittab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+First, write the inittab. The syntax is the same as with /etc/inittab.
+In fact, it will be parsed using the same routines.
+
+Next, set builtin = path/to/your/inittab in Makefile and rebuild init.
+
+A tool called statictab will be built and used to translate supplied
+inittab into C source code (called builtin.c). The code will the be
+linked into init executable, replacing a weak NULL as the default
+struct config.
+
+
+Reconfiguring
+~~~~~~~~~~~~~
+telinit q works as usual, switching init from built-in data to newly
+parsed inittab.  Note however init can't drop (munmap) static data
+like it's done with old dynamic inittab. No big deal, given typical
+inittab size.
+
+
+Static-only configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~
+If the ability to reconfigure init on the fly is not needed,
+sinit can be built without configuration code at all.
+
+To do so, remove init_conf_*.o from init dependencies in Makefile
+and replace them with init_null.o
+
+Static inittab is of course necessary in this case.
