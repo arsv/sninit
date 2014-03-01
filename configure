@@ -10,7 +10,7 @@
 unset target diet cc
 unset cctype libc 
 unset libs libs_syscall
-unset tstype
+unset tstype null
 
 lto=
 optimize=-Os
@@ -100,6 +100,9 @@ while [ $# -gt 0 ]; do
 		--with-timestamps)
 			dieifnot "$val" "$arg: argument required"
 			tstype=$val
+			;;
+		--disable-inittab)
+			null=1
 			;;
 		--enable-debug)
 			debug=${val:-"-Wall -g"}
@@ -225,6 +228,8 @@ tabbase=`basename "$inittab"`
 init=${pprefix}init
 telinit=${pprefix}telinit
 
+unset nc nn
+test -n "$null" && nc='#' || nn='#'
 
 sed -i \
 	-e "/^CC =/s#=.*#= $CC#"\
@@ -239,6 +244,8 @@ sed -i \
 	-e "/^init =/s#=.*#= $init#"\
 	-e "/^telinit =/s#=.*#= $telinit#"\
 	-e "/^inittab =/s#=.*#= $tabbase#"\
+	-e "/^#\?init: init_conf/s/^#\?/${nc}/"\
+	-e "/^#\?init: init_null/s/^#\?/${nn}/"\
 	Makefile
 
 sed -i \

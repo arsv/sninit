@@ -33,9 +33,11 @@ all: init telinit init.8 telinit.8 inittab.5
 init: init.o \
 	init_pass.o init_poll.o init_wait.o \
 	init_exec.o init_warn.o init_cmds.o \
-	init_find.o init_conf.o init_conf_mem.o\
-	init_conf_tab.o init_conf_dir.o \
-	init_conf_rec.o $(SYS_init)
+	init_find.o $(SYS_init)
+# Configurable init
+init: init_conf.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.o
+# Non-configurable init
+#init: init_null.o
 
 telinit: telinit.o $(SYS_telinit)
 
