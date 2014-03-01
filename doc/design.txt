@@ -218,3 +218,13 @@ This idea was abandoned for several reasons:
 3. more complicated syntax for the flags field was planned, and that would not mix well
    with one-digit runlevels
 4. on-demand runlevels do not mix well flags
+
+
+Current runlevel in argv[0]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+That is, making ps output look like "init 3" instead of "/sbin/init".
+Sysvinit has this feature. It's easy to implement, too.
+
+Still I can't find any reason why this may be useful. Especially in sysvinit.
+
+For those extremely rare occasions when it's needed, telinit ? provides the answer.
