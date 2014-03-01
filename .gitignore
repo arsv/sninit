@@ -13,3 +13,4 @@ test/*
 test/proto.c
 !test/etc
 *.[58]
+.*.swp
