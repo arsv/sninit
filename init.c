@@ -35,7 +35,6 @@ int initctlfd;		// listening socket
 sigset_t defsigset;	// default sigset, to supply to spawned processes,
 			// and also to use outside of ppoll in init itself
 
-/* --------------------------------------------------------------------------- */
 static int setup(int argc, char** argv);
 static int setinitctl(void);
 static void setsignals(void);
@@ -51,7 +50,18 @@ extern void waitpids(void);
 
 static void sighandler(int sig);
 
-/* --------------------------------------------------------------------------- */
+/* Overall logic in main: interate over inittab records (that's initpass()),
+   go sleep in ppoll(), iterate, sleep in ppoll, iterate, sleep in ppoll, ...
+
+   Within this cycle, ppoll is the only place where blocking occurs.
+   Even when running :wait: line, sinit does not use blocking waitpid().
+   Instead, it spawns the process and goes to sleep in ppoll until
+   the process dies.
+
+   As far as process list traversal in concerned, sinit is also stateless:
+   each pass begins at the start of the list. This sounds completely illogical
+   for :wait: and :once: entries but works very well when those mixed
+   with :respawn: entries. */
 
 int main(int argc, char** argv)
 {
@@ -167,7 +177,7 @@ static void setsignals(void)
 	   After all, BSD-compatible signal() implementation (which is to say,
 	   pretty much all of them) are just wrappers around sigaction(2). */
 
-	/* For the sake of clarity, avoid mixing handled signal */
+	/* For the sake of clarity, avoid mixing handled signals */
 	sigaddset(&sa.sa_mask, SIGINT);
 	sigaddset(&sa.sa_mask, SIGTERM);
 	sigaddset(&sa.sa_mask, SIGHUP);
@@ -221,9 +231,8 @@ static void sighandler(int sig)
 			state |= S_SIGCHLD;
 			break;
 			
-		/* mostly useless with S_PID1, but makes life easier when testing */
-		case SIGTERM:
-		case SIGINT:
+		case SIGTERM:	/* C-c when testing */
+		case SIGINT:	/* C-A-Del with S_PID1 */
 			nextlevel = 0;
 			break;
 
