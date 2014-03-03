@@ -21,7 +21,7 @@ static inline void setrunlevel(char rl);
 static inline void dumpstate(void);
 
 /* cmd here is what telinit sent to initctl.
-   The actual command is always cmd[0], while cmd[1:] is an (optional) argument.
+   The actual command is always cmd[0], while cmd[1:] is (optional) argument.
    Examples:
    	"q"		reconfigure
    	"=9"		switch to runlevel 9
