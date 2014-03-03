@@ -101,7 +101,7 @@ void initpass(void)
 
 static inline int shouldberunning(struct initrec* p)
 {
-	if(p->flags & C_DISABLED)
+	if(p->flags & P_DISABLED)
 		return 0;
 
 	if(!(p->rlvl & nextlevel & PRIMASK))

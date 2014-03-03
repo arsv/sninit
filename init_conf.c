@@ -201,7 +201,7 @@ static void transferpids(void)
 			continue;
 
 		q->pid = p->pid;
-		q->flags |= (p->flags & (C_DISABLED | P_SIGTERM | P_SIGKILL | P_ZOMBIE));
+		q->flags |= (p->flags & (P_DISABLED | P_SIGTERM | P_SIGKILL | P_ZOMBIE));
 		q->lastrun = p->lastrun;
 		q->lastsig = p->lastsig;
 	}

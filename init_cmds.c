@@ -52,8 +52,8 @@ void parsecmd(char* cmd)
 		case '-': setsublevel(*cmd == '+', arg); break;
 		/* process ops */
 		case 'r': stop(p); break;
-		case 'd': p->flags |=  C_DISABLED; break;
-		case 'e': p->flags &= ~C_DISABLED; break;
+		case 'd': p->flags |=  P_DISABLED; break;
+		case 'e': p->flags &= ~P_DISABLED; break;
 		/* reconfigure */
 		case 'q':
 			if(configure(1))
