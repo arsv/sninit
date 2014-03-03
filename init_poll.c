@@ -16,7 +16,8 @@ Call order:
 The separation of pollfds and acceptctl is necessary to reap deceased
 children before interpreting commands.
 
-Note that the actual command processing happens in init_cmds.c */
+The actual command processing happens in init_cmds.c, these routines
+only receive them. */
 
 extern int state;
 extern int initctlfd;
@@ -95,6 +96,9 @@ void acceptctl(void)
 	state &= ~S_INITCTL;
 }
 
+/* telinit must provide user's credentials in ancillary data,
+   as init should only accept commands from root when running with S_PID1.
+   See unix(7). */
 static void readcmd(int fd)
 {
 	char cbuf[CMDBUF];

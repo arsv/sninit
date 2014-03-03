@@ -34,7 +34,13 @@ static inline int shouldberunning(struct initrec* p);
 
    In case some w-type entry is reached, initpass spawns it and returns.
    SIGCHLD will arrive on entry completition, triggering another initpass.
-   Blocking wait is never used, sinit waits for w-type entries in ppoll(). */
+   Blocking wait is never used, sinit waits for w-type entries in ppoll().
+ 
+   Because no explicit list pointer is kept during runlevel switching,
+   things get a bit tricky with w-/o-type entries which are traversed
+   several times but should only be run once. Note to have pid reset to 0,
+   and thus allow re-run, at least one pass should be performed
+   with !shouldberunning(p) */
 
 void initpass(void)
 {
