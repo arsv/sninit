@@ -134,7 +134,10 @@ static void dropinitrec(offset entryoff)
    entries. For initdir entries, fb->rlvl may have different value, in which case
    leaving out pri or sub part means using resp. pri or sub part of fb->rlvl.
 
-   See doc/sublevels.txt for considerations re. sublevels handling. */ 
+   See doc/sublevels.txt for considerations re. sublevels handling.
+ 
+   Note this function is not static, and aside from initrecs it is also used
+   for dir-default runlevels in parsedirline(). */ 
 
 int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels)
 {

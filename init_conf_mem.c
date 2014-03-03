@@ -67,6 +67,18 @@ int addstring(struct memblock* m, const char* string)
 	return r;
 }
 
+
+/* add*array() functions are used to lay out initrec.argv[]
+   in newblock. Source strings can be counted in place if needed,
+   but memory required for pointers array is only allocated here.
+
+   Source strings are usually in resp. fileblock and must be copied
+   to newblock. 
+ 
+   Both functions return 0 or -1. There's no need to know offset
+   of the pointers array since it's always laid at the end of
+   struct initrec. */
+
 /* (m, char* a, char* b, char* c, ...) */
 /* Make [ a, b, c, ... ] into an argv-style structure */
 int addstrargarray(struct memblock* m, ...)
@@ -130,7 +142,9 @@ int addstringarray(struct memblock* m, int n, const char* str, const char* end)
 	return 0;
 }
 
-/* Add envp-like array for $list to $m. $list is assumed to lie in $m. */
+/* Add the contents of $list to $m. $list is assumed to lie in $m.
+   This is for envp array.
+   Unlike add*array above, this one returns offset. */
 int addstringptrs(struct memblock* m, struct stringlist* list)
 {
 	int off;

@@ -175,7 +175,7 @@ static void rewireenvp(char*** envp)
 }
 
 /* move child state info from cfgblock to newblock */
-/* old inittab is CFG->inittab */
+/* old inittab is cfg->inittab (which may or may not be CFG->inittab) */
 /* new inittab is NCF->inittab */
 static void transferpids(void)
 {
