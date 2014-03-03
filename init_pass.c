@@ -24,6 +24,18 @@ global void stop(struct initrec* p);
 static inline void swapi(int* a, int* b);
 static inline int shouldberunning(struct initrec* p);
 
+/* Initpass: go through inittab, top-to-bottom, (re)starting entries
+   that need to be (re)started and killing entries that should be killed.
+
+   Each pass is always started at the top of inittab, even if previous one
+   ended somewhere in the middle at a w-type entry. This approach adds
+   some overhead for regular runlevel switching, but simplifies services
+   restarts and seamlessly handles changes in nextlevel midway.
+
+   In case some w-type entry is reached, initpass spawns it and returns.
+   SIGCHLD will arrive on entry completition, triggering another initpass.
+   Blocking wait is never used, sinit waits for w-type entries in ppoll(). */
+
 void initpass(void)
 {
 	int waitfor = 0;
