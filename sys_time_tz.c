@@ -127,7 +127,7 @@ struct tzfile
 }
 #endif
 
-/* buf is mmaped /etc/localtime; t is current/reference time */
+/* tzfile is mmaped /etc/localtime; t is current/reference time */
 /* Warning: called from warn()! No error reporting here. */
 static void tzparse(unsigned char* tzfile, int len, time_t t)
 {

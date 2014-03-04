@@ -1,6 +1,6 @@
 #include <time.h>
 
-/* mktimestamp is roughly equivalent to strftime(buf, len, "%b %e %T", gmtime(ts)) */
+/* mktimestamp is roughly equivalent to strftime(buf, len, "%b %e %T ", gmtime(ts)) */
 
 /* A note on ts: gmtime(ts) == localtime(ts + tzoffset), and since sinit allows
    choosing either gmtime or localtime, this decision has been moved out of mktimestamp.

@@ -58,10 +58,9 @@ static void sighandler(int sig);
    Instead, it spawns the process and goes to sleep in ppoll until
    the process dies.
 
-   As far as process list traversal in concerned, sinit is also stateless:
-   each pass begins at the start of the list. This sounds completely illogical
-   for :wait: and :once: entries but works very well when those mixed
-   with :respawn: entries. */
+   Whenever there's a need to disturb the cycle, flags are raised in $state.
+   Any branching to handle particular situation, like child dying or telinit
+   knocking on the socket, occurs here in main.  */
 
 int main(int argc, char** argv)
 {
@@ -137,9 +136,10 @@ static int setup(int argc, char** argv)
 	return 0;
 }
 
-/* init gets the whole kernel command line, "root=... rw initrd=... console=..." etc.
-   The only relevant part there is possible initial runlevel indication, either
-   a (single-digit) number or a word "single". */
+/* init gets any part of kernel command line the kernel itself could not parse.
+   Among those, the only thing that concerns init is possible initial runlevel
+   indication, either a (single-digit) number or a word "single".
+   sinit does not pass its argv to any of the children. */
 static void setargs(int argc, char** argv)
 {
 	char** argi;
