@@ -11,7 +11,7 @@
 #define ERR ((void*) -1)
 
 static int runcmd(const char* cmd);
-static void diee(const char* msg, const char* arg);
+static void die(const char* msg, const char* arg);
 
 static struct cmdrec {
 	char* name;
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 	int i;
 
 	if(argc < 2)
-		diee("Usage: telinit cmd [args]", NULL);
+		die("Usage: telinit cmd [args]", NULL);
 
 	if(*cmd >= '0' && *cmd <= '9' && !*(cmd+1)) {
 		buf[0] = '=';
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 			buf[0] = cr->cc;
 			arg = cr->arg;
 		} else {
-			diee("Unknown command ", cmd);
+			die("Unknown command ", cmd);
 		}
 	}
 
@@ -88,9 +88,9 @@ static int opensocket(void)
 
 	fd = socket(AF_UNIX, SOCK_STREAM, 0);	
 	if(fd < 0)
-		diee("Can't create socket: ", ERR);
+		die("Can't create socket: ", ERR);
 	if(connect(fd, (struct sockaddr*)&addr, sizeof(addr)))
-		diee("Can't connect to " INITCTL ": ", ERR);
+		die("Can't connect to " INITCTL ": ", ERR);
 
 	return fd;
 }
@@ -126,7 +126,7 @@ static int sendcmd(int fd, const char* cmd)
 	memcpy((int *)CMSG_DATA(cmsg), &cred, sizeof(cred));
 
 	if(sendmsg(fd, &mhdr, 0) < 0)
-		diee("sendmsg failed: ", ERR);
+		die("sendmsg failed: ", ERR);
 	
 	return 0;
 }
@@ -153,7 +153,7 @@ static int runcmd(const char* cmd)
 	return 0;
 };
 
-static void diee(const char* msg, const char* arg)
+static void die(const char* msg, const char* arg)
 {
 	char buf[256];
 	int len = strlen(msg);
