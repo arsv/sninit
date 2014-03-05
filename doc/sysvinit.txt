@@ -27,13 +27,13 @@ Still, most sysvinit actions translate easily into sinit flags:
 		again, with empty runlevels field.
 	off
 		leave as is. In sinit, the process still can be started with
-		"telinit start name". With no wait or once, implies respawn.
+		"telinit start name". With no wait or once, implies respawn. [TODO]
 	ondemand
 		remove, leaving secondary runlevels in the runlevels field.
 		That is, name:ab:ondemand:command becomes name:ab::command.
 		With no additional flags, implies "respawn".
 	initdefault
-		replace the whole line with "!initdefault ..."
+		not supported, specify desired runlevel in kernel command line.
 	sysinit
 		not supported, replace with "name::wait" and place somewhere
 		near the top of inittab.
@@ -43,7 +43,7 @@ Still, most sysvinit actions translate easily into sinit flags:
 	powerfailnow
 		not supported, use runlevels and telinit to switch them.
 	ctrlaltdel
-		not supported. Upon receiving SIGINT, sinit will start a switch
+		not supported. Upon receiving SIGINT, sinit will start switching
 		to runlevel 0, rebooting the system once it's there.
 	kbrequest
 		not supported, sinit ignores SIGWINCH
