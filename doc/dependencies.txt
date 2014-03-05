@@ -26,10 +26,10 @@ Weak dependencies are equivalent to aliasing telinit commands:
 with action being start, stop, restart and so on.
 
 The only kind of dependency that can be implemented reliably
-is start-once-process-dies for wait-type processes (w- and o-type
-in sinit terms). Initrec ordering is enought to handle w-type
-records. For o-type records, external script can be used (chained
-execution).
+is dependency on process death. These can be used to (re)order
+initrecs, ensuring particular sequence of events during runlevel
+switching. Currently sinit relies completely on the order or lines
+in inittab, and does not allow changing it. See Reordering entries below.
 
 
 
@@ -119,3 +119,42 @@ Think of iptables failing while the rest of the system including network does st
 This however requires extensive damage to the system, and thus makes the point
 of protecting it from within moot. Think of iptables.conf being readable but truncated.
 So it is not something that should be done in init.
+
+
+Reordering entries
+~~~~~~~~~~~~~~~~~~
+One possible application of proper explicit dependencies is forcing different entry
+ordering for different runlevel pairs when switching. For example,
+
+	:25:wait:e1
+	:25:wait:e2
+
+can only be executed as "e1; e2" with current code, there is no way to make it "e1; e2"
+when going 0->2 and "e2; e1" when going 3->5.
+This isn't really important for w-type entries, since it's easy to implement different
+orders by duplicating entries:
+
+	:5:wait:e2
+	:25:wait:e1
+	:2:wait:e2
+
+Now the real problems is this:
+
+	syslog:::/sbin/syslogd
+	httpd:::/sbin/httpd
+	ftpd:::/sbin/ftpd
+
+When going to runlevel 0, syslog will be sent SIGTERM first (well, actually "together" with
+the other two, since it will be done in a single initpass), possibly dying first and thus
+not catching final messages from httpd and ftpd. The correct order is to kill() httpd and ftpd,
+wait until they die, kill syslog, wait until it dies, and only then proceed further, possibly
+unmounting /var and so on.
+
+There is no solution for this for now, other than not caring about those messsages,
+or not stopping syslog at all:
+
+	syslog:~::/sbin/syslog 
+
+Generic handling require global changes in the way initpass works.
+Too much hassle for a very limited problem, syslogd is the only daemon I can think of
+that needs such treatment.
