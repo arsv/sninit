@@ -22,6 +22,8 @@ Whatever output init may produce is passed to {telinit}'s stdout.
 .SH COMMANDS
 .IP [0123456789]
 Initiate a switch to specified runlevel.
+.IP [+-][abcdef]
+Activate/deactivate specified sublevel.
 .IP "?, status" 4
 Request current status and process list from init.
 .IP "q, reload" 4

@@ -37,35 +37,37 @@ int main(int argc, char** argv)
 {
 	struct cmdrec* cr = NULL;
 
-	int arg = 0;
+	int hasarg = 0;
 	char* ptr = buf;
 	char* cmd = argv[1];
+	char* cm1 = cmd + 1;
 	int i;
 
 	if(argc < 2)
 		die("Usage: telinit cmd [args]", NULL);
 
-	if(*cmd >= '0' && *cmd <= '9' && !*(cmd+1)) {
-		buf[0] = '=';
-		buf[1] = *cmd;
-	} else if(*cmd == '+' || *cmd == '-' || *cmd == '=') {
+	if((*cmd >= '0' && *cmd <= '9') || *cmd == '-' || *cmd == '+') {
 		ptr = cmd;
+	} else if(!*cm1 && (*cmd >= 'a' && *cmd <= 'f')) {
+		buf[0] = '+';
+		buf[1] = *cmd;
+	} else if(!*cm1 && (*cmd >= 'A' && *cmd <= 'F')) {
+		buf[0] = '-';
+		buf[1] = (*cmd - 'A' + 'a');
 	} else {
 		for(cr = cmdtbl; cr->name; cr++) {
-			if(!*(cmd+1) && *cmd == cr->cc)
+			if(!*cm1 && *cmd == cr->cc)
 				break;
 			if(!strcmp(cmd, cr->name))
 				break;
-		}
-		if(cr->name) {
-			buf[0] = cr->cc;
-			arg = cr->arg;
-		} else {
+		} if(!cr->name)
 			die("Unknown command ", cmd);
-		}
+
+		buf[0] = cr->cc;
+		hasarg = cr->arg;
 	}
 
-	if(!arg)
+	if(!hasarg)
 		runcmd(ptr);
 	else for(i = 2; i < argc; i++) {
 		strncpy(buf + 1, argv[i], sizeof(buf)-2);

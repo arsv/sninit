@@ -16,8 +16,7 @@ extern int configure(int strict);
 
 global void parsecmd(char* cmd);
 
-static inline void setsublevel(int add, char* arg);
-static inline void setrunlevel(char rl);
+static inline void setrunlevel(const char* cmd);
 static inline void dumpstate(void);
 
 /* cmd here is what telinit sent to initctl.
@@ -34,22 +33,26 @@ void parsecmd(char* cmd)
 	char* arg = cmd + 1;
 	struct initrec* p = NULL;
 
+	/* Runlevel switching commands handle argument differently */
+	if((*cmd >= '0' && *cmd <= '9') || *cmd == '+' || *cmd == '-')
+		return setrunlevel(cmd);
+
 	switch(*cmd) {
 		case 'r':
 		case 'd':
 		case 'e':
 			if(!(p = findentry(arg)))
 				retwarn_("can't find %s in inittab", arg);
+		default:
+			if(*arg)
+				retwarn_("no argument allowed for %c", *cmd);
 	}
+
 	switch(*cmd) {
-		/* primary levels */
-		case '=': setrunlevel(*arg); break;
-		case 'y': setrunlevel('7'); break;
-		case 'p': setrunlevel('8'); break;
-		case 'z': setrunlevel('9'); break;
-		/* sublevels */
-		case '+':
-		case '-': setsublevel(*cmd == '+', arg); break;
+		/* sleep levels */
+		case 'y': nextlevel = (nextlevel & SUBMASK) | (1 << 7); break;
+		case 'p': nextlevel = (nextlevel & SUBMASK) | (1 << 8); break;
+		case 'z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
 		/* process ops */
 		case 'r': stop(p); break;
 		case 'd': p->flags |=  P_DISABLED; break;
@@ -73,12 +76,41 @@ void parsecmd(char* cmd)
 	}
 }
 
-static inline void setrunlevel(char rl)
+/* Possible runlevel change commands here:
+	4	switch to runlevel 4, leaving sublevels unchanged
+	4-	switch to runlevel 4, clear sublevels
+	4ab	switch to runlevel 4, clear sublevels, activate a and b
+	+ab	activate sublevels a and b
+	-ac	deactivate sublevels a and c */
+static inline void setrunlevel(const char* p)
 {
-	if(rl >= '0' && rl <= '9')
-		nextlevel = (nextlevel & SUBMASK) | (1 << (rl - '0'));
-	else
-		warn("bad runlevel %c", rl);
+	int next = nextlevel;
+	int mask = 0;
+	char op = *(p++);
+
+	if(op >= '0' && op <= '9')
+		next = (next & SUBMASK) | (1 << (op - '0'));
+	/* should have checked for +/- here, but it's done in parsecmd before calling setrunlevel */
+
+	if(*p == '-') {
+		/* "4-" or similar */
+		next &= ~SUBMASK;
+		if(*(++p))
+			retwarn_("no runlevels allowed past trailing -");
+	} else for(; *p; p++)
+		/* "4abc", or "+abc", or "-abc" */
+		if(*p >= 'a' && *p <= 'f')
+			mask |= (1 << (*p - 'a' + 0xa));
+		else
+			retwarn_("bad runlevel %c", *p);
+
+	switch(op) {
+		default: if(mask) next &= ~SUBMASK;
+		case '+': next |=  mask; break;
+		case '-': next &= ~mask; break;
+	}
+
+	nextlevel = next;
 }
 
 static inline void setsublevel(int add, char* arg)
