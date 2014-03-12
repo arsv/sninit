@@ -77,10 +77,11 @@ int main(int argc, char** argv)
 
 		/* initpass finished without any pending w/o-type processes,
 		   so it's ok to change configuration */
-		if((state & S_RECONFIG) && !(state & S_WAITING))
+		if(!(state & S_WAITING) && (state & S_RECONFIG))
 			setnewconf();
 
-		if(!nextlevel && !(state & S_WAITING))
+		/* bail out once runlevel 0 is reached (that's 1<<0, not just 0) */
+		if((currlevel == nextlevel) && !(nextlevel & PRIMASK & ~1))
 			goto reboot;
 
 		/* Block for at most $waitneeded, waiting for signals

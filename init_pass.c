@@ -82,10 +82,10 @@ void initpass(void)
 		}
 	}
 
-	if(waitfor || currlevel == nextlevel)
-		return;
 	if(!waitfor)
 		state &= ~S_WAITING;
+ 	if(waitfor || currlevel == nextlevel)
+		return;
 
 	/* nothing more to run, we've done switching runlvls */
 
