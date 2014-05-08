@@ -36,7 +36,7 @@ struct config* cfg = &testconfig;
 struct initrec I0 = { .next = &I1,  .prev = NULL,.pid = 0, .name = "i0", .rlvl = R1,  .flags = C_ONCE };
 struct initrec I1 = { .next = &I2,  .prev = &I0, .pid = 0, .name = "i1", .rlvl = R12, .flags = C_ONCE };
 struct initrec I2 = { .next = &I3,  .prev = &I1, .pid = 0, .name = "i2", .rlvl = R12, .flags = C_ONCE | C_WAIT };
-struct initrec I3 = { .next = &I4,  .prev = &I2, .pid = 0, .name = "i3", .rlvl = R1,  .flags = 0 };
+struct initrec I3 = { .next = &I4,  .prev = &I2, .pid = 0, .name = "i3", .rlvl = R1,  .flags = C_LAST };
 struct initrec I4 = { .next = &I5,  .prev = &I3, .pid = 0, .name = "i4", .rlvl = R12, .flags = C_ONCE };
 struct initrec I5 = { .next = &I6,  .prev = &I4, .pid = 0, .name = "i5", .rlvl = R12, .flags = 0 };
 struct initrec I6 = { .next = NULL, .prev = &I5, .pid = 0, .name = "i6", .rlvl = R1a, .flags = 0 };
@@ -78,6 +78,19 @@ int main(void)
 
 	nextlevel = R1;
 	Qq("+i0+i3");		/* got to re-run I0, and restart I3 */
+	died(&I0);
+	Q("");
+
+	/* Note: stop() here resets pid immediately. That's slighly incorrect but
+	   simulating reaping properly would complicate test significantly. */
+	nextlevel = R3;		/* i3 should be kept alive until i5 dies */
+	Q("-i5");
+	/* should be waiting for i5 to die here */
+	Q("-i3");
+	A(currlevel == R1);
+	/* should be waiting for i3 to die here */
+	Q("");
+	A(currlevel == R3);
 
 	return 0;
 }
