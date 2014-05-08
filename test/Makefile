@@ -61,10 +61,10 @@ t_parseinitline: t_parseinitline.o \
 t_parsesrvfile: t_parsesrvfile.o init_conf_dir.o init_conf_mem.o \
 	test.o $(SYS)
 
-t_conf: t_conf.o init_conf.o init_conf_mem.o init_conf_tab.o \
+t_conf: t_conf.o init_find.o init_conf.o init_conf_mem.o init_conf_tab.o \
 	init_conf_dir.o init_conf_rec.o test.o $(SYS)
 
-t_scratch: t_scratch.o init_conf.o init_conf_mem.o init_conf_rec.o \
+t_scratch: t_scratch.o init_find.o init_conf.o init_conf_mem.o init_conf_rec.o \
 	init_conf_tab.o init_conf_dir.o test.o $(SYS)
 
 t_itostr: t_itostr.o sys_printf.o test.o
