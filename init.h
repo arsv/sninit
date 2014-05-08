@@ -24,8 +24,8 @@
 #define P_ZOMBIE	(1<<11)		/* process failed to die after SIGKILL */
 
 /* Sublevels mask (struct initrec.rlvls) */
-#define PRIMASK		0x03FF
-#define SUBMASK		0xFC00
+#define PRIMASK		0x03FF		/* ------9876543210 */
+#define SUBMASK		0xFC00		/* FEDCBA---------- */
 
 /* some handy abbreviations */
 #define retwarn(r, ...) return (warn(__VA_ARGS__), r)
