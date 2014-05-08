@@ -81,12 +81,18 @@ void dump_inittab(struct memblock* block)
 {
 	struct config* cfg = (struct config*) block->addr;
 	struct initrec* q;
+	struct initrec* qp = NULL;
 	char** p;
 	int i;
 
 	printf("INITTAB: %p\n", cfg->inittab);
 	for(q = cfg->inittab; q; q = q->next) {
-		printf("name=\"%s\" rlvl=0x%04x flags=0x%04x\n", q->name, q->rlvl, q->flags);
+		printf("%p name=\"%s\" rlvl=0x%04x flags=0x%04x   prev=%p %s   next=%p %s\n",
+				q,
+				q->name, q->rlvl, q->flags,
+				q->prev, ((q->prev == qp) ? "ok" : "BAD"),
+				q->next, ((!q->next || checkptr(block, q->next)) ? "ok" : "BAD"));
+		qp = q;
 		for(i = 0, p = q->argv; p && *p; p++, i++)
 			if(checkptr(block, *p))
 				printf("\targv[%i]=\"%s\"\n", i, *p);

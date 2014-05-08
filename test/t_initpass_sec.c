@@ -27,11 +27,11 @@ struct config* cfg = &testconfig;
 #define Rb (1<<0xb)
 #define SM SUBMASK
 
-struct initrec I0 = { .next = &I1,  .pid = 0, .name = "i0", .flags = C_ONCE, .rlvl = R1 };
-struct initrec I1 = { .next = &I2,  .pid = 0, .name = "i1", .flags = C_ONCE | C_WAIT, .rlvl = R1 | R2 | Ra };
-struct initrec I2 = { .next = &I3,  .pid = 0, .name = "i2", .flags = 0,      .rlvl = R1 | R2 | Ra | Rb };
-struct initrec I3 = { .next = &I4,  .pid = 0, .name = "i3", .flags = 0,      .rlvl = R1 | Ra };
-struct initrec I4 = { .next = NULL, .pid = 0, .name = "i4", .flags = 0,      .rlvl = R1 };
+struct initrec I0 = { .next = &I1,  .prev = NULL,.pid = 0, .name = "i0", .flags = C_ONCE, .rlvl = R1 };
+struct initrec I1 = { .next = &I2,  .prev = &I0, .pid = 0, .name = "i1", .flags = C_ONCE | C_WAIT, .rlvl = R1 | R2 | Ra };
+struct initrec I2 = { .next = &I3,  .prev = &I1, .pid = 0, .name = "i2", .flags = 0,      .rlvl = R1 | R2 | Ra | Rb };
+struct initrec I3 = { .next = &I4,  .prev = &I2, .pid = 0, .name = "i3", .flags = 0,      .rlvl = R1 | Ra };
+struct initrec I4 = { .next = NULL, .prev = &I3, .pid = 0, .name = "i4", .flags = 0,      .rlvl = R1 };
 
 #define Q(t) { reset(); initpass(); S(passlog, t); }
 #define Qq(t) Q(t); Q("")
