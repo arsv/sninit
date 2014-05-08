@@ -153,6 +153,7 @@ static void rewirepointers()
 		REPOINT(NCF->inittab);
 		for(p = NCF->inittab; p; p = p->next) {
 			REPOINT(p->next);
+			REPOINT(p->prev);
 			for(a = p->argv; *a; a++)
 				REPOINT(*a);
 			REPOINT(*a); /* terminating NULL pointer */

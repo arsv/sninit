@@ -52,6 +52,10 @@ void dump_inittab(const char* base, struct initrec* head)
 			printf("\t.next = &%s%i,\n", base, i+1);
 		else
 			printf("\t.next = NULL,\n");
+		if(rec->prev)
+			printf("\t.prev = &%s%i,\n", base, i-1);
+		else
+			printf("\t.prev = NULL,\n");
 		printf("\t.name = %s,\n", quote(rec->name));
 		printf("\t.rlvl = %i,\n", rec->rlvl);
 		printf("\t.flags = %i,\n", rec->flags);
@@ -69,18 +73,24 @@ void dump_inittab(const char* base, struct initrec* head)
 
 void dump_config(struct config* cfg)
 {
+	char* initrecbase = "irec";
+
 	/* Current init.h has #define NULL line thanks to musl,
 	   so there's no need to include stdlib.h */
 	printf("#include \"init.h\"\n\n");
 
 	if(cfg->inittab)
-		dump_inittab("irec", cfg->inittab);
+		dump_inittab(initrecbase, cfg->inittab);
 	if(cfg->env)
 		dump_envp("env", cfg->env);
 
 	printf("static struct config builtin = {\n");
 	printf("\t.slippery = %i,\n", cfg->slippery);
-	printf("\t.inittab = %s,\n", cfg->inittab ? "&irec0" : "NULL");
+	if(cfg->inittab) {
+		printf("\t.inittab = %s%i,\n", initrecbase, 0);
+	} else {
+		printf("\t.inittab = NULL,\n");
+	}
 	printf("\t.env = %s,\n", cfg->env ? "env" : "NULL");
 	printf("\t.time_to_restart = %i,\n", cfg->time_to_restart);
 	printf("\t.time_to_SIGKILL = %i,\n", cfg->time_to_SIGKILL);

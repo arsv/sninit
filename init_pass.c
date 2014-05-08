@@ -27,10 +27,10 @@ static inline int shouldberunning(struct initrec* p);
 /* Initpass: go through inittab, top-to-bottom, (re)starting entries
    that need to be (re)started and killing entries that should be killed.
 
-   Each pass is always started at the top of inittab, even if previous one
-   ended somewhere in the middle at a w-type entry. This approach adds
-   some overhead for regular runlevel switching, but simplifies services
-   restarts and seamlessly handles changes in nextlevel midway.
+   There are two principal passes over inittab: bottom-to-top that kills
+   processes first, and top-to-bottom that spawns processes. Backwards
+   pass is needed to C_WAIT without C_ONCE, i.e. waiting for things to
+   die before killing certain s-type records.
 
    In case some w-type entry is reached, initpass spawns it and returns.
    SIGCHLD will arrive on entry completition, triggering another initpass.
@@ -46,20 +46,40 @@ void initpass(void)
 {
 	int waitfor = 0;
 	struct initrec* p;
+	struct initrec* initend;
 
 	state |= S_WAITING;
+
 	for(p = cfg->inittab; p; p = p->next) {
-		if(!shouldberunning(p)) {
-			if(p->pid > 0) {
-				stop(p);
-				waitfor |= DYING;
-			} else {
-				/* for w-type processes, to run them again
-				   in a switch to an appropriate runlevel will occur later */
-				p->pid = 0;
-			}
-		} else if(waitfor & DYING) {
-			/* something from currlevel is not dead yet, do not hurry with nextlevel */
+		if(shouldberunning(p))
+			p->flags &= ~P_TBK;
+		else
+			p->flags |= P_TBK;
+		initend = p;
+	}
+
+	for(p = initend; p; p = p->prev) {
+		if(!(p->flags & P_TBK)) {
+			continue;
+		} else if(p->pid < 0) {
+			/* for w-type processes, to run them again
+			   when switching to appropriate runlevel later */
+			p->pid = 0;
+		} else if(p->pid && (p->flags & C_LAST) && waitfor) {
+			/* wait for other processes to die before sending
+			   signals to process marked as last */
+			return;
+		} else if(p->pid) {
+			stop(p);
+			waitfor |= DYING;
+		}
+	} if(waitfor)
+		return;
+
+	for(p = cfg->inittab; p; p = p->next) {
+		if(p->flags & P_TBK) {
+			/* something from currlevel is not dead yet */
+			continue;
 		} else if(p->pid > 0) {
 			/* process is running and it's ok */
 			if(p->flags & C_WAIT)

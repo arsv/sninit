@@ -12,16 +12,18 @@
 /* Per-process flags (struct initrec.flags) */
 #define C_ONCE		(1<<0)		/* o-type entry; run once, do not restart */
 #define C_WAIT		(1<<1)		/* w-type entry; wait before starting, wait until finished */
-#define C_USEABRT	(1<<2)		/* use SIGABRT instead of SIGINT when stopping process */
-#define C_NULL		(1<<3)		/* redirect stdout & stderr to /dev/null */
-#define C_LOG		(1<<4)		/* redirect stdout & stderr to /var/log/(name) */
-#define C_SH		(1<<5)		/* argv = [ /bin/sh -c "command" ]; for reference only, exec(argv) still works */
-#define C_TTY		(1<<6)		/* setup controlling tty for this process (aka interactive) */
+#define C_LAST		(1<<2)		/* kill this s-type entry last */
+#define C_USEABRT	(1<<3)		/* use SIGABRT instead of SIGINT when stopping process */
+#define C_NULL		(1<<4)		/* redirect stdout & stderr to /dev/null */
+#define C_LOG		(1<<5)		/* redirect stdout & stderr to /var/log/(name) */
+#define C_SH		(1<<6)		/* argv = [ /bin/sh -c "command" ]; for reference only, exec(argv) still works */
+#define C_TTY		(1<<7)		/* setup controlling tty for this process (aka interactive) */
 
 #define P_DISABLED	(1<<8)		/* this process has been explicitly stopped via telinit */
 #define P_SIGTERM	(1<<9)		/* SIGTERM (or SIGABRT) has been sent to this process */
 #define P_SIGKILL	(1<<10)		/* SIGKILL has been sent to this process */
 #define P_ZOMBIE	(1<<11)		/* process failed to die after SIGKILL */
+#define P_TBK		(1<<12)		/* process should be killed */
 
 /* Sublevels mask (struct initrec.rlvls) */
 #define PRIMASK		0x03FF		/* ------9876543210 */
@@ -35,8 +37,15 @@
 #define weak __attribute__((weak))
 #define global
 
+/* Initrecs are kept in a double-linked list.
+   Why double: see initpass(), specifically the comments on kill/spawn order.
+   Why list: it would make just as much sense making them into an argv-style array,
+   i.e. pointers followed by structs, but that would require scratching the pointers
+   somehow, complicating configure() code.
+   Self-contained initrecs can be placed directly in newblock. */
 struct initrec {
 	struct initrec* next;
+	struct initrec* prev;
 
 	char name[NAMELEN];
 

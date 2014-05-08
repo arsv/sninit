@@ -16,7 +16,7 @@ extern int addstringarray(struct memblock* m, int n, const char* str, const char
 extern int addstrargarray(struct memblock* m, ...);
 extern int mextendblock(struct memblock* m, int size, int blocksize);
 
-static void linkinitrec(offset entryoff);
+static offset linkinitrec(offset entryoff);
 static void dropinitrec(offset entryoff);
 static int checkdupname(const char* name);
 
@@ -48,11 +48,11 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 
 	/* The base structure */
 	entryoff = newblock.ptr;
-	linkinitrec(entryoff);
 
 	entry = initrecat(&newblock, entryoff); 
 
 	entry->next = NULL;
+	entry->prev = NULL + linkinitrec(entryoff);
 
 	memset(entry->name, 0, NAMELEN);
 	strncpy(entry->name, name, NAMELEN - 1);
@@ -93,7 +93,7 @@ out:	dropinitrec(entryoff);
 }
 
 /* Update initrec list pointers, including the entry at entryoff in the list */
-static void linkinitrec(offset entryoff)
+static offset linkinitrec(offset entryoff)
 {
 	SCR->oldend = SCR->newend;
 
@@ -105,6 +105,9 @@ static void linkinitrec(offset entryoff)
 		NCF->inittab = NULL + entryoff;
 
 	SCR->newend = entryoff;
+
+	/* in case oldend = 0, we'll get entry->prev = NULL as expected */
+	return SCR->oldend;
 }
 
 /* In case new initrec was not accepted (due to errors etc), it is removed from
@@ -175,6 +178,8 @@ static struct flagrec {
 	{ "wait",	C_ONCE | C_WAIT },
 	{ "o",		C_ONCE },
 	{ "once",	C_ONCE },
+	{ "last",	C_LAST },
+	{ "l",		C_LAST },
 	/* exec-side flags */
 	{ "abort",	C_USEABRT },
 	{ "null",	C_NULL },
