@@ -65,11 +65,14 @@ void initpass(void)
 			/* for w-type processes, to run them again
 			   when switching to appropriate runlevel later */
 			p->pid = 0;
-		} else if(p->pid && (p->flags & C_LAST) && waitfor) {
+		} else if(!p->pid) {
+			continue;
+		} else if((p->flags & C_LAST) && waitfor) {
 			/* wait for other processes to die before sending
 			   signals to process marked as last */
 			return;
-		} else if(p->pid) {
+		} else {
+			/* here p->pid > 0 and C_LAST is not in effect */
 			stop(p);
 			waitfor |= DYING;
 		}
@@ -141,6 +144,8 @@ static inline int shouldberunning(struct initrec* p)
 {
 	if(p->flags & P_DISABLED)
 		return 0;
+	if(p->flags & P_ENABLED)
+		return 1;
 
 	if(!(p->rlvl & nextlevel & PRIMASK))
 		/* not in this primary level */

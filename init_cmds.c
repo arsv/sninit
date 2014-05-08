@@ -43,6 +43,7 @@ void parsecmd(char* cmd)
 		case 'e':
 			if(!(p = findentry(arg)))
 				retwarn_("can't find %s in inittab", arg);
+			break;
 		default:
 			if(*arg)
 				retwarn_("no argument allowed for %c", *cmd);
@@ -55,8 +56,8 @@ void parsecmd(char* cmd)
 		case 'z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
 		/* process ops */
 		case 'r': stop(p); break;
-		case 'd': p->flags |=  P_DISABLED; break;
-		case 'e': p->flags &= ~P_DISABLED; break;
+		case 'd': p->flags = ((p->flags & ~P_ENABLED) | P_DISABLED); break;
+		case 'e': p->flags = ((p->flags & ~P_DISABLED) | P_ENABLED); break;
 		/* reconfigure */
 		case 'q':
 			if(configure(1))
