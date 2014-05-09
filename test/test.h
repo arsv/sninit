@@ -31,11 +31,11 @@
 	if(b == NULL && r == NULL)\
 		printf("%s:%i: OK %s = NULL\n", __FILE__, __LINE__, #a);\
 	else if(b == NULL) \
-		printf("%s:%i: FAIL %s = \"%s\"\n", __FILE__, __LINE__, #a, r);\
+		printf("%s:%i: FAIL %s = \"%s\" not NULL\n", __FILE__, __LINE__, #a, r);\
 	else if(r == NULL) \
 		printf("%s:%i: FAIL %s = NULL\n", __FILE__, __LINE__, #a);\
 	else if(strcmp(r, b)) \
-		printf("%s:%i: FAIL %s = \"%s\"\n", __FILE__, __LINE__, #a, r);\
+		printf("%s:%i: FAIL %s = \"%s\" not \"%s\"\n", __FILE__, __LINE__, #a, r, b);\
 	else\
 		printf("%s:%i: OK %s = \"%s\"\n", __FILE__, __LINE__, #a, b);\
 }
