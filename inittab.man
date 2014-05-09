@@ -53,6 +53,10 @@ Do not restart the process. Unlike \fBwait\fR, do proceed to run subsequent proc
 .IP "respawn" 4
 Restart the process in case it dies. This flag does nothing, restarting is the default
 mode of operation for init.
+.IP "last" 4
+Do not send SIGTERM to this entry until all subsequent entries have died.
+Use for syslogd, to avoid losing messages during system shutdown.
+Note signals are sent to entries in reverse order, bottom-to-top.
 .IP "null" 4
 Open /dev/null on file descriptors 0, 1 and 2 (stdin, stdout and stderr) for the spawned process.
 Without this flag, the process inherits init's descriptors, typically /dev/console.
