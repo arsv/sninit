@@ -58,7 +58,7 @@ clean:
 distclean: clean
 	rm -f init telinit statictab *.[58]
 
-%.5 %.8: doc/%.man | mansubst
+%.5 %.8: %.man | mansubst
 	./mansubst $< > $@ 
 
 .c.o:
