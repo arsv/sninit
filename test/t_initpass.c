@@ -41,18 +41,29 @@ void mark(char what, const char* name)
 void spawn(struct initrec* p)
 {
 	mark('+', p->name);
+	p->flags &= ~P_SIGTERM;
 	p->pid = 1;
 }
 
 void stop(struct initrec* p)
 {
 	mark('-', p->name);
-	p->pid = -1;
+	p->flags |= P_SIGTERM;
 }
 
 void died(struct initrec* p)
 {
 	p->pid = -1;
+	p->flags &= ~P_SIGTERM;
+}
+
+void killed(struct initrec* p)
+{
+	if(!(p->flags & P_SIGTERM)) {
+		fprintf(stderr, "FAIL: %s has not been sent a signal", p->name);
+	}
+	p->pid = -1;
+	p->flags &= ~P_SIGTERM;
 }
 
 #define NOCALL(f) void f() { nocall(#f); }

@@ -9,6 +9,7 @@ extern int sublevels;
 extern char passlog[];
 extern void reset(void);
 extern void died(struct initrec* p);
+extern void killed(struct initrec* p);
 extern void initpass(void);
 
 struct initrec I0;
@@ -43,6 +44,9 @@ struct initrec I6 = { .next = NULL, .prev = &I5, .pid = 0, .name = "i6", .rlvl =
 
 #define Q(t) { reset(); initpass(); S(passlog, t); }
 #define Qq(t) Q(t); Q("")
+#define D(i) died(&i)
+#define K(i) killed(&i)
+#define N(r) nextlevel = r
 
 int main(void)
 {
@@ -50,46 +54,39 @@ int main(void)
 	nextlevel = R1;
 	state = 0;
 
+	/* bootup — moving from R0 to level R1 */
 	Qq("+i0+i1");		/* start o-entries, do NOT start w-entry until both o-entries are dead */
-
-	died(&I1);
-	Q("");			/* do not start w-entry until both o-entries are dead */
-	died(&I0);
-	Qq("+i2");		/* ok, no we can start w-entry, but should not proceed further and wait while it runs */
-
-	died(&I2);
-	Q("+i3+i4+i5");		/* w-type done, ok to start the rest */
+	D(I1); Q("");		/* i0 is still running, do not proceed to i2 */
+	D(I0); Q("+i2");	/* i1 died, ok to start i2 */
+	D(I2); Q("+i3+i4+i5");	/* w-type done, ok to start the rest except for I6 which is +a only */
 	A(currlevel != R1);	/* should NOT switch until I4 exist */
 	Q("");			/* nothing to do yet */
+	D(I3); Qq("+i3");	/* it's an s-type entry, got to restrt it */
+	D(I4); Q("");		/* do not restart it */
+	A(currlevel == R1);	/* and since that was the last ONCE entry, we're in R1 */
 
-	died(&I3);		/* it's an s-type entry, got to restrt it */
-	Qq("+i3");		
+	/* Now we're in L1 */
+	D(I5); Qq("+i5");	/* s-type, go to restart */
 
-	died(&I4);
-	Q("");			/* do not restart it */
-	A(currlevel == R1);	/* and do switch levels */
+	/* Let's switch to R2. There's almost no difference, only i3 is to be stopped. */
+	N(R2);			/* note initpass SHOULD call stop() here second time, */
+	Q("-i3"); Q("-i3");	/*   to check for timeouts and possibly force-kill the process */
+	A(currlevel != R2);	/* i3 is not yet dead */
+	K(I3); Q("");
+	A(currlevel == R2);	/* i3 died, ok to change RL now */
 
-	died(&I5);
-	Qq("+i5");		/* s-type, go to restart */
+	/* Back to R1 */
+	N(R1); Qq("+i0+i3");	/* got to re-run i0, and restart i3 */
+	A(currlevel == R2);	/* i0 is still running */
+	D(I0); Q("");		/* i0 died, do not restart it... */
+	A(currlevel == R1);	/* but do change runlevel */
 
-	nextlevel = R2;
-	Qq("-i3");		/* got to stop this particular s-entry only */
-	A(currlevel == R2);
-
-	nextlevel = R1;
-	Qq("+i0+i3");		/* got to re-run I0, and restart I3 */
-	died(&I0);
-	Q("");
-
-	/* Note: stop() here resets pid immediately. That's slighly incorrect but
-	   simulating reaping properly would complicate test significantly. */
-	nextlevel = R3;		/* i3 should be kept alive until i5 dies */
-	Q("-i5");
-	/* should be waiting for i5 to die here */
-	Q("-i3");
-	A(currlevel == R1);
-	/* should be waiting for i3 to die here */
-	Q("");
+	/* Switch to R3 */
+	N(R3); Q("-i5");	/* i3 should be kept alive until i5 dies */
+	Q("-i5"); Q("-i5");	/* again, initpass should keep trying to kill i5 */
+	K(I5); Q("-i3");	/* i5 died, ok to kill i3 now */
+	A(currlevel == R1);	/* waiting for i3 to die */
+	K(I3); Q("");
 	A(currlevel == R3);
 
 	return 0;

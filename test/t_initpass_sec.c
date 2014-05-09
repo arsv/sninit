@@ -35,6 +35,9 @@ struct initrec I4 = { .next = NULL, .prev = &I3, .pid = 0, .name = "i4", .flags 
 
 #define Q(t) { reset(); initpass(); S(passlog, t); }
 #define Qq(t) Q(t); Q("")
+#define D(i) died(&i)
+#define K(i) killed(&i)
+#define N(r) nextlevel = r
 
 int main(void)
 {
@@ -42,21 +45,18 @@ int main(void)
 	nextlevel = R1;
 	state = 0;
 
-	Qq("+i0+i4");
-	died(&I0);
-	Q("");
+	/* bootup */
+	Qq("+i0+i4"); D(I0); Q("");
 
 	nextlevel |= Ra;
-	Qq("+i1");
-	died(&I1);
-	Qq("+i2+i3");
+	Qq("+i1"); D(I1); Qq("+i2+i3");
 	nextlevel |= Rb;
 	Q("");
 	nextlevel &= ~Ra;
-	Qq("-i3");
+	Q("-i3"); D(I3); Q("");
 
 	nextlevel = (nextlevel & SUBMASK) | R2;
-	Qq("-i4");
+	Q("-i4"); D(I4); Q("");
 	
 	return 0;
 }
