@@ -4,7 +4,7 @@
    mmaped, with MAP_PRIVATE for no apparent reason.
    
    This makes sense if formatting arbitrary time is to be considered,
-   but sinit does not really use arbitrary timestamps.
+   but init does not need to format arbitrary timestamps.
    All timestamps in init are expected to be small (well about uptime(1) small)
    increments from the boot time. 
 

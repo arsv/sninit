@@ -1,15 +1,15 @@
-Notes on sinit design
+Notes on sninit design
 ~~~~~~~~~~~~~~~~~~~~~
-This file lists some design considerations that were put into sinit,
+This file lists some design considerations that were put into sninit,
 and some choices made when there were several alternatives.
 
 It is not intended for general users, but it may be helpful
-for those trying to extend sinit, or perhaps just to read the source.
+for those trying to extend sninit, or perhaps just to read the source.
 
 
 Same uniform list for w/o- and s-type initrecs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sinit keeps all initrecs in the same list, using the same initrec structures,
+sninit keeps all initrecs in the same list, using the same initrec structures,
 and has to loop through all of them even while sitting in a single runlevel.
 
 The alternative is to keep a list of s-type records separately,
@@ -46,7 +46,7 @@ would be "telinit q and go check syslog for results".
 An alternative was using two pipes, an extremely ungraceful solution.
 
 Stream UDS are connected, and thus automatically solve possible races
-with two telinits calling sinit at the same time.
+with two telinits calling sninit at the same time.
 
 Abstract namespaces impose no dependencies on /dev filesystem.
 Which happens to be really handy when it's unclear whether you'll have
@@ -57,17 +57,17 @@ Linux-specific features
 ~~~~~~~~~~~~~~~~~~~~~~~
 reboot(2), getdents(2), abstract namespace for UDS etc. are not portable.
 
-If one needs sinit for BSD, one can take it and make a BSD-specific version;
+If one needs sninit for BSD, one can take it and make a BSD-specific version;
 a lesser evil than having code cluttered with #ifdef's in what ultimately
 is a very system-specific utility.
 
 
-sinit does not discard startup entries
+sninit does not discard startup entries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Both sysvinit and busybox init can drop entries that are only used to
 bring the system up (=to switch from runlevel 0 to some other runlevel).
 
-It is possible for sinit, too, but more difficult due to different memory
+It is possible for sninit, too, but more difficult due to different memory
 allocation model. And if implemented, it will probably consume more space
 in the code than it will save in data.
 
@@ -82,7 +82,7 @@ has its own drawbacks.
 
 The lack of console initialization in setup()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sinit uses whatever it has got on fds 0, 1, 2.
+sninit uses whatever it has got on fds 0, 1, 2.
 sysvinit does set some tty parameters, however, I see no good
 explanation for why this is necessary.
 My opinion is that the kernel knows better.
@@ -92,7 +92,7 @@ no need to touch anything there.
 
 Daemons and startup scripts should be told to use /var/log or syslog
 instead of stderr (if not, let them use whatever the kernel
-provided to sinit). getty does console init on its own.
+provided to sninit). getty does console init on its own.
 
 
 Running parallel chains
@@ -101,7 +101,7 @@ As in
 	(p1; p2; p3) &
 	(p4; p5; p6) &
 and waiting for them to finish.
-Currently sinit only allows this by putting "p1; p2; p3" in a shell script,
+Currently sninit only allows this by putting "p1; p2; p3" in a shell script,
 "p4; p5; p6" in another script and running the scripts as o-type entries.
 
 I can't see a simple solution here, so it's left unimplemented for now.
@@ -114,7 +114,7 @@ Abandoned completely. See dependencies.txt.
 
 (...) respawns too fast, disabled for 5 minutes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sinit has uniform, reasonably low timeouts between spawning attempts.
+sninit has uniform, reasonably low timeouts between spawning attempts.
 
 The only reason to have these timeouts in the first place
 is to avoid consuming too much resources (cpu and possibly syslog)
@@ -169,7 +169,7 @@ An alternative was to pipe the file contents to the interpreter, i.e.
 	test -d /var/cache/squid && mkdir -p /var/cache/squid
 	exec squid
 	
-This partly duplicates #! functionality, and requires sinit to store
+This partly duplicates #! functionality, and requires sninit to store
 the whole file in initrec.
 
 In a way, storing the script in initrec IS implemented, since the following

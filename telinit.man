@@ -63,16 +63,16 @@ On the other hand, {telinit} does wait for reconfiguration to finish before
 exiting, and will show all configuration errors.
 '''
 .SH NOTES
-This page describes {telinit} from \fBsinit\fR package. Telinits from other init implementations
+This page describes {telinit} from \fB{INIT}\fR package. Telinits from other init implementations
 may behave differently.
 .P
 In particular, this version of {telinit} is not compatible with sysvinit.
 Most sysvinit options are not supported.
 Runlevel change and configuation reload commands are same in both implementations however.
 .P
-Runlevel 0 is treated as a special case by sinit, prompting a reboot(2) call.
+Runlevel 0 is treated as a special case by {init}, prompting a reboot(2) call.
 This is unlike sysvinit, for which "0 means halt" is merely a configuration convention.
-On the other hand, runlevel 6 is not a special runlevel for sinit, and "{telinit} 6" will
+On the other hand, runlevel 6 is not a special runlevel for {init}, and "{telinit} 6" will
 not reboot the system unless configuration explicitly prompts so. Use "{telinit} reboot" instead.
 '''
 .SH SEE ALSO

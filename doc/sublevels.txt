@@ -1,6 +1,6 @@
 Sublevels
 ~~~~~~~~~
-There are two kinds of runlevels in sinit: primary runlevels 0, 1, 2, ... 9,
+There are two kinds of runlevels in sninit: primary runlevels 0, 1, 2, ... 9,
 and sublevels a, b, c, d, e, f. Sublevels extend the notion of ondemand
 runlevels from sysvinit.
 
@@ -13,7 +13,7 @@ runlevels. Here's how they affect when an initrec will be started:
 	(empty)	all runlevels except 0
 	ab	all runlevels except 0 if either a or b is active
 
-Primary runlevels are mutually exclusive; sinit can only be in one of them.
+Primary runlevels are mutually exclusive; sninit can only be in one of them.
 Sublevels aren't exclusive, and any set of sublevels can be active at any
 given time. To control currently active sublevels, use + and - commands
 in telinit:
@@ -38,13 +38,13 @@ in sysvinit translates into
 	
 	name:a::command
 
-in sinit. Telinit commands are somewhat different, in sinit it's always "+a" instead
+in sninit. Telinit commands are somewhat different, in sninit it's always "+a" instead
 of just "a" to activate sublevel a.
 
 
 Init state and switching sublevels
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The actual runlevels sinit switches between are combinations of one primary runlevel
+The actual runlevels sninit switches between are combinations of one primary runlevel
 and some (possibly empty) set of sublevels. The complete runlevel after
 
 	telinit 4
@@ -55,7 +55,7 @@ Activating sublevel b in this situation with
 	
 	telinit +b
 
-would result in sinit switching from runlevel "4ac" to to runlevel "4abc", running
+would result in sninit switching from runlevel "4ac" to to runlevel "4abc", running
 o-type and w-type entries if necessary just like when switching primary runlevels.
 
 Currently switching primary runlevel results in the change of the primary runlevel
@@ -63,17 +63,17 @@ only, i.e. in the above situation running
 
 	telinit 5
 
-will move sinit to runlevel "5abc", not just "5". This may or may not change in the future.
+will move sninit to runlevel "5abc", not just "5". This may or may not change in the future.
 
 
 Rationale
 ~~~~~~~~~
 While relatively easy to implement, ondemand runlevels are not among sysvinit's most used
 features. Actually, their role in sysvinit is similar to the role of initrec names
-in sinit: starting/stopping processes on the fly with telinit. There are only three of them,
+in sninit: starting/stopping processes on the fly with telinit. There are only three of them,
 so they are not terribly useful, but the idea is the same anyway.
 
-In sinit, the main reason for implementing sublevels was handling independent aspects
+In sninit, the main reason for implementing sublevels was handling independent aspects
 of system state, specifically laptop power mode.
 
 Power modes behave a lot like runlevels, in that there are some script to run when switching

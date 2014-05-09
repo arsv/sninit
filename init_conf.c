@@ -47,7 +47,7 @@ extern const char* inittab;
 struct memblock cfgblock = { NULL };
 struct memblock newblock = { NULL };
 
-/* top-level functions handling sinit configuration */
+/* top-level functions handling configuration */
 int readinittab(const char* file, int strict);		/* /etc/inittab */
 
 static void initcfgblocks(void);	/* set initial values for struct config */

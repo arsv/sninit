@@ -28,7 +28,7 @@ with action being start, stop, restart and so on.
 The only kind of dependency that can be implemented reliably
 is dependency on process death. These can be used to (re)order
 initrecs, ensuring particular sequence of events during runlevel
-switching. Currently sinit relies completely on the order or lines
+switching. Currently sninit relies completely on the order or lines
 in inittab, and does not allow changing it. See Reordering entries below.
 
 
@@ -105,7 +105,7 @@ somewhere) do make (half-)valid dependencies that can be useful.
 A simple example: solid-state / with system, /var/cache/squid on rotating media,
 and squid that should only be started if the cache partition is available.
 
-sinit approach in cases like this is to start everything, regardless.
+sninit approach in cases like this is to start everything, regardless.
 Upon not finding its cache directories, squid will die. Or upon finding them read-only.
 There is always a way to move relevant checks to the daemon and/or its startup scripts,
 closer to the point of actual use.

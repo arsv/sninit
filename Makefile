@@ -1,4 +1,4 @@
-# To build sinit, check configuration variables below and run "make".
+# To build sninit, check configuration variables below and run "make".
 # Alternatively, you can use ./configure, which will set those variables
 # to some pre-defined values.
 

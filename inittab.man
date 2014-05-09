@@ -84,7 +84,7 @@ To use sh, prepend ! to the command. This will cause init to pass the command di
 /bin/sh -c without any parsing.
 '''
 .SH NOTES
-This page describes inittab format for \fBsinit\fR package.
+This page describes inittab format for \fB{INIT}\fR package.
 Other init implementations, in particular sysvinit, use different conventions
 and in some cases different syntax.
 '''

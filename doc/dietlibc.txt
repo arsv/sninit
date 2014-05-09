@@ -1,7 +1,7 @@
 dietlibc configuration notes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Certain features in dietlibc can be enabled/disabled with #defines
-in dietfeatures.h. Most have little effect on sinit, but some
+in dietfeatures.h. Most have little effect on sninit, but some
 can be used to reduce its size slightly.
 
 Use "readelf -s init | sort -k3" to check for bloat.

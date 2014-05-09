@@ -80,5 +80,5 @@ struct config {
 	char* logdir;
 };
 
-/* Diagnostics; note in sinit this may go to syslog. */
+/* Diagnostics; note this may go to syslog. */
 int warn(const char* fmt, ...);

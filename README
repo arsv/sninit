@@ -1,8 +1,8 @@
 Overview
 ~~~~~~~~
-sinit is a small init implementation for linux.
+sninit is a small init implementation for linux.
 
-sinit was written as a smaller, cleaner replacement for sysvinit,
+sninit was written as a smaller, cleaner replacement for sysvinit,
 fixing sysvinit's inability to stop/start services on the fly.
 
 To a lesser degree, it was also a repsonse to a horrific,
@@ -11,7 +11,7 @@ overbloated beast called systemd making its way into Arch linux.
 
 Features
 ~~~~~~~~
-Key things sinit does have:
+Key things sninit does have:
 
 * Runlevels for process management
 * Starting/stopping individual processes manually
@@ -19,11 +19,11 @@ Key things sinit does have:
 * Sleep/suspend/hibernate as runlevels
 * Support for initdirs (one file per process),
   as opposed to sysvinit inittab (one line per process)
-* Small size; sinit is expected to be linked statically with dietlibc
+* Small size; sninit is expected to be linked statically with dietlibc
 * Simplified memory management;
   no malloc, memory allocation only while reconfiguring
 
-Things sinit lacks:
+Things sninit lacks:
 
 - in-place restarting a-la sysvinit
 - wall(8), shutdown(8) and some other sysvinit-style utilities
@@ -32,7 +32,7 @@ Things sinit lacks:
 - support for kernels other than linux-2.6+
 - dbus, xml and other bloat
 
-Things sinit has which are not in any way exceptional:
+Things sninit has which are not in any way exceptional:
 
 + parallel startups
   (busybox init allows it, never mind sysvinit)
@@ -56,7 +56,7 @@ Daemon-like processes usually include getty (with login as a subprocess),
 xinit or X display manager, as well as actual daemons in foreground mode.
 
 
-Building sinit
+Building sninit
 ~~~~~~~~~~~~~~
 See INSTALL file.
 
@@ -68,7 +68,7 @@ See man pages and files in doc/ directory.
 
 Credits
 ~~~~~~~
-sinit draws ideas from busybox init, minit and the original sysvinit.
+sninit draws ideas from busybox init, minit and the original sysvinit.
 
 "No-malloc" approach to memory management was inspired by rockbox,
 though in rockbox itself it is done in a different way.

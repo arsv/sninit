@@ -45,7 +45,7 @@ Same as in sysvinit, except somewhat longer.
 Example: "mountfs", "tty2"
 
 runlevels: any substring of 0123456789. 
-Process is only run if sinit is in, or switches to, a runlevel listed
+Process is only run if sninit is in, or switches to, a runlevel listed
 in initrec's runlevels fields.
 Same as in sysvinit. Auxilliary runlevels (abc...) are not supported
 at this moment.
@@ -82,7 +82,7 @@ This is especially true for processes started without sh wrapping
 Thus all environment the process needs must be provided by init via
 the third argument of execve(2).
 
-sinit keeps a fixed envirnoment and passes it to every process it runs.
+sninit keeps a fixed envirnoment and passes it to every process it runs.
 Syntax:
 
 	name=value
@@ -120,22 +120,22 @@ Instead, execve(2) gets the script name itself.
 In both cases the file's basename is used for the name field in initrec.
 
 
-How sinit works
+How sninit works
 ~~~~~~~~~~~~~~~
-During startup, sinit compiles all initrecs from inittab and initdir into an ordered list.
+During startup, sninit compiles all initrecs from inittab and initdir into an ordered list.
 Entries from inittab come first, exactly in the same order as they appear in inittab.
 The order of the entries from initdir is not defined (and depends on how getdents(2) reads
 the directory), but they all come after inittab entries.
 
-Next, sinit runs through the list, and spawns all processes that
+Next, sninit runs through the list, and spawns all processes that
 should be spawned for a given runlevel.
-When spawning w-type entries, sinit breaks the loop and waits until the processes dies.
-Upon encountering s-type entries whos process died, sinit respawns the process.
+When spawning w-type entries, sninit breaks the loop and waits until the processes dies.
+Upon encountering s-type entries whos process died, sninit respawns the process.
 o-type entries are neither waited for nor respawned.
 Processes which are running but aren't intended for current runlevel are killed.
 The loop is re-run as needed.
 
-When reconfiguration is requested, sinit compiles the new configuration,
+When reconfiguration is requested, sninit compiles the new configuration,
 transferring existing process data (pids etc) for matching entries.
 For named entries, name is used as the key.
 Un-named entries are not transferred.

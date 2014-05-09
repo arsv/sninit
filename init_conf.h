@@ -17,7 +17,7 @@ struct scratch {
 	struct stringlist env;
 };
 
-/* mmaped blocks -- see sinit_mmem.c */
+/* mmaped blocks -- see init_mmem.c */
 struct memblock {
 	void* addr;		/* base address */
 	int len;		/* allocated length */

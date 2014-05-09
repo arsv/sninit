@@ -5,7 +5,7 @@
 
 # Unlike actualy autoconf scripts, this script does not test anything.
 # Testing makes little sense for a small, very linux-specific tool
-# like sinit which has no way of handling unusual evironments.
+# like sninit which has no way of handling unusual evironments.
 
 unset target diet cc
 unset cctype libc 
@@ -49,6 +49,7 @@ while [ $# -gt 0 ]; do
 
 		--program-prefix) pprefix=$val ;;
 		--with-s) pprefix=s ;;
+		--with-sn) pprefix=sn ;;
 
 		--initctl)
 			dieifnot "$val" "$arg: value must be supplied"
@@ -150,7 +151,7 @@ case "${cctype:-gcc}" in
 	# an option to select desired arch.
 	clang)
 		CC=${cc:-clang}
-		# this is sinit-specific, so should not be expected in the environment
+		# this is sninit-specific, so should not be expected in the environment
 		cflags=${cflags:+$cflags }-Wno-empty-body
 		[ -n "$target" ] && cflags="-arch $target $cflags"
 		;;

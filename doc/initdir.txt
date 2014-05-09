@@ -83,7 +83,7 @@ host-specific.
 Why wasn't the default runlevels mask for services hard-coded?
 Well, it's not clear what it should be. The default value for inittab, ~0,
 is generally not what one wants for services, most should not be running
-in single-user mode. And while runlevel 0 is a very special runlevel for sinit,
+in single-user mode. And while runlevel 0 is a very special runlevel for sninit,
 runlevel 1 isn't. So it was left for the user to decide.
 
 

@@ -10,8 +10,8 @@ This a sample initdir both possible formats of service files.
 
     README
 	Just a text file that is neither a script nor a service
-	file; sinit will ignore it. 
+	file; init will ignore it. 
 
     sys/	
-	An unrelated directory. This, too, will be ignored by sinit.
-	In particular, sinit will read anything in that directory.
+	An unrelated directory. This, too, will be ignored by init.
+	In particular, init will read anything in that directory.

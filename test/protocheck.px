@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# sinit does not follow the usual practice of stuffing all function
+# sninit does not follow the usual practice of stuffing all function
 # prototypes in one header file and #including that header whenever
 # the functions are used.
 #
@@ -11,13 +11,13 @@
 # The problem is, this way we lose any warnings about mismatching prototypes,
 # possibly resulting in nasty runtime errors.
 # 
-# This problem, however, is easy fix.
+# This problem, however, is easy to fix.
 # The idea here is to filter all applicable declarations, put them
 # in a single file, pass that to gcc -fsyntax-only and see if
 # it will report conflicting definitions.
 
 # This all depends a lot on the writing style of course, but then again,
-# this is sinit/test/protocheck, not a generic tool.
+# this is sninit/test/protocheck, not a generic tool.
 
 foreach $ARGV (@ARGV)
 {

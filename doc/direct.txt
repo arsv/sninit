@@ -20,7 +20,7 @@ Let's see how linux console charset and keyboard layout was configured in
 		KEYMAP="ru-utf"
 		FONT=UniCyr_8x16
 
-	/etc/rc.sysinit	(common for all Arch systems)
+	/etc/rc.sysninit	(common for all Arch systems)
 		if [ -n "$FONT" ]; then
 			if [ -n "$KEYMAP" ]; then
 				loadfont -m $KEYMAP $FONT
@@ -59,7 +59,7 @@ It's much less system-dependent, more versatile, and generally much better docum
 In this example, loadkeys is pretty much a standard Linux utility, coming from either
 kbd package or busybox. There's loadkeys(1) man page in almost any system.
 On the other hand, rc.conf is Arch-specific. It's necessary to consult Arch wiki to
-find out which variables to set, and in most non-trivial cases also check /etc/rc.sysinit
+find out which variables to set, and in most non-trivial cases also check /etc/rc.sysninit
 for the actual commands.
 And then you go to some Ubuntu system, and start digging through its own, ridiculously complicated,
 indirect configuration scripts just to find out how the same utility (loadkeys) is started on that
@@ -87,12 +87,12 @@ Just making /etc/rc.d/ntpd (which currently loads /etc/config/ntpd) a configurat
 and editing that file would have the same effect.
 
 
-Implications for sinit
+Implications for sninit
 ~~~~~~~~~~~~~~~~~~~~~~
-Direct configuration can be implemented with pretty much any init, it is not sinit-specific.
-However, sinit was written with direct configuration in mind.
+Direct configuration can be implemented with pretty much any init, it is not sninit-specific.
+However, sninit was written with direct configuration in mind.
 
-sinit strongly assumes /etc/inittab is a host-specific configuration file.
+sninit strongly assumes /etc/inittab is a host-specific configuration file.
 This was the key consideration for @dir lines syntax, in particular (not) implenting sleep
 hooks as a w-type initdir.
 

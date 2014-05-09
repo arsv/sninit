@@ -1,5 +1,3 @@
-/* This shouldn't be a part of sinit */
-
 /* dietlibc lacks this definition */
 #ifndef SOCK_NONBLOCK
 #define SOCK_NONBLOCK 00004000

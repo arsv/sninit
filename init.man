@@ -54,7 +54,7 @@ It is advised to set PATH value in inittab.
 In most cases this is also enough for normal operation.
 '''
 .SH SIGNALS
-Init reopens its control socket on SIGHUP.
+{init} reopens its control socket on SIGHUP.
 However, configuration is not reloaded, use \fB{telinit}\fR(8) for that.
 .P
 Other user signals are ignored.
@@ -66,7 +66,7 @@ Primary configuration file. See \fB{inittab}\fR(5).
 Unix domain socket, for telinit communication. See \fB{telinit}\fR(8) and \fBunix\fR(7).
 '''
 .SH NOTES
-This page describes init from sinit package. Other implementations, in particular
+This page describes init from {INIT} package. Other implementations, in particular
 sysvinit, behave somewhat differently.
 '''
 .SH SEE ALSO

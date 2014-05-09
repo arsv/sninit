@@ -1,6 +1,6 @@
 Builtin fallback inittab
 ~~~~~~~~~~~~~~~~~~~~~~~~
-During normal startup, sinit reads /etc/inittab and initializes its internal
+During normal startup, sninit reads /etc/inittab and initializes its internal
 struct config with the data from initab. In case something goes wrong, like
 /etc/inittab being unreadable, init dies.
 
@@ -36,7 +36,7 @@ inittab size.
 Static-only configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 If the ability to reconfigure init on the fly is not needed,
-sinit can be built without configuration code at all.
+sninit can be built without configuration code at all.
 
 To do so, remove init_conf_*.o from init dependencies in Makefile
 and replace them with init_null.o

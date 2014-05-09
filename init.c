@@ -54,7 +54,7 @@ static void sighandler(int sig);
    go sleep in ppoll(), iterate, sleep in ppoll, iterate, sleep in ppoll, ...
 
    Within this cycle, ppoll is the only place where blocking occurs.
-   Even when running :wait: line, sinit does not use blocking waitpid().
+   Even when running :wait: line, sninit does not use blocking waitpid().
    Instead, it spawns the process and goes to sleep in ppoll until
    the process dies.
 
@@ -140,7 +140,7 @@ static int setup(int argc, char** argv)
 /* init gets any part of kernel command line the kernel itself could not parse.
    Among those, the only thing that concerns init is possible initial runlevel
    indication, either a (single-digit) number or a word "single".
-   sinit does not pass its argv to any of the children. */
+   sninit does not pass its argv to any of the children. */
 static void setargs(int argc, char** argv)
 {
 	char** argi;

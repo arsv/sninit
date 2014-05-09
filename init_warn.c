@@ -14,7 +14,7 @@
    (or to copy them to) stderr, and sometimes also
    to warnfd when it's a connection to active telinit.
    
-   In sinit, the value of warnfd is usually enough to decide where
+   Within init, the value of warnfd is usually enough to decide where
    the message should go. For instance, syslog-only process status
    messages are never generated during reconfiguration.
    See the first if() block in warn() below.
@@ -24,7 +24,7 @@
 
    wall-style messages ("system is going down" etc) are not supported.
 
-   sinit tries to reopen syslogfd every time warn() is called,
+   Init tries to reopen syslogfd every time warn() is called,
    so not-yet-ready and/or failing syslogd shoudn't be a problem. */
 
 extern int warnfd;

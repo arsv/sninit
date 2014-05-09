@@ -1,10 +1,10 @@
 /* A simple vsnprintf implementation */
 
 /* dietlibc complains (rightfully) about the full *printf code being bloated.
-   Luckily, sinit does not need all that stuff. Only (v)snprintf is used,
+   Luckily, init does not need all that stuff. Only (v)snprintf is used,
    and only with %s %i %c %m placeholders; no width, no alignment.
    So the following is a minimalistic implementation that provides just enough
-   of dietlibc printf for sinit to use.
+   of dietlibc printf for init to use.
 
    Keeping printf-style format for warn() messages allows seamless substitution
    of a full-size printf if necessary, in particular when shared libc is used. */
