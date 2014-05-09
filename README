@@ -3,7 +3,7 @@ Overview
 sinit is a small init implementation for linux.
 
 sinit was written as a smaller, cleaner replacement for sysvinit,
-fixing latter's inability of stopping/start services on the fly.
+fixing sysvinit's inability to stop/start services on the fly.
 
 To a lesser degree, it was also a repsonse to a horrific,
 overbloated beast called systemd making its way into Arch linux.
@@ -23,7 +23,7 @@ Key things sinit does have:
 * Simplified memory management;
   no malloc, memory allocation only while reconfiguring
 
-Things sinit does NOT have:
+Things sinit lacks:
 
 - in-place restarting a-la sysvinit
 - wall(8), shutdown(8) and some other sysvinit-style utilities
@@ -63,7 +63,7 @@ See INSTALL file.
 
 Documentation
 ~~~~~~~~~~~~~
-See files in doc/ directory.
+See man pages and files in doc/ directory.
 
 
 Credits
@@ -71,7 +71,7 @@ Credits
 sinit draws ideas from busybox init, minit and the original sysvinit.
 
 "No-malloc" approach to memory management was inspired by rockbox,
-though in rockbox itself it means a different thing.
+though in rockbox itself it is done in a different way.
 
 Small size and static linkage is mostly due to dietlibc and busybox.
 (see "Writing Small and Fast Software" by F. von Leitner).
