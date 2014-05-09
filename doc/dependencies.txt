@@ -138,23 +138,16 @@ orders by duplicating entries:
 	:25:wait:e1
 	:2:wait:e2
 
-Now the real problems is this:
+Still, I see no good real-life scenarios which would require reordering, so I call it
+non-issue for now.
 
-	syslog:::/sbin/syslogd
-	httpd:::/sbin/httpd
-	ftpd:::/sbin/ftpd
 
-When going to runlevel 0, syslog will be sent SIGTERM first (well, actually "together" with
-the other two, since it will be done in a single initpass), possibly dying first and thus
-not catching final messages from httpd and ftpd. The correct order is to kill() httpd and ftpd,
-wait until they die, kill syslog, wait until it dies, and only then proceed further, possibly
-unmounting /var and so on.
+Killing syslogd and C_LAST
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Syslong is an s-type entry. However, to avoid losing messages, it makes sense to kill
+it last. That is, do not send SIGTERM until other services dies and were reaped.
 
-There is no solution for this for now, other than not caring about those messsages,
-or not stopping syslog at all:
-
-	syslog:~::/sbin/syslog 
-
-Generic handling require global changes in the way initpass works.
-Too much hassle for a very limited problem, syslogd is the only daemon I can think of
-that needs such treatment.
+This is implemented now with "last" keyword. The issue look pretty insignificant,
+but Implementation is relatively cheap, so why not.
+Turning inittab into a double-linked list and doing bottom-top-bottom initpass
+is all that's needed.
