@@ -1,6 +1,6 @@
 Direct configuration
 ~~~~~~~~~~~~~~~~~~~~
-Traditionaly sysvinit-based systems leaned towards data-only
+Traditionally sysvinit-based systems leaned towards data-only
 configuration files supplemented by generic distro-supplied
 configuration scripts. The script use the data from configuration
 files to call system utilities.
@@ -29,7 +29,7 @@ Let's see how linux console charset and keyboard layout was configured in
 			fi
 		fi
 
-Now loadkeys source contains basically the same if() statemnt:
+Now loadkeys source contains basically the same if() statement:
 
 		/* load font */
 		if(/* -m option was supplied */)
@@ -48,12 +48,12 @@ or maybe just skipped if there's no need to load font (empty FONT nor KEYMAP is 
 
 Writing "loadfont -m ru-utf UniCyr_8x16" in an executable startup file is what
 I call "direct configuration", as opposed to setting variables which indirectly affect
-loadkeys call later.
+loadkeys call later. It's equivalent semantically, but shorter and, well, direct.
 
 
 Why direct configuration?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Direct configuration is always simplier, but it's not the only advantage.
+Direct configuration is always simpler, but it's not the only advantage.
 It's much less system-dependent, more versatile, and generally much better documented.
 
 In this example, loadkeys is pretty much a standard Linux utility, coming from either
@@ -70,10 +70,21 @@ difficult to use. It is not, and even if it were, the Linux way to fix that is r
 loadkeys, not adding wrappers atop.
 
 
+Pre-existing implementation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Direct configuration has been used for a long time in a specific area: iptables and shaper
+configuration. Due to complexity of the commands involved, iptables configuration was almost
+invariably stored as initialization code, as opposed to data.
+Even tools like iptables-save/iptables-restore stay close to command syntax.
+
+In a way, the iptables example shows the blurry line between data-definition and code-definition
+of the initial system state.
+
+
 Keeping startup scripts simple
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Few people seem to get it, but Linux is very easy to boot.
-Most of the time one needs just a handful of mostly independed commands to get a fully
+Most of the time one needs just a handful of mostly independent commands to get a fully
 usable system.
 Still, most distributions tend to push unnecessary complex, poorly documented
 startup scripts. Sometimes to ridiculous degrees, like this little pearl from my Arch system:
@@ -93,7 +104,7 @@ Direct configuration can be implemented with pretty much any init, it is not sni
 However, sninit was written with direct configuration in mind.
 
 sninit strongly assumes /etc/inittab is a host-specific configuration file.
-This was the key consideration for @dir lines syntax, in particular (not) implenting sleep
+This was the key consideration for @dir lines syntax, in particular (not) implementing sleep
 hooks as a w-type initdir.
 
 If inittab was a distro-specific, distro-updatable and generally non-changeable file,
@@ -109,7 +120,7 @@ to do any manual configuration, as it is done with services. However, for sleep 
 is NOT relevant. Sleep hooks depend on hardware configuration more than on anything else,
 and hardware is specific to each individual system.)
 
-Now assiming direct configuration approach, having a directory like this makes no sense.
+Now assuming direct configuration approach, having a directory like this makes no sense.
 Since /etc/inittab is assumed to be editable for each individual system, all sleep-related
 configuration goes there. This keeps things readable.
 
