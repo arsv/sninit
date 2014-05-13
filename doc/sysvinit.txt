@@ -68,7 +68,7 @@ in most sane configurations. Both halt, reboot and poweroff use runlevel 0, the
 only difference being the argument passed to reboot(2) in the end.
 
 Runleves 789 are allowed in sninit, but they are "slippery" unless configured otherwise.
-That is, upon reaching any of these runlevels, init will immeditely start a switch back
+That is, upon reaching any of these runlevels, init will immediately start a switch back
 to the last non-slippery runlevel it was in.
 This is to allow sleep/suspend to be implemented as runlevels.
 

@@ -5,7 +5,7 @@ sninit is a small init implementation for linux.
 sninit was written as a smaller, cleaner replacement for sysvinit,
 fixing sysvinit's inability to stop/start services on the fly.
 
-To a lesser degree, it was also a repsonse to a horrific,
+To a lesser degree, it was also a response to a horrific,
 overbloated beast called systemd making its way into Arch linux.
 
 
@@ -48,7 +48,7 @@ including user interface.
 This process is not expected to exit; in case it does, the kernel panics.
 
 Typically init starts several processes in sequence, waiting for them
-to finish, mounting filesystems, initializiing devices and so on.
+to finish, mounting filesystems, initializing devices and so on.
 Once the system is ready, daemon-like processes are spawned;
 when such process dies, it is respawned.
 

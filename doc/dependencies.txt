@@ -144,7 +144,7 @@ non-issue for now.
 
 Killing syslogd and C_LAST
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-Syslong is an s-type entry. However, to avoid losing messages, it makes sense to kill
+Syslogd is an s-type entry. However, to avoid losing messages, it makes sense to kill
 it last. That is, do not send SIGTERM until other services dies and were reaped.
 
 This is implemented now with "last" keyword. The issue look pretty insignificant,

@@ -32,7 +32,7 @@ Each initrec describes a process to be run by init.
 Initrec stores a single pid, so at each given time there can be at most
 one process running per each initrec.
 This pid may change, as in case of respawning processes, but only after
-the exisiting process dies.
+the existing process dies.
 
 Syntax:
 
@@ -47,7 +47,7 @@ Example: "mountfs", "tty2"
 runlevels: any substring of 0123456789. 
 Process is only run if sninit is in, or switches to, a runlevel listed
 in initrec's runlevels fields.
-Same as in sysvinit. Auxilliary runlevels (abc...) are not supported
+Same as in sysvinit. Auxiliary runlevels (abc...) are not supported
 at this moment.
 Example: "345", "1" etc.
 
@@ -82,7 +82,7 @@ This is especially true for processes started without sh wrapping
 Thus all environment the process needs must be provided by init via
 the third argument of execve(2).
 
-sninit keeps a fixed envirnoment and passes it to every process it runs.
+sninit keeps a fixed environment and passes it to every process it runs.
 Syntax:
 
 	name=value
@@ -130,7 +130,7 @@ the directory), but they all come after inittab entries.
 Next, sninit runs through the list, and spawns all processes that
 should be spawned for a given runlevel.
 When spawning w-type entries, sninit breaks the loop and waits until the processes dies.
-Upon encountering s-type entries whos process died, sninit respawns the process.
+Upon encountering s-type entries whose process died, sninit respawns the process.
 o-type entries are neither waited for nor respawned.
 Processes which are running but aren't intended for current runlevel are killed.
 The loop is re-run as needed.

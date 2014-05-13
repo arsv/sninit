@@ -15,7 +15,7 @@ its side of the connection. Init (server) replies with a free-form
 stream of data, which telinit is expected to pass to stderr.
 
 Commands themselves consist of one-letter command code, followed by
-optinal argument.
+optional argument.
 
 Possible commands (see init_cmds.c for a full list):
 

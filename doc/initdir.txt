@@ -14,7 +14,7 @@ Configurability for initdir entries is not considered a priority.
 == Wait-type entries in initdir
 
 Having an option to use w- or o-type initdirs was considered with
-the following application mimicing pm-tools hooks:
+the following application mimicking pm-tools hooks:
 
 	@8:wait:/etc/rc/sleep
 	@~8:wait:/etc/rc/wakeup

@@ -40,7 +40,7 @@ See \fB{telinit}\fR(8).
 Primary configuration file is {/etc/inittab}, see \fB{inittab}\fR(8). The only other
 files init will read are those explicitly mentioned in inittab.
 
-During startup and upon recieving a reconfiguration request, init stores the data read
+During startup and upon receiving a reconfiguration request, init stores the data read
 from inittab in memory and does not try to re-read any of the files later.
 '''
 .SH ENVIRONMENT

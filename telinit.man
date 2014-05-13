@@ -68,7 +68,7 @@ may behave differently.
 .P
 In particular, this version of {telinit} is not compatible with sysvinit.
 Most sysvinit options are not supported.
-Runlevel change and configuation reload commands are same in both implementations however.
+Runlevel change and configuration reload commands are same in both implementations however.
 .P
 Runlevel 0 is treated as a special case by {init}, prompting a reboot(2) call.
 This is unlike sysvinit, for which "0 means halt" is merely a configuration convention.
