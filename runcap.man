@@ -1,0 +1,209 @@
+.TH runcap 8
+'''
+.SH NAME
+\fBruncap\fR \- run command with specified permissions and/or capabilities.
+'''
+.SH SYNOPSIS
+\fBruncap\fR \fIpermissions\fR \fIcommand\fR \fIargs\fR ...
+'''
+.SH DESCRIPTION
+\fBruncap\fR runs specified command, possibly setting effective uid/gid,
+ulimits, capabilities and cgroups.
+.P
+This tool is intended for running daemons with non-root effective
+uids while still allowing them to do their privileged tasks.
+.P
+\fBWARNING\fR: due to weird capability inheritance rules in non-patched
+Linux kernels, setting capabilities will not work as expected right away.
+See POSIX 1003.1e notes below.
+'''
+.SH USAGE
+Permissions specification is a single argument and should be supplied without
+any spaces. All parts are optional, however in most cases \fIuser\fR should
+be specified.
+.IP "\fIuser\fR" 4
+User, see \fBsetuid\fR(2).
+.IP "\fB:\fIgroup\fR" 4
+Primary group, for \fBsetgid\fR(2) call.
+.IP "\fB@\fIgroup\fB,\fIgroup\fB,\fI...\fR" 4
+Supplementary groups, see \fBsetgroups\fR(2).
+.IP "\fB.\fR[\fIctdfxlqenpmETis\fR]\fIN\fR[\fB/\fIM\fR][\fIkMGmh\fR]" 4
+Process limits, see \fBsetrlimit\fR(2).
+.IP "\fB+\fIcap\fR" 4
+Retain named capability, see \fBcapabilities\fR(7) and Capabilities below.
+.P
+Several \fB.\fR or \fB+\fR blocks can be specified. Users and groups can be specified
+as names or as (numeric) ids. When names are used, /etc/passwd and /etc/group will be
+checked to get relevant ids.
+.br
+Example: "user:group@sg1,sg2.n10.c0+bind+nice".
+.P
+Process limits with respective C constants (see \fBsetrlimits\fR(2)):
+.PD 0
+.RS
+.TP
+\fBa\fR size of the process's virtual memory (RLIMIT_AS)
+.TP
+\fBc\fR size of core files created (RLIMIT_CORE)
+.TP
+\fBt\fR amount of cpu time in seconds (RLIMIT_CPU)
+.TP
+\fBd\fR size of a process's data segment (RLIMIT_DATA)
+.TP
+\fBf\fR size of files written (RLIMIT_FSIZE)
+.TP
+\fBx\fR number of file locks (RLIMIT_LOCKS)
+.TP
+\fBl\fR size that may be locked into memory (RLIMIT_MEMLOCK)
+.TP
+\fBq\fR number of bytes in POSIX message queues (RLIMIT_MSGQUEUE)
+.TP
+\fBe\fR scheduling priority (RLIMIT_NICE)
+.TP
+\fBn\fR number of open files (RLIMIT_NOFILE)
+.TP
+\fBp\fR number of threads (RLIMIT_NPROC)
+.TP
+\fBm\fR resident set size (RLIMIT_RSS)
+.TP
+\fBE\fR real-time scheduling priority (RLIMIT_RTPRIO)
+.TP
+\fBT\fR time in microseconds process with real-time
+schedule policy may consume without making a blocking syscall (RLIMIT_RTTIME)
+.TP
+\fBi\fR number of pending signals (RLIMIT_SIGPENDING)
+.TP
+\fBs\fR stack size (RLIMIT_STACK)
+.RE
+.P
+Full list of capabilities, with respective C constants:
+.PD 0
+.RS
+'''
+.TP
+\fBchown\fR (CAP_CHOWN)
+.TP
+\fBdac-override\fR (CAP_DAC_OVERRIDE)
+.TP
+\fBdac-read-search\fR (CAP_DAC_READ_SEARCH)
+.TP
+\fBfowner\fR (CAP_FOWNER)
+.TP
+\fBfsetid\fR (CAP_FSETID)
+.TP
+\fBkill\fR (CAP_KILL)
+.TP
+\fBsetgid\fR (CAP_SETGID)
+.TP
+\fBsetuid\fR (CAP_SETUID)
+.TP
+\fBsetpcap\fR (CAP_SETPCAP)
+.TP
+\fBimmutable\fR (CAP_LINUX_IMMUTABLE)
+.TP
+\fBbind\fR (CAP_NET_BIND_SERVICE)
+.TP
+\fBbroadcast\fR (CAP_NET_BROADCAST)
+.TP
+\fBnetadmin\fR (CAP_NET_ADMIN)
+.TP
+\fBnetraw\fR (CAP_NET_RAW)
+.TP
+\fBipclock\fR (CAP_IPC_LOCK)
+.TP
+\fBipcowner\fR (CAP_IPC_OWNER)
+.TP
+\fBmodule\fR (CAP_SYS_MODULE)
+.TP
+\fBrawio\fR (CAP_SYS_RAWIO)
+.TP
+\fBchroot\fR (CAP_SYS_CHROOT)
+.TP
+\fBptrace\fR (CAP_SYS_PTRACE)
+.TP
+\fBpacct\fR (CAP_SYS_PACCT)
+.TP
+\fBsysadmin\fR (CAP_SYS_ADMIN)
+.TP
+\fBboot\fR (CAP_SYS_BOOT)
+.TP
+\fBnice\fR (CAP_SYS_NICE)
+.TP
+\fBresource\fR (CAP_SYS_RESOURCE)
+.TP
+\fBtime\fR (CAP_SYS_TIME)
+.TP
+\fBttyconfig\fR (CAP_SYS_TTY_CONFIG)
+.TP
+\fBmknod\fR (CAP_MKNOD)
+.TP
+\fBlease\fR (CAP_LEASE)
+.TP
+\fBauditrewrite\fR (CAP_AUDIT_WRITE)
+.TP
+\fBauditcontrol\fR (CAP_AUDIT_CONTROL)
+.TP
+\fBsetfcap\fR (CAP_SETFCAP)
+.TP
+\fBmacoverride\fR (CAP_MAC_OVERRIDE)
+.TP
+\fBmacadmin\fR (CAP_MAC_ADMIN)
+.TP
+\fBsyslog\fR (CAP_SYSLOG)
+.TP
+\fBwakealarm\fR (CAP_WAKE_ALARM)
+.TP
+\fBblocksuspend\fR (CAP_BLOCK_SUSPEND)
+'''
+.RE
+.P
+Refer to \fBcapabilities\fR(7) for detailed description.
+.PD 1
+.P
+'''
+.SS POSIX 1003.1e notes
+Mainline Linux kernels implement draft POSIX 1003.1e notion of capabilities.
+POSIX capabilities are tied to applications (executable files), not to users
+and/or running processes. This is at odds with common Unix uid/gid permissions and ACLs.
+.P
+POSIX capabilities provide no way for a parent process to force permissions onto
+an unsuspecting child. Capabilities expected for a particular executable
+must be set explicitly as extended file attributes using \fBsetxattr\fR.
+.P
+Make sure to check \fBcapabilities\fR(7) before trying to make it work, paying especial
+attention to "File capabilities" and "Transformation of capabilities during execve".
+.P
+runcap can only set \fIinheritable\fR process capabilities.
+For those capabilities to actually take effect, the file being executed
+must have relevant bits set in \fIinheritable\fR part of its security.capabilities
+extended attribute.
+'''
+.SH ENVIRONMENT
+$PATH is used to find specified command. See \fBexecvp\fR(1).
+'''
+.SH NOTES
+runcap is in many ways similar to \fBsu\fR(1) when su is used by root
+to invoke non-privileged user. Crucial difference however is that runcap
+allows retaining some superuser capabilities across setuid/setgid.
+.P
+runcap can also be viewed as the opposite of \fBsudo\fR(1).
+sudo is expected to be run by non-privileged user, selectively and temporarily
+granting additional permissions. In contrast, runcap is expected
+to be used by root to lower permissions selectively.
+.P
+runcap should never be installed suid root. In fact, since non-privileged users
+have no capabilities to drop, and can not change their effective uids
+at will, runcap should not be made available to non-privileged users at all.
+'''
+.SH SEE ALSO
+Similar utilities: \fBsu\fR(1), \fBsudo\fR(1), \fBrunuser\fR(1), \fBulimit\fR in \fBbash\fR(1),
+\fBnice\fR(1), \fBcgexec\fR(1), \fBcapsh\fR(1).
+.P
+Syscalls: \fBsetresuid\fR(2), \fBsetresgid\fR(2), \fBsetrlimit\fR(2),
+\fBsetpriority\fR(2), \fBcapset\fR(2), \fBexecve\fR(2).
+.P
+General concepts: \fBcredentials\fR(7), \fBcapabilities\fR(7),
+.br
+Documentation/cgroups/ from kernel source tree.
+.P
+File attributes: \fBattr\fR(5), \fBsetcap\fR(8), \fBsetxattr\fR(2).

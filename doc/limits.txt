@@ -1,0 +1,137 @@
+Setting child process limits
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+It is potentially useful to allow setting certain per-process caps
+from within init, like setuid/setgid calls, ulimits (setrlimit(2)),
+capabilities and possibly cgroups.
+
+There are two principal approaches to the problem:
+	1. doing it all in init
+
+		fork()
+		setrlimits()
+		capset()
+		...
+		exec(daemon)
+
+	2. doing it all in a companion utility
+	
+		fork()
+		exec(companion [limits] daemon)
+		setrlimits()
+		capset()
+		exec(daemon)
+
+This file contains some thoughts that went into the decision
+of using a companion utility vs having it all built into init.
+
+
+Built-in limits
+~~~~~~~~~~~~~~~
+Pros:
+    * no additional processes
+    * no dependencies, all that's needed to run a process is stored
+      in compiled inittab.
+    * no need to separate parent-side and child-side flags in inittab
+      (parent: wait, possibly null, tty; child: limits, uid/gid and so on)
+Cons:
+    * rarely-used code in init
+    * configure() must read passwd/group
+    * passwd is read very early
+    * can't run processes in the same conditions outside of init
+    * data must be stored, since it's applied much later than it is read
+    * no way to drop privileges mid-point
+
+Companion utility
+~~~~~~~~~~~~~~~~~
+Pros:
+    * keeps init clean
+    * loaded only when needed
+    * can be used outside of init, incl. to test init-controlled
+      processes in the same conditions init will run them.
+    * similar to existing tools (su, nice, cgexec), common unix approach
+    * passwd is read late
+    * simple code, read & apply immediately because everything
+      happens in the child
+    * limits can be set at any given point
+Cons:
+    * more syscalls
+    * additional external dependency
+    * separation of inittab flags into parent/child blocks
+    * takes more space than the same code in init
+
+
+Parent/child flags
+~~~~~~~~~~~~~~~~~~
+There are some flags natually dealing with parent-only stuff, some straddling
+the line, and some clearly child-only.
+
+    * wait, once, last — parent only
+    * abort, time to restart — parent only
+    * log — needs initrec name, normally not available past exec()
+    * null — stradles the line, re. closing/not closing inherited fds
+    * tty — child only, but traditionally implemented in parent
+    * uid, gid — child-only
+
+Doing everything in init means it's ok to leave all them intermixed.
+For companion untility, some way is needed to separate parent and child-related
+flags, and probably to pass things like initrec name to child when needed
+(which is not always by the way).
+
+
+Separating parent and child flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This turns out to be mostly syntactic issue:
+
+(1)	daemon:1234:log,null,~daemonuser,%dcgroup:/sbin/daemon
+
+versus
+
+(2)	daemon:1234:log,null:/sbin/runcap ~daemonuser,%dcgroup /sbin/daemon
+
+In both cases, init compiles ~daemonuser,%dcgroup into its internal inittab representation,
+it's just the form that differs.
+
+In the first case, init is expected to handle semantics of those fields,
+i.e. to note that "daemonuser" is a name to setuid() to, and "dcgroup" is cgroup name,
+probably splitting them into relevant initrec fields.
+
+In the second case, the whole "~daemonuser,%dcgroup" string is stored in initrec.argv[1]
+as is, without any parsing.
+
+Aside from having caps in different parts of the initline, the only principal difference
+between (1) and (2) is error reporting. With early parsing in (1), this may happen at
+telinit q stage. Late parsing (2) means init will see cap parsing errors as daemon's
+failure to start.
+
+How much of a problem it is? The answer is not clear, few caps allow parsing errors,
+and those that do (setuid for instance) may actually benefit from late name resolving.
+
+
+Early vs late name resolving
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+With built-in caps implementation, it makes sense to store userids in compiled inittab,
+not usernames. Thus init must read passwd in configure(), which happens very very early
+in the boot process.
+Possibly before even mounting the real root, say, in case pivot_root is involved.
+In contrast, anything child-side will read passwd at the time process is spawned.
+
+On the other hand, nothing really prevents one from storing username in compiled inittab
+and doing late passwd even with the code built in into init.
+
+Using early username resolution certain advantages, too. Namely, once inittab has been
+compiled, it does not depend on external files anymore.
+
+
+Dropping priviledges mid-way
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Consider initialization which must be performed with higher priviledge level
+than the "main" process. Something like creating cache directories, chowning
+them to daemon's uid and starting the daemon with that uid.
+
+In a case like that, dropping priviledges in init, right after exec(),
+is a bad idea. On the other hand, a standalone utility works really well:
+
+	test ! -d $CACHE && mkdir $CACHE && chown $daemonuser $CACHE
+	runas $daemonuser /sbin/daemon
+
+This is also in line with tools like nice and cgexec.

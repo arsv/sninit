@@ -19,7 +19,7 @@ builtin=
 hostcc=gcc
 
 unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
-unset initctl inittab pprefix
+unset initctl inittab runcap pprefix cgdir
 
 die() { echo "$@"; exit 1; }
 dieifnot() { test -n "$1" && return; shift; die "$@"; }
@@ -46,6 +46,7 @@ while [ $# -gt 0 ]; do
 		--man5dir) mandir=$val ;;
 		--man8dir) mandir=$val ;;
 		--prefix) prefix=$val ;;
+		--cgdir) cgdir=$val ;;
 
 		--program-prefix) pprefix=$val ;;
 		--with-s) pprefix=s ;;
@@ -177,6 +178,7 @@ case "${libc:-syslibc}" in
 		CC="$diet $CC"
 		sysi="sys_printf.o sys_err_init.o"
 		syst="sys_err_telinit.o"
+		sysr="sys_err_runcap.o sys_execvp.o"
 		libs_syscall="-lcompat"
 		tsdefault=tz
 		;;
@@ -185,6 +187,7 @@ case "${libc:-syslibc}" in
 		libs=-lcompat
 		sysi="sys_ppoll.o sys_printf.o sys_err_init.o"
 		syst="sys_err_telinit.o"
+		sysr="sys_err_runcap.o sys_execvp.o"
 		tsdefault=tz
 		;;
 	*)
@@ -221,6 +224,7 @@ man5dir=${man5dir:-$mandir/man5}
 man8dir=${man8dir:-$mandir/man8}
 sbindir=${sbindir:-$prefix/sbin}
 logdir=${logdir:-$prefix/var/log}
+cgdir=${cgdir:-/sys/fs/cgroup}
 sysconfdir=${sysconfdir:-$prefix/etc}
 initctl=${initctl:-@initctl}
 inittab=${inittab:-$sysconfdir/${pprefix}inittab}
@@ -228,6 +232,7 @@ inittab=${inittab:-$sysconfdir/${pprefix}inittab}
 tabbase=`basename "$inittab"`
 init=${pprefix}init
 telinit=${pprefix}telinit
+runcap=runcap
 
 unset nc nn
 test -n "$null" && nc='#' || nn='#'
@@ -240,9 +245,11 @@ sed -i \
 	-e "/^LIBS_syscall =/s#=.*#= $libs_syscall#"\
 	-e "/^SYS_init =/s#=.*#= $sysi#"\
 	-e "/^SYS_telinit =/s#=.*#= $syst#"\
+	-e "/^SYS_runcap =/s#=.*#= $sysr#"\
 	-e "/^builtin =/s#=.*#= $builtin#"\
 	-e "/^HOSTCC =/s#=.*#= $HOSTCC#"\
 	-e "/^init =/s#=.*#= $init#"\
+	-e "/^runcap =/s#=.*#= $runcap#"\
 	-e "/^telinit =/s#=.*#= $telinit#"\
 	-e "/^inittab =/s#=.*#= $tabbase#"\
 	-e "/^#\?init: init_conf/s/^#\?/${nc}/"\
@@ -255,6 +262,10 @@ sed -i \
 	-e "/#define INITCTL/s#\".*#\"$initctl\"#" \
 	config.h
 
+sed -i \
+	-e "/#define CGBASE/s#\".*#\"$cgdir\"#" \
+	runcap.c
+
 echo "Configuration updated. Check the values below, then run make."
 echo
 echo "	CC=$CC"
@@ -265,9 +276,10 @@ echo
 echo "	inittab location: $inittab"
 echo "	control socket name: $initctl"
 echo "	logdir location: $logdir"
+echo "	cgroups mount path: $cgdir"
 echo
 echo "	binaries path: $sbindir"
-echo "	executable names: $init $telinit"
+echo "	executable names: $init $telinit $runcap"
 echo "	man section 5 path: $man5dir"
 echo "	man section 8 path: $man8dir"
 echo

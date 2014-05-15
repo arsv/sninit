@@ -14,6 +14,7 @@ LIBS =
 LIBS_syscall = -lcompat
 SYS_init = sys_printf.o sys_err_init.o sys_time_tz.o sys_timestamp.o
 SYS_telinit = sys_err_telinit.o
+SYS_runcap = sys_err_runcap.o sys_execvp.o
 
 # Installation directories. Check config.h for runtime paths.
 sbindir = /sbin
@@ -21,6 +22,7 @@ man5dir = /usr/share/man/man5
 man8dir = /usr/share/man/man8
 # Installation basenames
 init = init
+runcap = runcap
 telinit = telinit
 inittab = inittab
 
@@ -28,7 +30,7 @@ inittab = inittab
 builtin = 
 HOSTCC =
 
-all: init telinit init.8 telinit.8 inittab.5
+all: init telinit runcap init.8 telinit.8 inittab.5 runcap.8
 
 init: init.o \
 	init_pass.o init_poll.o init_wait.o \
@@ -41,11 +43,14 @@ init: init_conf.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.
 
 telinit: telinit.o $(SYS_telinit)
 
+runcap: runcap.o $(SYS_runcap)
+
 install: install-bin install-man
 
 install-bin:
 	install -m 0755 -D init $(DESTDIR)$(sbindir)/$(init)
 	install -m 0755 -D telinit $(DESTDIR)$(sbindir)/$(telinit)
+	install -m 0755 -D runcap $(DESTDIR)$(sbindir)/$(runcap)
 
 install-man:
 	install -m 0644 -D init.8 $(DESTDIR)$(man8dir)/$(init).8

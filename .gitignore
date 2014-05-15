@@ -5,6 +5,7 @@ builtin.c
 init
 telinit
 statictab
+runcap
 test/*
 !test/*.[ch]
 !test/*.txt
