@@ -237,12 +237,26 @@ static char* rcnextline(struct rcfile* f)
 	return f->ls;
 };
 
+static int isnumeric(char* s)
+{
+	char* p;
+	for(p = s; *p; p++)
+		if(*p < '0' || *p > '9')
+			return 0;
+	return 1;
+}
+
 static void adduser(char* user)
 {
 	char* l;
 	char* name;
 	char* uidstr;
 	char* gidstr;
+
+	if(isnumeric(user)) {
+		uid = atoi(user);
+		return;
+	}
 
 	rcmapfile(&passwd);
 	while((l = rcnextline(&passwd))) {
@@ -267,6 +281,9 @@ static gid_t findgroup(char* group)
 	char* l;
 	char* grpname;
 	char* gidstr;
+
+	if(isnumeric(group))
+		return atoi(group);
 
 	if(!groups.buf)
 		rcmapfile(&groups);
