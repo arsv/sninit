@@ -39,7 +39,7 @@ starting from init.
 
 The result can be called an "init cluster". Well-known example
 is the minimun init, found for example here:
-  https://github.com/henrysher/sinit/blob/master/sinit.c
+  http://git.2f30.org/sinit/
 In this example, #1 is replaced by
   #1a. spawns a single child process not allowed to die
 with said child process satisfying
