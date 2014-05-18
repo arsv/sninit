@@ -4,7 +4,7 @@
 \fBruncap\fR \- run command with specified permissions and/or capabilities.
 '''
 .SH SYNOPSIS
-\fBruncap\fR \fIpermissions\fR \fIcommand\fR \fIargs\fR ...
+\fBruncap\fR [\fIuser\fR][\fB:\fIgroup\fR]... \fIcommand\fR \fIargs\fR ...
 '''
 .SH DESCRIPTION
 \fBruncap\fR runs specified command, possibly setting effective uid/gid,
@@ -192,7 +192,7 @@ granting additional permissions. In contrast, runcap is expected
 to be used by root to lower permissions selectively.
 .P
 runcap should never be installed suid root. In fact, since non-privileged users
-have no capabilities to drop, and can not change their effective uids
+have no capabilities to drop and can not change their effective uids
 at will, runcap should not be made available to non-privileged users at all.
 '''
 .SH SEE ALSO

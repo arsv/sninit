@@ -42,10 +42,10 @@ What is init
 ~~~~~~~~~~~~
 init is process 1 in Linux and other Unix-like systems.
 
-Upon booting itself, the kernel starts one process, typically /sbin/init .
+Upon booting itself, kernel starts one process, typically /sbin/init .
 This process is expected to initialize the system and start everything else,
 including user interface.
-This process is not expected to exit; in case it does, the kernel panics.
+This process is not expected to exit; in case it does, kernel panics.
 
 Typically init starts several processes in sequence, waiting for them
 to finish, mounting filesystems, initializing devices and so on.
@@ -71,7 +71,7 @@ Credits
 sninit draws ideas from busybox init, minit and the original sysvinit.
 
 "No-malloc" approach to memory management was inspired by rockbox,
-though in rockbox itself it is done in a different way.
+though in rockbox itself it was done in a different way.
 
 Small size and static linkage is mostly due to dietlibc and busybox.
 (see "Writing Small and Fast Software" by F. von Leitner).

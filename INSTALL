@@ -18,13 +18,15 @@ At least one of sys_time_* files must be used.
 
 To try it on a system with another init installed, run
 
-	configure --with-sn
+	configure --with-s
 
-You will get sninit, sntelinit and /etc/sninittab.
+You will get sinit, stelinit and /etc/sinittab.
 
 
 Which libc to use
 ~~~~~~~~~~~~~~~~~
+In most cases sninit should be built with dietlibc.
+
 sninit does not need dynamic libc, and will not benefit from using one.
 The smallest sninit executable is the one linked statically against dietlibc.
 
@@ -32,9 +34,9 @@ sninit also does not need anything other than basic syscalls and a handful
 of bog-standard string manipulation function from libc.
 It will not benefit from using anything fancier than dietlibc.
 
-Pretty much in all cases sninit should be built with dietlibc.
 Settings for other libc-s are only provided for completeness,
 for testing, and for unusual cases not considered here.
+
 
 
 Building with dietlibc

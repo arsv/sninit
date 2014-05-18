@@ -178,7 +178,6 @@ static void setsignals(void)
 	   After all, BSD-compatible signal() implementation (which is to say,
 	   pretty much all of them) are just wrappers around sigaction(2). */
 
-	/* For the sake of clarity, avoid mixing handled signals */
 	sigaddset(&sa.sa_mask, SIGINT);
 	sigaddset(&sa.sa_mask, SIGTERM);
 	sigaddset(&sa.sa_mask, SIGHUP);
