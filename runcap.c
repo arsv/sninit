@@ -256,8 +256,10 @@ static void adduser(char* user)
 			continue;
 		uid = atoi(uidstr);
 		gid = atoi(gidstr);
-		break;
+		return;
 	}
+
+	die("Unknown user ", user, NULL);
 };
 
 static gid_t findgroup(char* group)
