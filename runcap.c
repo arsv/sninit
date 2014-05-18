@@ -237,7 +237,6 @@ static char* rcnextline(struct rcfile* f)
 	return f->ls;
 };
 
-/* This can only be called once, so it's ok to munmap passwd immediately */
 static void adduser(char* user)
 {
 	char* l;
