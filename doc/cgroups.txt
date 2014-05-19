@@ -1,3 +1,0 @@
-A note on cgroups
-~~~~~~~~~~~~~~~~~
-No syscalls = not init's business.

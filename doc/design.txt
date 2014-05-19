@@ -200,8 +200,7 @@ to exec anything), but the main reason why this may be needed is implementing eu
 and ulimit setting. This stuff must be done in the child process, and e[ug]id requires reading
 additional passwd and group, which is not something init needs.
 
-This was abandoned for now, mostly because it's rarely needed, and when it's needed,
-an easier and much better documented way is to use a shell script.
+This was abandoned completely in favor of companion utility, see limits.txt.
 
 
 Runlevels and flags
