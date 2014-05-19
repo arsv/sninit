@@ -26,7 +26,7 @@ be in place:
 
 Indeed, with #A-#F considered,
 #0 follows from #C
-#2 follows from #F + (#D and #A)
+#2 follows from #F + #D + #A
 #1 follows from #E + #F + #A + #B
 
 

@@ -7,6 +7,26 @@ It is not intended for general users, but it may be helpful
 for those trying to extend sninit, or perhaps just to read the source.
 
 
+On initrecs
+~~~~~~~~~~~
+Initrec is an "init record", corresponding to one line in inittab
+(process-describing line that is) or a single file in an initdir.
+In the code it is called struct initrec.
+Each initrec holds at most one pid.
+
+Throughout the code, initrecs are classified as w, o and s type:
+
+				respawn		exclusive
+	s	service		yes		no
+	w	wait		no		yes
+	o	once		no		no
+
+Respawn determines how init should react when process dies
+"unexpectedly", as opposed to being killed by init.
+Exclusive means should not start anything else while this
+particular process is running.
+
+
 Same uniform list for w/o- and s-type initrecs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 sninit keeps all initrecs in the same list, using the same initrec structures,

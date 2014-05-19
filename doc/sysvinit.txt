@@ -4,14 +4,14 @@ sninit uses almost the same inittab syntax as sysvinit.
 
 	name:runlevels:flags:command
 
-There are some differences though, explained below.
+There are some relatively minor differences explained below.
 
 
 Flags
 ~~~~~
 In sysvinit "flags" field is called "action", and it is always a single word.
 In sninit, it's a comma-separated list of process flags.
-Still, most sysvinit actions translate easily into sninit flags:
+Most sysvinit actions translate easily into sninit flags:
 
 	respawn
 		accepted but ignored, respawning is the default mode for sninit
@@ -70,7 +70,7 @@ only difference being the argument passed to reboot(2) in the end.
 Runleves 789 are allowed in sninit, but they are "slippery" unless configured otherwise.
 That is, upon reaching any of these runlevels, init will immediately start a switch back
 to the last non-slippery runlevel it was in.
-This is to allow sleep/suspend to be implemented as runlevels.
+This is to allow sleep/suspend to be implemented as runlevels, see slippery.txt.
 
 
 Commands
