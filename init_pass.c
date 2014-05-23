@@ -159,7 +159,7 @@ static inline int shouldberunning(struct initrec* p)
 	return 1;
 }
 
-/* check whether *last was at least $wait seconds ago; if not, update timetowait
+/* check whether $$last was at least $wait seconds ago; if not, update timetowait
    and write a message */
 static int waitneeded(struct initrec* p, time_t* last, time_t wait, const char* msg)
 {
