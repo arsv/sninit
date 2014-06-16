@@ -9,11 +9,13 @@ struct config* cfg;
 char* inittab = NULL;
 
 extern struct memblock newblock;
+extern struct memblock scratchblock;
 extern int mmapblock(struct memblock* b, int len);
-extern int scratchenv(char* string);
 extern void initcfgblocks(void);
 extern int finishenvp(void);
-extern void rewireenvp(char*** envp);
+static void rewirepointers();
+
+extern int addenviron(const char* def);
 
 int warnfd = 2;
 int syslogfd = -1;
@@ -30,7 +32,7 @@ void scratch_all(char** test)
 {
 	char** p;
 	for(p = test; *p; p++)
-		Ac(scratchenv(*p) >= 0, "scratch(\"%s\")", *p);
+		Ac(addenviron(*p) >= 0, "addenviron(\"%s\")", *p);
 }
 
 void check_all(char* tt, char** ep, char** test)
@@ -50,14 +52,13 @@ void check_all(char* tt, char** ep, char** test)
 int main(void)
 {
 	T(mmapblock(&newblock, 1024));
-
+	T(mmapblock(&scratchblock, 1024));
 	initcfgblocks();
-	newblock.ptr++;
 
 	scratch_all(test_env);
 
 	finishenvp();
-	rewireenvp(&(NCF->env));
+	rewirepointers();
 
 	check_all("env", NCF->env, test_env);
 	B(newblock, NCF->env);

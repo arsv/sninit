@@ -1,27 +1,32 @@
+/* For cases when it's explicitly offset.
+   Most of the time however, it's just NULL-based void* */
 typedef int offset;
-
-struct stringnode {
-	offset next;
-	char str[0];
-};
-
-struct stringlist {
-	int count;
-	offset head;
-	offset last;
-};
-
-struct scratch {
-	int newend;
-	int oldend;
-	struct stringlist env;
-};
 
 /* mmaped blocks -- see init_mmem.c */
 struct memblock {
 	void* addr;		/* base address */
 	int len;		/* allocated length */
 	int ptr;		/* current pointer (=first unused byte offset) */
+};
+
+/* Same structure both for inittab and envp.
+   There are more efficient ways to do it, but since we're talking about
+   maybe a page or so, why bother. */
+/* Pointer are in fact offsets. */
+struct ptrnode {
+	offset next;	/* relative to scratchblock */
+	offset ptr;	/* relative to newblock */
+};
+
+struct ptrlist {
+	offset head;	/* both in scratchblock */
+	offset last;
+	int count;
+};
+
+struct scratch {
+	struct ptrlist inittab;
+	struct ptrlist env;
 };
 
 /* mmaped file, to be parsed in linewise manner */
@@ -43,30 +48,13 @@ struct fileblock {
 
 #define CFG ((struct config*) cfgblock.addr)
 #define NCF ((struct config*) newblock.addr)
-#define SCR ((struct scratch*)(newblock.addr + sizeof(struct config)))
-/*
-
-Now NCF/SCR should have looked like this:
-
-	#define NCF ((struct dynconfig*) newblock.addr)
-
-	struct dynconfig {
-		struct config;
-		// struct scratch contents
-		int newend;
-		struct stringlist env;
-	}
-
-but this is apparently considered waaay-non-standard and requires -fms-extensions
-for gcc, and -fms-extensions -Wno-microsoft for clang.
-So it's two pointers for now.
-
-Note: SCR is inside of newblock now, no more scratchblock.
-
-*/
+#define SCR ((struct scratch*) scratchblock.addr)
 
 #define blockptr(block, offset, type) ((type)((block)->addr + offset))
-#define initrecat(block, offset) blockptr(block, offset, struct initrec*)
+
+/* For scratchptr() */
+#define TABLIST offsetof(struct scratch, inittab)
+#define ENVLIST offsetof(struct scratch, env)
 
 /* Some versions of musl (0.9.14 but not 0.9.10) #define NULL as 0L,
    apparently to cater to C++ folk. Surprisingly, C standard allows this.

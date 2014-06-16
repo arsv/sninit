@@ -15,6 +15,7 @@ struct config* cfg;
 int currlevel;
 char* inittab = INITTAB;
 extern struct memblock newblock;
+extern struct memblock scratchblock;
 
 extern void initcfgblocks(void);
 extern int finishenvp(void);
@@ -80,19 +81,13 @@ void dump_env(struct memblock* block)
 void dump_inittab(struct memblock* block)
 {
 	struct config* cfg = (struct config*) block->addr;
-	struct initrec* q;
-	struct initrec* qp = NULL;
+	struct initrec *q, **qq;
 	char** p;
 	int i;
 
 	printf("INITTAB: %p\n", cfg->inittab);
-	for(q = cfg->inittab; q; q = q->next) {
-		printf("%p name=\"%s\" rlvl=0x%04x flags=0x%04x   prev=%p %s   next=%p %s\n",
-				q,
-				q->name, q->rlvl, q->flags,
-				q->prev, ((q->prev == qp) ? "ok" : "BAD"),
-				q->next, ((!q->next || checkptr(block, q->next)) ? "ok" : "BAD"));
-		qp = q;
+	for(qq = cfg->inittab; (q = *qq); qq++) {
+		printf("%p name=\"%s\" rlvl=0x%04x flags=0x%04x\n", q, q->name, q->rlvl, q->flags);
 		for(i = 0, p = q->argv; p && *p; p++, i++)
 			if(checkptr(block, *p))
 				printf("\targv[%i]=\"%s\"\n", i, *p);
@@ -103,7 +98,8 @@ void dump_inittab(struct memblock* block)
 
 int main(void)
 {
-	T(mmapblock(&newblock, IRALLOC + sizeof(struct config) + sizeof(struct scratch)));
+	T(mmapblock(&newblock, IRALLOC + sizeof(struct config)));
+	T(mmapblock(&scratchblock, IRALLOC + sizeof(struct scratch)));
 	initcfgblocks();
 
 	T(parseinitline_("# comment here"));

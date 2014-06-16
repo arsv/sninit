@@ -2,17 +2,23 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#ifndef __dietlibc__
 #include <sys/syscall.h>
+#else
+/* XXX: syscall() is declared as "int" in dietlibc; it must be at least long int for x64 */
+#include <asm/unistd.h>
+long syscall(int number, ...);
+#endif
 
 #include "../init_conf.h"
 #include "test.h"
 
+extern int memblockalign;
+
 extern int mmapblock(struct memblock* m, int size);
-extern int mextendblock(struct memblock* m, int size, int blocksize);
+extern int mextendblock(struct memblock* m, int size);
 extern int mremapblock(struct memblock* m, int size);
 extern void munmapblock(struct memblock* m);
-
-extern int addstring(struct memblock* m, const char* string);
 
 off_t BASE = 0x00;
 
@@ -28,9 +34,6 @@ void* mremap(void* old_addr, size_t old_size, size_t new_size, int flags, ...)
 #endif
 {
 	/* Libc sanity is assumed here:  mremap(...) === syscall(__NR_mremap, ...) */
-
-	/* XXX: syscall() is declared as "int" in dietlibc; it must be at least long int for x64 */
-
 	if(!BASE) {
 		return (void*)syscall(__NR_mremap, old_addr, old_size, new_size, flags);
 	} else {
@@ -64,13 +67,42 @@ int can_read_back(struct memblock* m, int start, int len)
 	return 0;
 }
 
-/* Base functionality — map, remap, unmap */
-void test_base(void)
+//void test_addstuff()
+//{
+//	struct memblock m;
+//	struct teststring {
+//		char* src;
+//		char* tst;
+//	} tests[] = {
+//		{ "test123", NULL },
+//		{ "some other string", NULL },
+//		{ NULL }
+//	}, *p;
+//	int len;
+//
+//	/* just enough space for all strings */
+//	for(len = 0, p = tests; p && p->src; p++)
+//		len += strlen(p->src) + 1;
+//
+//	T(mmapblock(&m, len));
+//
+//	/* check if strings are copied properly */
+//	for(p = tests; p && p->src; p++) {
+//		A((p->tst = m.addr + addstring(&m, p->src)) != NULL);
+//		T(strcmp(p->src, p->tst));
+//	}
+//	/* check all the string are readable (=no overwrites) */
+//	for(p = tests; p && p->src; p++)
+//		T(strcmp(p->src, p->tst));
+//
+//	munmapblock(&m);
+//}
+
+int main(void)
 {
 	struct memblock m;
 	int len = 12345;
 	int ext = 500137;
-	int bs = 2048;
 
 	int off;
 
@@ -82,7 +114,7 @@ void test_base(void)
 
 	off = m.ptr;
 	len += ext;
-	T(mextendblock(&m, ext, bs));
+	T(mextendblock(&m, ext));
 	A(m.ptr == off);
 	T(can_write(&m, m.ptr, len));
 	T(can_read_back(&m, 0, len));
@@ -93,7 +125,7 @@ void test_base(void)
 	BASE = 0xF5800000;
 	off = m.ptr;
 	len += ext;
-	T(mextendblock(&m, ext, bs));
+	T(mextendblock(&m, ext));
 	A(m.ptr == off);
 	T(can_write(&m, m.ptr, len));
 	T(can_read_back(&m, 0, len));
@@ -102,42 +134,6 @@ void test_base(void)
 	T(can_read_back(&m, 0, len));
 
 	munmapblock(&m);
-}
-
-void test_addstuff()
-{
-	struct memblock m;
-	struct teststring {
-		char* src;
-		char* tst;
-	} tests[] = {
-		{ "test123", NULL },
-		{ "some other string", NULL },
-		{ NULL }
-	}, *p;
-	int len;
-
-	/* just enough space for all strings */
-	for(len = 0, p = tests; p && p->src; p++)
-		len += strlen(p->src) + 1;
-
-	T(mmapblock(&m, len));
-
-	/* check if strings are copied properly */
-	for(p = tests; p && p->src; p++) {
-		A((p->tst = m.addr + addstring(&m, p->src)) != NULL);
-		T(strcmp(p->src, p->tst));
-	}
-	/* check all the string are readable (=no overwrites) */
-	for(p = tests; p && p->src; p++)
-		T(strcmp(p->src, p->tst));
-
-	munmapblock(&m);
-}
-
-int main(void)
-{
-	test_base();
 
 	return 0;
 }

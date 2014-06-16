@@ -14,9 +14,9 @@ extern struct config* cfg;
 
 struct initrec* findentry(const char* name)
 {
-	struct initrec* p;
+	struct initrec *p, **pp;
 
-	for(p = cfg->inittab; p; p = p->next)
+	for(pp = cfg->inittab; (p = *pp); pp++)
 		if(p->name && !strcmp(p->name, name))
 			return p;
 

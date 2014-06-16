@@ -173,7 +173,7 @@ static char* makecmd(char* buf, int len, char** argv)
 /* "telinit ?" output, the list of services and their current state */
 static void dumpstate(void)
 {
-	struct initrec* p;
+	struct initrec *p, **pp;
 	char currstr[16];
 	char nextstr[16];
 	char cmdbuf[MAXREPORTCMD+5];		// " ...\0"
@@ -186,7 +186,7 @@ static void dumpstate(void)
 	else
 		warn("Switching %s to %s", currstr, nextstr);
 
-	for(p = cfg->inittab; p; p = p->next) {
+	for(pp = cfg->inittab; (p = *pp); pp++) {
 		if(p->flags & (C_ONCE | C_WAIT))
 			if(currlevel == nextlevel)
 				continue;

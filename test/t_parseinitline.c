@@ -41,6 +41,11 @@ int addinitrec(struct fileblock* fb, char* name, char* rlvls, char* flags, char*
 	return RET;
 }
 
+int addenviron(const char* env)
+{
+	return 0;
+}
+
 int scratchenv(const char* string)
 {
 	return -1;

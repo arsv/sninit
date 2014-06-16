@@ -6,19 +6,21 @@
 
 extern struct memblock newblock;
 
+global int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char* cmd, int exe);
+global int addenviron(const char* def);
+
 static int prepargv(char* str, char** end);
 global int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
 static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
-global int scratchenv(const char* string);
+extern int mextendblock(struct memblock* m, int size);
+extern int addstruct(int size);
+extern int addstring(const char* string);
+extern int addstringarray(int n, const char* str, const char* end);
+extern int addstrargarray(const char* args[]);
 
-extern int addstringarray(struct memblock* m, int n, const char* str, const char* end);
-extern int addstrargarray(struct memblock* m, ...);
-extern int mextendblock(struct memblock* m, int size, int blocksize);
-
-static offset linkinitrec(offset entryoff);
-static void dropinitrec(offset entryoff);
-static int checkdupname(const char* name);
+extern int scratchptr(offset listptr, offset ptr);
+extern int checkdupname(const char* name);
 
 /* Arguments:
 	   name="httpd", runlvl="2345", flags="log,null"
@@ -43,16 +45,11 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 	if(checkdupname(name))
 		retwarn(-1, "%s:%i: duplicate name %s", fb->name, fb->line, name);
 
-	if(mextendblock(&newblock, sizeof(struct initrec), IRALLOC))	
+	int entrysize = sizeof(struct initrec);
+	if(mextendblock(&newblock, entrysize))	
 		return -1;
-
-	/* The base structure */
 	entryoff = newblock.ptr;
-
-	entry = initrecat(&newblock, entryoff); 
-
-	entry->next = NULL;
-	entry->prev = NULL + linkinitrec(entryoff);
+	entry = blockptr(&newblock, entryoff, struct initrec*); 
 
 	memset(entry->name, 0, NAMELEN);
 	strncpy(entry->name, name, NAMELEN - 1);
@@ -64,60 +61,50 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 	entry->lastrun = 0;
 	entry->lastsig = 0;
 
-	/* argv[] must be appended right after struct initrec */
-	newblock.ptr += sizeof(struct initrec);
+	/* Note: argv[] must be appended right after struct initrec */
+	newblock.ptr += entrysize;
 
 	if(exe) {
-		ret = addstrargarray(&newblock, cmd, NULL);
+		const char* argv[] = { cmd, NULL };
+		ret = addstrargarray(argv);
 	} else if(*cmd == '!') {
 		for(cmd++; *cmd && *cmd == ' '; cmd++);
-		ret = addstrargarray(&newblock, "/bin/sh", "-c", cmd, NULL);
+		const char* argv[] = { "/bin/sh", "-c", cmd, NULL };
+		ret = addstrargarray(argv);
 	} else {
 		char* arge; int argc = prepargv(cmd, &arge);
-		ret = addstringarray(&newblock, argc, cmd, arge);
+		ret = addstringarray(argc, cmd, arge);
 	} if(ret)
 		goto out;
 
 	/* add*array() calls above could very well change newblock.addr, invalidating existing entry value */
-	entry = initrecat(&newblock, entryoff); 
+	entry = blockptr(&newblock, entryoff, struct initrec*); 
 	if(setrunlevels(fb, &(entry->rlvl), runlvl))
 		goto out;
 	if(setflags(fb, entry, flags))
 		goto out;
 
+	/* initrec has been added successfully, so note its offset to use when building inittab[] later */
+	if(scratchptr(TABLIST, entryoff))
+		goto out;
+
 	return 0;
 
-out:	dropinitrec(entryoff);
+out:	/* cancel the entry, resetting newblock.ptr */
 	newblock.ptr = entryoff;
 	return -1;
 }
 
-/* Update initrec list pointers, including the entry at entryoff in the list */
-static offset linkinitrec(offset entryoff)
+int addenviron(const char* def)
 {
-	SCR->oldend = SCR->newend;
+	offset p;
+       
+	if((p = addstring(def)) < 0)
+		return -1;
+	if(scratchptr(ENVLIST, p))
+		return -1;
 
-	if(SCR->newend) {
-		/* newend >= 0 means this is not the first entry, and newend contains
-		   a valid offset of an allocated structure */
-		initrecat(&newblock, SCR->newend)->next = NULL + entryoff;
-	} else if(!NCF->inittab)
-		NCF->inittab = NULL + entryoff;
-
-	SCR->newend = entryoff;
-
-	/* in case oldend = 0, we'll get entry->prev = NULL as expected */
-	return SCR->oldend;
-}
-
-/* In case new initrec was not accepted (due to errors etc), it is removed from
-   newblock. Because data is added to newblock sequentially, it is enough to
-   revert newblock.ptr, and fix whatever changes were done by linkinitrec(). */
-static void dropinitrec(offset entryoff)
-{
-	if(!SCR->oldend)
-		NCF->inittab = NULL;
-	SCR->newend = SCR->oldend;
+	return 0;
 }
 
 /* Initialize entry runlevels mask using :runlevels: field from inittab */
@@ -256,49 +243,4 @@ static int prepargv(char* str, char** end)
 	} if(end) *end = p;
 
 	return argc;
-}
-
-/* Add a string to one of scratcblock lists (envp and initdir) */
-int scratchenv(const char* string)
-{
-	struct stringnode* node;
-	int slen = strlen(string);
-	int size = sizeof(struct stringnode) + slen + 1;
-
-	if(mextendblock(&newblock, size, IRALLOC))
-		return -1;
-
-	/* mextendblock above MAY move scratch.addr! */
-	struct stringlist* list = &SCR->env;
-
-	node = (struct stringnode*)(newblock.addr + newblock.ptr);
-	strncpy(node->str, string, slen);
-
-	if(list->last) {
-		node = (struct stringnode*)(newblock.addr + list->last);
-		node->next = newblock.ptr;
-	} else {
-		list->head = newblock.ptr;
-	};
-	list->last = newblock.ptr;
-
-	newblock.ptr += size;
-
-	return list->count++;
-}
-
-#define ptroff(p) (((void*)p) - NULL)
-
-static int checkdupname(const char* name)
-{
-	struct initrec* p;
-	offset po;
-
-	for(po = ptroff(NCF->inittab); po; po = ptroff(initrecat(&newblock, po)->next)) {
-		p = initrecat(&newblock, po);
-		if(p->name[0] && !strcmp(p->name, name))
-			return -1;
-	}
-		
-	return 0;
 }

@@ -1,9 +1,9 @@
 # Top (default) rule, to override whatever ../Makefile will bring
 TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
-	t_addinitrec t_conf t_scratch t_itostr t_printf \
+	t_addinitrec t_conf t_addenviron t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock \
 	t_mkreldirname t_tzinit t_initpass_pri t_initpass_sec \
-	t_setrunlevels t_readinitdir
+	t_setrunlevels t_readinitdir t_rewireptsarray t_scratchptr
 tests: $(TESTS)
 
 # Get CC, CFLAGS etc.
@@ -49,41 +49,45 @@ clean-tests:
 # Ok, now the tests themselves
 
 t_mblocks: LIBS += $(LIBS_syscall)
-t_mblocks: t_mblocks.o init_conf_mem.o test.o
+t_mblocks: t_mblocks.o init_conf_map.o test.o
 
-t_prepargv: t_prepargv.o init_conf_mem.o init_conf_rec.o test.o
+t_prepargv: t_prepargv.o init_conf_rec.o test.o
 
-t_addinitrec: t_addinitrec.o init_conf_mem.o init_conf_rec.o test.o
+t_addinitrec: t_addinitrec.o init_conf_map.o init_conf_mem.o init_conf_map.o init_conf_rec.o test.o
 
 t_parseinitline: t_parseinitline.o \
-	init_conf_mem.o init_conf_tab.o test.o
+	init_conf_map.o init_conf_tab.o test.o
 
-t_parsesrvfile: t_parsesrvfile.o init_conf_dir.o init_conf_mem.o \
+t_parsesrvfile: t_parsesrvfile.o init_conf_dir.o init_conf_map.o \
 	test.o $(SYS)
 
-t_conf: t_conf.o init_find.o init_conf.o init_conf_mem.o init_conf_tab.o \
-	init_conf_dir.o init_conf_rec.o test.o $(SYS)
+t_conf: t_conf.o init_find.o init_conf.o init_conf_mem.o init_conf_map.o \
+	init_conf_tab.o init_conf_dir.o init_conf_rec.o test.o $(SYS)
 
-t_scratch: t_scratch.o init_find.o init_conf.o init_conf_mem.o init_conf_rec.o \
+t_addenviron: init_find.o init_conf.o init_conf_mem.o init_conf_map.o init_conf_rec.o \
 	init_conf_tab.o init_conf_dir.o test.o $(SYS)
 
 t_itostr: t_itostr.o sys_printf.o test.o
 
 t_printf: t_printf.o sys_printf.o test.o
 
-t_addstringarray: t_addstringarray.o init_conf_mem.o test.o
+t_addstringarray: t_addstringarray.o init_conf_mem.o init_conf_map.o test.o
 
-t_addstrargarray: t_addstrargarray.o init_conf_mem.o test.o
+t_addstrargarray: t_addstrargarray.o init_conf_mem.o init_conf_map.o test.o
 
-t_fileblock: t_fileblock.o init_conf_mem.o test.o
+t_scratchptr: t_scratchptr.o init_conf_map.o init_conf_mem.o test.o
+
+t_rewireptsarray: t_rewireptsarray.o init_conf.o init_conf_map.o test.o
+
+t_fileblock: t_fileblock.o init_conf_map.o test.o
 
 t_mkreldirname: t_mkreldirname.o init_conf_dir.o test.o
 
 t_tzinit: t_tzinit.o sys_time_tz.o sys_timestamp.o
 
-t_initpass_pri: t_initpass_pri.o t_initpass.o init_pass.o test.o
-t_initpass_sec: t_initpass_sec.o t_initpass.o init_pass.o test.o
+t_initpass_pri: t_initpass_pri.o t_initpass_.o init_pass.o test.o
+t_initpass_sec: t_initpass_sec.o t_initpass_.o init_pass.o test.o
 
 t_setrunlevels: t_setrunlevels.o init_conf_rec.o test.o
 
-t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_mem.o test.o
+t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_map.o test.o

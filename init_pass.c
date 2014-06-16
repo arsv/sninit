@@ -45,20 +45,20 @@ static inline int shouldberunning(struct initrec* p);
 void initpass(void)
 {
 	int waitfor = 0;
+	struct initrec** pp;
 	struct initrec* p;
-	struct initrec* initend;
 
 	state |= S_WAITING;
 
-	for(p = cfg->inittab; p; p = p->next) {
+	for(pp = cfg->inittab; (p = *pp); pp++) {
 		if(shouldberunning(p))
 			p->flags &= ~P_TBK;
 		else
 			p->flags |= P_TBK;
-		initend = p;
 	}
 
-	for(p = initend; p; p = p->prev) {
+	for(pp--; pp >= cfg->inittab; pp--) {
+		p = *pp;
 		if(!(p->flags & P_TBK)) {
 			continue;
 		} else if(p->pid < 0) {
@@ -79,7 +79,7 @@ void initpass(void)
 	} if(waitfor)
 		return;
 
-	for(p = cfg->inittab; p; p = p->next) {
+	for(pp = cfg->inittab; (p = *pp); pp++) {
 		if(p->flags & P_TBK) {
 			/* something from currlevel is not dead yet */
 			continue;

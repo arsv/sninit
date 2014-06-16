@@ -37,7 +37,7 @@ init: init.o \
 	init_exec.o init_warn.o init_cmds.o \
 	init_find.o $(SYS_init)
 # Configurable init
-init: init_conf.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.o
+init: init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.o
 # Non-configurable init
 #init: init_null.o
 
@@ -87,7 +87,7 @@ distclean: clean
 #
 # And yes, this whole section is pretty ugly.
 
-statictab = statictab.o init_conf.o init_conf_mem.o\
+statictab = statictab.o init_conf.o init_conf_map.o init_conf_mem.o\
 	init_conf_tab.o init_conf_dir.o init_conf_rec.o\
 	init_find.o
 

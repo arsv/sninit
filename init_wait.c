@@ -11,10 +11,10 @@ void waitpids(void)
 {
 	pid_t pid;
 	int status;
-	struct initrec* p;
+	struct initrec *p, **pp;
 
 	while((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-		for(p = cfg->inittab; p; p = p->next) {
+		for(pp = cfg->inittab; (p = *pp); pp++) {
 			if(p->pid != pid)
 				continue;
 			if(!(p->flags & C_WAIT))

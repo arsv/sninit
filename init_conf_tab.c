@@ -6,19 +6,20 @@
 #include "init.h"
 #include "init_conf.h"
 
-extern struct memblock scratch;
+extern struct memblock newblock;
+extern struct memblock scratchblock;
 
 extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* flags, char* cmd, int exe);
-extern int scratchenv(const char* string);
+extern int addenviron(const char* string);
 extern int readinitdir(struct fileblock* fb, const char* dir, int defrlvl, int strict);
+extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
+
 extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
 static int parseinitline(struct fileblock* fb, int strict);
 static int parsedirline(struct fileblock* fb, char* line, int strict);
-
-extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
 
 /* Top-level inittab format */
 /* Strict means bail out on errors immediately; with strict=0, it should continue
@@ -62,7 +63,7 @@ static int parseinitline(struct fileblock* fb, int strict)
 	if(!p)
 		retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
 	else if(*p == '=')
-		return (scratchenv(l) >= 0 ? 0 : -1);
+		return (addenviron(l) >= 0 ? 0 : -1);
 
 	*(p++) = '\0'; name = l;
 	runlvl = strsep(&p, ":");

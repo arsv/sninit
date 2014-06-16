@@ -28,16 +28,15 @@
    In case init gets another reconfigure request while in the main
    loop during step 2, compiled newtab is discarded and we're back to step 1. */
 
-/* During configuration, one additional memblock, newconfig, is mapped.
-   Once configuration is done, it become cfgblock, and the old cfgblock gets unmapped.
-   Being a drop-in replacement, newblock starts with struct config,
-   but has an additional struct scratch following it which is used to hold
-   temporary values needed during configuration. */
+/* During configuration, two additional memblocks are mmaped: newblock and scratchblock.
+   newblock becomes cfgblock once configuration is done.
+   scratchblock is used to "scratch" arrays of unknown size,
+   to put the into newblock later. */
 
 /* Note that until rewirepointers() call late in the process, all pointers
    in struct config, struct initrec and envp aren't real pointers,
    they are offsets from the start of newblock.
-   This is to avoid a lot of hassle in case mremap changes the block address.  */
+   This is to avoid a lot of hassle in case mremap changes the block address. */
 
 extern int state;
 extern int currlevel;
@@ -46,6 +45,7 @@ extern const char* inittab;
 
 struct memblock cfgblock = { NULL };
 struct memblock newblock = { NULL };
+struct memblock scratchblock = { NULL };
 
 /* top-level functions handling configuration */
 int readinittab(const char* file, int strict);		/* /etc/inittab */
@@ -56,16 +56,17 @@ static void rewirepointers(void);	/* turn offsets into actual pointers in newblo
 					   assuming it won't be mremapped anymore */
 static void transferpids(void);
 extern struct initrec* findentry(const char* name);
-static void rewireenvp(char*** envp);
 
 extern int mmapblock(struct memblock* m, int size);
 extern void munmapblock(struct memblock* m);
-extern int addstringptrs(struct memblock* m, struct stringlist* l);
+extern int addptrsarray(offset listoff);
 
 
 int configure(int strict)
 {
-	if(mmapblock(&newblock, IRALLOC + sizeof(struct config) + sizeof(struct scratch)))
+	if(mmapblock(&newblock, IRALLOC + sizeof(struct config)))
+		goto unmap;
+	if(mmapblock(&scratchblock, IRALLOC + sizeof(struct scratch)))
 		goto unmap;
 
 	initcfgblocks();
@@ -78,10 +79,12 @@ int configure(int strict)
 		goto unmap;
 
 	rewirepointers();
+	munmapblock(&scratchblock);
 
 	return 0;
 
 unmap:	munmapblock(&newblock);
+	munmapblock(&scratchblock);
 	return -1;
 }
 
@@ -103,10 +106,14 @@ void setnewconf(void)
 
 static void initcfgblocks(void)
 {
-	struct config* cfg = (struct config*) newblock.addr;
+	struct config* cfg = blockptr(&newblock, 0, struct config*);
+
 	/* newblock has enough space for struct config, see configure() */
-	newblock.ptr += sizeof(struct config) + sizeof(struct scratch);
-	memset(newblock.addr, 0, sizeof(struct config) + sizeof(struct scratch));
+	newblock.ptr += sizeof(struct config);
+	memset(newblock.addr, 0, sizeof(struct config));
+
+	scratchblock.ptr += sizeof(struct scratch);
+	memset(scratchblock.addr, 0, sizeof(struct scratch));
 
 	cfg->inittab = NULL;
 	cfg->env = NULL;
@@ -121,12 +128,19 @@ static void initcfgblocks(void)
 
 static int finishenvp(void)
 {
-	int envoff;
+	offset off;
 
-	if((envoff = addstringptrs(&newblock, &SCR->env)) < 0)
+	if((off = addptrsarray(TABLIST)) < 0)
 		return -1;
+	else
+		NCF->inittab = NULL + off;
 
-	NCF->env = NULL + envoff;
+	if((off = addptrsarray(ENVLIST)) < 0)
+		return -1;
+	else
+		NCF->env = NULL + off;
+
+	NCF->initnum = SCR->inittab.count;
 	
 	return 0;
 }
@@ -134,45 +148,45 @@ static int finishenvp(void)
 /* parseinittab() fills all pointers in initrecs with offsets from newblock
    to allow using MREMAP_MAYMOVE. Once newblock and newenviron are all
    set up, we need to make those offsets into real pointers */
-static inline void* repoint(struct memblock* m, void* p)
+static inline void* repoint(void* p)
 {
-	return p ? (m->addr + (p - NULL)) : p;
+	if(p - NULL > newblock.ptr)
+		return NULL;	// XXX: should never happen
+	return p ? (newblock.addr + (p - NULL)) : p;
 }
-#define REPOINT(p) p = repoint(&newblock, p)
+
+#define REPOINT(a) a = repoint(a)
+
+/* Warning: while NCF->inittab, NCF->env and initrec.argv-s within inittab
+   are arrays of pointers, the fields of NCF are pointers themselves but initrec.argv is not.
+
+   Thus, the contents of all three must be repointed (that's rewireptrsarray)
+   but initrec.argv must not be touched, unlike NCF->inittab and NCF->env.
+
+   Since char** or initrec** are not cast silently to void**, there are explicit casts here
+   which may mask compiler warnings. */
+
+static void rewireptrsarray(void** a)
+{
+	void** p;
+
+	for(p = a; *p; p++)
+		REPOINT(*p);
+}
 
 /* Run repoint() on all relevant pointers within newblock */
 static void rewirepointers()
 {
-	struct initrec* p;
-	char** a;
+	struct initrec** p;
 
-	if(SCR->newend < 0)
-		return;
+	REPOINT(NCF->inittab);
+	rewireptrsarray((void**) NCF->inittab);
 
-	if(NCF->inittab) {
-		REPOINT(NCF->inittab);
-		for(p = NCF->inittab; p; p = p->next) {
-			REPOINT(p->next);
-			REPOINT(p->prev);
-			for(a = p->argv; *a; a++)
-				REPOINT(*a);
-			REPOINT(*a); /* terminating NULL pointer */
-		}
-	}
+	REPOINT(NCF->env);
+	rewireptrsarray((void**) NCF->env);
 
-	rewireenvp(&(NCF->env));
-}
-
-static void rewireenvp(char*** envp)
-{
-	char** a;
-
-	if(!*envp)
-		return;
-
-	REPOINT(*envp);
-	for(a = *envp; *a; a++)
-		REPOINT(*a);
+	for(p = NCF->inittab; *p; p++)
+		rewireptrsarray((void**) (*p)->argv);
 }
 
 /* move child state info from cfgblock to newblock */
@@ -182,11 +196,12 @@ static void transferpids(void)
 {
 	struct initrec* p;
 	struct initrec* q;
+	struct initrec** qq;
 
 	/* initial configuration with no static backup inittab */
 	if(!cfg) return;
 
-	for(q = NCF->inittab; q; q = q->next) {
+	for(qq = NCF->inittab; (q = *qq); qq++) {
 		/* Prevent w-type entries from being spawned during
 		   the next initpass() just because they are new */
 		/* This requires (currlevel == nextlevel) which is enforced with S_RECONF. */

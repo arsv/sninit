@@ -1,72 +1,64 @@
-#define _GNU_SOURCE
-#include <unistd.h>
-#include <string.h>
+/* Routines here place/copy data to newblock and scratchblock.
+
+   Due to strict limitation on what is placed in each of the two blocks,
+   most exported functions have no struct memblock argument.
+   The caller (addinitrec and addeviron) should not know this
+   most of the time anyway. A simple rule is that add* calls
+   write to newblock while scratch* write to scratchblock.
+ 
+   Offsets carry neither type nor base block information.
+   Care must be taken to use the right memblock.
+   The right block is newblock in all cases except:
+   	struct ptrnode.next
+	struct ptrlist.head
+	struct ptrlist.last
+   which reference scratchblock instead. */
+
 #include <stdarg.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stddef.h>
+#include <string.h>
 
 #include "init.h"
 #include "init_conf.h"
 
-int mremapblock(struct memblock* m, int size);
+extern struct memblock newblock;
+extern struct memblock scratchblock;
 
-int mmapblock(struct memblock* m, int size)
-{
-	m->ptr = 0;
-	if(m->addr) {
-		if(m->len > size)
-			return 0;
-		else
-			return mremapblock(m, size);
-	} else {
-		m->addr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-		if(m->addr == MAP_FAILED)
-			return -1;
-		m->len = size;
-		return 0;
-	}
-}
+extern int mextendblock(struct memblock* m, int size);
 
-int mextendblock(struct memblock* m, int size, int blocksize)
+offset addstruct(struct memblock* m, int size, int extra)
 {
-	int ns = (blocksize > size ? blocksize : size);
-	return mremapblock(m, m->len + ns);
-}
-
-int mremapblock(struct memblock* m, int size)
-{
-	void* np = mremap(m->addr, m->len, size, MREMAP_MAYMOVE);
-	if(np == MAP_FAILED)
+	if(mextendblock(m, size + extra))
 		return -1;
 
-	m->addr = np;
-	m->len = size;
-	return 0;
+	offset ret = m->ptr;
+	m->ptr += size;
+
+	return ret;
 }
 
-void munmapblock(struct memblock* m)
+/* Copy $string to m (adjusting ptr accordingly) and return offset
+   at which the string was placed in m.
+   Memblock is assumed to have enough space to hold the string. */
+static int copystring(struct memblock* m, const char* string, int len)
 {
-	if(m->addr) {
-		munmap(m->addr, m->len);
-		m->addr = 0;
-		m->len = 0;
-	}
-};
-
-/* copy s to m (adjusting ptr accordingly) and return offset at
-   which s was placed in m */
-int addstring(struct memblock* m, const char* string)
-{
-	const char* p;
-	int r = m->ptr;
-	for(p = string; *p; p++)
-		*((char*)(m->addr + m->ptr++)) = *p;
-	*((char*)(m->addr + m->ptr++)) = '\0';
-	return r;
+	int ptr = m->ptr;
+	memcpy(m->addr + ptr, string, len);
+	*(blockptr(m, m->ptr + len, char*)) = '\0';
+	m->ptr += len + 1;
+	return ptr;
 }
 
+/* This is only used for environment variables.
+   Since copystring moves ptr, addstruct should not be used here. */
+int addstring(const char* string)
+{
+	int len = strlen(string);
+
+	if(mextendblock(&newblock, len))
+		return -1;
+
+	return copystring(&newblock, string, len);
+}
 
 /* add*array() functions are used to lay out initrec.argv[]
    in newblock. Source strings can be counted in place if needed,
@@ -79,161 +71,146 @@ int addstring(struct memblock* m, const char* string)
    of the pointers array since it's always laid at the end of
    struct initrec. */
 
-/* (m, char* a, char* b, char* c, ...) */
+/* (char* a, char* b, char* c, ...) */
 /* Make [ a, b, c, ... ] into an argv-style structure */
-int addstrargarray(struct memblock* m, ...)
+int addstrargarray(const char* args[])
 {
-	va_list ap;
 	int argc = 0;
-	char* argi;
 	int argl = 0;
+	const char** p;
+	offset po;
 
 	/* see how much space do we need */
-	va_start(ap, m);
-	while((argi = va_arg(ap, char*)))
-		argc++, argl += strlen(argi);
-	va_end(ap);
+	for(p = args; *p; p++, argc++)
+		argl += strlen(*p);
 
 	/* allocate the space */
-	if(mextendblock(m, (argc+1)*sizeof(char*) + argc + argl, IRALLOC))
+	if((po = addstruct(&newblock, (argc+1)*sizeof(char*), argc + argl)) < 0)
 		return -1;
+	char** pa = blockptr(&newblock, po, char**);
 
-	char** pa = m->addr + m->ptr; int pi = 0;
-	/* skip over the pointers array */
-	m->ptr += (argc+1)*sizeof(char*);
-	/* copy strings */
-	va_start(ap, m);
-	while((argi = va_arg(ap, char*)) && pi++ < argc)
-		*(pa++) = NULL + addstring(m, argi);
+	/* copy argv[] elements, filling pointers array */
+	for(p = args; *p && argc > 0; p++, argc--)
+		*(pa++) = NULL + copystring(&newblock, *p, strlen(*p));
 	/* terminate pointer array */
-	while(pi++ <= argc)
+	while(argc-- >= 0)
 		*(pa++) = NULL;
 
 	return 0;
 }
 
-/* Treating str as n concatenated 0-terminated lines, append
-   argv- or envp-like structure to m.
-   The pointers array is always NULL-terminated.
-   See prepargv() for how an array like this is formed. */
-int addstringarray(struct memblock* m, int n, const char* str, const char* end)
+static inline int strlenupto(const char* str, const char* end)
 {
 	const char* p;
+	for(p = str; *p && p < end; p++);
+	return p - str;
+}
 
-	if(mextendblock(m, (n+1)*sizeof(char*) + (end - str), IRALLOC))
+/* Treating str as n concatenated 0-terminated lines, append
+   argv-like structure to newblock.
+   The pointers array is always NULL-terminated.
+   See prepargv() for how an array like this is formed.
+
+   Like with addstrargarray, there's no need to return
+   resulting structure offset. */
+int addstringarray(int n, const char* str, const char* end)
+{
+	offset po;
+	if((po = addstruct(&newblock, (n+1)*sizeof(char*), (end - str))) < 0)
 		return -1;
+	char** pa = blockptr(&newblock, po, char**);
 
-	char** pa = m->addr + m->ptr;
-	/* skip over pointers array */
-	m->ptr += (n+1)*sizeof(char*);
 	/* the first element is always there — it's the string itself */
-	*pa++ = NULL + m->ptr;
-	int pi = 1;
-	/* copy the rest, char by char, advancing pa when necessary */
-	for(p = str; p <= end; p++) {
-		if((*((char*)(m->addr + m->ptr++)) = *p))
-			continue;
-		if(pi++ < n)
-			*pa++ = NULL + m->ptr;
-		else
-			break;
-	}; *pa = NULL;
+	int i, l; const char* p;
+	for(i = 0, p = str; i < n && p < end; i++) {
+		l = strlenupto(p, end);
+		*(pa++) = NULL + copystring(&newblock, p, l);
+		p += l + 1;
+	}; while(i++ <= n) {
+		*(pa++) = NULL;
+	}
 	
 	return 0;
 }
 
-/* Add the contents of $list to $m. $list is assumed to lie in $m.
-   This is for envp array.
-   Unlike add*array above, this one returns offset. */
-int addstringptrs(struct memblock* m, struct stringlist* list)
+int addptrsarray(offset listoff)
 {
-	int off;
-	int ret = m->ptr;
+	struct memblock* m = &newblock;
+	struct memblock* b = &scratchblock;
+	struct ptrlist* list = blockptr(b, listoff, struct ptrlist*);
+
+	offset nodeoff;		/* in scratchblock */
+	offset ptrsoff;		/* in newblock */
+	struct ptrnode* node;
+	void** ptrs;		/* or envp, the structure is the same */
+
 	int rem = list->count;
-	char** a;
 
 	if(rem < 0)
 		return -1;
-
-	/* check how much space is needed, and allocate it */
-	if(mextendblock(m, (rem+1)*sizeof(char*), IRALLOC))
+	if((ptrsoff = addstruct(&newblock, (rem+1)*sizeof(void*), 0)) < 0)
 		return -1;
 
-	/* "allocate" the structure */
-	a = (char**)(m->addr + m->ptr);
-	m->ptr += (rem+1)*sizeof(char*);
+	ptrs = blockptr(m, ptrsoff, void**);
 
 	/* set up offsets; repoiting will happen later */
-	for(off = list->head; rem && off; off = blockptr(m, off, struct stringnode*)->next, rem--)
-		*(a++) = NULL + off + offsetof(struct stringnode, str);
-	*a = NULL; /* terminating pointer */
+	for(nodeoff = list->head; rem && nodeoff; rem--) {
+		node = blockptr(b, nodeoff, struct ptrnode*);
+		*(ptrs++) = NULL + node->ptr;
+		nodeoff = node->next;
+	}
+	*ptrs = NULL; /* terminating pointer */
 
-	return ret;
+	return ptrsoff;
 }
 
-/* Due to average inittab being about 1-2k, it's always read whole;
-   for service files, only the head is mmaped.
-   Also, init makes no distinction between mmap failure and open failure,
-   both mean the new inittab won't be used */
-/* maxlen > 0: maximum size to map; maxlen < 0: maximum file size to mmap whole */
-/* the result is always 0-terminated */
-int mmapfile(struct fileblock* f, int maxlen)
+/* Add ptr to either scratch.inittab (listptr = TABLIST) or scratch.env (ENVLIST) */
+/* Passing arbitrary listptr here is a very bad idea. */
+int scratchptr(offset listptr, offset ptr)
 {
-	struct stat st;
+	offset nodeptr = addstruct(&scratchblock, sizeof(struct ptrnode), 0);
 
-	int fd = open(f->name, O_RDONLY);
-	if(fd < 0)
-		retwarn(-1, "can't open %s: %m", f->name);
+	if(nodeptr < 0)
+		return -1;
 
-	if(fstat(fd, &st) < 0)
-		gotowarn(out, "can't stat %s: %m", f->name);
+	/* This can only be done *after* extending the block,
+	   since mextendblock can very well move scratchblock.addr */
+	struct ptrnode* node = blockptr(&scratchblock, nodeptr, struct ptrnode*);
+	struct ptrlist* list = blockptr(&scratchblock, listptr, struct ptrlist*);
 
-	if(!S_ISREG(st.st_mode))
-		gotowarn(out, "%s: not a regular file", f->name);
-	if(maxlen < 0 && st.st_size > -maxlen)
-		/* Note: because ints are used in lots of places,
-		   it is a good idea to avoid loading anything that
-		   exceeds 2^31 when compiled into newblock */
-		gotowarn(out, "%s: file too large", f->name);
+	if(!list->head)
+		list->head = nodeptr;
+	if(list->last)
+		blockptr(&scratchblock, list->last, struct ptrnode*)->next = nodeptr;
 
-	int stm = st.st_size;
-	if(maxlen > 0 && stm > maxlen) stm = maxlen;
+	node->next = 0;
+	node->ptr = ptr;
 
-	/* with one guard byte at the end, to hold \0 */
-	f->len = stm;
-	f->buf = mmap(NULL, stm + 1, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-	if(f->buf == MAP_FAILED)
-		gotowarn(out, "%s: mmap failed: %m", f->name);
-	f->buf[stm] = '\0';
+	list->last = nodeptr;
+	list->count++;
 
-	f->ls = NULL;
-	f->le = NULL;
-	f->line = 0;
-
-	close(fd);
 	return 0;
-
-out:	close(fd);
-	return -1;
 }
 
-int munmapfile(struct fileblock* f)
+/* This is called during initrec parsing, way before NCF->inittab array
+   is formed. So it can't use NCF->inittab. Instead, it should use
+   SCR->inittab (which is offset list) to find location of entries added
+   so far. */
+int checkdupname(const char* name)
 {
-	return munmap(f->buf, f->len);
-}
+	offset po = SCR->inittab.head;
+	struct ptrnode* n;
+	struct initrec* p;
 
-int nextline(struct fileblock* f)
-{
-	char* le = f->le;
-	char* ls = le ? le + 1 : f->buf;
-	char* end = f->buf + f->len;
+	while(po) {
+		n = blockptr(&scratchblock, po, struct ptrnode*);
+		p = blockptr(&newblock, n->ptr, struct initrec*);
 
-	if(ls >= end) return 0;
+		if(p->name[0] && !strcmp(p->name, name))
+			return -1;
 
-	for(le = ls; le < end && *le != '\n'; le++); *le = '\0';
+		po = n->next;
+	}
 
-	f->ls = ls;
-	f->le = le;
-
-	return 1;
+	return 0;
 }

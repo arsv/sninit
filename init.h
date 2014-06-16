@@ -45,9 +45,6 @@
    somehow, complicating configure() code.
    Self-contained initrecs can be placed directly in newblock. */
 struct initrec {
-	struct initrec* next;
-	struct initrec* prev;
-
 	char name[NAMELEN];
 
 	unsigned short rlvl;	// bitmask: [FEDCBA9876543210]
@@ -69,7 +66,8 @@ struct config {
 	int slippery;		/* runlevel bitmask; do not remain in runlevel,
 				   revert immediately */
 
-	struct initrec* inittab;	/* list head */
+	int initnum;			/* inittab element count */
+	struct initrec** inittab;	/* array of pointers, like env */
 	char** env;			/* to be passed to execve in children */
 
 	/* time_* values are in seconds */

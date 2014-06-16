@@ -20,11 +20,6 @@ struct {
 extern int parsesrvfile(struct fileblock* fb, char* basename);
 extern int mmapblock(struct memblock* m, int size);
 
-int scratchstring(char listcode, const char* string)
-{
-	return -1;
-}
-
 char* strdupnull(const char* str)
 {
 	return str ? strdup(str) : NULL;
@@ -39,6 +34,11 @@ int addinitrec(struct fileblock* fb, char* name, char* runlevels, char* flags, c
 	U.cmd = strdupnull(cmd);
 	U.exe = exe;
 	return RET;
+}
+
+int addenviron(const char* env)
+{
+	return 0;
 }
 
 void test(input, rlvls, flags, cmd, exe)

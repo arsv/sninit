@@ -8,6 +8,9 @@ struct memblock newblock;
 void addstrargarray(void) { };
 void addstringarray(void) { };
 void mextendblock(void) { };
+void checkdupname(void) { };
+void scratchptr(void) { };
+void addstring(void) { };
 
 extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
 

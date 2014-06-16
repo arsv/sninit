@@ -19,8 +19,9 @@ int warn(const char* msg, ...);
 char* quote(const char* val);
 
 void dump_config(struct config* cfg);
-void dump_inittab(const char* var, struct initrec* inittab);
-void dump_envp(const char* var, char** list);
+void dump_tab(const char* var, struct initrec** inittab);
+void dump_env(const char* var, char** list);
+void dump_rec(const char* var, int i, struct initrec* p);
 
 int main(int argc, char** argv)
 {
@@ -36,62 +37,19 @@ int main(int argc, char** argv)
 	return 0;
 }
 
-void dump_inittab(const char* base, struct initrec* head)
-{
-	struct initrec* rec;
-	char** p;
-	int i;
-
-	for(rec = head, i = 0; rec; rec = rec->next, i++) {
-		if(rec->next)
-			printf("static struct initrec %s%i;\n", base, i+1);
-
-		printf("static struct initrec %s%i = {\n", base, i);
-
-		if(rec->next)
-			printf("\t.next = &%s%i,\n", base, i+1);
-		else
-			printf("\t.next = NULL,\n");
-		if(rec->prev)
-			printf("\t.prev = &%s%i,\n", base, i-1);
-		else
-			printf("\t.prev = NULL,\n");
-		printf("\t.name = %s,\n", quote(rec->name));
-		printf("\t.rlvl = %i,\n", rec->rlvl);
-		printf("\t.flags = %i,\n", rec->flags);
-		printf("\t.pid = %i,\n", rec->pid);
-		printf("\t.lastrun = %li,\n", rec->lastrun);
-		printf("\t.lastsig = %li,\n", rec->lastsig);
-		printf("\t.argv = { ");
-		for(p = rec->argv; *p; p++)
-			// no quoting for now
-			printf("\"%s\", ", *p);
-		printf(" NULL }\n");
-		printf("};\n\n");	
-	}
-}
-
 void dump_config(struct config* cfg)
 {
-	char* initrecbase = "irec";
-
 	/* Current init.h has #define NULL line thanks to musl,
 	   so there's no need to include stdlib.h */
 	printf("#include \"init.h\"\n\n");
 
-	if(cfg->inittab)
-		dump_inittab(initrecbase, cfg->inittab);
-	if(cfg->env)
-		dump_envp("env", cfg->env);
+	dump_tab("builtin_tab", cfg->inittab);
+	dump_env("builtin_env", cfg->env);
 
 	printf("static struct config builtin = {\n");
 	printf("\t.slippery = %i,\n", cfg->slippery);
-	if(cfg->inittab) {
-		printf("\t.inittab = %s%i,\n", initrecbase, 0);
-	} else {
-		printf("\t.inittab = NULL,\n");
-	}
-	printf("\t.env = %s,\n", cfg->env ? "env" : "NULL");
+	printf("\t.inittab = builtin_tab,\n");
+	printf("\t.env = builtin_env,\n");
 	printf("\t.time_to_restart = %i,\n", cfg->time_to_restart);
 	printf("\t.time_to_SIGKILL = %i,\n", cfg->time_to_SIGKILL);
 	printf("\t.time_to_skip = %i,\n", cfg->time_to_skip);
@@ -101,7 +59,7 @@ void dump_config(struct config* cfg)
 	printf("struct config* cfg = &builtin;\n");
 }
 
-void dump_envp(const char* var, char** list)
+void dump_env(const char* var, char** list)
 {
 	char** p;
 	printf("static char* %s[] = {\n", var);
@@ -109,6 +67,44 @@ void dump_envp(const char* var, char** list)
 		printf("\t%s,\n", quote(*p));
 	printf("\tNULL\n");
 	printf("};\n\n");
+}
+
+void dump_tab(const char* var, struct initrec** inittab)
+{
+	const char* rec = "irec";
+	struct initrec *p, **pp;
+	int i, n;
+
+	for(i = 0, pp = inittab; (p = *pp); pp++, i++)
+		dump_rec(rec, i, p);
+	n = i;
+
+	printf("static struct initrec* %s[] = {\n", var);
+	for(i = 0; i < n; i++)
+		printf("\t&%s%i,\n", rec, i);
+		printf("\tNULL\n");
+	printf("};\n\n");
+}
+
+void dump_rec(const char* var, int i, struct initrec* p)
+{
+	char** a;
+
+	printf("static struct initrec %s%i = {\n", var, i);
+
+	printf("\t.name = %s,\n", quote(p->name));
+	printf("\t.rlvl = %i,\n", p->rlvl);
+	printf("\t.flags = %i,\n", p->flags);
+	printf("\t.pid = %i,\n", p->pid);
+	printf("\t.lastrun = %li,\n", p->lastrun);
+	printf("\t.lastsig = %li,\n", p->lastsig);
+	printf("\t.argv = { ");
+	for(a = p->argv; *a; a++)
+		// no quoting for now
+		printf("\"%s\", ", *a);
+		printf(" NULL }\n");
+
+	printf("};\n");
 }
 
 char* quote(const char* val)

@@ -16,8 +16,6 @@
 #include "sys.h"
 
 extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* flags, char* cmd, int exe);
-extern int mextendblock(struct memblock* m, int size, int blocksize);
-extern int scratchstring(char listcode, const char* string);
 
 extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);

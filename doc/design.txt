@@ -23,7 +23,7 @@ Throughout the code, initrecs are classified as w, o and s type:
 
 Respawn determines how init should react when process dies
 "unexpectedly", as opposed to being killed by init.
-Exclusive means should not start anything else while this
+Exclusive means init should not start anything else while this
 particular process is running.
 
 
@@ -247,3 +247,21 @@ Sysvinit has this feature. It's easy to implement, too.
 Still I can't find any reason why this may be useful. Especially in sysvinit.
 
 For those extremely rare occasions when it's needed, telinit ? provides the answer.
+
+
+Internal inittab: list vs array
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(early versions had single-linked list of initrecs)
+
+Initial reason for change: any viable "last" keyword implementation
+needs reverse traversal of the inittab.
+
+This is only part true, it was possible to implement last with two
+top-to-bottom passes and little code size increase.
+Using double-linked list, while possible, results in pretty ugly code.
+
+Subsequent reasoning: init has a lot of a argv-style structures.
+So why not use pointers array for inittab as well.
+
+As an added bonus, using arrays removes interconnecting stuff from initrec,
+leaving the structure clean.
