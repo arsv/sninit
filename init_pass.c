@@ -237,6 +237,13 @@ void stop(struct initrec* p)
 		warn("#%s[%i]: terminating", p->name, p->pid);
 		kill(p->pid, (p->flags & C_USEABRT ? SIGABRT : SIGTERM));
 		p->flags |= P_SIGTERM;
+
+		/* Attempt to wake the process up to recieve SIGTERM. */
+		/* This must be done *after* sending the killing signal
+		   to ensure SIGCONT does not arrive first. */
+		if(p->flags & P_PAUSED)
+			kill(p->pid, SIGCONT);
+
 		/* make sure we'll get initpass to send SIGKILL if necessary */
 		if(timetowait < 0 || timetowait > cfg->time_to_SIGKILL)
 			timetowait = cfg->time_to_SIGKILL;

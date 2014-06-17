@@ -18,6 +18,7 @@ global void parsecmd(char* cmd);
 
 static inline void setrunlevel(const char* cmd);
 static inline void dumpstate(void);
+static inline void paused(struct initrec* p, int v);
 
 /* cmd here is what telinit sent to initctl.
    The actual command is always cmd[0], while cmd[1:] is (optional) argument.
@@ -39,8 +40,8 @@ void parsecmd(char* cmd)
 
 	switch(*cmd) {
 		case 'r':
-		case 'd':
-		case 'e':
+		case 'd': case 'e':
+		case 'u': case 'w':
 			if(!(p = findentry(arg)))
 				retwarn_("can't find %s in inittab", arg);
 			break;
@@ -56,6 +57,8 @@ void parsecmd(char* cmd)
 		case 'z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
 		/* process ops */
 		case 'r': stop(p); break;
+		case 'u': paused(p, 1); break;
+		case 'w': paused(p, 0); break;
 		case 'd': p->flags = ((p->flags & ~P_ENABLED) | P_DISABLED); break;
 		case 'e': p->flags = ((p->flags & ~P_DISABLED) | P_ENABLED); break;
 		/* reconfigure */
@@ -196,4 +199,14 @@ static void dumpstate(void)
 		else
 			warn("%s\t%s", "-", reportcmd);
 	}
+}
+
+static inline void paused(struct initrec* p, int v)
+{
+	if(p->pid <= 0)
+		retwarn_("%s is not running", p->name);
+	if(kill(p->pid, v ? SIGSTOP : SIGCONT))
+		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
+
+	p->flags = v ? (p->flags | P_PAUSED) : (p->flags & ~P_PAUSED);
 }

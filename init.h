@@ -21,10 +21,11 @@
 
 #define P_DISABLED	(1<<8)		/* this process has been explicitly stopped via telinit */
 #define P_ENABLED	(1<<9)		/* this process has been explicitly started via telinit */
-#define P_SIGTERM	(1<<10)		/* SIGTERM (or SIGABRT) has been sent to this process */
-#define P_SIGKILL	(1<<11)		/* SIGKILL has been sent to this process */
-#define P_ZOMBIE	(1<<12)		/* process failed to die after SIGKILL */
-#define P_TBK		(1<<13)		/* process should be killed */
+#define P_PAUSED	(1<<10)		/* SIGSTOP has been sent */
+#define P_SIGTERM	(1<<11)		/* SIGTERM (or SIGABRT) has been sent to this process */
+#define P_SIGKILL	(1<<12)		/* SIGKILL has been sent to this process */
+#define P_ZOMBIE	(1<<13)		/* process failed to die after SIGKILL */
+#define P_TBK		(1<<14)		/* process should be killed */
 
 /* Sublevels mask (struct initrec.rlvls) */
 #define PRIMASK		0x03FF		/* ------9876543210 */
