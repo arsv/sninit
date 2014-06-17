@@ -1,3 +1,6 @@
+#define _GNU_SOURCE
+/* ^ needed for char** environ to be defined in glibc, whoa */
+
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>

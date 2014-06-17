@@ -1,6 +1,7 @@
 /* Laying out split-but-not-completely-parsed-yet initrecs in newblock */
 
 #include <string.h>
+#include <stddef.h>
 #include "init.h"
 #include "init_conf.h"
 

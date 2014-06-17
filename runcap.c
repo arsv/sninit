@@ -8,6 +8,7 @@
    This perfect separation of functions was actually one of the main reasons
    to make it standalone, vs. having all this built into init. */
 
+#define _GNU_SOURCE
 #include <stdlib.h>
 #include <stdarg.h>
 #include <limits.h>

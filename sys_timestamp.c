@@ -1,3 +1,4 @@
+#include <string.h>
 #include <time.h>
 
 /* mktimestamp is roughly equivalent to strftime(buf, len, "%b %e %T ", gmtime(ts)) */
