@@ -10,3 +10,6 @@ VAR=value
 s1:::sbin/srv1
 s2:::sbin/srv2
 s3:a::sbin/srv3
+
+:8:wait:!echo sleeping
+:~8:wait:!echo wakeup
