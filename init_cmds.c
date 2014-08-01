@@ -56,12 +56,18 @@ void parsecmd(char* cmd)
 		case 'y': nextlevel = (nextlevel & SUBMASK) | (1 << 7); break;
 		case 'p': nextlevel = (nextlevel & SUBMASK) | (1 << 8); break;
 		case 'z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
+		/* halt */
+		case 'H': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_HALT;      break;
+		case 'P': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_POWER_OFF; break;
+		case 'R': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_RESTART;   break;
 		/* process ops */
 		case 'r': stop(p); break;
 		case 'u': paused(p, 1); break;
 		case 'w': paused(p, 0); break;
 		case 'd': p->flags = ((p->flags & ~P_ENABLED) | P_DISABLED); break;
 		case 'e': p->flags = ((p->flags & ~P_DISABLED) | P_ENABLED); break;
+		/* state query */
+		case '?': dumpstate(); break;
 		/* reconfigure */
 		case 'q':
 			if(configure(1))
@@ -69,13 +75,6 @@ void parsecmd(char* cmd)
 			else
 				state |= S_RECONFIG;
 			break;
-		/* halt */
-		case 'H': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_HALT;      break;
-		case 'P': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_POWER_OFF; break;
-		case 'R': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_RESTART;   break;
-		/* state query */
-		case '?': dumpstate(); break;
-
 		default:
 			warn("unknown command");
 	}
