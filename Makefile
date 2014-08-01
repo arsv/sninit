@@ -67,7 +67,7 @@ distclean: clean
 	./mansubst $< > $@ 
 
 .c.o:
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c $<
 
 %: %.o
 	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
