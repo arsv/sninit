@@ -199,9 +199,6 @@ static void transferpids(void)
 	struct initrec* q;
 	struct initrec** qq;
 
-	/* initial configuration with no static backup inittab */
-	if(!cfg) return;
-
 	for(qq = NCF->inittab; (q = *qq); qq++) {
 		/* Prevent w-type entries from being spawned during
 		   the next initpass() just because they are new */
@@ -209,12 +206,13 @@ static void transferpids(void)
 		if((q->flags & C_WAIT) && (q->rlvl & (1 << currlevel)))
 			q->pid = -1;
 
-		if(!q->name)
-			/* can't transfer unnamed entries */
+		if(!cfg) /* boot-time configure, no inittab to transfer pids from */
 			continue;
 
-		if(!(p = findentry(q->name)))
-			/* the entry is genuinely new, nothing to transfer here */
+		if(!q->name) /* can't transfer unnamed entries */
+			continue;
+
+		if(!(p = findentry(q->name))) /* the entry is new, nothing to transfer here */
 			continue;
 
 		q->pid = p->pid;
