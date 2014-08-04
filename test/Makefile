@@ -87,6 +87,8 @@ t_tzinit: t_tzinit.o sys_time_tz.o sys_timestamp.o
 
 t_initpass_pri: t_initpass_pri.o t_initpass_.o init_pass.o test.o
 t_initpass_sec: t_initpass_sec.o t_initpass_.o init_pass.o test.o
+t_initpass_wku: t_initpass_wku.o t_initpass_.o init_pass.o test.o
+t_initpass_off: t_initpass_off.o t_initpass_.o init_pass.o test.o
 
 t_setrunlevels: t_setrunlevels.o init_conf_rec.o test.o
 

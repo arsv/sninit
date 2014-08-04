@@ -80,8 +80,9 @@ int main(int argc, char** argv)
 		if(!(state & S_WAITING) && (state & S_RECONFIG))
 			setnewconf();
 
-		/* bail out once runlevel 0 is reached (that's 1<<0, not just 0) */
-		if((currlevel == nextlevel) && !(nextlevel & PRIMASK & ~1))
+		/* "No runlevel at all". This is the state after reaching runlevel 0
+		   which is (1<<0). See initpass for explaination. */
+		if(!currlevel)
 			goto reboot;
 
 		/* Block for at most $waitneeded, waiting for signals
@@ -111,7 +112,7 @@ reboot:
 
 static int setup(int argc, char** argv)
 {
-	currlevel = 0;
+	currlevel = 1 << 0;
 	nextlevel = INITDEFAULT;
 	rbcode = LINUX_REBOOT_CMD_HALT;
 	syslogfd = -1;

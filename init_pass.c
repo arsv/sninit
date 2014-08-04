@@ -7,7 +7,10 @@
 /* bits for waitfor */
 #define DYING		(1<<0)
 #define RUNNING		(1<<1)
-#define DISABLED	(1<<2)
+#define RUNEXCL		(1<<2)
+#define DISABLED	(1<<3)
+#define LAST		(1<<4)
+#define SECONDPASS	(1<<5)
 
 extern int state;
 extern int currlevel;
@@ -51,37 +54,19 @@ void initpass(void)
 	state |= S_WAITING;
 
 	for(pp = cfg->inittab; (p = *pp); pp++) {
-		if(shouldberunning(p))
-			p->flags &= ~P_TBK;
-		else
-			p->flags |= P_TBK;
-	}
-
-	for(pp--; pp >= cfg->inittab; pp--) {
-		p = *pp;
-		if(!(p->flags & P_TBK)) {
-			continue;
-		} else if(p->pid < 0) {
+		if(!shouldberunning(p)) {
 			/* for w-type processes, to run them again
-			   when switching to appropriate runlevel later */
-			p->pid = 0;
-		} else if(!p->pid) {
-			continue;
-		} else if((p->flags & C_LAST) && waitfor) {
-			/* wait for other processes to die before sending
-			   signals to process marked as last */
-			return;
-		} else {
-			/* here p->pid > 0 and C_LAST is not in effect */
-			stop(p);
-			waitfor |= DYING;
-		}
-	} if(waitfor)
-		return;
+			   in a switch to an appropriate runlevel will occur later */
+			if(p->pid < 0)
+				p->pid = 0;
+			if(p->pid == 0)
+				continue;
 
-	for(pp = cfg->inittab; (p = *pp); pp++) {
-		if(p->flags & P_TBK) {
-			/* something from currlevel is not dead yet */
+			waitfor |= DYING;
+
+			stop(p);
+
+		} else if(waitfor & DYING) {
 			continue;
 		} else if(p->pid > 0) {
 			/* process is running and it's ok */
@@ -91,8 +76,8 @@ void initpass(void)
 				waitfor |= RUNNING;
 		} else if(p->pid < 0 && (p->flags & (C_ONCE | C_WAIT))) {
 			/* has been run already */
+			continue;
 		} else if(waitfor && (p->flags & C_WAIT)) {
-			/* wait for o-entries before starting a w-entry */
 			return;
 		} else {
 			/* ok, now we're absolutely sure $p should be spawned */
@@ -121,6 +106,12 @@ void initpass(void)
 		kill(getpid(), SIGCHLD);
 	} else {
 		currlevel = nextlevel;
+	} if(currlevel == (1<<0)) {
+		/* Runlevel 0 (that's 1<<0 = 1) is "slippery" in its own particular way:
+		   once it's reached, we've got to kill all that's left and exit
+		   the main loop. Since shouldberunning always fails against all-0-bits,
+		   this is a simple way to ensure no processes are left behind. */
+		nextlevel = 0;
 	}
 }
 

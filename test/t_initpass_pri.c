@@ -26,7 +26,7 @@ extern void initpass(void);
 struct initrec I0 = { .pid = 0, .name = "i0", .rlvl = R1,  .flags = C_ONCE };
 struct initrec I1 = { .pid = 0, .name = "i1", .rlvl = R12, .flags = C_ONCE };
 struct initrec I2 = { .pid = 0, .name = "i2", .rlvl = R12, .flags = C_ONCE | C_WAIT };
-struct initrec I3 = { .pid = 0, .name = "i3", .rlvl = R1,  .flags = C_LAST };
+struct initrec I3 = { .pid = 0, .name = "i3", .rlvl = R1,  .flags = 0 };
 struct initrec I4 = { .pid = 0, .name = "i4", .rlvl = R12, .flags = C_ONCE };
 struct initrec I5 = { .pid = 0, .name = "i5", .rlvl = R12, .flags = 0 };
 struct initrec I6 = { .pid = 0, .name = "i6", .rlvl = R1a, .flags = 0 };
@@ -52,6 +52,7 @@ int main(void)
 	Qq("+i0+i1");		/* start o-entries, do NOT start w-entry until both o-entries are dead */
 	D(I1); Q("");		/* i0 is still running, do not proceed to i2 */
 	D(I0); Q("+i2");	/* i1 died, ok to start i2 */
+	Q("");			/* nothing to do while w-type i2 is running */
 	D(I2); Q("+i3+i4+i5");	/* w-type done, ok to start the rest except for I6 which is +a only */
 	A(currlevel != R1);	/* should NOT switch until I4 exist */
 	Q("");			/* nothing to do yet */
@@ -74,14 +75,6 @@ int main(void)
 	A(currlevel == R2);	/* i0 is still running */
 	D(I0); Q("");		/* i0 died, do not restart it... */
 	A(currlevel == R1);	/* but do change runlevel */
-
-	/* Switch to R3 */
-	N(R3); Q("-i5");	/* i3 should be kept alive until i5 dies */
-	Q("-i5"); Q("-i5");	/* again, initpass should keep trying to kill i5 */
-	K(I5); Q("-i3");	/* i5 died, ok to kill i3 now */
-	A(currlevel == R1);	/* waiting for i3 to die */
-	K(I3); Q("");
-	A(currlevel == R3);
 
 	return 0;
 }

@@ -166,8 +166,6 @@ static struct flagrec {
 	{ "wait",	C_ONCE | C_WAIT },
 	{ "o",		C_ONCE },
 	{ "once",	C_ONCE },
-	{ "last",	C_LAST },
-	{ "l",		C_LAST },
 	/* exec-side flags */
 	{ "abort",	C_USEABRT },
 	{ "null",	C_NULL },
