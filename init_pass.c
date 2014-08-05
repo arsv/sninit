@@ -27,23 +27,24 @@ global void stop(struct initrec* p);
 static inline void swapi(int* a, int* b);
 static inline int shouldberunning(struct initrec* p);
 
-/* Initpass: go through inittab, top-to-bottom, (re)starting entries
+/* Initpass: go through inittab, (re)starting entries
    that need to be (re)started and killing entries that should be killed.
 
    There are two principal passes over inittab: bottom-to-top that kills
    processes first, and top-to-bottom that spawns processes. Backwards
    pass is needed to C_WAIT without C_ONCE, i.e. waiting for things to
-   die before killing certain s-type records.
+   die before killing certain s-type records (syslog primarily).
 
-   In case some w-type entry is reached, initpass spawns it and returns.
+   In case a C_WAIT entry is reached during either pass, relevant action
+   is performed and initpass return.
    SIGCHLD will arrive on entry completition, triggering another initpass.
    Blocking wait is never used, init waits for w-type entries in ppoll().
  
    Because no explicit list pointer is kept during runlevel switching,
    things get a bit tricky with w-/o-type entries which are traversed
-   several times but should only be run once. Note to have pid reset to 0,
-   and thus allow re-run, at least one pass should be performed
-   with !shouldberunning(p) */
+   several times but should only be run once.
+   Note to have pid reset to 0, and thus allow re-run, at least one pass
+   must be completed with !shouldberunning(p) for the entry. */
 
 void initpass(void)
 {
@@ -51,36 +52,40 @@ void initpass(void)
 	struct initrec** pp;
 	struct initrec* p;
 
+	struct initrec** inittab = cfg->inittab;
+	struct initrec** initend = cfg->inittab + cfg->initnum - 1;
+
 	state |= S_WAITING;
 
-	for(pp = cfg->inittab; (p = *pp); pp++) {
-		if(!shouldberunning(p)) {
-			/* for w-type processes, to run them again
-			   in a switch to an appropriate runlevel will occur later */
-			if(p->pid < 0)
-				p->pid = 0;
-			if(p->pid == 0)
-				continue;
+	/* Kill pass, reverse order */
+	for(pp = initend; (p = *pp), pp >= inittab; pp--)
+		if(!shouldberunning(p) && p->pid > 0)
+		{
+			stop(p);
 
 			waitfor |= DYING;
 
-			stop(p);
-
-		} else if(waitfor & DYING) {
-			continue;
-		} else if(p->pid > 0) {
-			/* process is running and it's ok */
 			if(p->flags & C_WAIT)
 				return;
-			if(p->flags & C_ONCE)
-				waitfor |= RUNNING;
-		} else if(p->pid < 0 && (p->flags & (C_ONCE | C_WAIT))) {
-			/* has been run already */
-			continue;
-		} else if(waitfor && (p->flags & C_WAIT)) {
-			return;
-		} else {
-			/* ok, now we're absolutely sure $p should be spawned */
+		}
+
+	/* Run pass, direct order */
+	for(pp = inittab; (p = *pp), pp <= initend; pp++)
+		if(shouldberunning(p))
+		{
+			if(p->pid > 0) {
+				if(p->flags & (C_ONCE | C_WAIT))
+					return;
+				else if(p->flags & C_ONCE)
+					waitfor |= RUNNING;
+				continue;
+			}
+
+			if(p->pid < 0 && (p->flags & C_ONCE))
+				continue; /* has been run already */
+			if((p->flags & C_WAIT) && waitfor)
+				return;
+
 			spawn(p);
 
 			if(p->flags & C_ONCE)
@@ -88,14 +93,19 @@ void initpass(void)
 			if(p->flags & C_WAIT)
 				return;			/* off to wait for this process */
 		}
-	}
 
 	if(!waitfor)
 		state &= ~S_WAITING;
  	if(waitfor || currlevel == nextlevel)
 		return;
 
-	/* nothing more to run, we've done switching runlvls */
+	/* Nothing more to run, we've done switching runlvls */
+
+	/* One we're here, reset pid for o-type entries, to run them when
+	   entering another runlevel with shouldberunning(p) true. */
+	for(pp = inittab; (p = *pp), pp <= initend; pp++)
+		if(!shouldberunning(p) && (p->flags & C_ONCE) && (p->pid < 0))
+			p->pid = 0;
 
 	if((cfg->slippery & nextlevel) && !(cfg->slippery & currlevel)) {
 		/* nextlevel is slippery, turn back to currlevel */
@@ -133,14 +143,13 @@ void initpass(void)
 
 static inline int shouldberunning(struct initrec* p)
 {
-	if(p->flags & P_DISABLED)
-		return 0;
-	if(p->flags & P_ENABLED)
-		return 1;
-
 	if(!(p->rlvl & nextlevel & PRIMASK))
 		/* not in this primary level */
 		return 0;
+	if(p->flags & P_MANUAL)
+		/* manually enabled, ignore sublevels */
+		/* manual disable drops bit from rlvl */
+		return 1;
 	if(!(p->rlvl & SUBMASK))
 		/* sublevels not defined = run in all sublevels */
 		return 1;
@@ -232,7 +241,7 @@ void stop(struct initrec* p)
 		/* Attempt to wake the process up to recieve SIGTERM. */
 		/* This must be done *after* sending the killing signal
 		   to ensure SIGCONT does not arrive first. */
-		if(p->flags & P_PAUSED)
+		if(p->flags & P_SIGSTOP)
 			kill(p->pid, SIGCONT);
 
 		/* make sure we'll get initpass to send SIGKILL if necessary */

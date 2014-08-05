@@ -49,6 +49,7 @@ void dump_config(struct config* cfg)
 	printf("static struct config builtin = {\n");
 	printf("\t.slippery = %i,\n", cfg->slippery);
 	printf("\t.inittab = builtin_tab,\n");
+	printf("\t.initnum = %i,\n", cfg->initnum);
 	printf("\t.env = builtin_env,\n");
 	printf("\t.time_to_restart = %i,\n", cfg->time_to_restart);
 	printf("\t.time_to_SIGKILL = %i,\n", cfg->time_to_SIGKILL);

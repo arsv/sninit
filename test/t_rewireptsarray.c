@@ -14,7 +14,7 @@ void findentry() { };
 void addptrsarray() { };
 
 extern int mmapblock(struct memblock* m, int size);
-extern void rewireptrsarray(void*** a);
+extern void rewireptrsarray(void** a);
 
 int main(void)
 {
@@ -43,14 +43,11 @@ int main(void)
 		*(argp++) = spoff;		// save the offset the string was placed at
 		spoff += strlen(*(srcp++)) + 1;	// skip over the newly placed string
 	}
+	newblock.ptr = spoff;
 
 	/* Now try to repoint the array... */
-	//int i;
-	//for(i = 0; i < 4; i++) printf("[%i] %p\n", i, blockptr(&newblock, argvoff, char**)[i]);
-	char** argv = NULL + argvoff;
-	rewireptrsarray((void***) &argv);
-	//for(i = 0; i < 4; i++) printf("[%i] %p\n", i, blockptr(&newblock, argvoff, char**)[i]);
-	//for(i = 0; i < 3; i++) printf("argp[%i] = %i\n", i, argp[i]);
+	char** argv = newblock.addr + argvoff;
+	rewireptrsarray((void**) argv);
 
 	/* ..and check the results */
 	A(argv == blockptr(&newblock, argvoff, char**));

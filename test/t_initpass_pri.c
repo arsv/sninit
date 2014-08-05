@@ -12,6 +12,7 @@ extern void died(struct initrec* p);
 extern void killed(struct initrec* p);
 extern void initpass(void);
 
+#define R0 (1<<0)
 #define R1 (1<<1)
 #define R2 (1<<2)
 #define R3 (1<<3)
@@ -32,7 +33,7 @@ struct initrec I5 = { .pid = 0, .name = "i5", .rlvl = R12, .flags = 0 };
 struct initrec I6 = { .pid = 0, .name = "i6", .rlvl = R1a, .flags = 0 };
 
 struct initrec* testinittab[] = { &I0, &I1, &I2, &I3, &I4, &I5, &I6, NULL };
-struct config testconfig = { .inittab = testinittab };
+struct config testconfig = { .inittab = testinittab, .initnum = sizeof(testinittab)/sizeof(void*) - 1 };
 
 struct config* cfg = &testconfig;
 
@@ -44,7 +45,7 @@ struct config* cfg = &testconfig;
 
 int main(void)
 {
-	currlevel = 0;
+	currlevel = R0;
 	nextlevel = R1;
 	state = 0;
 

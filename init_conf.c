@@ -203,7 +203,7 @@ static void transferpids(void)
 		/* Prevent w-type entries from being spawned during
 		   the next initpass() just because they are new */
 		/* This requires (currlevel == nextlevel) which is enforced with S_RECONF. */
-		if((q->flags & C_WAIT) && (q->rlvl & (1 << currlevel)))
+		if((q->flags & C_WAIT) && (q->rlvl & currlevel))
 			q->pid = -1;
 
 		if(!cfg) /* boot-time configure, no inittab to transfer pids from */
@@ -216,7 +216,7 @@ static void transferpids(void)
 			continue;
 
 		q->pid = p->pid;
-		q->flags |= (p->flags & (P_DISABLED | P_SIGTERM | P_SIGKILL | P_ZOMBIE));
+		q->flags |= (p->flags & (P_SIGTERM | P_SIGKILL | P_ZOMBIE));
 		q->lastrun = p->lastrun;
 		q->lastsig = p->lastsig;
 	}

@@ -23,7 +23,7 @@ struct initrec I3 = { .pid = 0, .name = "i3", .flags = 0,      .rlvl = R1 | Ra }
 struct initrec I4 = { .pid = 0, .name = "i4", .flags = 0,      .rlvl = R1 };
 
 struct initrec* testinittab[] = { &I0, &I1, &I2, &I3, &I4, NULL };
-struct config testconfig = { .inittab = testinittab };
+struct config testconfig = { .inittab = testinittab, .initnum = sizeof(testinittab)/sizeof(void*)-1 };
 struct config* cfg = &testconfig;
 
 #define Q(t) { reset(); initpass(); S(passlog, t); }

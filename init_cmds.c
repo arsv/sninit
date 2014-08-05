@@ -64,8 +64,8 @@ void parsecmd(char* cmd)
 		case 'r': stop(p); break;
 		case 'u': paused(p, 1); break;
 		case 'w': paused(p, 0); break;
-		case 'd': p->flags = ((p->flags & ~P_ENABLED) | P_DISABLED); break;
-		case 'e': p->flags = ((p->flags & ~P_DISABLED) | P_ENABLED); break;
+		case 'd': p->rlvl &= ~(currlevel & PRIMASK); p->flags &= ~P_MANUAL; break;
+		case 'e': p->rlvl |=  (currlevel & PRIMASK); p->flags |=  P_MANUAL; break;
 		/* state query */
 		case '?': dumpstate(); break;
 		/* reconfigure */
@@ -208,5 +208,5 @@ static inline void paused(struct initrec* p, int v)
 	if(kill(p->pid, v ? SIGSTOP : SIGCONT))
 		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
 
-	p->flags = v ? (p->flags | P_PAUSED) : (p->flags & ~P_PAUSED);
+	p->flags = v ? (p->flags | P_SIGSTOP) : (p->flags & ~P_SIGSTOP);
 }
