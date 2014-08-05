@@ -112,15 +112,16 @@ reboot:
 
 static int setup(int argc, char** argv)
 {
+	/* Runlevel 0. This is necessary to make sure :~0:wait: type entries
+	   get marked as "has been run" upon initialization. */
 	currlevel = 1 << 0;
 	nextlevel = INITDEFAULT;
 	rbcode = LINUX_REBOOT_CMD_HALT;
 	syslogfd = -1;
 
+	/* To avoid calling getpid every time. This is for debug runs mostly. */
 	if(getpid() == 1)
 		state |= S_PID1;
-
-	ioctl(0, KDSIGACCEPT, SIGWINCH);
 
 	if(setinitctl())
 		/* Not having telinit is bad, but aborting system startup
@@ -158,7 +159,7 @@ static void setargs(int argc, char** argv)
    blocking kernel-generated signals rarely makes sense. Normally init shouldn't be
    getting them, aside from SIGCHLD and maybe SIGPIPE/SIGALARM during telinit
    communication. If anything else is sent (SIGSEGV?), then we're already well out
-   of normal operation range and should accept whatever default action is. */
+   of normal operation range and should accept whatever the default action is. */
 static void setsignals(void)
 {
 	/* Restarting read() etc is ok, the calls init needs interrupted
@@ -176,7 +177,7 @@ static void setsignals(void)
 
 	/* These should have been signal(2) calls, but since signal(2) tells us
 	   to "avoid its use", we'll call sigaction instead.
-	   After all, BSD-compatible signal() implementation (which is to say,
+	   After all, BSD-compatible signal() implementations (which is to say,
 	   pretty much all of them) are just wrappers around sigaction(2). */
 
 	sigaddset(&sa.sa_mask, SIGINT);

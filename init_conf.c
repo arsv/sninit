@@ -178,7 +178,7 @@ static void rewireptrsarray(void** a)
 /* Run repoint() on all relevant pointers within newblock */
 static void rewirepointers()
 {
-	struct initrec** p;
+	struct initrec** pp;
 
 	REPOINT(NCF->inittab);
 	rewireptrsarray((void**) NCF->inittab);
@@ -186,8 +186,8 @@ static void rewirepointers()
 	REPOINT(NCF->env);
 	rewireptrsarray((void**) NCF->env);
 
-	for(p = NCF->inittab; *p; p++)
-		rewireptrsarray((void**) (*p)->argv);
+	for(pp = NCF->inittab; *pp; pp++)
+		rewireptrsarray((void**) (*pp)->argv);
 }
 
 /* move child state info from cfgblock to newblock */
