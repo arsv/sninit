@@ -75,15 +75,15 @@ int main(int argc, char** argv)
 		/* (Re)spawn processes that need (re)spawning */
 		initpass();
 
-		/* initpass finished without any pending w/o-type processes,
-		   so it's ok to change configuration */
-		if(!(state & S_WAITING) && (state & S_RECONFIG))
-			setnewconf();
-
 		/* "No runlevel at all". This is the state after reaching runlevel 0
 		   which is (1<<0). See initpass for explaination. */
 		if(!currlevel)
 			goto reboot;
+
+		/* initpass finished without any pending w/o-type processes,
+		   so it's ok to change configuration */
+		if(!(state & S_WAITING) && (state & S_RECONFIG))
+			setnewconf();
 
 		/* Block for at most $waitneeded, waiting for signals
 		   or telinit commands. Only set state flags here, do
