@@ -3,9 +3,9 @@
 PATH=/bin
 VAR=value
 
-::once:sbin/ini1
-::once:sbin/ini2
-::wait:sbin/ini3
+i1::once:sbin/ini1
+i2::once:sbin/ini2
+i3::wait:sbin/ini3
 
 s1:::sbin/srv1
 s2:::sbin/srv2
