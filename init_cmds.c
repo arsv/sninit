@@ -20,6 +20,7 @@ global void parsecmd(char* cmd);
 static inline void setrunlevel(const char* cmd);
 static inline void dumpstate(void);
 static inline void paused(struct initrec* p, int v);
+static inline void uphup(struct initrec* p, int v);
 
 /* cmd here is what telinit sent to initctl.
    The actual command is always cmd[0], while cmd[1:] is (optional) argument.
@@ -43,6 +44,7 @@ void parsecmd(char* cmd)
 		case 'r':
 		case 'd': case 'e':
 		case 'u': case 'w':
+		case 'h': case 'k':
 			if(!(p = findentry(arg)))
 				retwarn_("can't find %s in inittab", arg);
 			break;
@@ -53,19 +55,21 @@ void parsecmd(char* cmd)
 
 	switch(*cmd) {
 		/* sleep levels */
-		case 'y': nextlevel = (nextlevel & SUBMASK) | (1 << 7); break;
-		case 'p': nextlevel = (nextlevel & SUBMASK) | (1 << 8); break;
-		case 'z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
+		case 'Y': nextlevel = (nextlevel & SUBMASK) | (1 << 7); break;
+		case 'S': nextlevel = (nextlevel & SUBMASK) | (1 << 8); break;
+		case 'Z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
 		/* halt */
 		case 'H': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_HALT;      break;
 		case 'P': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_POWER_OFF; break;
 		case 'R': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_RESTART;   break;
 		/* process ops */
 		case 'r': stop(p); break;
-		case 'u': paused(p, 1); break;
+		case 'p': paused(p, 1); break;
 		case 'w': paused(p, 0); break;
 		case 'd': p->rlvl &= ~(currlevel & PRIMASK); p->flags &= ~P_MANUAL; break;
 		case 'e': p->rlvl |=  (currlevel & PRIMASK); p->flags |=  P_MANUAL; break;
+		case 'h': uphup(p, 0); break;
+		case 'u': uphup(p, 1); break;
 		/* state query */
 		case '?': dumpstate(); break;
 		/* reconfigure */
@@ -209,4 +213,16 @@ static inline void paused(struct initrec* p, int v)
 		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
 
 	p->flags = v ? (p->flags | P_SIGSTOP) : (p->flags & ~P_SIGSTOP);
+}
+
+static inline void uphup(struct initrec* p, int v)
+{
+	if(v && p->pid <= 0) {
+		p->rlvl  |=  (currlevel & PRIMASK);
+		p->flags |=  P_MANUAL;
+	} else if(p->pid <= 0) {
+		warn("%s is not running", p->name);
+	} else {
+		kill(SIGHUP, p->pid);
+	}
 }

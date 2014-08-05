@@ -21,13 +21,15 @@ static struct cmdrec {
 	{ "reload",	'r', 0 },
 	{ "start",	'e', 1 },
 	{ "stop",	'd', 1 },
-	{ "pause",	'u', 1 },
+	{ "pause",	'p', 1 },
+	{ "hup",	'h', 1 },
+	{ "uphup",	'u', 1 },
 	{ "resume",	'w', 1 },
 	{ "poweroff",	'P', 0 },
 	{ "halt",	'H', 0 },
 	{ "reboot",	'R', 0 },
-	{ "sleep",	'p', 0 },
-	{ "suspend",	'z', 0 },
+	{ "sleep",	'S', 0 },
+	{ "suspend",	'Z', 0 },
 	{ "?",		'?', 0 },
 	{ NULL }
 };
