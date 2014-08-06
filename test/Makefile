@@ -3,7 +3,8 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock \
 	t_mkreldirname t_tzinit t_initpass_pri t_initpass_sec \
-	t_setrunlevels t_readinitdir t_rewireptsarray t_scratchptr
+	t_setrunlevels t_readinitdir t_rewireptsarray t_scratchptr \
+	t_transferpids
 tests: $(TESTS)
 
 # Get CC, CFLAGS etc.
@@ -93,3 +94,5 @@ t_initpass_off: t_initpass_off.o t_initpass_.o init_pass.o test.o
 t_setrunlevels: t_setrunlevels.o init_conf_rec.o test.o
 
 t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_map.o test.o
+
+t_transferpids: t_transferpids.o init_conf.o init_conf_map.o init_find.o test.o
