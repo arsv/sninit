@@ -7,6 +7,19 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_transferpids
 tests: $(TESTS)
 
+# Running tests. The rules will cause make to fail on the first failed test,
+# which is ok since make has -k switch.
+OUTS = $(patsubst %,%.out,$(TESTS))
+RUNS = $(patsubst %,%.run,$(TESTS))
+# Force building before running, to avoid cluttering test output.
+run: $(TESTS) $(OUTS)
+$(RUNS): %.run: %
+	./$<
+$(OUTS): %.out: %
+	./$< > $@
+	@if grep -q FAIL $@; then cat $@; false; else true; fi
+.PHONY: $(OUTS) $(RUNS)
+
 # Get CC, CFLAGS etc.
 # This will also bring some things useless here, like init and telinit rules.
 # That's ok however. Alternative is to have a second set of CC etc. here,
@@ -39,13 +52,16 @@ protocheck: proto.c
 proto.c: ../init*.[ch] ../sys.h | protocheck.px
 	./protocheck.px $^ > $@
 
-clean: clean-proto clean-tests
+clean: clean-proto clean-tests clean-outs
 
 clean-proto:
 	rm -f proto.c	
 
 clean-tests:
 	rm -f $(TESTS)
+
+clean-outs:
+	rm -f $(OUTS)
 
 # Ok, now the tests themselves
 
