@@ -142,7 +142,7 @@ int addptrsarray(offset listoff)
 	offset nodeoff;		/* in scratchblock */
 	offset ptrsoff;		/* in newblock */
 	struct ptrnode* node;
-	void** ptrs;		/* or envp, the structure is the same */
+	void** ptrs;
 
 	int rem = list->count;
 
