@@ -22,6 +22,9 @@
 #include "init.h"
 #include "config.h"
 
+/* To redefine it for testing */
+static const char* tzfile = LOCALTIME;
+
 struct {
 	int ts;
 	int te;
@@ -46,19 +49,12 @@ int timestamp(char* buf, int len)
 {
 	time_t t = time(NULL);
 
-	if(!tzinfo.set)
-		goto tz;
-	else if(tzinfo.ts && t < tzinfo.ts)
-		goto tz;
-	else if(tzinfo.te && t < tzinfo.te)
-		goto tz;
-	else
-		goto ts;
+	if(!tzinfo.set
+	|| (tzinfo.ts && t < tzinfo.ts)
+	|| (tzinfo.te && t < tzinfo.te))
+		tzinit();
 
-tz:	tzinit();
-	tzinfo.set = 1; /* Do not try to re-load timezone after a failure. */
-
-ts:	return mktimestamp(buf, len, t + tzinfo.dt);
+	return mktimestamp(buf, len, t + tzinfo.dt);
 }
 
 /* Load /etc/localtime, initializing tzinfo structure above */
@@ -72,7 +68,7 @@ static void tzinit(void)
 
 	/* Error handling here is just to bail out, leaving tzinfo unchanged. */
 
-	if((fd = open(LOCALTIME, O_RDONLY)) < 0)
+	if((fd = open(tzfile, O_RDONLY)) < 0)
 		return;
 	if(fstat(fd, &st))
 		goto out;
@@ -130,21 +126,24 @@ struct tzfile
 
 /* tzfile is mmaped /etc/localtime; t is current/reference time */
 /* Warning: called from warn()! No error reporting here. */
-static void tzparse(unsigned char* tzfile, int len, time_t t)
+static void tzparse(unsigned char* buf, int len, time_t t)
 {
 	int i;
 
-	if(len < 50 || strncmp((char*)tzfile, "TZif", 4))
+	/* Do not try to re-load timezone after a failure. */
+	tzinfo.set = 1; 
+
+	if(len < 50 || strncmp((char*)buf, "TZif", 4))
 		return;
 
-	int tzh_timecnt = beint32(tzfile + 20 + 3*4);
-	int tzh_typecnt = beint32(tzfile + 20 + 4*4);
+	int tzh_timecnt = beint32(buf + 20 + 3*4);
+	int tzh_typecnt = beint32(buf + 20 + 4*4);
 
 	/* No data (?!) */
 	if(!tzh_timecnt)
 		return;
 
-	unsigned char* tzh_times = tzfile + 20 + 6*4;
+	unsigned char* tzh_times = buf + 20 + 6*4;
 	for(i = 0; i < tzh_timecnt; i++)
 		if((time_t)beint32(tzh_times + i*4) >= t)
 			break;
@@ -152,17 +151,15 @@ static void tzparse(unsigned char* tzfile, int len, time_t t)
 	   there's no upper boundary for current time. */
 
 	int dt = 0;
+	/* note i is the *next* interval index */
+	unsigned char* tzh_ttype = tzh_times + 4*tzh_timecnt;
+	unsigned char c = i > 0 ? tzh_ttype[i - 1] : 0;
 
-	if(i > 0) {
-		unsigned char* tzh_ttype = tzh_times + 4*tzh_timecnt;
-		unsigned char c = tzh_ttype[i - 1];
+	if(c > tzh_typecnt)
+		return;
 
-		if(c >= tzh_typecnt)
-			return;
-
-		unsigned char* tzh_types = tzh_ttype + tzh_timecnt;
-		dt = beint32(tzh_types + c*6);
-	}
+	unsigned char* tzh_types = tzh_ttype + tzh_timecnt;
+	dt = beint32(tzh_types + c*6);
 
 	tzinfo.dt = dt;
 	tzinfo.ts = i > 0 ? (time_t)beint32(tzh_times + (i-1)*4) : 0;

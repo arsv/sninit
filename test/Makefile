@@ -100,7 +100,7 @@ t_fileblock: t_fileblock.o init_conf_map.o test.o
 
 t_mkreldirname: t_mkreldirname.o init_conf_dir.o test.o
 
-t_tzinit: t_tzinit.o sys_time_tz.o sys_timestamp.o
+t_tzinit: t_tzinit.o sys_time_tz.o sys_timestamp.o test.o
 
 t_initpass_pri: t_initpass_pri.o t_initpass_.o init_pass.o test.o
 t_initpass_sec: t_initpass_sec.o t_initpass_.o init_pass.o test.o
