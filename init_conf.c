@@ -60,7 +60,7 @@ extern struct initrec* findentry(const char* name);
 
 extern int mmapblock(struct memblock* m, int size);
 extern void munmapblock(struct memblock* m);
-extern int addptrsarray(offset listoff);
+extern int addptrsarray(offset listoff, int terminate);
 
 
 int configure(int strict)
@@ -131,12 +131,12 @@ static int finishenvp(void)
 {
 	offset off;
 
-	if((off = addptrsarray(TABLIST)) < 0)
+	if((off = addptrsarray(TABLIST, NULL_BOTH)) < 0)
 		return -1;
 	else
 		NCF->inittab = NULL + off;
 
-	if((off = addptrsarray(ENVLIST)) < 0)
+	if((off = addptrsarray(ENVLIST, NULL_BACK)) < 0)
 		return -1;
 	else
 		NCF->env = NULL + off;

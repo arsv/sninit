@@ -27,8 +27,8 @@ extern void initpass(void);
 struct initrec sw = { .pid = -1, .name = "sw", .rlvl = 0x02FF, .flags = C_ONCE | C_WAIT };
 struct initrec sl = { .pid =  0, .name = "sl", .rlvl = 0x0100, .flags = C_ONCE | C_WAIT };
 
-struct initrec* testinittab[] = { &sw, &sl, NULL };
-struct config testconfig = { .inittab = testinittab, .initnum = 2 };
+struct initrec* testinittab[] = { NULL, &sw, &sl, NULL };
+struct config testconfig = { .inittab = testinittab + 1, .initnum = 2 };
 
 struct config* cfg = &testconfig;
 

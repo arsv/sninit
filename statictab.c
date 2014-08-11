@@ -48,7 +48,7 @@ void dump_config(struct config* cfg)
 
 	printf("static struct config builtin = {\n");
 	printf("\t.slippery = %i,\n", cfg->slippery);
-	printf("\t.inittab = builtin_tab,\n");
+	printf("\t.inittab = builtin_tab + 1,\n");
 	printf("\t.initnum = %i,\n", cfg->initnum);
 	printf("\t.env = builtin_env,\n");
 	printf("\t.time_to_restart = %i,\n", cfg->time_to_restart);
@@ -81,6 +81,7 @@ void dump_tab(const char* var, struct initrec** inittab)
 	n = i;
 
 	printf("static struct initrec* %s[] = {\n", var);
+		printf("\tNULL,\n");
 	for(i = 0; i < n; i++)
 		printf("\t&%s%i,\n", rec, i);
 		printf("\tNULL\n");

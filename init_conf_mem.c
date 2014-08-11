@@ -133,33 +133,54 @@ int addstringarray(int n, const char* str, const char* end)
 	return 0;
 }
 
-int addptrsarray(offset listoff)
+/* Make type* array[] style structure in newblock from a ptrlist
+   located at listoff in scratchblock. The array is NULL-terminated
+   at the back and/or at the front.
+   (inittab needs front NULL for reverse pass in initpass)
+
+   Because the pointers are only available when all the data has been placed,
+   the pointer array ends up after the actual data in newblock.  */
+
+int addptrsarray(offset listoff, int terminate)
 {
 	struct memblock* m = &newblock;
 	struct memblock* b = &scratchblock;
 	struct ptrlist* list = blockptr(b, listoff, struct ptrlist*);
 
+	int rem = list->count;
+	int ptrn = rem;
+	void** ptrs;
+	struct ptrnode* node;
 	offset nodeoff;		/* in scratchblock */
 	offset ptrsoff;		/* in newblock */
-	struct ptrnode* node;
-	void** ptrs;
 
-	int rem = list->count;
+	if(rem < 0) return -1;
 
-	if(rem < 0)
-		return -1;
-	if((ptrsoff = addstruct(&newblock, (rem+1)*sizeof(void*), 0)) < 0)
+	if(terminate & NULL_FRONT) ptrn++;
+	if(terminate & NULL_BACK ) ptrn++;
+
+	if((ptrsoff = addstruct(&newblock, ptrn*sizeof(void*), 0)) < 0)
 		return -1;
 
 	ptrs = blockptr(m, ptrsoff, void**);
+
+	/* leading NULL pointer is used as terminator when traversing inittab backwards */
+	if(terminate & NULL_FRONT) {
+		*(ptrs++) = NULL;
+		ptrsoff += sizeof(void*);
+	}
 
 	/* set up offsets; repoiting will happen later */
 	for(nodeoff = list->head; rem && nodeoff; rem--) {
 		node = blockptr(b, nodeoff, struct ptrnode*);
 		*(ptrs++) = NULL + node->ptr;
 		nodeoff = node->next;
-	}
-	*ptrs = NULL; /* terminating pointer */
+	} if(rem)
+		/* less elements than expected; this may break initpass, so let's not take chances */
+		return -1;
+
+	if(terminate & NULL_BACK)
+		*ptrs = NULL;
 
 	return ptrsoff;
 }

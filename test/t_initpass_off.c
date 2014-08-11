@@ -29,8 +29,8 @@ struct initrec s1 = { .pid = 1, .name = "s1", .rlvl = R3, .flags = 0 };
 struct initrec s2 = { .pid = 2, .name = "s2", .rlvl = R3, .flags = 0 };
 struct initrec um = { .pid = 0, .name = "um", .rlvl = 0, .flags = C_ONCE | C_WAIT };
 
-struct initrec* testinittab[] = { &lg, &s1, &s2, &um, NULL };
-struct config testconfig = { .inittab = testinittab, .initnum = 4 };
+struct initrec* testinittab[] = { NULL, &lg, &s1, &s2, &um, NULL };
+struct config testconfig = { .inittab = testinittab + 1, .initnum = sizeof(testinittab)/sizeof(void*) - 2 };
 
 struct config* cfg = &testconfig;
 

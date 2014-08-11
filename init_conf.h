@@ -56,6 +56,11 @@ struct fileblock {
 #define TABLIST offsetof(struct scratch, inittab)
 #define ENVLIST offsetof(struct scratch, env)
 
+/* For addptrsarray */
+#define NULL_FRONT (1<<0)
+#define NULL_BACK (1<<1)
+#define NULL_BOTH (NULL_FRONT | NULL_BACK)
+
 /* Some versions of musl (0.9.14 but not 0.9.10) #define NULL as 0L,
    apparently to cater to C++ folk. Surprisingly, C standard allows this.
    C compilers are less than happy with such a turn though, especially when

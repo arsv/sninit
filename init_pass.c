@@ -48,13 +48,16 @@ void initpass(void)
 	struct initrec** pp;
 	struct initrec* p;
 
+	if(!cfg->inittab || cfg->initnum <= 0)
+		return;	/* should never happen, but who knows */
+
 	struct initrec** inittab = cfg->inittab;
 	struct initrec** initend = cfg->inittab + cfg->initnum - 1;
 
 	state |= S_WAITING;
 
 	/* Kill pass, reverse order */
-	for(pp = initend; (p = *pp), pp >= inittab; pp--)
+	for(pp = initend; (p = *pp); pp--)
 		if(!shouldberunning(p) && p->pid > 0)
 		{
 			stop(p);
@@ -66,7 +69,7 @@ void initpass(void)
 		}
 
 	/* Run pass, direct order */
-	for(pp = inittab; (p = *pp), pp <= initend; pp++)
+	for(pp = inittab; (p = *pp); pp++)
 		if(shouldberunning(p))
 		{
 			if(p->pid > 0) {
@@ -99,7 +102,7 @@ void initpass(void)
 
 	/* One we're here, reset pid for o-type entries, to run them when
 	   entering another runlevel with shouldberunning(p) true. */
-	for(pp = inittab; (p = *pp), pp <= initend; pp++)
+	for(pp = inittab; (p = *pp); pp++)
 		if(!shouldberunning(p) && (p->flags & C_ONCE) && (p->pid < 0))
 			p->pid = 0;
 
