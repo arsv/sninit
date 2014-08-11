@@ -7,10 +7,6 @@
 /* bits for waitfor */
 #define DYING		(1<<0)
 #define RUNNING		(1<<1)
-#define RUNEXCL		(1<<2)
-#define DISABLED	(1<<3)
-#define LAST		(1<<4)
-#define SECONDPASS	(1<<5)
 
 extern int state;
 extern int currlevel;
