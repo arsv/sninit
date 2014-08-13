@@ -1,3 +1,38 @@
+What is initdir
+~~~~~~~~~~~~~~~
+Conventional inittab uses one line per entry (initrec, or in other words
+child process). Initdir is about using one file per entry,
+and a directory(-ies) in place of, or in addition to inittab.
+
+
+Why initdir?
+~~~~~~~~~~~~
+Having one-file-per-initrec as opposed to one-line-per-initrec
+simplifies distro package management. Each package supplies its
+own initrec file, installing it in some pre-determined directory.
+With one-line-per-initrec approach, this would require modifying
+inittab on install *and* uninstall, probably via install/uninstall
+scripts.
+
+
+Service activation
+~~~~~~~~~~~~~~~~~~
+Installing files means init will try to start the services upon
+the next config re-read as there is no simple way to install them
+disabled at this moment.
+
+Installing disabled services and then activating them requires
+non-trivial activation routine; telinit is not well-fit for this
+purpose, and the idea of using telinit to modify service files
+does not sound right. This calls for another tool to control
+service files on disk.
+
+And once there's another tool on the stage, the difference between
+changing service files themselves to indicate enabled/disabled status
+and adding/removing relevant lines to inittab becomes more and more
+vague.
+
+
 Notes on initdir implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The format of initdir files was chosen to make common usage simple.
@@ -35,8 +70,9 @@ That is, make init always read /etc/rc as an initdir.
 
 Well, that's how early implementation worked. Turns out it's not
 so good. It's one more fixed path. It's better to have a way to
-disable it. Some way is needed to set runlevels. All that combined
-pretty much define a @rlvls:/dir line anyway.
+disable it. Some way is needed to set runlevels. Some way is needed
+to specify where exactly do the entries from initdir go.
+All that combined pretty much define a @rlvls:/dir line.
 
 
 == Considerations for initdir entries format
