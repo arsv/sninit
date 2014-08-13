@@ -12,7 +12,7 @@ extern struct memblock newblock;
 extern struct memblock scratchblock;
 extern int mmapblock(struct memblock* b, int len);
 extern void initcfgblocks(void);
-extern int finishenvp(void);
+extern int finishinittab(void);
 static void rewirepointers();
 
 extern int addenviron(const char* def);
@@ -57,7 +57,7 @@ int main(void)
 
 	scratch_all(test_env);
 
-	finishenvp();
+	finishinittab();
 	rewirepointers();
 
 	check_all("env", NCF->env, test_env);

@@ -52,7 +52,7 @@ struct memblock scratchblock = { NULL };
 int readinittab(const char* file, int strict);		/* /etc/inittab */
 
 static void initcfgblocks(void);	/* set initial values for struct config */
-static int finishenvp(void);		/* copy the contents of newenviron to newblock */
+static int finishinittab(void);		/* copy the contents of newenviron to newblock */
 static void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
 					   assuming it won't be mremapped anymore */
 static void transferpids(void);
@@ -76,7 +76,7 @@ int configure(int strict)
 		/* readinittab does warn() about the reasons, so no need to do it here */
 		goto unmap;
 
-	if(finishenvp())
+	if(finishinittab())
 		goto unmap;
 
 	rewirepointers();
@@ -127,7 +127,7 @@ static void initcfgblocks(void)
 	cfg->logdir = NULL;
 }
 
-static int finishenvp(void)
+static int finishinittab(void)
 {
 	offset off;
 

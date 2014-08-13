@@ -18,7 +18,7 @@ extern struct memblock newblock;
 extern struct memblock scratchblock;
 
 extern void initcfgblocks(void);
-extern int finishenvp(void);
+extern int finishinittab(void);
 extern int parseinitline(struct fileblock* fb, int strict);
 extern void rewirepointers(void);
 extern int mmapblock(struct memblock* m, int size);
@@ -110,7 +110,7 @@ int main(void)
 	T(parseinitline_("time:12345:wait:/sbin/hwclock -s"));
 	T(parseinitline_("mount:12345:wait:/bin/mount -a"));
 
-	T(finishenvp())
+	T(finishinittab())
 	rewirepointers();
 
 	dump(&newblock);
