@@ -18,7 +18,7 @@ static struct cmdrec {
 	char cc;
 	char arg;
 } cmdtbl[] = {
-	{ "reload",	'r', 0 },
+	{ "restart",	'r', 0 },
 	{ "start",	'e', 1 },
 	{ "stop",	'd', 1 },
 	{ "pause",	'p', 1 },

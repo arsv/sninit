@@ -41,10 +41,10 @@ void parsecmd(char* cmd)
 		return setrunlevel(cmd);
 
 	switch(*cmd) {
-		case 'r':
-		case 'd': case 'e':
-		case 'u': case 'w':
-		case 'h': case 'k':
+		case 'r':		/* restart */
+		case 'e': case 'd':	/* start, stop */
+		case 'p': case 'w':	/* pause, resume */
+		case 'h': case 'u':	/* hup, uphup */
 			if(!(p = findentry(arg)))
 				retwarn_("can't find %s in inittab", arg);
 			break;
