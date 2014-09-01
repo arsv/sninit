@@ -7,7 +7,7 @@
 
 #define RLVL 4
 
-extern int readinitdir(struct fileblock* bb, const char* dir, int defrlvl, int strict);
+extern int readinitdir(const char* dir, int strict);
 
 int seen;
 
@@ -49,9 +49,6 @@ int parsesrvfile(struct fileblock* fb, char* basename)
 	if(strcmp(fb->buf, contents))
 		printf("FAIL file %s bad contents\n", basename);
 
-	if(fb->rlvl != RLVL)
-		printf("FAIL rlvl = %i\n", fb->rlvl);
-
 	return 0;
 }
 
@@ -62,13 +59,10 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 
 int main(void)
 {
-	struct fileblock bb = {
-		.name = "etc/inittab"
-	};
 	int ret;
 
 	seen = 0;
-	if((ret = readinitdir(&bb, "initdir", RLVL, 0)))
+	if((ret = readinitdir("etc/initdir", 0)))
 		printf("FAIL ret=%i\n", ret);
 
 	if(seen != (1 << 0 | 1 << 1 | 1 << 2))

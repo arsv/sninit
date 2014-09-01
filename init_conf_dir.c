@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <string.h>
 
 #include "config.h"
@@ -23,10 +24,9 @@ extern int nextline(struct fileblock* f);
 
 static inline int skipdirent(struct dirent64* de);
 static int parsesrvfile(struct fileblock* fb, char* basename);
-static int mkreldirname(char* buf, int len, const char* base, const char* dir);
 
 /* bb = base block, for the file that included this directory */
-int readinitdir(struct fileblock* bb, const char* dir, int defrlvl, int strict)
+int readinitdir(const char* dir, int strict)
 {
 	int dirfd;
 	struct dirent64* de;
@@ -39,17 +39,22 @@ int readinitdir(struct fileblock* bb, const char* dir, int defrlvl, int strict)
 	const int fnlen = sizeof(fname);
 	int bnoff;		/* basename offset in fname */
 	int bnlen;
-	struct fileblock fb = { .name = fname, .rlvl = defrlvl };
+	struct fileblock fb = { .name = fname };
 
 	/*        |            |<---- bnlen ---->| */
 	/* fname: |/path/to/dir/filename         | */
 	/*        |--- bnoff ---^                  */
-	if((bnoff = mkreldirname(fname, fnlen, bb->name, dir)) < 0)
-		retwarn(ret, "%s:%i: directory name too long");
+	strncpy(fname, dir, fnlen - 1);
+	bnoff = strlen(fname);
+	fname[bnoff++] = '/';
 	bnlen = fnlen - bnoff;
 
-	if((dirfd = open(fname, O_RDONLY | O_DIRECTORY)) < 0)
-		retwarn(ret, "%s:%i: can't open %s, skipping", bb->name, bb->line, fname);
+	if((dirfd = open(dir, O_RDONLY | O_DIRECTORY)) < 0) {
+		if(errno == ENOENT)
+			return 0;
+		else
+			retwarn(ret, "Can't open %s", dir);
+	}
 
 	while((nr = getdents64(dirfd, (void*)debuf, delen)) > 0) {
 		for(ni = 0; ni < nr; ni += de->d_reclen) {
@@ -66,7 +71,7 @@ int readinitdir(struct fileblock* bb, const char* dir, int defrlvl, int strict)
 			} if(ret && strict)
 				goto out;
 			else if(ret)
-				warn("%s:%i: skipping %s", bb->name, bb->line, de->d_name);
+				warn("%s: skipping %s", dir, de->d_name);
 		}
 	}
 
@@ -88,6 +93,10 @@ static inline int skipdirent(struct dirent64* de)
 	if(len > 0 && de->d_name[len - 1] == '~')
 		return 1;
 
+	/* skip uppercase files (this is bad but keeps README out for now) */
+	if(len > 0 && de->d_name[0] >= 'A' && de->d_name[0] <= 'Z')
+		return 1;
+
 	/* skip non-regular files early if the kernel was kind enough to warn us */
 	if((dt = de->d_type) && dt != DT_LNK && dt != DT_REG)
 		return 1;
@@ -98,45 +107,6 @@ static inline int skipdirent(struct dirent64* de)
 /* Make a full directory name for $dir when included from a file named $base.
 	base="/etc/inittab" dir="services" -> "/etc/services"
    Returns basename offset, see the call above */
-
-/* $base is always the same, at least as long as there are no recursive includes.
-   However, to keep INITTAB a single constant (vs. having INITTAB="/etc/inittab"
-   and INITBASE="/etc/"), and also since it changes almost nothing, this function
-   does not make any assumption regarding $base value. */
-
-static int mkreldirname(char* buf, int len, const char* base, const char* dir)
-{
-	int dirlen = strlen(dir);
-	char* p = buf;
-	const char* q;
-
-	/* Now this all can be done with stpncpy and strlen, but the result
-	   is just as ugly and about as long as well. */
-	if(*dir != '/') {		/* relative path, use "$base/$dir/" */
-		/* copy all $base */
-		for(q = base; p < buf + len && *q; p++, q++)
-			*p = *q;
-		/* backtrack to the rightmost /, separating dirname */
-		do p--; while(p > buf && *p != '/');
-		/* if there was a slash, keep it */
-		if(*p == '/')
-			p++;
-		/* now it's clear now much space is needed, so make sure it's there */
-		if(p - buf + dirlen + 2 > len)
-			return -1;
-	} else if(dirlen > len - 2)	/* absolute path, "$dir/" */
-		return -1;
-
-	/* append $dir */
-	for(q = dir; p < buf + len && *q; p++, q++)
-		*p = *q;
-	/* append trailing /, but only if it's not there already */
-	if(p > buf && *(p - 1) != '/')
-		*p++ = '/';
-	*p = '\0';
-
-	return p - buf;
-}
 
 static int parsesrvfile(struct fileblock* fb, char* basename)
 {
@@ -162,6 +132,8 @@ static int parsesrvfile(struct fileblock* fb, char* basename)
 		flags = strsep(&il, ":");
 		if(!nextline(fb))
 			retwarn(-1, "%s: no command found", fb->name);
+	} else {
+		retwarn(0, "%s: no initrec header found, skipping", fb->name);
 	}
 
 	if(shebang) {

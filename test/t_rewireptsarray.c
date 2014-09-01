@@ -10,6 +10,7 @@ void* cfg;
 int state;
 int currlevel;
 void readinittab() { };
+void readinitdir() { };
 void findentry() { };
 void addptrsarray() { };
 

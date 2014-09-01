@@ -101,16 +101,6 @@ int main(void)
 
 		"123", NULL, "/bin/echo -n foo", 0);
 
-	L("non-shebang, no #: line");
-	test(	"/bin/echo -n foo\n",
-		NULL, NULL, "/bin/echo -n foo", 0);
-	
-	L("non-shebang, comments but no #: line");
-	test(	"# some comment goes here\n"
-		"\n"
-		"/bin/echo -n foo\n",
-		NULL, NULL, "/bin/echo -n foo", 0);
-
 	L("shebang, runlevels, flags");
 	test(	"#!/bin/sh\n"
 		"#:123:wait,log\n"
@@ -118,11 +108,22 @@ int main(void)
 
 		"123", "wait,log", "/etc/rc/foo", 1);
 
-	L("shebang, no #: line");
-	test(	"#!/bin/sh\n"
-		"echo -n foo\n",
+	/* removed! */
 
-		NULL, NULL, "/etc/rc/foo", 1);
+	//L("non-shebang, no #: line");
+	//test(	"/bin/echo -n foo\n",
+	//	NULL, NULL, "/bin/echo -n foo", 0);
+	
+	//L("non-shebang, comments but no #: line");
+	//test(	"# some comment goes here\n"
+	//	"\n"
+	//	"/bin/echo -n foo\n",
+	//	NULL, NULL, "/bin/echo -n foo", 0);
+
+	//L("shebang, no #: line");
+	//test(	"#!/bin/sh\n"
+	//	"echo -n foo\n",
+	//	NULL, NULL, "/etc/rc/foo", 1);
 
 	return 0;
 }

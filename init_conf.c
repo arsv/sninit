@@ -42,7 +42,10 @@
 extern int state;
 extern int currlevel;
 extern struct config* cfg;
-extern const char* inittab;
+
+/* default/built-in stuff */
+const char* inittab = INITTAB;
+const char* initdir = INITDIR;
 
 struct memblock cfgblock = { NULL };
 struct memblock newblock = { NULL };
@@ -50,6 +53,7 @@ struct memblock scratchblock = { NULL };
 
 /* top-level functions handling configuration */
 int readinittab(const char* file, int strict);		/* /etc/inittab */
+int readinitdir(const char* dir, int strict);		/* /etc/rc */
 
 static void initcfgblocks(void);	/* set initial values for struct config */
 static int finishinittab(void);		/* copy the contents of newenviron to newblock */
@@ -75,6 +79,10 @@ int configure(int strict)
 	if(readinittab(inittab, strict))
 		/* readinittab does warn() about the reasons, so no need to do it here */
 		goto unmap;
+#ifdef INITDIR
+	if(readinitdir(initdir, strict))
+		goto unmap;
+#endif
 
 	if(finishinittab())
 		goto unmap;

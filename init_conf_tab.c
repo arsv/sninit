@@ -11,7 +11,6 @@ extern struct memblock scratchblock;
 
 extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* flags, char* cmd, int exe);
 extern int addenviron(const char* string);
-extern int readinitdir(struct fileblock* fb, const char* dir, int defrlvl, int strict);
 extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
 
 extern int mmapfile(struct fileblock* fb, int maxlen);
@@ -19,7 +18,6 @@ extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
 static int parseinitline(struct fileblock* fb, int strict);
-static int parsedirline(struct fileblock* fb, char* line, int strict);
 
 /* Top-level inittab format */
 /* Strict means bail out on errors immediately; with strict=0, it should continue
@@ -29,8 +27,7 @@ int readinittab(const char* file, int strict)
 	int ret = -1;
 	struct fileblock fb = {
 		.name = file,
-		.line = 0,
-		.rlvl = (PRIMASK & ~1)
+		.line = 0
 	};
 
 	if(mmapfile(&fb, -MAXFILE))
@@ -56,9 +53,6 @@ static int parseinitline(struct fileblock* fb, int strict)
 		/* empty or comment line */
 		return 0;
 
-	if(*l == '@')
-		return parsedirline(fb, l + 1, strict);
-
 	p = strpbrk(l, ":=");
 	if(!p)
 		retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
@@ -72,18 +66,4 @@ static int parseinitline(struct fileblock* fb, int strict)
 		return -1;
 
 	return addinitrec(fb, name, runlvl, flags, p, 0);
-}
-
-static int parsedirline(struct fileblock* fb, char* l, int strict)
-{
-	char* p = strpbrk(l, ":");
-	char* name = p ? p + 1 : l + 1;
-	char* runlvl = p ? l + 1 : NULL;
-	*p = '\0';
-
-	unsigned short defrlvl = 0;
-	if(setrunlevels(fb, &defrlvl, runlvl))
-		return -1;
-
-	return readinitdir(fb, name, defrlvl, strict);
 }

@@ -25,8 +25,6 @@ Note init itself does not use environment variables in any way.
 .IP "\fIname\fR:\fIrunlevels\fR:\fIflags\fR:\fIcommand\fR" 4
 Define a process to be started by init. Each process entry carries a single pid value,
 so there can be at most one running process for each entry at any given time.
-.IP "\fB@\fIdirectory" 4
-Include service files from \fIdirectory\fR.
 .P
 All lines are processes top-to-bottom. The relative order of environment and process lines
 is irrelevant, all spawned processes will get exactly the same environment. Processes from

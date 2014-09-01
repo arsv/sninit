@@ -2,7 +2,7 @@
 TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock \
-	t_mkreldirname t_tzinit t_initpass_pri t_initpass_sec \
+	t_tzinit t_initpass_pri t_initpass_sec \
 	t_setrunlevels t_readinitdir t_rewireptsarray t_scratchptr \
 	t_transferpids
 tests: $(TESTS)
@@ -97,8 +97,6 @@ t_scratchptr: t_scratchptr.o init_conf_map.o init_conf_mem.o test.o
 t_rewireptsarray: t_rewireptsarray.o init_conf.o init_conf_map.o test.o
 
 t_fileblock: t_fileblock.o init_conf_map.o test.o
-
-t_mkreldirname: t_mkreldirname.o init_conf_dir.o test.o
 
 t_tzinit: t_tzinit.o sys_time_tz.o sys_timestamp.o test.o
 

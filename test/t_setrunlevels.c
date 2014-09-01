@@ -12,7 +12,7 @@ void checkdupname(void) { };
 void scratchptr(void) { };
 void addstring(void) { };
 
-extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
+extern int setrunlevels(struct fileblock* fb, struct initrec* rec, char* runlevels);
 
 #define R0 (1<<0)
 #define R1 (1<<1)
@@ -34,18 +34,19 @@ void test(char* runlevels, int mask)
 		.line = 0,
 		.buf = NULL,
 		.ls = NULL,
-		.le = NULL,
-		.rlvl = (PRIMASK & ~1)
+		.le = NULL
 	};
-	unsigned short rlvl;
+	struct initrec rec = {
+		.rlvl = 0
+	};
 
 	printf("%-6s", runlevels);
-	if(setrunlevels(&fb, &rlvl, runlevels)) {
+	if(setrunlevels(&fb, &rec, runlevels)) {
 		printf("failed\n");
-	} else if(rlvl != mask) {
-		printf("got 0x%04X expected 0x%04X\n", rlvl, mask);
+	} else if(rec.rlvl != mask) {
+		printf("got 0x%04X expected 0x%04X\n", rec.rlvl, mask);
 	} else {
-		printf("ok 0x%04X\n", rlvl);
+		printf("ok 0x%04X\n", rec.rlvl);
 	}
 }
 

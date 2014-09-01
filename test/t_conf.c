@@ -13,7 +13,6 @@
 int state;
 struct config* cfg;
 int currlevel;
-char* inittab = INITTAB;
 extern struct memblock newblock;
 extern struct memblock scratchblock;
 

@@ -24,9 +24,6 @@ int rbcode;		// reboot code, for reboot(2)
 
 int syslogfd;		// syslog; see init_warn.c
 
-/* default/built-in stuff */
-const char* inittab = INITTAB;
-
 /* configuration */
 weak struct config* cfg;
 

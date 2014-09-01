@@ -11,7 +11,7 @@ global int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flag
 global int addenviron(const char* def);
 
 static int prepargv(char* str, char** end);
-global int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
+static int setrunlevels(struct fileblock* fb, struct initrec* entry, char* runlevels);
 static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
 extern int mextendblock(struct memblock* m, int size);
@@ -80,7 +80,7 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 
 	/* add*array() calls above could very well change newblock.addr, invalidating existing entry value */
 	entry = blockptr(&newblock, entryoff, struct initrec*); 
-	if(setrunlevels(fb, &(entry->rlvl), runlvl))
+	if(setrunlevels(fb, entry, runlvl))
 		goto out;
 	if(setflags(fb, entry, flags))
 		goto out;
@@ -125,32 +125,29 @@ int addenviron(const char* def)
    entries. For initdir entries, fb->rlvl may have different value, in which case
    leaving out pri or sub part means using resp. pri or sub part of fb->rlvl.
 
-   See doc/sublevels.txt for considerations re. sublevels handling.
- 
-   Note this function is not static, and aside from initrecs it is also used
-   for dir-default runlevels in parsedirline(). */ 
+   See doc/sublevels.txt for considerations re. sublevels handling. */
 
-int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels)
+static int setrunlevels(struct fileblock* fb, struct initrec* entry, char* runlevels)
 {
 	char* p;
 	char neg = (*runlevels == '~' ? *(runlevels++) : 0);
-
-	*rlvl = 0;
+	int rlvl = 0;
 
 	for(p = runlevels; *p; p++)
 		if(*p >= '0' && *p <= '9')
-			*rlvl |= (1 << (*p - '0'));
+			rlvl |= (1 << (*p - '0'));
 		else if(*p >= 'a' && *p <= 'f')
-			*rlvl |= (1 << (*p - 'a' + 0xa));
+			rlvl |= (1 << (*p - 'a' + 0xa));
+		else
+			retwarn(-1, "%s:%i: bad runlevel %c", fb->name, fb->line, *p);
 
-	/* The tricky part, handling default runlevels. */
-	if(!(*rlvl & PRIMASK))
-		*rlvl |= fb->rlvl & PRIMASK;
-	if(!(*rlvl & SUBMASK))
-		*rlvl |= fb->rlvl & SUBMASK;
+	if(!(rlvl & PRIMASK))
+		rlvl |= (PRIMASK & ~1);
 
-	/* Due to the way sublevels are handled, negating them makes no sense */
-	if(neg) *rlvl = (~(*rlvl & PRIMASK) & PRIMASK) | (*rlvl & SUBMASK);
+	/* Due to the way sublevels are handled, simply negating them makes no sense */
+	if(neg) rlvl = (~(rlvl & PRIMASK) & PRIMASK) | (rlvl & SUBMASK);
+
+	entry->rlvl = rlvl;
 
 	return 0;
 }

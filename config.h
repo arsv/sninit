@@ -6,6 +6,8 @@
 /* The main configuration file aka inittab. */
 /* MAY be a relative path, which will PROBABLY end up with / for cwd */
 #define INITTAB "etc/inittab"
+/* Initdir, for service files. Leave undefined to disable initdir parsing */
+#define INITDIR "etc/initdir"
 
 /* Syslog socket for init's own messages. Do not change, it's a standard
    value hard-coded in several syslog(3) implementations. */

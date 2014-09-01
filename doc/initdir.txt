@@ -15,6 +15,39 @@ inittab on install *and* uninstall, probably via install/uninstall
 scripts.
 
 
+Why single initdir?
+~~~~~~~~~~~~~~~~~~~
+There has been some oscillation between having a single, pre-configure
+initdir (/etc/initdir, akin to /etc/inittab) and allowing include-like
+directives in inittab. With two-way initpass, the decision has been
+shifted to a single initdir.
+
+Rationale: initdir entries are inherently unordered and do not mix well
+with ordered inittab entries. Before two-way initpass was implemented,
+it made sense to have allow w-type entries to follow services, so that
+they would be started after all services have been killed.
+Two-way initpass ensures it's always the case.
+
+Even with current implementation, initdir entries look somewhat out of place.
+Which bring the following problem:
+
+
+Initdir vs preprocessing inittab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Instead of having initdir code in init itself, it's equally possible
+to move it out, making inittab dynamically generated from a static
+section and files in initdir.
+
+Stand-alone preprocessor would definitely allow more stuff
+to be implemented without increasing resident init footprint significantly.
+But for now I see it as unnecessary complication.
+Built-in initdir support takes about 1kB, and provides all features I'd like
+it to provide.
+
+Initdir support is also easy to compile-out (#undef INITDIR in config.h)
+for people who do not need it, including those trying to do pre-processing.
+
+
 Service activation
 ~~~~~~~~~~~~~~~~~~
 Installing files means init will try to start the services upon
@@ -33,50 +66,8 @@ and adding/removing relevant lines to inittab becomes more and more
 vague.
 
 
-Notes on initdir implementation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The format of initdir files was chosen to make common usage simple.
-Common use case for initdir is assumed to be this:
-	
-	@2345:/etc/rc
-
-That is, running all "common" daemons from a given directory on
-all applicable runlevels.
-
-Configurability for initdir entries is not considered a priority.
-
-
-== Wait-type entries in initdir
-
-Having an option to use w- or o-type initdirs was considered with
-the following application mimicking pm-tools hooks:
-
-	@8:wait:/etc/rc/sleep
-	@~8:wait:/etc/rc/wakeup
-
-This turned out to be rather ugly (note 8 and ~8 dirs), and, keeping
-in line with direct configuration approach, not necessary.
-
-Managing power states is very host-specific, not disto-specific,
-and it's one of the cases when order of things (sometimes) matters,
-so it was decided to keep it all in /etc/inittab
-
-
-== Fixed initdir path
-
-Most of the time there will be exactly one initdir.
-Why not make it a fixed path, like /etc/inittab?
-That is, make init always read /etc/rc as an initdir.
-
-Well, that's how early implementation worked. Turns out it's not
-so good. It's one more fixed path. It's better to have a way to
-disable it. Some way is needed to set runlevels. Some way is needed
-to specify where exactly do the entries from initdir go.
-All that combined pretty much define a @rlvls:/dir line.
-
-
-== Considerations for initdir entries format
-
+Considerations for initdir entries format
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Should initdir entries like /etc/rc/httpd be executable?
 It can help debugging things, that is, allow running
 
@@ -105,30 +96,3 @@ Alternative considered:
 
 this would allow laying initrec out in one line just like in inittab.
 However, files like this would probably require an utility for test runs.
-
-
-== Runlevels in @dir line
-
-In the common use case (see above) all or nearly all services have
-the same runlevels mask. Thus, it makes sense to specify it in
-inittab when including a directory. This makes init-specific line in
-shebang scripts completely optional, and allows using :: for runlevels
-in distro-supplied startup files while leaving runlevels configuration
-host-specific.
-
-Why wasn't the default runlevels mask for services hard-coded?
-Well, it's not clear what it should be. The default value for inittab, ~0,
-is generally not what one wants for services, most should not be running
-in single-user mode. And while runlevel 0 is a very special runlevel for sninit,
-runlevel 1 isn't. So it was left for the user to decide.
-
-
-== No flags in @dir line
-
-Wait entries are not considered fit for initdirs, which leaves a grand
-total of two process flags: null and log. Both are quite process-specific,
-esp. once shell scripts are considered.
-
-Pretty much any other per-process values that were considered, line uid
-or ulimits, are too process-specific and make no sense when specified
-for the whole directory.
