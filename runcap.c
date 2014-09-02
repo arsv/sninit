@@ -17,9 +17,15 @@
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <sys/prctl.h>
-#include <sys/capability.h>
 #include <string.h>
 #include <errno.h>
+
+/* This should have been in sys/capability.h, but that header
+   is non-standard, and hosts pretty ugly libcap stuff aside
+   of capget/capset syscalls. Despite lack of declaration,
+   symbols themselves are usually available (dietlibc, musl, uClibc) */
+#include <linux/capability.h>
+extern int capset(cap_user_header_t hdrp, cap_user_data_t datap);
 
 /* Size limit for mmaped /etc/passwd and /etc/group */
 #define MAXFILELEN 65536
