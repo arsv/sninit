@@ -19,7 +19,7 @@ builtin=
 hostcc=gcc
 
 unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
-unset initctl inittab runcap pprefix cgdir
+unset initctl inittab runcap s cgdir
 
 die() { echo "$@"; exit 1; }
 dieifnot() { test -n "$1" && return; shift; die "$@"; }
@@ -48,9 +48,9 @@ while [ $# -gt 0 ]; do
 		--prefix) prefix=$val ;;
 		--cgdir) cgdir=$val ;;
 
-		--program-prefix) pprefix=$val ;;
-		--with-s) pprefix=s ;;
-		--with-sn) pprefix=sn ;;
+		--program-prefix) s=$val ;;
+		--with-s) s=s ;;
+		--with-sn) s=sn ;;
 
 		--initctl)
 			dieifnot "$val" "$arg: value must be supplied"
@@ -59,6 +59,10 @@ while [ $# -gt 0 ]; do
 		--inittab)
 			dieifnot "$val" "$arg: value must be supplied"
 			inittab=$val
+			;;
+		--initdir)
+			dieifnot "$val" "$arg: value must be supplied"
+			initdir=$val
 			;;
 		--builtin|--with-builtin)
 			dieifnot "$val" "$arg: value must be supplied"
@@ -104,7 +108,10 @@ while [ $# -gt 0 ]; do
 			tstype=$val
 			;;
 		--disable-inittab)
-			null=1
+			inittab=-
+			;;
+		--disable-initdir)
+			initdir=-
 			;;
 		--enable-debug)
 			debug=${val:-"-Wall -g"}
@@ -118,6 +125,13 @@ while [ $# -gt 0 ]; do
 			;;
 		--with-optimization)
 			optimize=${val:-$optimize}
+			;;
+		--test)
+			s=
+			inittab=etc/inittab
+			initdir=etc/initdir
+			optimize=
+			debug="-Wall -g"
 			;;
 		[A-Z]*)
 			eval $arg=$val
@@ -227,16 +241,10 @@ logdir=${logdir:-$prefix/var/log}
 cgdir=${cgdir:-/sys/fs/cgroup}
 sysconfdir=${sysconfdir:-$prefix/etc}
 initctl=${initctl:-@initctl}
-inittab=${inittab:-$sysconfdir/${pprefix}inittab}
+test "$inittab" != '-' && inittab=${inittab:-$sysconfdir/inittab} || unset inittab
+test "$initdir" != '-' && initdir=${initdir:-$sysconfdir/rc}      || unset initdir
 
-tabbase=`basename "$inittab"`
-init=${pprefix}init
-telinit=${pprefix}telinit
-runcap=runcap
-
-unset nc nn
-test -n "$null" && nc='#' || nn='#'
-
+unset nc nn; test -n "$inittab" && nc='#' || nn='#'
 sed -i \
 	-e "/^CC =/s#=.*#= $CC#"\
 	-e "/^CFLAGS =/s#=.*#= $CFLAGS#"\
@@ -248,18 +256,17 @@ sed -i \
 	-e "/^SYS_runcap =/s#=.*#= $sysr#"\
 	-e "/^builtin =/s#=.*#= $builtin#"\
 	-e "/^HOSTCC =/s#=.*#= $HOSTCC#"\
-	-e "/^init =/s#=.*#= $init#"\
-	-e "/^runcap =/s#=.*#= $runcap#"\
-	-e "/^telinit =/s#=.*#= $telinit#"\
-	-e "/^inittab =/s#=.*#= $tabbase#"\
+	-e "/^s =/s#=.*#= $s#"\
 	-e "/^#\?init: init_conf/s/^#\?/${nc}/"\
 	-e "/^#\?init: init_null/s/^#\?/${nn}/"\
 	Makefile
 
+unset nd; test -z "$initdir" && nd="//"
 sed -i \
 	-e "/#define INITTAB/s#\".*#\"$inittab\"#" \
 	-e "/#define LOGDIR/s#\".*#\"$logdir\"#" \
 	-e "/#define INITCTL/s#\".*#\"$initctl\"#" \
+	-e "/^.*#define INITDIR/s@.*@$nd#define INITDIR \"$initdir\"@" \
 	config.h
 
 sed -i \
@@ -274,12 +281,13 @@ echo "	LDFLAGS=$LDFLAGS"
 echo "	LIBS=$LIBS"
 echo
 echo "	inittab location: $inittab"
+echo "	initdir location: $initdir"
 echo "	control socket name: $initctl"
 echo "	logdir location: $logdir"
 echo "	cgroups mount path: $cgdir"
 echo
 echo "	binaries path: $sbindir"
-echo "	executable names: $init $telinit $runcap"
+echo "	executable names: ${s}init ${s}telinit ${s}runcap"
 echo "	man section 5 path: $man5dir"
 echo "	man section 8 path: $man8dir"
 echo

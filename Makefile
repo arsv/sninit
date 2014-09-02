@@ -20,11 +20,8 @@ SYS_runcap = sys_err_runcap.o sys_execvp.o
 sbindir = /sbin
 man5dir = /usr/share/man/man5
 man8dir = /usr/share/man/man8
-# Installation basenames
-init = init
-runcap = runcap
-telinit = telinit
-inittab = inittab
+# Installation basename prefix (as in {,s,sn}init)
+s = 
 
 # Built-in inittab
 builtin = 
@@ -48,14 +45,14 @@ runcap: runcap.o $(SYS_runcap)
 install: install-bin install-man
 
 install-bin:
-	install -m 0755 -D init $(DESTDIR)$(sbindir)/$(init)
-	install -m 0755 -D telinit $(DESTDIR)$(sbindir)/$(telinit)
-	install -m 0755 -D runcap $(DESTDIR)$(sbindir)/$(runcap)
+	install -m 0755 -D init $(DESTDIR)$(sbindir)/$sinit
+	install -m 0755 -D telinit $(DESTDIR)$(sbindir)/$stelinit
+	install -m 0755 -D runcap $(DESTDIR)$(sbindir)/$sruncap
 
 install-man:
-	install -m 0644 -D init.8 $(DESTDIR)$(man8dir)/$(init).8
-	install -m 0644 -D telinit.8 $(DESTDIR)$(man8dir)/$(telinit).8
-	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/$(inittab).5
+	install -m 0644 -D init.8 $(DESTDIR)$(man8dir)/$sinit.8
+	install -m 0644 -D telinit.8 $(DESTDIR)$(man8dir)/$stelinit.8
+	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/$sinittab.5
 
 clean:
 	rm -f *.o *.ho builtin.c
