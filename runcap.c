@@ -20,7 +20,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/prctl.h>
-#include <linux/capability.h>
 #include <sys/capability.h>
 #include <string.h>
 #include <errno.h>

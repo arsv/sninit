@@ -1,10 +1,8 @@
 #define _GNU_SOURCE
 #include <unistd.h>
 #include <signal.h>
-#include <linux/kd.h>
 #include <sys/ioctl.h>
 #include <sys/reboot.h>
-#include <linux/reboot.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -113,7 +111,7 @@ static int setup(int argc, char** argv)
 	   get marked as "has been run" upon initialization. */
 	currlevel = 1 << 0;
 	nextlevel = INITDEFAULT;
-	rbcode = LINUX_REBOOT_CMD_HALT;
+	rbcode = RB_HALT_SYSTEM;
 	syslogfd = -1;
 
 	/* To avoid calling getpid every time. This is for debug runs mostly. */

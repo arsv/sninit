@@ -81,6 +81,9 @@ If one needs sninit for BSD, one can take it and make a BSD-specific version;
 a lesser evil than having code cluttered with #ifdef's in what ultimately
 is a very system-specific utility.
 
+(later update: reboot(2), getdents(2) and abstract namespaces are apparently
+supported in some BSD flavors)
+
 
 sninit does not discard startup entries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

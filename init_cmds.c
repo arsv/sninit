@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <linux/reboot.h>
+#include <sys/reboot.h>
 #include "init.h"
 
 extern int state;
@@ -59,9 +59,9 @@ void parsecmd(char* cmd)
 		case 'S': nextlevel = (nextlevel & SUBMASK) | (1 << 8); break;
 		case 'Z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
 		/* halt */
-		case 'H': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_HALT;      break;
-		case 'P': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_POWER_OFF; break;
-		case 'R': nextlevel = 0; rbcode = LINUX_REBOOT_CMD_RESTART;   break;
+		case 'H': nextlevel = 0; rbcode = RB_HALT_SYSTEM; break;
+		case 'P': nextlevel = 0; rbcode = RB_POWER_OFF;   break;
+		case 'R': nextlevel = 0; rbcode = RB_AUTOBOOT;    break;
 		/* process ops */
 		case 'r': stop(p); break;
 		case 'p': paused(p, 1); break;
