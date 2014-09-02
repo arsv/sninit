@@ -2,7 +2,7 @@
 TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock \
-	t_tzinit t_initpass_pri t_initpass_sec \
+	t_tzinit t_initpass_pri t_initpass_sec t_initpass_wku \
 	t_setrunlevels t_readinitdir t_rewireptsarray t_scratchptr \
 	t_transferpids
 tests: $(TESTS)
