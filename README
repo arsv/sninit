@@ -13,14 +13,14 @@ Features
 ~~~~~~~~
 Key things sninit does have:
 
-* Runlevels for process management
-* Starting/stopping individual processes manually
++ Runlevels for process management
++ Starting/stopping individual processes manually
   "telinit stop httpd" and so on
-* Sleep/suspend/hibernate as runlevels
-* Support for initdirs (one file per process),
++ Sleep/suspend/hibernate as runlevels
++ Support for initdirs (one file per process),
   as opposed to sysvinit inittab (one line per process)
-* Small size; sninit is expected to be linked statically with dietlibc
-* Simplified memory management;
++ Small size; sninit is expected to be linked statically with dietlibc
++ Simplified memory management;
   no malloc, memory allocation only while reconfiguring
 
 Things sninit lacks:
@@ -34,7 +34,7 @@ Things sninit lacks:
 
 Things sninit has which are not in any way exceptional:
 
-+ parallel startups
+* parallel startups
   (busybox init allows it, never mind sysvinit)
 
 
