@@ -10,14 +10,11 @@
 
 #define _GNU_SOURCE
 #include <stdlib.h>
-#include <stdarg.h>
-#include <limits.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/mman.h>
-#include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/prctl.h>
 #include <sys/capability.h>
@@ -81,9 +78,11 @@ struct limitdesc {
 	{ 'p', RLIMIT_NPROC },
 	{ 'm', RLIMIT_RSS },
 	{ 'E', RLIMIT_RTPRIO },
-	{ 'T', RLIMIT_RTTIME },
 	{ 'i', RLIMIT_SIGPENDING },
 	{ 's', RLIMIT_STACK },
+#ifdef RLIMIT_RTTIME
+	{ 'T', RLIMIT_RTTIME },		/* musl lacks this? */
+#endif
 	{ '\0' }
 };
 

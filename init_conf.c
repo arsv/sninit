@@ -1,14 +1,5 @@
-#define _GNU_SOURCE
-#define _BSD_SOURCE
-#include <fcntl.h>
-#include <dirent.h>
 #include <string.h>
-#include <unistd.h>
 #include <stddef.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-#include <sys/syscall.h>
-
 #include "config.h"
 #include "init.h"
 #include "init_conf.h"

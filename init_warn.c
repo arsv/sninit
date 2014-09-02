@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
 #include <sys/socket.h>
 #include "config.h"
 #include "init.h"

@@ -1,6 +1,5 @@
 #include <unistd.h>
 #include <sys/wait.h>
-
 #include "init.h"
 
 extern int state;

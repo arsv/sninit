@@ -1,8 +1,6 @@
 /* Parsing inittab */
 
 #include <string.h>
-#include <sys/types.h>
-#include <sys/mman.h>
 #include "init.h"
 #include "init_conf.h"
 

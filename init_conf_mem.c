@@ -14,9 +14,7 @@
 	struct ptrlist.last
    which reference scratchblock instead. */
 
-#include <stdarg.h>
 #include <string.h>
-
 #include "init.h"
 #include "init_conf.h"
 

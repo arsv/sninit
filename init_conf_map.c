@@ -1,12 +1,8 @@
 #define _GNU_SOURCE
 #include <unistd.h>
-#include <string.h>
-#include <stdarg.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <stddef.h>
-
 #include "init.h"
 #include "init_conf.h"
 

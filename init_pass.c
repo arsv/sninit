@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
-
 #include "init.h"
 
 /* bits for waitfor */
