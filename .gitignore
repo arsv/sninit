@@ -1,6 +1,7 @@
 tags
 *.o
 *.ho
+*.a
 builtin.c
 init
 telinit
