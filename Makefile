@@ -6,15 +6,15 @@
 # standard situations. In case you need some unusual setup (weirdly configured
 # dietlibc etc), ditch configure and edit this file directly.
 
+# Target architecture, for bundled libc only
+ARCH = x86_64
+
 # Building
-CC = diet gcc
-CFLAGS = -Wall -g
-LDFLAGS = 
-LIBS = 
-LIBS_syscall = -lcompat
-SYS_init = sys_printf.o sys_err_init.o sys_time_tz.o sys_timestamp.o
-SYS_telinit = sys_err_telinit.o
-SYS_runcap = sys_err_runcap.o sys_execvp.o
+CC = gcc
+AR = ar
+CFLAGS = -Wall -g -nostdinc -Ilibc/include -Ilibc/$(ARCH)
+LDFLAGS = -nostdlib
+LIBS = libc.a
 
 # Installation directories. Check config.h for runtime paths.
 sbindir = /sbin
@@ -29,18 +29,23 @@ HOSTCC =
 
 all: init telinit runcap init.8 telinit.8 inittab.5 runcap.8
 
+
 init: init.o \
 	init_pass.o init_poll.o init_wait.o \
 	init_exec.o init_warn.o init_cmds.o \
-	init_find.o $(SYS_init)
+	init_find.o
 # Configurable init
 init: init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.o
 # Non-configurable init
 #init: init_null.o
+init: sys_printf.o sys_err_init.o init_time_tz.o init_time_stamp.o
 
-telinit: telinit.o $(SYS_telinit)
+telinit: telinit.o
+telinit: sys_err_telinit.o
 
-runcap: runcap.o $(SYS_runcap)
+runcap: runcap.o
+runcap: sys_err_runcap.o sys_execvp.o
+
 
 install: install-bin install-man
 
@@ -55,21 +60,12 @@ install-man:
 	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/$sinittab.5
 
 clean:
-	rm -f *.o *.ho builtin.c
+	rm -f *.o *.ho *.a builtin.c
 
 distclean: clean
 	rm -f init telinit statictab *.[58]
 
-%.5 %.8: %.man | mansubst
-	./mansubst $< > $@ 
-
-.c.o:
-	$(CC) $(CFLAGS) -c $<
-
-%: %.o
-	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
-
-# Built-in inittab
+# --- Built-in inittab ---------------------------------------------------------
 #
 # This differs significantly from the rest of the file
 # because statictab must be host-executable, not target-executably
@@ -109,3 +105,47 @@ init: builtin.o
 builtin.c: $(builtin) | statictab
 	./statictab $< > $@
 endif
+
+# --- Bundled libc -------------------------------------------------------------
+#
+# This section is even more ugly
+
+ifneq ($(ARCH),)
+
+# The smell of lisp is strong here.
+libc := $(sort $(basename $(notdir\
+		$(wildcard libc/*.[cS])\
+		$(wildcard libc/unicall/*.[cS])\
+		$(wildcard libc/$(ARCH)/*.[cS]) )))
+
+# The order of the rules below is important.
+# Anything arch-specific should be preferred to generic unicall stuff.
+libc.a(%.o): libc/$(ARCH)/%.o
+	$(AR) crS $@ $<
+libc.a(%.o): libc/unicall/%.o
+	$(AR) crS $@ $<
+libc.a(%.o): libc/%.o
+	$(AR) crS $@ $<
+
+libc.a: $(patsubst %,libc.a(%.o),$(libc))
+	$(AR) s $@
+else
+
+libc.a:
+	@echo Set ARCH in Makefile to build bundled libc; false
+
+endif
+
+# --- Implicit rules -----------------------------------------------------------
+
+%.5 %.8: %.man | mansubst
+	./mansubst $< > $@ 
+
+.c.o:
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+.S.o:
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+%: %.o
+	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
