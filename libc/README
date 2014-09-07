@@ -1,0 +1,15 @@
+This is a stripped-down subset of dietlibc, enough to build sninit
+but probably not for anything else. See doc/libc.txt for explanation.
+
+Most of the code in this directory is due to Felix von Leitner.
+See http://www.fefe.de/dietlibc/ for the original source.
+
+File structure:
+	include		generic headers
+	*.c    		generic libc routines (string and time)
+	ARCH/		machine-specific syscall code
+	ARCH/bits/	machine-specific constants
+	ARCH/syscalls.h	syscall numbers
+	unicall		generic syscall code
+
+There is no Makefile here; libc is built from the top source directory.

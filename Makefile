@@ -29,6 +29,7 @@ HOSTCC =
 
 all: init telinit runcap init.8 telinit.8 inittab.5 runcap.8
 
+init telinit runcap: libc.a
 
 init: init.o \
 	init_pass.o init_poll.o init_wait.o \
@@ -38,7 +39,8 @@ init: init.o \
 init: init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.o
 # Non-configurable init
 #init: init_null.o
-init: sys_printf.o sys_err_init.o init_time_tz.o init_time_stamp.o
+init: init_time_tz.o init_time_stamp.o
+init: sys_printf.o sys_err_init.o
 
 telinit: telinit.o
 telinit: sys_err_telinit.o
@@ -60,10 +62,10 @@ install-man:
 	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/$sinittab.5
 
 clean:
-	rm -f *.o *.ho *.a builtin.c
+	rm -f *.o *.ho builtin.c
 
-distclean: clean
-	rm -f init telinit statictab *.[58]
+distclean: clean clean-libc
+	rm -f init telinit statictab *.[58] libc.a
 
 # --- Built-in inittab ---------------------------------------------------------
 #
@@ -129,6 +131,12 @@ libc.a(%.o): libc/%.o
 
 libc.a: $(patsubst %,libc.a(%.o),$(libc))
 	$(AR) s $@
+
+clean-libc:
+	rm -f libc.a libc/*.o libc/*/*.o
+
+libc: libc.a
+
 else
 
 libc.a:

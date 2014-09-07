@@ -14,6 +14,9 @@ gid_t getegid(void);
 
 pid_t setsid (void);
 
+int setresuid(uid_t ruid, uid_t euid, uid_t suid);
+int setresgid(gid_t rgid, gid_t egid, gid_t sgid);
+
 void _exit(int status) __attribute__((__noreturn__));
 
 int open(const char* pathname,int flags, ...);
@@ -25,6 +28,7 @@ int close(int fd);
 
 pid_t fork(void);
 int execve(const char *filename, char *const argv [], char *const envp[]);
+int execvp(const char *file, char *const argv[]);
 
 void *mmap (void *addr, size_t len, int prot, int flags, int fd, off_t offset);
 void *mremap (void *addr, size_t old_len, size_t new_len, unsigned long may_move);
