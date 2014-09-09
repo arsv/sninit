@@ -1,6 +1,6 @@
-#ifndef _FCNTL_H
-#define _FCNTL_H
+#ifndef FCNTL_H
+#define FCNTL_H
 
-#include <bitconst.h>
+#include <bits/fcntl.h>
 
 #endif

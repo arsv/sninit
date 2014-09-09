@@ -1,5 +1,5 @@
-#ifndef _SYS_REBOOT_H
-#define _SYS_REBOOT_H
+#ifndef SYS_REBOOT_H
+#define SYS_REBOOT_H
 
 #define RB_AUTOBOOT	0x01234567
 #define RB_HALT_SYSTEM	0xcdef0123

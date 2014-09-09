@@ -1,19 +1,7 @@
-#ifndef UNICONST_H
-#define UNICONST_H
+#ifndef BITS_STAT_H
+#define BITS_STAT_H
 
-/* dirent stuff */
-
-#define DT_UNKNOWN	0
-#define DT_FIFO		1
-#define DT_CHR		2
-#define DT_DIR		4
-#define DT_BLK		6
-#define DT_REG		8
-#define DT_LNK		10
-#define DT_SOCK		12
-#define DT_WHT		14
-
-/* stat */
+#include <bits/types.h>
 
 #define S_IFMT	       00170000
 #define S_IFSOCK	0140000
@@ -35,6 +23,25 @@
 #define S_ISFIFO(m)	(((m) & S_IFMT) == S_IFIFO)
 #define S_ISSOCK(m)	(((m) & S_IFMT) == S_IFSOCK)
 
-#include <bitconst.h>
+struct stat {
+	unsigned long	st_dev;
+	unsigned long	st_ino;
+	unsigned long	st_nlink;
+	uint32_t	st_mode;
+	uint32_t	st_uid;
+	uint32_t	st_gid;
+	uint32_t	__pad0;
+	unsigned long	 st_rdev;
+	unsigned long	st_size;
+	unsigned long	st_blksize;
+	unsigned long	st_blocks;
+	time_t		st_atime;
+	unsigned long	st_atime_nsec;
+	time_t		st_mtime;
+	unsigned long	st_mtime_nsec;
+	time_t		st_ctime;
+	unsigned long	st_ctime_nsec;
+	long		__unused[3];
+};
 
 #endif

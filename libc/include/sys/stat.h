@@ -1,7 +1,8 @@
-#ifndef BITTYPES_H
-#include <bittypes.h>
-#endif
+#ifndef SYS_STAT_H
+#define SYS_STAT_H
 
-#ifndef UNISTD_H
-#include <unistd.h>
+#include <bits/stat.h>
+
+int fstat(int fd, struct stat *buf);
+
 #endif

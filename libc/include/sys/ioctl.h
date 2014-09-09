@@ -1,7 +1,7 @@
-#ifndef _IOCTL_H
-#define _IOCTL_H
+#ifndef SYS_IOCTL_H
+#define SYS_IOCTL_H
 
-#include <bitioctl.h>
+#include <bits/ioctl.h>
 
 int ioctl(int d, long int request, ...);
 

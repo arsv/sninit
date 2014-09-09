@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <stddef.h>
 
 int __libc_send(int fd, const void * buf, size_t n, int flags);
   /* shut up gcc warning about missing prototype */

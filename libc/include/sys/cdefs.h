@@ -1,5 +1,5 @@
-#ifndef CDEFS_H
-#define CDEFS_H
+#ifndef SYS_CDEFS_H
+#define SYS_CDEFS_H
 
 #define pure __attribute__ ((__pure__))
 #define nonnull(params) __attribute__ ((__nonnull__ params))

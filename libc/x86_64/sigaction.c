@@ -1,7 +1,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syscalls.h>
+#include <bits/syscall.h>
 
 int __rt_sigaction(int signum, const struct sigaction *act, struct sigaction *oldact, long nr);
 

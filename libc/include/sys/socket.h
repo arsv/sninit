@@ -4,7 +4,7 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
-#include <bitconst.h>
+#include <bits/socket.h>
 
 struct sockaddr {
   sa_family_t sa_family;
@@ -58,11 +58,7 @@ int setsockopt(int s, int level, int optname, const void *optval, socklen_t optl
 
 int listen(int s, int backlog);
 
-#define SHUT_RD 0
-#define SHUT_WR 1
-#define SHUT_RDWR 2
 int shutdown(int s, int how);
-
 
 #define CMSG_ALIGN(len) ( ((len)+sizeof(long)-1) & ~(sizeof(long)-1) )
 #define __CMSG_NXTHDR(ctl, len, cmsg) __cmsg_nxthdr((ctl),(len),(cmsg))
