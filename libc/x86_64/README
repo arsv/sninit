@@ -1,0 +1,5 @@
+AMD 64 SysV calling convention
+
+                  1    2    3    4   5   6
+Syscall    RAX (RDI, RSI, RDX, R10, R8, R9) -> RAX
+Function       (RDI, RSI, RDX, RCX, R8, R9) -> RAX

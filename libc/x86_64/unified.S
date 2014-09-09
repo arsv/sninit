@@ -1,34 +1,25 @@
-#define SYS_exit 0x3c
-
 .text
 
-.weak exit
-exit:
-.global _exit
-_exit:
-	mov	$SYS_exit,%al
-
-.global __error_unified_syscall
-.global __unified_syscall
-.global __unified_syscall_16bit
-.global __unified_syscall_lp64
-__unified_syscall:
+.global unisys
+.global unisysx
+unisys:
 	mov	$0, %ah
-__unified_syscall_16bit:
+unisysx:
 	movzwl	%ax, %eax
 	mov	%rcx, %r10
 	syscall
-__error_unified_syscall:
 	cmpq	$-132, %rax
-	jbe	.Lnoerror
+	jbe	ok
 	negl	%eax
 	pushq	%rax
 	call	__errno_location
 	popq	%rcx
 	movl	%ecx,(%rax)
 	orq	$-1, %rax
-.Lnoerror:
+ok:	ret
 
-	ret
-.Lhere:
-	.size	 __unified_syscall,.Lhere-__unified_syscall
+.type unisysx,@function
+.size unisysx,.-unisysx
+
+.type unisys,@function
+.size unisys,unisysx-unisys

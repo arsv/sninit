@@ -4,10 +4,11 @@
 
 .text
 .global ppoll
+
 ppoll:
 	mov	$__NR_ppoll, %ax
 	mov	$sigbytes, %r8d
-	jmp	__unified_syscall_16bit
+	jmp	unisysx
 
 .type ppoll,@function
-.size ppoll, .-ppoll
+.size ppoll,.-ppoll

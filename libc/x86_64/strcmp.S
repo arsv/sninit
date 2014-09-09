@@ -1,6 +1,5 @@
 .text
 .global strcmp
-.type	strcmp,@function
 
 strcmp:
 .Lloop:
@@ -22,3 +21,6 @@ strcmp:
 	sbb %eax,%eax
 	or $1,%eax
 	ret
+
+.type strcmp,@function
+.size strcmp,.-strcmp

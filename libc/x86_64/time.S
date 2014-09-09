@@ -2,10 +2,10 @@
 
 .text
 .global time
-.type time,@function
 
 time:
 	mov	$__NR_time, %ax
-	jmp	__unified_syscall_16bit
+	jmp	unisysx
 
+.type time,@function
 .size time,.-time
