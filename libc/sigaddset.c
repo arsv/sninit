@@ -6,7 +6,7 @@
 
 int sigaddset(sigset_t *set, int signo) {
   if ((signo<1)||(signo>SIGRTMAX)) {
-    (*__errno_location())=EINVAL;
+    errno=EINVAL;
     return -1;
   } else {
     unsigned long __mask = __sigmask (signo);

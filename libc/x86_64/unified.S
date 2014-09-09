@@ -11,10 +11,7 @@ unisysx:
 	cmpq	$-132, %rax
 	jbe	ok
 	negl	%eax
-	pushq	%rax
-	call	__errno_location
-	popq	%rcx
-	movl	%ecx,(%rax)
+	movl	%eax, errno
 	orq	$-1, %rax
 ok:	ret
 
