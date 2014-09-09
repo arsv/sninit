@@ -12,7 +12,7 @@ ARCH = x86_64
 # Building
 CC = gcc
 AR = ar
-CFLAGS = -Wall -g -nostdinc -Ilibc/include -Ilibc/$(ARCH)
+CFLAGS = -Wall -g -nostdinc -I$/libc/include -I$/libc/$(ARCH)
 LDFLAGS = -nostdlib
 LIBS = libc.a
 

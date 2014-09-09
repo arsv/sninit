@@ -1,3 +1,6 @@
+# The top source directory is ..
+/ = ../
+
 # Top (default) rule, to override whatever ../Makefile will bring
 TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
