@@ -1,11 +1,11 @@
-/* implement time(2) via gettimeofday(2) on x86-64 because gettimeofday
-   is a vsyscall (i.e. no actual switch to kernel mode) */
+#include <bits/syscall.h>
+
 .text
 .global time
 .type time,@function
+
 time:
-	mov	$0xffffffffff600400,%rax
-	call	*%rax
-	ret
-.Lhere:
-	.size	 time,.Lhere-time
+	mov	$__NR_time, %ax
+	jmp	__unified_syscall_16bit
+
+.size time,.-time
