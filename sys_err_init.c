@@ -42,6 +42,7 @@ char* strerror(int err)
 		r(ENOTDIR);	/* execve */
 		r(E2BIG);	/* execve, very large service file */
 		r(EIO);		/* unlikely, bad news */
+		r(EPERM);	/* reboot and some other calls */
 		default: return NULL;
 	}
 }
