@@ -98,7 +98,7 @@ reboot:
 		return 0;
 
 	reboot(rbcode);
-	warn("still here, reboot(0x%08X) failed: %m", rbcode);
+	warn("still here, reboot(%i) failed: %m", rbcode);
 
 	return 0xFE; /* feh */
 };
