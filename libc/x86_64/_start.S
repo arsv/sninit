@@ -1,4 +1,4 @@
-#define __NR_exit 0x3c
+.equ NR_exit, 0x3c
 
 .text
 .global _start
@@ -17,7 +17,7 @@ _start:
 
 	movq	%rax, %rdi		/* return value */
 
-_exit:	mov	$__NR_exit, %ax		/* call _exit */
+_exit:	mov	$NR_exit, %ax		/* call _exit */
 	movzwl	%ax, %eax
 	mov	%rcx, %r10
 	syscall
