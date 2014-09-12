@@ -7,25 +7,25 @@
 # dietlibc etc), ditch configure and edit this file directly.
 
 # Target architecture, for bundled libc only
-ARCH = x86_64
+ARCH := x86_64
 
 # Building
-CC = gcc
-AR = ar
-CFLAGS = -Wall -g -nostdinc -I$/libc/include -I$/libc/$(ARCH)
-LDFLAGS = -nostdlib
-LIBS = libc.a
+CC := gcc
+AR := ar
+CFLAGS := -Wall -g
+LDFLAGS :=
+LIBS := libc.a
 
 # Installation directories. Check config.h for runtime paths.
-sbindir = /sbin
-man5dir = /usr/share/man/man5
-man8dir = /usr/share/man/man8
+sbindir := /sbin
+man5dir := /usr/share/man/man5
+man8dir := /usr/share/man/man8
 # Installation basename prefix (as in {,s,sn}init)
-s = 
+s := 
 
 # Built-in inittab
-builtin = 
-HOSTCC =
+builtin := 
+HOSTCC :=
 
 all: init telinit runcap init.8 telinit.8 inittab.5 runcap.8
 
@@ -82,7 +82,7 @@ distclean: clean clean-libc
 #
 # And yes, this whole section is pretty ugly.
 
-statictab = statictab.o init_conf.o init_conf_map.o init_conf_mem.o\
+statictab := statictab.o init_conf.o init_conf_map.o init_conf_mem.o\
 	init_conf_tab.o init_conf_dir.o init_conf_rec.o\
 	init_find.o
 
@@ -114,9 +114,14 @@ endif
 
 ifneq ($(ARCH),)
 
+override CFLAGS += -nostdinc -I$/libc/include -I$/libc/$(ARCH)
+override LDFLAGS += -nostdlib
+
 libc := $(sort $(basename $(notdir\
 		$(wildcard libc/*.[cs])\
 		$(wildcard libc/$(ARCH)/*.[cs]) )))
+
+libc/$(ARCH)/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLAGS))
 
 # The order of the rules below is important.
 # Anything arch-specific should be preferred to generic libc stuff.
