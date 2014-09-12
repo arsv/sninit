@@ -114,17 +114,13 @@ endif
 
 ifneq ($(ARCH),)
 
-# The smell of lisp is strong here.
 libc := $(sort $(basename $(notdir\
-		$(wildcard libc/*.[cS])\
-		$(wildcard libc/unicall/*.[cS])\
-		$(wildcard libc/$(ARCH)/*.[cS]) )))
+		$(wildcard libc/*.[cs])\
+		$(wildcard libc/$(ARCH)/*.[cs]) )))
 
 # The order of the rules below is important.
-# Anything arch-specific should be preferred to generic unicall stuff.
+# Anything arch-specific should be preferred to generic libc stuff.
 libc.a(%.o): libc/$(ARCH)/%.o
-	$(AR) crS $@ $<
-libc.a(%.o): libc/unicall/%.o
 	$(AR) crS $@ $<
 libc.a(%.o): libc/%.o
 	$(AR) crS $@ $<
@@ -152,7 +148,7 @@ endif
 .c.o:
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-.S.o:
+.s.o:
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 %: %.o

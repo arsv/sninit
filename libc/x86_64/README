@@ -3,3 +3,23 @@ AMD 64 SysV calling convention
                   1    2    3    4   5   6
 Syscall    RAX (RDI, RSI, RDX, R10, R8, R9) -> RAX
 Function       (RDI, RSI, RDX, RCX, R8, R9) -> RAX
+
+
+
+Standard syscalls and their Linux equivalents:
+
+ppoll(fds, nfds, ts, sigmask)	linux_ppoll(fds, nfds, ts, sigmask, sizeof(sigset_t))
+reboot(cmd)			linux_reboot(MAGIC1, MAGIC2, cmd)
+send(fd, buf, len, flags)	linux_sendto(fd, buf, len, flags, NULL, NULL)
+sigaction(signum, act, oldact)	linux_sigaction(signum, act, oldact, sizeof(sigset_t))
+	this also needs sa_restorer on some platforms including x86_64
+sigprocmask(how, set, old)	linux_sigprocmask(how, set, old, sizeof(sigset_t))
+waitpid(pid, status, opts)	linux_wait4(pid, status, opts, NULL)
+
+sendto and wait4 are valid standard syscalls by themselves,
+it's just that Linux does not implement more limited send and waitpid
+as kernel syscalls.
+
+dietlibc implements time via VDSO gettimeofday on x86_64.
+This has been dropped for now, dietlibc implementation seems to be fragile.
+And init is not the kind of process to benefit much from using VDSO.
