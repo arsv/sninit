@@ -1,0 +1,21 @@
+x86 calling convention
+
+                  1    2    3    4   5   6
+Syscall    EAX (EBX, ECX, EDX, ESI, EDI, EBP) -> EAX
+Function       ([1], [2], [3], [4], [5], [6]) -> EAX		[n] = n*4(%esp)
+	   [0] holds function return address
+
+That's the good part.
+The bad part is in int80h/sysenter distinction, and the code needed to save
+registers. See _start.s.
+
+Unlike syscall in x86_64, sysenter/sysleave pair does NOT return to the point
+where it was called, not in the setting Linux has at least.
+Instead, sysleave jumps to VDSO which has pre-defined return-from-syscall code
+equivalent to function epilogue. Thus sysenter MUST be preceeded by a "call"
+without "ret".
+
+VDSO does also contain enter-syscall sequence, either int 80h one or sysenter one
+depending on CPU support/bugginess, and the Right Linux Way to make a syscall
+on a x86 is to call *vsyscall where vsyscall is an address supplied in ELF auxillary
+vector. This way it's up to kernel to decide how it likes to be called.

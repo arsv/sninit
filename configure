@@ -78,12 +78,20 @@ while [ $# -gt 0 ]; do
 			build=$val
 			hostcc=$val-gcc
 			;;
+		--arch)
+			dieifnot "$val" "$arg: value must be supplied"
+			arch="$val"
+			;;
 		--with-cc)
 			cc=$val
 			;;
 		--with-clang)
 			cc=$val
 			cctype=clang
+			;;
+		--with-bundled|--with-bundled-libc)
+			libc=bundled
+			test -n "$val" && arch="$val"
 			;;
 		--with-musl)
 			cctype=musl
@@ -179,8 +187,32 @@ case "${cctype:-gcc}" in
 		;;
 esac
 
+# Check if we're trying to build x86 on an x86_64 host
+# It's a blind test but that's ok since unrecognized option
+# message is not likely to start with x86_64
+#
+# XXX: it's a dirty hack that should be done differently
+if [ "$arch" == "x86" -a -z "$target" -a -z "$cc" ]; then
+	ccarch=`$CC -dumpmachine 2>/dev/null`
+	case "$ccarch" in
+		x86_64*)
+			CC="$CC -m32 -march=i686"
+			test -z "$HOSTCC" && HOSTCC="$hostcc"
+			;;
+	esac
+fi
+
 unset sysi syst
 case "${libc:-syslibc}" in
+	bundled)
+		dieifnot "$arch" "Target architecture must be specified for bundled libc (--arch)"
+		test -d "libc/$arch" || die "bundled libc: target $arch is not supported"
+		sysi="sys_printf.o sys_err_init.o"
+		syst="sys_err_telinit.o"
+		sysr="sys_err_runcap.o sys_execvp.o"
+		libs="libc.a -lgcc"
+		tsdefault=tz
+		;;
 	musl)
 		tsdefault=libc
 		;;
@@ -244,8 +276,9 @@ initctl=${initctl:-@initctl}
 test "$inittab" != '-' && inittab=${inittab:-$sysconfdir/inittab} || unset inittab
 test "$initdir" != '-' && initdir=${initdir:-$sysconfdir/rc}      || unset initdir
 
-unset nc nn; test -n "$inittab" && nc='#' || nn='#'
+unset nc nn; test -z "$inittab" && nc='#' || nn='#'
 sed -i \
+	-e "/^ARCH =/s#=.#= $arch#"\
 	-e "/^CC =/s#=.*#= $CC#"\
 	-e "/^CFLAGS =/s#=.*#= $CFLAGS#"\
 	-e "/^LDFLAGS =/s#=.*#= $LDFLAGS#"\

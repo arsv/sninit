@@ -7,14 +7,14 @@
 # dietlibc etc), ditch configure and edit this file directly.
 
 # Target architecture, for bundled libc only
-ARCH := x86_64
+ARCH := x86
 
 # Building
-CC := gcc
+CC := gcc -m32 -march=i686
 AR := ar
 CFLAGS := -Wall -g
 LDFLAGS :=
-LIBS := libc.a
+LIBS := libc.a -lgcc
 
 # Installation directories. Check config.h for runtime paths.
 sbindir := /sbin
