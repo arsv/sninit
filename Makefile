@@ -117,6 +117,7 @@ ifneq ($(ARCH),)
 override CFLAGS += -nostdinc -I$/libc/include -I$/libc/$(ARCH)
 override LDFLAGS += -nostdlib
 
+# The smell of lisp is strong here
 libc := $(sort $(basename $(notdir\
 		$(wildcard libc/*.[cs])\
 		$(wildcard libc/$(ARCH)/*.[cs]) )))
