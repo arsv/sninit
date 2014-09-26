@@ -122,6 +122,9 @@ libc := $(sort $(basename $(notdir\
 		$(wildcard libc/*.[cs])\
 		$(wildcard libc/$(ARCH)/*.[cs]) )))
 
+# LTO objects do not work when packed in an .a library,
+# at least not without some additional effort.
+# See https://gcc.gnu.org/wiki/LinkTimeOptimization
 libc/$(ARCH)/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLAGS))
 
 # The order of the rules below is important.
