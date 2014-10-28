@@ -110,7 +110,17 @@ endif
 
 # --- Bundled libc -------------------------------------------------------------
 #
-# This section is even more ugly
+# This section is even more ugly. Here we build libc.a from the files in libc/,
+# among which there may be alternatives like libc/(ARCH)/foo.s and libc/foo.c
+#
+# It would have made sense to build all libc/*/*.o and then pack them all into
+# archive, but alas, it would require some way to resolve alternatives
+# (arch / common / libtest). The only option I have come up with so far
+# is using alternative rules and packing archive on one-by-one basis.
+#
+# This approach, however, seems to be the correct one according to gnu make docs.
+# And it handles single-file updates naturally, without the need for .INTERMEDIATE
+# and other tricks.
 
 ifneq ($(ARCH),)
 
