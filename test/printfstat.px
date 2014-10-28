@@ -1,0 +1,8 @@
+#!/usr/bin/perl -n
+# Show all printf sequences used by specified files.
+# This is mostly to make sure ../libc/libtest/printf.c and ../warn.c
+# have required formats implemented.
+
+$seen{$&}++ foreach(/%-?[0-9]*[hl]?[a-zA-Z]/g);
+
+END { printf("%3i  %s\n", $seen{$_}, $_) foreach(sort { $seen{$b} <=> $seen{$a} } keys %seen); }

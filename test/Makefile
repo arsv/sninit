@@ -10,6 +10,11 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_transferpids
 tests: $(TESTS)
 
+ifneq ($(ARCH),)
+LIBCTESTS = x_printf
+libctests: $(LIBCTESTS)
+endif
+
 # Running tests. The rules will cause make to fail on the first failed test,
 # which is ok since make has -k switch.
 OUTS = $(patsubst %,%.out,$(TESTS))
@@ -31,9 +36,9 @@ $(OUTS): %.out: %
 include ../Makefile
 
 # Allow overriding functions with test stubs
-LDFLAGS += -Wl,-z,muldefs
+override LDFLAGS += -Wl,-z,muldefs
 # Disregard "static" and "inline", do not need them while testing
-CFLAGS += -Dstatic= -Dinline=
+override CFLAGS += -Dstatic= -Dinline=
 
 # Recompile init files in test/
 # This may look redundant, but this way "make clean" in test can work
@@ -47,6 +52,15 @@ init_%.o: ../init_%.c
 sys_%.o: ../sys_%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+ifneq ($(ARCH),)
+libc_%.o: ../libc/$(ARCH)/%.s
+	$(CC) $(CFLAGS) -c -o $@ $<
+libc_%.o: ../libc/libtest/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+libc_%.o: ../libc/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+endif
+
 # Prototype checks
 
 protocheck: proto.c
@@ -54,6 +68,8 @@ protocheck: proto.c
 
 proto.c: ../init*.[ch] ../sys.h | protocheck.px
 	./protocheck.px $^ > $@
+
+# Cleanup
 
 clean: clean-proto clean-tests clean-outs
 
@@ -65,6 +81,13 @@ clean-tests:
 
 clean-outs:
 	rm -f $(OUTS)
+
+ifneq ($(ARCH),)
+clean: clean-libctests
+
+clean-libctests:
+	rm -f $(LIBCTESTS)
+endif
 
 # Ok, now the tests themselves
 
@@ -84,7 +107,7 @@ t_parsesrvfile: t_parsesrvfile.o init_conf_dir.o init_conf_map.o \
 t_conf: t_conf.o init_find.o init_conf.o init_conf_mem.o init_conf_map.o \
 	init_conf_tab.o init_conf_dir.o init_conf_rec.o test.o $(SYS)
 
-t_addenviron: init_find.o init_conf.o init_conf_mem.o init_conf_map.o init_conf_rec.o \
+t_addenviron: t_addenviron.o init_find.o init_conf.o init_conf_mem.o init_conf_map.o init_conf_rec.o \
 	init_conf_tab.o init_conf_dir.o test.o $(SYS)
 
 t_itostr: t_itostr.o sys_printf.o test.o
@@ -101,7 +124,7 @@ t_rewireptsarray: t_rewireptsarray.o init_conf.o init_conf_map.o test.o
 
 t_fileblock: t_fileblock.o init_conf_map.o test.o
 
-t_tzinit: t_tzinit.o sys_time_tz.o sys_timestamp.o test.o
+t_tzinit: t_tzinit.o init_time_tz.o init_time_stamp.o test.o
 
 t_initpass_pri: t_initpass_pri.o t_initpass_.o init_pass.o test.o
 t_initpass_sec: t_initpass_sec.o t_initpass_.o init_pass.o test.o
@@ -113,3 +136,7 @@ t_setrunlevels: t_setrunlevels.o init_conf_rec.o test.o
 t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_map.o test.o
 
 t_transferpids: t_transferpids.o init_conf.o init_conf_map.o init_find.o test.o
+
+# Libc tests
+
+x_printf: x_printf.o libc_printf.o

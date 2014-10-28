@@ -7,14 +7,14 @@
 # dietlibc etc), ditch configure and edit this file directly.
 
 # Target architecture, for bundled libc only
-ARCH := x86
+ARCH := x86_64
 
 # Building
-CC := gcc -m32 -march=i686
+CC := gcc
 AR := ar
 CFLAGS := -Wall -g
 LDFLAGS :=
-LIBS := libc.a -lgcc
+LIBS := $/libc.a -lgcc
 
 # Installation directories. Check config.h for runtime paths.
 sbindir := /sbin
@@ -120,18 +120,21 @@ override LDFLAGS += -nostdlib
 # The smell of lisp is strong here
 libc := $(sort $(basename $(notdir\
 		$(wildcard libc/*.[cs])\
-		$(wildcard libc/$(ARCH)/*.[cs]) )))
+		$(wildcard libc/$(ARCH)/*.[cs])\
+		$(wildcard libc/libtest/*.[cs]) )))
 
 # LTO objects do not work when packed in an .a library,
 # at least not without some additional effort.
 # See https://gcc.gnu.org/wiki/LinkTimeOptimization
-libc/$(ARCH)/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLAGS))
+libc/$(ARCH)/%.o libc/libtest/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLAGS))
 
 # The order of the rules below is important.
 # Anything arch-specific should be preferred to generic libc stuff.
 libc.a(%.o): libc/$(ARCH)/%.o
 	$(AR) crS $@ $<
 libc.a(%.o): libc/%.o
+	$(AR) crS $@ $<
+libc.a(%.o): libc/libtest/%.o
 	$(AR) crS $@ $<
 
 libc.a: $(patsubst %,libc.a(%.o),$(libc))

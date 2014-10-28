@@ -4,7 +4,7 @@
 
 # syscalls that do no require any additional setup
 direct = fork execve kill getpid time
-direct += open close read write dup2 fstat ioctl getdents64 openat
+direct += open close read write dup2 fstat ioctl getdents64 openat stat
 direct += mmap mremap munmap
 direct += socket setsockopt bind connect listen accept sendto sendmsg recvmsg shutdown
 direct += prctl setresgid setresuid capset setsid getegid geteuid setrlimit

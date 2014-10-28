@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <string.h>
 #include <sys/stat.h>
 #include "../init.h"
 #include "../init_conf.h"

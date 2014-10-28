@@ -1,0 +1,6 @@
+These are libc routines only used for tests (the stuff in test/ directory).
+To keep things clear, they are isolated from the "primary" libc parts
+which go into the final executables.
+
+The only exception is syscall() which is arch-specific and resides in resp.
+arch directories despite not being used anywhere in the final executables.

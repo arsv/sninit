@@ -25,18 +25,18 @@ int readinitdir(char* dir, int strict)
 	return -1;
 }
 
-char* strdupnull(const char* str)
+/*char* strdupnull(const char* str)
 {
 	return str ? strdup(str) : NULL;
-}
+}*/
 
 int addinitrec(struct fileblock* fb, char* name, char* rlvls, char* flags, char* cmd, int exe)
 {
 	U.called++;
-	U.name = strdupnull(name);
-	U.rlvls = strdupnull(rlvls);
-	U.flags = strdupnull(flags);
-	U.cmd = strdupnull(cmd);
+	U.name = name;
+	U.rlvls = rlvls;
+	U.flags = flags;
+	U.cmd = cmd;
 	U.exe = exe;
 	return RET;
 }
@@ -60,7 +60,8 @@ void test(input, name, rlvls, flags, cmd)
 	const char *input;
 	const char *name, *rlvls, *flags, *cmd;
 {
-	char* data = strdup(input);
+	char* data = alloca(strlen(input) + 1);
+	strcpy(data, input);
 	struct fileblock fb = {
 		.name = "(none)",
 		.line = 1,
@@ -79,8 +80,6 @@ void test(input, name, rlvls, flags, cmd)
 	S(U.flags, flags);
 	S(U.cmd, cmd);
 	A(U.exe == 0);
-
-	free(data);
 }
 
 int main(void)

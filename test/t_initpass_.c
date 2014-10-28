@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 #include "test.h"
 #include "../init.h"
 
@@ -29,7 +30,7 @@ void mark(char what, const char* name)
 	int len = strlen(name);
 	int ptr = passptr;
 	if(passleft < len + 3) {
-		fprintf(stderr, "log overflow\n");
+		warn("log overflow");
 		return;
 	}	
 	passlog[passptr++] = what;
@@ -60,7 +61,7 @@ void died(struct initrec* p)
 void killed(struct initrec* p)
 {
 	if(!(p->flags & P_SIGTERM))
-		fprintf(stderr, "FAIL: %s has not been sent a signal\n", p->name);
+		warn("FAIL: %s has not been sent a signal\n", p->name);
 	p->pid = -1;
 	p->flags &= ~P_SIGTERM;
 }
@@ -68,8 +69,6 @@ void killed(struct initrec* p)
 #define NOCALL(f) void f() { nocall(#f); }
 int nocall(const char* func)
 {
-	fprintf(stderr, "called %s()\n", func);
-	kill(getpid(), SIGTERM);
-	return 0;
+	die("called %s()", func);
 }
 NOCALL(sexec);

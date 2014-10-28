@@ -24,9 +24,12 @@ extern int mmapblock(struct memblock* m, int size);
 
 void die(const char* fmt, ...) __attribute__((format(printf, 1, 2))) __attribute__((noreturn));
 
+#define HEAP 1024
+char heap[HEAP];
+
 int parseinitline_(char* testline)
 {
-	char* line = strdup(testline);
+	char* line = strncpy(heap, testline, HEAP);
 	struct fileblock fb = {
 		.name="(none)",
 		.line=1,
@@ -35,13 +38,11 @@ int parseinitline_(char* testline)
 		.le = line + strlen(line)
 	};
 	int ret = parseinitline(&fb, 1);
-	free(line);
 	return ret;
 }
 
 int checkptr(struct memblock* block, void* ptr)
 {
-	//printf("checkptr({%p + 0x%x}, %p = 0x%lx)\n", block->addr, block->len, ptr, ptr - block->addr);
 	return (ptr >= block->addr && ptr < block->addr + block->len);
 }
 
@@ -125,5 +126,5 @@ void die(const char* fmt, ...)
 	vprintf(fmt, ap);
 	va_end(ap);
 	kill(getpid(), SIGUSR1);
-	exit(-1);
+	_exit(-1);
 };

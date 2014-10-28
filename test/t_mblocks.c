@@ -37,10 +37,9 @@ void* mremap(void* old_addr, size_t old_size, size_t new_size, int flags, ...)
 	if(!BASE) {
 		return (void*)syscall(__NR_mremap, old_addr, old_size, new_size, flags);
 	} else {
-		int pagesize = getpagesize();
-		void* new_addr = NULL + BASE + (pagesize - BASE % pagesize);
+		/* let's just assume BASE is page-aligned (4kB typically) */
 		flags |= MREMAP_FIXED;
-		return (void*)syscall(__NR_mremap, old_addr, old_size, new_size, flags, new_addr);
+		return (void*)syscall(__NR_mremap, old_addr, old_size, new_size, flags, NULL + BASE);
 	}
 }
 

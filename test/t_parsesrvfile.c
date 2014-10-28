@@ -20,18 +20,13 @@ struct {
 extern int parsesrvfile(struct fileblock* fb, char* basename);
 extern int mmapblock(struct memblock* m, int size);
 
-char* strdupnull(const char* str)
-{
-	return str ? strdup(str) : NULL;
-}
-
 int addinitrec(struct fileblock* fb, char* name, char* runlevels, char* flags, char* cmd, int exe)
 {
 	U.called++;
-	U.name = strdupnull(name);
-	U.rlvls = strdupnull(runlevels);
-	U.flags = strdupnull(flags);
-	U.cmd = strdupnull(cmd);
+	U.name = heapdupnull(name);
+	U.rlvls = heapdupnull(runlevels);
+	U.flags = heapdupnull(flags);
+	U.cmd = heapdupnull(cmd);
 	U.exe = exe;
 	return RET;
 }
@@ -46,7 +41,7 @@ void test(input, rlvls, flags, cmd, exe)
 	const char *rlvls, *flags, *cmd;
 	int exe;
 {
-	char* data = strdup(input);
+	char* data = heapdup(input);
 	char* file = "/etc/rc/foo";
 	char* base = "foo";
 	struct fileblock fb = {
@@ -66,7 +61,6 @@ void test(input, rlvls, flags, cmd, exe)
 	S(U.flags, flags);
 	S(U.cmd, cmd);
 	A(U.exe == exe);
-	free(data);
 }
 
 int main(void)

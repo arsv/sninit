@@ -1,5 +1,5 @@
+#define _GNU_SOURCE
 #include <string.h>
-#include <strings.h>
 #include "../init.h"
 #include "../init_conf.h"
 #include "test.h"
@@ -24,7 +24,7 @@ void inplacetr(char* str, const char* from, const char* to)
 	int l = strlen(to);
 
 	for(p = str; *p; p++) {
-		if((r = index(from, *p)) == NULL)
+		if((r = strchr(from, *p)) == NULL)
 			continue;
 		off = r - from;
 		if(off < 0 || off > l)
@@ -52,8 +52,8 @@ void dumpstr(const char* str, int len, char* pref)
 
 void test_prepargv(char* c_str, char* c_tst, int srcc, const char* mask, const char* repl)
 {
-	char* src = strdup(c_str);
-	char* tst = strdup(c_tst);
+	char* src = heapdup(c_str);
+	char* tst = heapdup(c_tst);
 	int len = strlen(src);
 	int tstc;
 

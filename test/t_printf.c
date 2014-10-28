@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
 #include "test.h"
 
 void test(const char* result, const char* fmt, ...)
@@ -44,7 +45,7 @@ int main(void)
 
 	/* check %m */
 	/* this may very well fail if libc has something different for ENOENT */
-	chdir("/nonexistant");
+	open("/nonexistant", O_RDONLY);
 	test("error: No such file or directory",
 	     "error: %m");
 
