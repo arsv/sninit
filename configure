@@ -35,111 +35,119 @@ while [ $# -gt 0 ]; do
 		*)
 			val="" ;;
 	esac
+
 	# Now the arguments. We're aiming at being moderately autoconf-compatible,
-	# so it's ./configure --with-dietlibc instead of much more logical in this case
-	# ./configure dietlibc
-	case "$arg" in
-		--sysconfdir|--configdir) sysconfdir=$val ;;
-		--sbindir) sbindir=$val ;;
-		--logdir) logdir=$val ;;
-		--mandir) mandir=$val ;;
-		--man5dir) mandir=$val ;;
-		--man8dir) mandir=$val ;;
-		--prefix) prefix=$val ;;
-		--cgdir) cgdir=$val ;;
+	# so "--with-dietlibc" is allowed along with much more logical "dietlibc"
+	# There will be some "extra" options like "with-dietlibc" but that's ok.
+	#
+	# Different name to produce correct error messages,
+	# i.e. --foo not foo where --foo was used.
 
-		--program-prefix) s=$val ;;
-		--with-s) s=s ;;
-		--with-sn) s=sn ;;
+	arq=`echo "$arg" | sed -e 's/^--//'`
 
-		--initctl)
+	case "$arq" in
+		sysconfdir|configdir) sysconfdir=$val ;;
+		sbindir) sbindir=$val ;;
+		logdir) logdir=$val ;;
+		mandir) mandir=$val ;;
+		man5dir) mandir=$val ;;
+		man8dir) mandir=$val ;;
+		prefix) prefix=$val ;;
+		cgdir) cgdir=$val ;;
+
+		program-prefix) s=$val ;;
+		with-s|s) s=s ;;
+		with-sn|sn) s=sn ;;
+
+		initctl)
 			dieifnot "$val" "$arg: value must be supplied"
 			initctl=$val
 			;;
-		--inittab)
+		inittab)
 			dieifnot "$val" "$arg: value must be supplied"
 			inittab=$val
 			;;
-		--initdir)
+		initdir)
 			dieifnot "$val" "$arg: value must be supplied"
 			initdir=$val
 			;;
-		--builtin|--with-builtin)
+		builtin|with-builtin)
 			dieifnot "$val" "$arg: value must be supplied"
 			builtin="$val"
 			;;
-		--target|--host)
+		target|host)
 			dieifnot "$val" "$arg: value must be supplied"
 			target=$val
 			cross=$target-
 			;;
-		--build)
+		build)
 			dieifnot "$val" "$arg: value must be supplied"
 			build=$val
 			hostcc=$val-gcc
 			;;
-		--with-cc)
-			cc=$val
+		with-cc|cc)
+			cc=${val:-cc}
+			cctype=gcc
 			;;
-		--with-clang)
-			cc=$val
+		with-clang|clang)
+			cc=${val:-clang}
 			cctype=clang
 			;;
-		--arch|--with-bundled|--with-bundled-libc)
-			libc=bundled
+		arch|bundled|with-bundled|with-bundled-libc)
 			dieifnot "$val" "$arg: value must be supplied"
+			libc=bundled
 			arch="$val"
 			;;
-		--with-musl)
+		with-musl|musl)
 			cctype=musl
 			;;
-		--with-dietlibc)
+		with-dietlibc|dietlibc)
 			diet=${val:-diet}
 			libc=dietlibc
 			;;
-		--with-dietlibc-fixed)
+		with-dietlibc-fixed|dietlibc-fixed)
 			# fixed = with ppoll(2) support
 			diet=${val:-diet}
 			libc=dietlibc-fixed
 			;;
-		--with-libc|libc)
+		with-libc|libc)
 			libc=${val:-syslibc}
 			;;
-		--with-syslibc|--with-glibc|syslibc|libc)
+		with-syslibc|with-glibc|syslibc|glibc|libc)
 			libc=syslibc
 			;;
-		--with-timestamps)
+		with-timestamps|ts)
 			dieifnot "$val" "$arg: argument required"
 			tstype=$val
 			;;
-		--disable-inittab)
+		tz|notz|libcts|nots)
+			tstype=$arq
+			;;
+		disable-inittab|no-inittab)
 			inittab=-
 			;;
-		--disable-initdir)
+		disable-initdir|no-initdir)
 			initdir=-
 			;;
-		--enable-debug)
+		enable-debug|debug)
 			debug=${val:-"-Wall -g"}
 			;;
-		--enable-lto)
+		enable-lto|lto)
 			lto=${val:-"-flto"}
 			;;
-		--disable-optimization)
+		disable-optimization|no-O)
 			optimize=
 			lto=
 			;;
-		--with-optimization)
+		with-optimization|O|optimize)
 			optimize=${val:-$optimize}
 			;;
-		--test)
+		devel)
 			s=
 			inittab=etc/inittab
 			initdir=etc/initdir
 			optimize=
 			debug="-Wall -g"
-			;;
-		[A-Z]*)
-			eval $arg=$val
 			;;
 		*)
 			die "Unknown option $arg"
