@@ -11,6 +11,7 @@ test/*
 !test/*.[ch]
 !test/*.txt
 !test/*.px
+!test/*.sh
 !test/*.bin
 !test/Makefile
 test/proto.c

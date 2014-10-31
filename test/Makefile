@@ -1,19 +1,25 @@
-# The top source directory is ..
-/ = ../
+# Top source dir is ..
+/=../
+# Compiler settings and such
+include ../config.mk
 
-# Top (default) rule, to override whatever ../Makefile will bring
+# Allow overriding functions with test stubs
+override LDFLAGS += -Wl,-z,muldefs
+# Disregard "static" and "inline", do not need them while testing
+override CFLAGS += -Dstatic= -Dinline=
+
+# Regular automated tests
 TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock \
 	t_tzinit t_initpass_pri t_initpass_sec t_initpass_wku \
 	t_setrunlevels t_readinitdir t_rewireptsarray t_scratchptr \
 	t_transferpids
-tests: $(TESTS)
+# Tests with manual check (for now)
+XTESTS = x_printf
 
-ifneq ($(ARCH),)
-LIBCTESTS = x_printf
-libctests: $(LIBCTESTS)
-endif
+# Default rule — built all tests but do not run them
+all: $(TESTS) $(XTESTS)
 
 # Running tests. The rules will cause make to fail on the first failed test,
 # which is ok since make has -k switch.
@@ -23,43 +29,25 @@ RUNS = $(patsubst %,%.run,$(TESTS))
 run: $(TESTS) $(OUTS)
 $(RUNS): %.run: %
 	./$<
-$(OUTS): %.out: %
+$(OUTS): %.out: % | test.sh
 	./$< > $@
-	@if grep -q FAIL $@; then cat $@; false; else true; fi
+	@./test.sh $@
 .PHONY: $(OUTS) $(RUNS)
-
-# Get CC, CFLAGS etc.
-# This will also bring some things useless here, like init and telinit rules.
-# That's ok however. Alternative is to have a second set of CC etc. here,
-# or have Makefile.config in the top dir, both extremely ungraceful for
-# a small project like this.
-include ../Makefile
-
-# Allow overriding functions with test stubs
-override LDFLAGS += -Wl,-z,muldefs
-# Disregard "static" and "inline", do not need them while testing
-override CFLAGS += -Dstatic= -Dinline=
 
 # Recompile init files in test/
 # This may look redundant, but this way "make clean" in test can work
 # properly without affecting the top directory, and atop of that
 # is it possible to have a different compiler and/or different options
-# here. Up to -DDEBUG and resp. conditionals in init_*.c, though this
-# possibility is not used currently.
+# here.
+#
+# Including -DDEBUG and resp. conditionals in init_*.c,
+# though this possibility is not used (yet?).
+
 init_%.o: ../init_%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 sys_%.o: ../sys_%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
-
-ifneq ($(ARCH),)
-libc_%.o: ../libc/$(ARCH)/%.s
-	$(CC) $(CFLAGS) -c -o $@ $<
-libc_%.o: ../libc/libtest/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-libc_%.o: ../libc/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-endif
 
 # Prototype checks
 
@@ -71,23 +59,8 @@ proto.c: ../init*.[ch] ../sys.h | protocheck.px
 
 # Cleanup
 
-clean: clean-proto clean-tests clean-outs
-
-clean-proto:
-	rm -f proto.c	
-
-clean-tests:
-	rm -f $(TESTS)
-
-clean-outs:
-	rm -f $(OUTS)
-
-ifneq ($(ARCH),)
-clean: clean-libctests
-
-clean-libctests:
-	rm -f $(LIBCTESTS)
-endif
+clean:
+	rm -f proto.c $(TESTS) $(OUTS) $(XTESTS)
 
 # Ok, now the tests themselves
 
@@ -139,4 +112,27 @@ t_transferpids: t_transferpids.o init_conf.o init_conf_map.o init_find.o test.o
 
 # Libc tests
 
-x_printf: x_printf.o libc_printf.o
+x_printf: x_printf.o
+
+# Possible top-level libc
+#
+# This is pretty ugly, but absolutely necessary to allow the catch-all %: %.o
+# rule below. Without explicit rules on building $(LIBC), the catch-all rule
+# would be *skipped* in favor of something built-in.
+#
+# The intended behavior is of course to fail with "no rule to make ../libc.a"
+
+LIBC = $(filter %.a,$(LIBS))
+$(LIBC): %.a:
+	@echo Can\'t make $@ from this directory.; false
+
+# --- Implicit rules -----------------------------------------------------------
+
+.c.o:
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+.s.o:
+	$(CC) $(CFLAGS) -o $@ -c $<
+
+%: %.o $(LIBC)
+	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)

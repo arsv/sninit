@@ -1,20 +1,15 @@
 Generic instructions
 ~~~~~~~~~~~~~~~~~~~~
-Check Makefile and/or config.h for build-time setup.
+Check config.mk and/or config.h for build-time setup.
 Specifically, check INITCTL, INITTAB, LOGDIR in config.h,
-compiler setup and installation directories in Makefile.
+compiler setup and installation directories in config.mk.
 
 Run make, then make install.
 
 Alternatively, run mostly-autotools-compatible configure.
 
-If you are cross-compiling, or using something other than your
-system libc (in particular dietlibc), adjust CC, CFLAGS
-and possibly SYS in Makefile.
-
-Use SYS variable in Makefile to choose which modules to build.
-Check sys_* files for possible options.
-At least one of sys_time_* files must be used.
+Use initblocks variable to choose which modules to build.
+See comments in config.mk.
 
 To try it on a system with another init installed, run
 
@@ -37,6 +32,26 @@ It will not benefit from using anything fancier than dietlibc.
 Settings for other libc-s are only provided for completeness,
 for testing, and for unusual cases not considered here.
 
+
+Building with bundled libc
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+sninit comes with a stripped-down, minimalistic subset of dietlibc
+capable just enough to fit sninit demands.
+Sample usage (cross-build for x86 on x86_64):
+
+	ARCH = x86
+	CC = gcc -m32 -march=i686
+
+CC will be called with -nostdinc -nostdlib so it does not matter
+which libc, if any, it has in its sysroot.
+
+Only x86 and x86_64 architectures are supported at this moment.
+For any other targets, fall back to the original dietlibc.
+
+Using bundled libc provides little benefit over properly configured
+dietlibc in terms of code size (because it is dietlibc code,
+if perhaps re-written in some places) but provides clear,
+uncluttered libc code for debugging.
 
 
 Building with dietlibc

@@ -19,7 +19,7 @@ builtin=
 hostcc=gcc
 
 unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
-unset initctl inittab runcap s cgdir
+unset initctl inittab runcap s cgdir blocks
 
 die() { echo "$@"; exit 1; }
 dieifnot() { test -n "$1" && return; shift; die "$@"; }
@@ -78,10 +78,6 @@ while [ $# -gt 0 ]; do
 			build=$val
 			hostcc=$val-gcc
 			;;
-		--arch)
-			dieifnot "$val" "$arg: value must be supplied"
-			arch="$val"
-			;;
 		--with-cc)
 			cc=$val
 			;;
@@ -89,9 +85,10 @@ while [ $# -gt 0 ]; do
 			cc=$val
 			cctype=clang
 			;;
-		--with-bundled|--with-bundled-libc)
+		--arch|--with-bundled|--with-bundled-libc)
 			libc=bundled
-			test -n "$val" && arch="$val"
+			dieifnot "$val" "$arg: value must be supplied"
+			arch="$val"
 			;;
 		--with-musl)
 			cctype=musl
@@ -202,38 +199,35 @@ if [ "$arch" == "x86" -a -z "$target" -a -z "$cc" ]; then
 	esac
 fi
 
-unset sysi syst
+if [ "$inittab" != "-" ]; then
+	blocks="conf"
+else
+	blocks="null"
+fi
+
 case "${libc:-syslibc}" in
 	bundled)
 		dieifnot "$arch" "Target architecture must be specified for bundled libc (--arch)"
 		test -d "libc/$arch" || die "bundled libc: target $arch is not supported"
-		sysi="sys_printf.o sys_err_init.o"
-		syst="sys_err_telinit.o"
-		sysr="sys_err_runcap.o sys_execvp.o"
-		libs="libc.a -lgcc"
+		blocks="$blocks sys"
 		tsdefault=tz
 		;;
 	musl)
 		tsdefault=libc
 		;;
 	syslibc)
-		sysi="sys_getdents.o"
+		blocks="$blocks dents"
 		tsdefault=libc
 		;;
 	dietlibc-fixed)
 		CC="$diet $CC"
-		sysi="sys_printf.o sys_err_init.o"
-		syst="sys_err_telinit.o"
-		sysr="sys_err_runcap.o sys_execvp.o"
-		libs_syscall="-lcompat"
+		blocks="$blocks sys"
 		tsdefault=tz
 		;;
 	dietlibc)
 		CC="$diet $CC"
 		libs=-lcompat
-		sysi="sys_ppoll.o sys_printf.o sys_err_init.o"
-		syst="sys_err_telinit.o"
-		sysr="sys_err_runcap.o sys_execvp.o"
+		blocks="$blocks sys ppoll"
 		tsdefault=tz
 		;;
 	*)
@@ -243,16 +237,16 @@ esac
 
 case "${tstype:-$tsdefault}" in
 	libc)
-		sysi="${sysi:+$sysi }sys_time_libc.o"
+		blocks="$blocks libcts"
 		;;
 	null)
-		sysi="${sysi:+$sysi }sys_time_null.o"
+		blocks="$blocks nots"
 		;;
 	tz)
-		sysi="${sysi:+$sysi }sys_time_tz.o sys_timestamp.o"
+		blocks="$blocks tz"
 		;;
 	notz|utc)
-		sysi="${sysi:+$sysi }sys_time_notz.o sys_timestamp.o"
+		blocks="$blocks notz"
 		;;
 esac
 
@@ -276,30 +270,25 @@ initctl=${initctl:-@initctl}
 test "$inittab" != '-' && inittab=${inittab:-$sysconfdir/inittab} || unset inittab
 test "$initdir" != '-' && initdir=${initdir:-$sysconfdir/rc}      || unset initdir
 
-unset nc nn; test -z "$inittab" && nc='#' || nn='#'
 sed -i \
-	-e "/^ARCH =/s#=.#= $arch#"\
-	-e "/^CC =/s#=.*#= $CC#"\
-	-e "/^CFLAGS =/s#=.*#= $CFLAGS#"\
-	-e "/^LDFLAGS =/s#=.*#= $LDFLAGS#"\
-	-e "/^LIBS =/s#=.*#= $LIBS#"\
-	-e "/^LIBS_syscall =/s#=.*#= $libs_syscall#"\
-	-e "/^SYS_init =/s#=.*#= $sysi#"\
-	-e "/^SYS_telinit =/s#=.*#= $syst#"\
-	-e "/^SYS_runcap =/s#=.*#= $sysr#"\
-	-e "/^builtin =/s#=.*#= $builtin#"\
-	-e "/^HOSTCC =/s#=.*#= $HOSTCC#"\
-	-e "/^s =/s#=.*#= $s#"\
-	-e "/^#\?init: init_conf/s/^#\?/${nc}/"\
-	-e "/^#\?init: init_null/s/^#\?/${nn}/"\
-	Makefile
+	-e "/^ARCH :=/s#:=.*#:= $arch#"\
+	-e "/^CC :=/s#:=.*#:= $CC#"\
+	-e "/^CFLAGS :=/s#:=.*#:= $CFLAGS#"\
+	-e "/^LDFLAGS :=/s#:=.*#:= $LDFLAGS#"\
+	-e "/^LIBS :=/s#:=.*#:= $LIBS#"\
+	-e "/^builtin :=/s#:=.*#:= $builtin#"\
+	-e "/^HOSTCC :=/s#:=.*#:= $HOSTCC#"\
+	-e "/^s :=/s#:=.*#:= $s#"\
+	-e "/^initblocks :=/s#:=.*#:= $blocks#"\
+	config.mk
 
+unset nt; test -z "$inittab" && nt="//"
 unset nd; test -z "$initdir" && nd="//"
 sed -i \
-	-e "/#define INITTAB/s#\".*#\"$inittab\"#" \
+	-e "/^.*#define INITTAB/s@.*@$nt#define INITTAB \"$inittab\"@" \
+	-e "/^.*#define INITDIR/s@.*@$nd#define INITDIR \"$initdir\"@" \
 	-e "/#define LOGDIR/s#\".*#\"$logdir\"#" \
 	-e "/#define INITCTL/s#\".*#\"$initctl\"#" \
-	-e "/^.*#define INITDIR/s@.*@$nd#define INITDIR \"$initdir\"@" \
 	config.h
 
 sed -i \
@@ -308,6 +297,8 @@ sed -i \
 
 echo "Configuration updated. Check the values below, then run make."
 echo
+test -n "$ARCH" && \
+echo "	ARCH=$ARCH"
 echo "	CC=$CC"
 echo "	CFLAGS=$CFLAGS"
 echo "	LDFLAGS=$LDFLAGS"
