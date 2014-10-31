@@ -23,6 +23,7 @@ unset initctl inittab runcap s cgdir blocks
 
 die() { echo "$@"; exit 1; }
 dieifnot() { test -n "$1" && return; shift; die "$@"; }
+argreq() { dieifnot "$val" "$arg: value must be supplied"; }
 
 while [ $# -gt 0 ]; do
 	arg="$1"; shift;
@@ -59,33 +60,27 @@ while [ $# -gt 0 ]; do
 		with-s|s) s=s ;;
 		with-sn|sn) s=sn ;;
 
-		initctl)
-			dieifnot "$val" "$arg: value must be supplied"
+		initctl) argreq
 			initctl=$val
 			;;
-		inittab)
-			dieifnot "$val" "$arg: value must be supplied"
+		inittab) argreq
 			inittab=$val
 			;;
-		initdir)
-			dieifnot "$val" "$arg: value must be supplied"
+		initdir) argreq
 			initdir=$val
 			;;
-		builtin|with-builtin)
-			dieifnot "$val" "$arg: value must be supplied"
+		builtin|with-builtin) argreq
 			builtin="$val"
 			;;
-		target|host)
-			dieifnot "$val" "$arg: value must be supplied"
+		target|host) argreq
 			target=$val
 			cross=$target-
 			;;
-		build)
-			dieifnot "$val" "$arg: value must be supplied"
+		build) argreq
 			build=$val
 			hostcc=$val-gcc
 			;;
-		with-cc|cc)
+		with-cc|cc) argreq
 			cc=${val:-cc}
 			cctype=gcc
 			;;
@@ -93,15 +88,14 @@ while [ $# -gt 0 ]; do
 			cc=${val:-clang}
 			cctype=clang
 			;;
-		arch|bundled|with-bundled|with-bundled-libc)
-			dieifnot "$val" "$arg: value must be supplied"
+		arch|bundled|with-bundled|with-bundled-libc) argreq
 			libc=bundled
 			arch="$val"
 			;;
 		with-musl|musl)
 			cctype=musl
 			;;
-		with-dietlibc|dietlibc)
+		with-dietlibc|dietlibc) argreq
 			diet=${val:-diet}
 			libc=dietlibc
 			;;
@@ -116,7 +110,7 @@ while [ $# -gt 0 ]; do
 		with-syslibc|with-glibc|syslibc|glibc|libc)
 			libc=syslibc
 			;;
-		with-timestamps|ts)
+		with-timestamps|ts) argreq
 			dieifnot "$val" "$arg: argument required"
 			tstype=$val
 			;;
@@ -305,12 +299,14 @@ sed -i \
 
 echo "Configuration updated. Check the values below, then run make."
 echo
-test -n "$ARCH" && \
-echo "	ARCH=$ARCH"
+test -n "$arch" && \
+echo "	ARCH=$arch"
 echo "	CC=$CC"
 echo "	CFLAGS=$CFLAGS"
 echo "	LDFLAGS=$LDFLAGS"
 echo "	LIBS=$LIBS"
+echo
+echo "	initblocks: $blocks"
 echo
 echo "	inittab location: $inittab"
 echo "	initdir location: $initdir"
