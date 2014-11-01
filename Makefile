@@ -104,47 +104,54 @@ endif
 
 # --- Bundled libc -------------------------------------------------------------
 #
-# This section is even more ugly. Here we build libc.a from the files in libc/,
+# This section is even more ugly. Here we build libc.a from files in libc/,
 # among which there may be alternatives like libc/(ARCH)/foo.s and libc/foo.c
 #
-# It would have made sense to build all libc/*/*.o and then pack them all into
-# archive, but alas, it would require some way to resolve alternatives
-# (arch / common / libtest). The only option I have come up with so far
-# is using alternative rules and packing archive on one-by-one basis.
+# The natural way to resolve alternatives in make is to provide alternative rules
+# for the same target. This fails badly for archives however; ar does not lock
+# files, does not tolerate flock $@ ar c $@ ... approach, and make provides
+# no way for breadth-first building (i.e. all objects, then single ar cru $@).
+# https://www.gnu.org/software/make/manual/html_node/Archive-Pitfalls.html#Archive-Pitfalls
 #
-# This approach, however, seems to be the correct one according to gnu make docs.
-# And it handles single-file updates naturally, without the need for .INTERMEDIATE
-# and other tricks.
+# So instead the approach here is to force breadth-first order by forming
+# an explicit list of objects to build and resolving alternatives entirely
+# using make functions.
+
+libc: libc.a
 
 ifneq ($(ARCH),)
 
 # The smell of lisp is strong here
-libc := $(sort $(basename $(notdir\
+libf := $(sort $(basename $(notdir\
 		$(wildcard libc/*.[cs])\
 		$(wildcard libc/$(ARCH)/*.[cs])\
 		$(wildcard libc/libtest/*.[cs]) )))
+libs := $(foreach s, $(libf), $(basename $(firstword\
+		$(wildcard libc/$s.[cs])\
+		$(wildcard libc/$(ARCH)/$s.[cs])\
+		$(wildcard libc/libtest/$s.[cs]) )))
+libc := $(patsubst %,%.o,$(libs))
+# Yes this can be done with a single variable. No I won't do that.
+
+# libf = _start strlen write printf ...
+# libs = libc/x86/_start.s libc/strlen.c libc/x86/write.s libc/libtest/printf.c ...
+# libc = libc/x86/_start.o libc/strlen.o libc/x86/write.o libc/libtest/printf.o ...
+
+# Let make delete objects once they are packed
+.INTERMEDIATE: $(libc)
 
 # LTO objects do not work when packed in an .a library,
 # at least not without some additional effort.
 # See https://gcc.gnu.org/wiki/LinkTimeOptimization
 libc/$(ARCH)/%.o libc/libtest/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLAGS))
 
-# The order of the rules below is important.
-# Anything arch-specific should be preferred to generic libc stuff.
-libc.a(%.o): libc/$(ARCH)/%.o
-	$(AR) crS $@ $<
-libc.a(%.o): libc/%.o
-	$(AR) crS $@ $<
-libc.a(%.o): libc/libtest/%.o
-	$(AR) crS $@ $<
-
-libc.a: $(patsubst %,libc.a(%.o),$(libc))
-	$(AR) s $@
+# Pack only objects newer that libc.a.
+# make happens to be smart enough not to build the others, too.
+libc.a: $(libc)
+	ar cru $@ $?
 
 clean::
 	rm -f libc.a libc/*.o libc/*/*.o
-
-libc: libc.a
 
 else
 
