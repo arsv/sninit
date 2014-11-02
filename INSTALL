@@ -8,9 +8,6 @@ Run make, then make install.
 
 Alternatively, run mostly-autotools-compatible configure.
 
-Use initblocks variable to choose which modules to build.
-See comments in config.mk.
-
 To try it on a system with another init installed, run
 
 	configure --with-s
@@ -49,8 +46,8 @@ Only x86 and x86_64 architectures are supported at this moment.
 For any other targets, fall back to the original dietlibc.
 
 Using bundled libc provides little benefit over properly configured
-dietlibc in terms of code size (because it is dietlibc code,
-if perhaps re-written in some places) but provides clear,
+dietlibc in terms of code size (because it *is* dietlibc code,
+if perhaps re-written in some places) but instead gives clear,
 uncluttered libc code for debugging.
 
 

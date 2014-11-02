@@ -1,4 +1,4 @@
-/* gcc does sometimes "optimize" printf call by replacing them with putchar or puts */
+/* gcc does sometimes "optimize" printf calls by replacing them with putchar or puts */
 
 #include <unistd.h>
 

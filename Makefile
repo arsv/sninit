@@ -4,7 +4,7 @@
 
 # Do not rely on configure too much though, it is only expected to handle
 # standard situations. In case you need some unusual setup (weirdly configured
-# dietlibc etc), ditch configure and edit config.mk and/or Makefile directly.
+# dietlibc etc), ditch configure and edit config.h/config.mk/Makefile directly.
 
 include config.mk
 
@@ -64,11 +64,11 @@ distclean: clean
 # --- Built-in inittab ---------------------------------------------------------
 #
 # This differs significantly from the rest of the file
-# because statictab must be host-executable, not target-executably
-# like init and telinit. So got to use HOSTCC here, and select
-# some libc. Since the choice is hardly relevant for a build-time tool,
+# because statictab must be host-executable, not target-executable
+# like init and telinit. So got to use HOSTCC here, and select some libc.
+# Since the choice is hardly relevant for a build-time tool,
 # gcc/glibc is assumed, unless we're doing a native build in which case
-# primary objects, $LIBS and $SYS are used.
+# primary objects and $LIBS are used.
 #
 # Non-standard but short .ho extension is used for host objects.
 # This is ok, since gcc treats any unknown extension as an object
@@ -113,9 +113,8 @@ endif
 # no way for breadth-first building (i.e. all objects, then single ar cru $@).
 # https://www.gnu.org/software/make/manual/html_node/Archive-Pitfalls.html#Archive-Pitfalls
 #
-# So instead the approach here is to force breadth-first order by forming
-# an explicit list of objects to build and resolving alternatives entirely
-# using make functions.
+# So instead the idea is to form an explicit list of objects to build,
+# resolving alternatives entirely using make functions.
 
 libc: libc.a
 
