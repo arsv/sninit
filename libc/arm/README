@@ -1,0 +1,5 @@
+The code assumed ARM EABI.
+Both armel and armhf can use it with no changes, but OABI-only kernels can't.
+
+I see no point in supporting (apparently obsolete) OABI.
+In case it is needed, use dietlibc which still has OABI support.
