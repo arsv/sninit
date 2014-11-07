@@ -16,7 +16,7 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_setrunlevels t_readinitdir t_rewireptsarray t_scratchptr \
 	t_transferpids
 # Tests with manual check (for now)
-XTESTS = x_printf
+XTESTS = x_printf x_hello x_open
 
 # Default rule — built all tests but do not run them
 all: $(TESTS) $(XTESTS)
@@ -113,6 +113,9 @@ t_transferpids: t_transferpids.o init_conf.o init_conf_map.o init_find.o test.o
 # Libc tests
 
 x_printf: x_printf.o
+
+x_open: x_open.o
+x_openread: x_openread.o test.o
 
 # Possible top-level libc
 #
