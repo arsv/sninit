@@ -111,7 +111,6 @@ while [ $# -gt 0 ]; do
 			libc=syslibc
 			;;
 		with-timestamps|ts) argreq
-			dieifnot "$val" "$arg: argument required"
 			tstype=$val
 			;;
 		tz|notz|libcts|nots)
