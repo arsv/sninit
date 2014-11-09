@@ -136,16 +136,17 @@ libc := $(patsubst %,%.o,$(libs))
 # libs = libc/x86/_start.s libc/strlen.c libc/x86/write.s libc/libtest/printf.c ...
 # libc = libc/x86/_start.o libc/strlen.o libc/x86/write.o libc/libtest/printf.o ...
 
-# Let make delete objects once they are packed
-.INTERMEDIATE: $(libc)
-
 # LTO objects do not work when packed in an .a library,
 # at least not without some additional effort.
 # See https://gcc.gnu.org/wiki/LinkTimeOptimization
 libc/$(ARCH)/%.o libc/libtest/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLAGS))
 
 # Pack only objects newer that libc.a.
-# make happens to be smart enough not to build the others, too.
+#
+# It would make sense to declare $(libc) intermediate targets, and it would almost work,
+# except that a single changed source file would trigger re-building of all the $(libc).
+# So instead let's keep the objects around.
+#
 libc.a: $(libc)
 	ar cru $@ $?
 
