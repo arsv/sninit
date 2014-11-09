@@ -5,6 +5,8 @@
 #include <sys/reboot.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <errno.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "sys.h"
@@ -112,9 +114,16 @@ static int setup(int argc, char** argv)
 	rbcode = RB_HALT_SYSTEM;
 	syslogfd = -1;
 
-	/* To avoid calling getpid every time. This is for debug runs mostly. */
+	/* To avoid calling getpid every time. And since this happens to be
+	   the first syscall init makes, it is also used to check whether runtime
+	   situation is bearable. */
 	if(getpid() == 1)
 		state |= S_PID1;
+	/* Failing getpid() is a sign of big big trouble, like running x86 or x32
+	   on a x64 kernel without relevant parts built in. If it is the case,
+	   error reporting is pointless and all init can do is bail out asap. */
+	else if(errno)
+		_exit(errno);
 
 	if(setinitctl())
 		/* Not having telinit is bad, but aborting system startup
