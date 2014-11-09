@@ -198,6 +198,9 @@ if [ "$arch" == "x86" -a -z "$target" -a -z "$cc" ]; then
 			test -z "$HOSTCC" && HOSTCC="$hostcc"
 			;;
 	esac
+elif [ "$arch" == "x86_32" -a -z "$target" -a -z "$cc" ]; then
+	CC="$CC -mx32"
+	test -z "$HOSTCC" && HOSTCC="$hostcc"
 fi
 
 if [ "$inittab" != "-" ]; then
