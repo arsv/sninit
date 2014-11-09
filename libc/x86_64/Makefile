@@ -13,7 +13,7 @@ directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))
 
 # for these, some argument mangling is required
-custom = ppoll reboot send setsockopt sigaction sigprocmask time waitpid
+custom = ppoll reboot send setsockopt sigaction sigprocmask waitpid
 
 # for quick syntax check
 AS = x86_64-unknown-linux-gnu-gcc -c
