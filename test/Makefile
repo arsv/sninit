@@ -60,7 +60,7 @@ proto.c: ../init*.[ch] ../sys.h | protocheck.px
 # Cleanup
 
 clean:
-	rm -f proto.c $(TESTS) $(OUTS) $(XTESTS)
+	rm -f *.o proto.c $(TESTS) $(OUTS) $(XTESTS)
 
 # Ok, now the tests themselves
 
