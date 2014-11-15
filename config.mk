@@ -3,8 +3,10 @@ ARCH := x86_64
 
 # Building
 CC := gcc
+AS := $(CC) -c
 AR := ar
 CFLAGS := -Wall -g
+ASFLAGS :=
 LDFLAGS :=
 LIBS :=
 

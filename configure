@@ -213,8 +213,6 @@ case "${libc:-syslibc}" in
 		test -d "libc/$arch" || die "bundled libc: target $arch is not supported"
 		blocks="$blocks sys"
 		tsdefault=tz
-		# clang (some versions at least) warns about unused -stdinc and/or -Ilibc/include
-		test "$cctype" == 'clang' && cflags="${cflags:+$cflags }-Qunused-arguments"
 		;;
 	musl)
 		tsdefault=libc

@@ -169,7 +169,7 @@ endif
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 .s.o:
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(AS) $(ASFLAGS) -o $@ $<
 
 %: %.o
 	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
