@@ -131,7 +131,9 @@ int nextline(struct fileblock* f)
 
 	if(ls >= end) return 0;
 
-	for(le = ls; le < end && *le != '\n'; le++); *le = '\0';
+	for(le = ls; le < end && *le != '\n'; le++)
+		; /* clang is full of hatred towards elegant concise expressions */
+	*le = '\0';
 
 	f->ls = ls;
 	f->le = le;

@@ -24,7 +24,7 @@ static inline int skiptofmt(const char* s)
 	return p - s;
 }
 
-static int itostr(char* buf, size_t len, size_t n, int base)
+static int itostr(char* buf, size_t len, long n, int base)
 {
 	short i;
 	short w = 0;

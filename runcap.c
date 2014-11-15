@@ -42,8 +42,8 @@ extern int capset(cap_user_header_t hdrp, cap_user_data_t datap);
 
 /* Stored process limitations: uid/gids and capabilities */
 /* Cgroups and ulimits are applied immediately, no need to store those */
-uid_t uid = -1;
-gid_t gid = -1;
+int uid = -1;
+int gid = -1;
 /* Secondary groups */
 int gidn = 0;
 gid_t gids[MAXGROUPS];
