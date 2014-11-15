@@ -120,19 +120,6 @@ static inline void setrunlevel(const char* p)
 	nextlevel = next;
 }
 
-static inline void setsublevel(int add, char* arg)
-{
-	char c;
-	int mask;
-
-	while((c = *(arg++)))
-		if(c >= 'a' && c <= 'f') {
-			mask = (1 << (c - 'a' + 0xa));
-			nextlevel = (add ? nextlevel | mask : nextlevel & ~mask);
-		} else
-			warn("bad sublevel %c", c);
-}
-
 static void rlstr(char* str, int len, int mask)
 {
 	char* p = str;	
