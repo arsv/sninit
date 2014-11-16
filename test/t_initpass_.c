@@ -71,4 +71,4 @@ int nocall(const char* func)
 {
 	die("called %s()", func);
 }
-NOCALL(sexec);
+NOCALL(execinitrec);

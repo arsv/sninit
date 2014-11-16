@@ -14,7 +14,7 @@ extern int timetowait;
 extern int initctlfd;
 extern struct config* cfg;
 
-extern void sexec(struct initrec* p);
+extern void execinitrec(struct initrec* p);
 
 static void spawn(struct initrec* p);
 global void stop(struct initrec* p);
@@ -206,7 +206,7 @@ static void spawn(struct initrec* p)
 
 	/* ok, we're in the child process */
 	close(initctlfd);
-	sexec(p);
+	execinitrec(p);
 }
 
 void stop(struct initrec* p)

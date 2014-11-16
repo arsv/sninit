@@ -8,7 +8,7 @@
 
 extern struct config* cfg;		/* we need environment here */
 
-void sexec(struct initrec* p)
+void execinitrec(struct initrec* p)
 {
 	/* C_NULL: close fds 0, 1, 2 unless specified otherwise */
 	int maxnullfd = 2;	
