@@ -9,6 +9,8 @@ CFLAGS := -Wall -g
 ASFLAGS :=
 LDFLAGS :=
 LIBS :=
+# for compatibility with GNU make built-in rules
+LDLIBS = $(LIBS)
 
 # Installation directories; check config.h for runtime paths
 sbindir := /sbin
