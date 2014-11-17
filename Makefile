@@ -10,7 +10,9 @@ include config.mk
 
 all: init telinit runcap init.8 telinit.8 inittab.5 runcap.8
 
+ifneq ($(ARCH),)
 init telinit runcap: libc.a
+endif
 
 init_conf = init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.o
 init_null = init_null.o
