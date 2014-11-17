@@ -15,10 +15,10 @@ environ:	.long 0
 .global _exit
 
 _start:
-	/* Save environ for later use (which is only in runcap, but we still need it to find auxv) */
 	popl	%ecx			/* %ecx = argc */
 	movl	%esp, %eax		/* %eax = argv */
 	pushl	%ecx
+	/* Save environ for later use (which only happens in runcap, but we still need it to find auxv) */
 	leal	4(%eax,%ecx,4),%esi	/* %esi = envp = (4*ecx)+%eax+4 */
 	movl	%esi, environ
 
