@@ -10,6 +10,7 @@ include config.mk
 
 all: init telinit runcap init.8 telinit.8 inittab.5 runcap.8
 
+# Force early libc build
 ifneq ($(ARCH),)
 init telinit runcap: libc.a
 endif

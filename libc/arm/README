@@ -1,4 +1,4 @@
-The code assumed ARM EABI.
+The code assumes ARM EABI.
 Both armel and armhf can use it with no changes, but OABI-only kernels can't.
 
 I see no point in supporting (apparently obsolete) OABI.

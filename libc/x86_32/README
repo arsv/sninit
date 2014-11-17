@@ -2,13 +2,14 @@ x86_32, or in other words, x86_64 with short pointers.
 Check ../x86_64/README for ABI and such.
 
 
-Big fat warning: building sninit for x86_32 is of little benefit.
+Big fat warning: building sninit for x86_32 makes little sense.
 Negligible net gain over x86_64 in the init process will be likely
-offset by (not-so-negligible) increase in the kernel size.
+offset by (not-so-negligible) increase in the kernel size needed
+to support x86_32.
 
 The only situation I can think of that warrants x32 init executable
 is a kernel without regular x86_64 syscalls, which is not something
-that can be built easily as far as I know.
+that can be built easily.
 
 
 This arch is more of a experiment for the sake of experiment,
