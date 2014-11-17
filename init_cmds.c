@@ -16,10 +16,13 @@ extern int configure(int strict);
 
 global void parsecmd(char* cmd);
 
-static inline void setrunlevel(const char* cmd);
-static inline void dumpstate(void);
-static inline void paused(struct initrec* p, int v);
-static inline void uphup(struct initrec* p, int v);
+static void setrunlevel(const char* cmd);
+static void dumpstate(void);
+
+static void dorestart(struct initrec* p);
+static void doenable(struct initrec* p, int v);
+static void dopause(struct initrec* p, int v);
+static void dohup(struct initrec* p, int v);
 
 /* cmd here is what telinit sent to initctl.
    The actual command is always cmd[0], while cmd[1:] is (optional) argument.
@@ -62,13 +65,13 @@ void parsecmd(char* cmd)
 		case 'P': nextlevel = 0; rbcode = RB_POWER_OFF;   break;
 		case 'R': nextlevel = 0; rbcode = RB_AUTOBOOT;    break;
 		/* process ops */
-		case 'r': stop(p); break;
-		case 'p': paused(p, 1); break;
-		case 'w': paused(p, 0); break;
-		case 'd': p->rlvl &= ~(currlevel & PRIMASK); p->flags &= ~P_MANUAL; break;
-		case 'e': p->rlvl |=  (currlevel & PRIMASK); p->flags |=  P_MANUAL; break;
-		case 'h': uphup(p, 0); break;
-		case 'u': uphup(p, 1); break;
+		case 'r': dorestart(p); break;
+		case 'p': dopause(p, 1); break;
+		case 'w': dopause(p, 0); break;
+		case 'd': doenable(p, 0); break;
+		case 'e': doenable(p, 1); break;
+		case 'h': dohup(p, 0); break;
+		case 'u': dohup(p, 1); break;
 		/* state query */
 		case '?': dumpstate(); break;
 		/* reconfigure */
@@ -89,7 +92,7 @@ void parsecmd(char* cmd)
 	4ab	switch to runlevel 4, clear sublevels, activate a and b
 	+ab	activate sublevels a and b
 	-ac	deactivate sublevels a and c */
-static inline void setrunlevel(const char* p)
+static void setrunlevel(const char* p)
 {
 	int next = nextlevel;
 	int mask = 0;
@@ -191,23 +194,55 @@ static void dumpstate(void)
 	}
 }
 
-static inline void paused(struct initrec* p, int v)
+/* Set or clear flags */
+static void scflags(unsigned short* dst, unsigned short flags, int setclear)
+{
+	if(setclear)
+		*dst |= flags;
+	else
+		*dst &= ~flags;
+}
+
+/* Clear timestamps, forcing immediate action for spawn() and/or stop() */
+static void clearts(struct initrec* p)
+{
+	p->lastrun = 0;
+	p->lastsig = 0;
+}
+
+static void dorestart(struct initrec* p)
+{
+	clearts(p);
+	stop(p);
+}
+
+static void doenable(struct initrec* p, int v)
+{
+	clearts(p);
+	scflags(&(p->rlvl), currlevel & PRIMASK, v);
+	scflags(&(p->flags), P_MANUAL, v);
+}
+
+static void dopause(struct initrec* p, int v)
 {
 	if(p->pid <= 0)
 		retwarn_("%s is not running", p->name);
 	if(kill(p->pid, v ? SIGSTOP : SIGCONT))
 		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
 
-	p->flags = v ? (p->flags | P_SIGSTOP) : (p->flags & ~P_SIGSTOP);
+	scflags(&(p->flags), P_SIGSTOP, v);
 }
 
-static inline void uphup(struct initrec* p, int v)
+static void dohup(struct initrec* p, int orstart)
 {
-	if(v && p->pid <= 0) {
-		p->rlvl  |=  (currlevel & PRIMASK);
-		p->flags |=  P_MANUAL;
-	} else if(p->pid <= 0) {
-		warn("%s is not running", p->name);
+	if(p->pid <= 0) {
+		if(orstart) {
+			p->lastrun = 0;
+			p->rlvl  |=  (currlevel & PRIMASK);
+			p->flags |=  P_MANUAL;
+		} else {
+			warn("%s is not running", p->name);
+		}
 	} else {
 		kill(SIGHUP, p->pid);
 	}
