@@ -3,8 +3,8 @@ Check ../x86_64/README for ABI and such.
 
 
 Big fat warning: building sninit for x86_32 makes little sense.
-Negligible net gain over x86_64 in the init process will be likely
-offset by (not-so-negligible) increase in the kernel size needed
+Negligible net gain over x86_64 in the init process will likely be
+offset by not-so-negligible increase in the kernel size needed
 to support x86_32.
 
 The only situation I can think of that warrants x32 init executable
