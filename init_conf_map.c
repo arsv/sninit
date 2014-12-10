@@ -25,7 +25,7 @@ int mmapblock(struct memblock* m, int size)
 		aligned += (memblockalign - size % memblockalign);
 
 	if(m->addr) {
-		/* This is relatively unlikely case when a new reconfigure
+		/* This is a relatively unlikely case when a new reconfigure
 		   request comes before newblock from the previous one
 		   is moved over to cfgblock. In such a case, try to re-use
 		   newblock without unmmaping it. */
