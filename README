@@ -25,12 +25,12 @@ Key things sninit does have:
 
 Things sninit lacks:
 
-- in-place restarting a-la sysvinit
-- wall(8), shutdown(8) and some other sysvinit-style utilities
-- inter-process dependencies, systemd-style
 - system state management, including network, mounts, sysconfig and ulimits
+- inter-process dependencies, systemd-style
 - support for kernels other than linux-2.6+
 - dbus, xml and other bloat
+- wall(8), shutdown(8) and some other sysvinit-style utilities
+- in-place restarting a-la sysvinit
 
 Things sninit has which are not in any way exceptional:
 
