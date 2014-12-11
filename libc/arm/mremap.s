@@ -6,10 +6,8 @@
 
 mremap:
 	stmfd	sp!,{r4,r5,r7,lr}
-	ldr	r4, [sp,#16]
-	ldr	r5, [sp,#20]
 	ldr	r7, =NR_mremap
-	b	unisys
+	b	unisys5
 
 .type mremap,function
 .size mremap,.-mremap

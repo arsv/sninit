@@ -12,6 +12,7 @@
 die() { echo "$@" >&2; exit 1; }
 
 syscall="$1"; shift
+nargs="$1"; shift
 test -z "$syscall" && die "usage: $0 syscall-name"
 
 nr=$(grep "#define __NR_$syscall\s" bits/syscall.h | sed -e "s/^.*__NR_$syscall\s\+//")
@@ -26,10 +27,8 @@ cat <<END
 
 $syscall:
 	stmfd	sp!,{r4,r5,r7,lr}
-	ldr	r4, [sp,#16]
-	ldr	r5, [sp,#20]
 	ldr	r7, =NR_$syscall
-	b	unisys
+	b	unisys$nargs
 
 .type $syscall,function
 .size $syscall,.-$syscall
