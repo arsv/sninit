@@ -50,8 +50,11 @@ Runtime paths configuration:
 Target configuration:
 	target=A	use \$A toolchain; in particular, use \$A-gcc
 	build=B		use \$B toolchain for build-time executable
-			(useful only with builtin=)
-	cc=		use specified C compiler
+			(build= is only useful with builtin=)
+	CC=		C compiler [gcc]
+	AS=		assembler [gcc -c]
+	AR=		archiver [ar]
+			(as and ar are only used for bundled libc)
 
 	lto		use link-time optimization (GCC only)
 
@@ -137,9 +140,15 @@ while [ $# -gt 0 ]; do
 			build=$val
 			hostcc=$val-gcc
 			;;
-		with-cc|cc) argreq
+		with-cc|cc|CC)
 			cc=${val:-cc}
 			cctype=gcc
+			;;
+		with-as|as|AS) argreq
+			AS=$val
+			;;
+		with-ar|ar|AR) argreq
+			AR=$val
 			;;
 		with-clang|clang)
 			cc=${val:-clang}
@@ -314,6 +323,9 @@ CFLAGS=${CFLAGS:-$cflags}
 LDFLAGS=${LDFLAGS:-$ldflags}
 LIBS=${LIBS:-$libs}
 
+AS=${AS:-\$(CC) -c}
+AR=${AR:-ar}
+
 # Default values for directory options, defined late because of $prefix dependency
 subprefix=${prefix:-/usr}
 prefix=${prefix:-/}
@@ -332,6 +344,8 @@ test "$initdir" != '-' && initdir=${initdir:-$sysconfdir/rc}      || unset initd
 sed -i \
 	-e "/^ARCH :=/s#:=.*#:= $arch#"\
 	-e "/^CC :=/s#:=.*#:= $CC#"\
+	-e "/^AS :=/s#:=.*#:= $AS#"\
+	-e "/^AR :=/s#:=.*#:= $AR#"\
 	-e "/^CFLAGS :=/s#:=.*#:= $CFLAGS#"\
 	-e "/^LDFLAGS :=/s#:=.*#:= $LDFLAGS#"\
 	-e "/^LIBS :=/s#:=.*#:= $LIBS#"\
@@ -357,8 +371,10 @@ sed -i \
 echo "Configuration updated. Check the values below, then run make."
 echo
 test -n "$arch" && \
-echo "	ARCH=$arch"
+ echo "	ARCH=$arch"
 echo "	CC=$CC"
+test -n "$arch" -a "$AS" != "\$(CC) -c" && \
+ echo "	AS=$AS"
 echo "	CFLAGS=$CFLAGS"
 echo "	LDFLAGS=$LDFLAGS"
 echo "	LIBS=$LIBS"
