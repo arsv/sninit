@@ -14,3 +14,11 @@ that can be built easily.
 
 This arch is more of a experiment for the sake of experiment,
 not something intended for real use. It is not well tested too.
+
+
+
+In case the build fails with
+
+    /usr/bin/ld: skipping incompatible .../libgcc.a when searching for -lgcc
+
+try removing -lgcc from libs, or make sure your gcc is built correctly and has x32 libs.
