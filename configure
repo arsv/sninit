@@ -25,6 +25,61 @@ die() { echo "$@"; exit 1; }
 dieifnot() { test -n "$1" && return; shift; die "$@"; }
 argreq() { dieifnot "$val" "$arg: value must be supplied"; }
 
+usage() {
+cat <<END
+Usage: ./configure [options]
+
+Options are either "key=val" pairs, or just "key"s.
+For compatibility, --key=val and --with-key=val are accepted in most cases.
+
+Installation directories:
+	prefix=		overall prefix []
+	sbindir=	system binaries directory [\$prefix/sbin]
+	sysconfdir=	system configuration directory [\$prefix/etc]
+	mandir=		man pages directory [\$prefix/share/man]
+	logdir=		log directory [\$prefix/var/log], for spawned processes only
+
+Runtime paths configuration:
+	initctl=	init control socket [@initctl]
+	inittab=	inittab [\$sysconfdir/inittab]
+	initdir=	initdir [\$sysconfdir/initdir]
+
+	disable-initdir	build init without initdir support
+	disable-inittab	build init without any kind of runtime configuration
+
+Target configuration:
+	target=A	use \$A toolchain; in particular, use \$A-gcc
+	build=B		use \$B toolchain for build-time executable
+			(useful only with builtin=)
+	cc=		use specified C compiler
+
+	lto		use link-time optimization (GCC only)
+
+	debug		disable optimization, generate debug symbols,
+			set inittab=etc/inittab and initdir=etc/initdir
+			for testing and/or development
+
+Libc selection (see INSTALL for explaination):
+	arch=L		use bundled libc for target arch \$L
+			possible L values: arm x86 x86_64 x86_32
+	syslibc		use whatever libc target toolchain was configured with
+	dietlibc	build with dietlibc (cc="diet gcc")
+	musl		build with musl (cc="musl-gcc")
+
+Init features:
+	builtin=F	parse and compile \$F as built-in inittab
+			(see doc/builtin.txt)
+
+	tz		put localtime stamps in syslog messages
+	utc		put utc timestamps in syslog messages
+	nots		do not put any timestamps, rely on syslogd to add them
+
+If not sure about configure usage, check comments in config.mk and config.h,
+then edit those files directly.
+END
+exit 0
+}
+
 while [ $# -gt 0 ]; do
 	arg="$1"; shift;
 	# Separate LHS and RHS in --option=value or VAR=val cases
@@ -47,6 +102,8 @@ while [ $# -gt 0 ]; do
 	arq=`echo "$arg" | sed -e 's/^--//'`
 
 	case "$arq" in
+		help) usage ;;
+
 		sysconfdir|configdir) sysconfdir=$val ;;
 		sbindir) sbindir=$val ;;
 		logdir) logdir=$val ;;
