@@ -57,8 +57,9 @@ Target configuration:
 			(as and ar are only used for bundled libc)
 
 	lto		use link-time optimization (GCC only)
+	debug		generate debug symbols
 
-	debug		disable optimization, generate debug symbols,
+	devel		disable optimization, generate debug symbols,
 			set inittab=etc/inittab and initdir=etc/initdir
 			for testing and/or development
 
@@ -205,6 +206,7 @@ while [ $# -gt 0 ]; do
 			s=
 			inittab=etc/inittab
 			initdir=etc/initdir
+			logdir=var/log
 			optimize=
 			debug="-Wall -g"
 			;;
