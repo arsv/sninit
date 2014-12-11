@@ -5,11 +5,10 @@
 .global accept
 
 accept:
-        stmfd	sp!,{r4,r5,r7,lr}
+	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r4, [sp,#16]
 	ldr	r5, [sp,#20]
-        ldr     r7, =NR_accept
-	swi	0
+	ldr	r7, =NR_accept
 	b	unisys
 
 .type accept,function

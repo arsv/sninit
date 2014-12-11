@@ -14,6 +14,7 @@ errno:	.word 0
 .global errno
 
 unisys:
+	swi	0
         cmn     r0, #4096
         rsbcs   r2, r0, #0
         ldrcs   r3, =errno
