@@ -3,3 +3,10 @@ Both armel and armhf can use it with no changes, but OABI-only kernels can't.
 
 I see no point in supporting (apparently obsolete) OABI.
 In case it is needed, use dietlibc which still has OABI support.
+
+
+ARM EABI calling convention:
+
+                 1   2   3   4   5   6
+Syscall     r7 (r0, r1, r2, r3, r4, r5) -> r0
+Function       (r0, r1, r2, r3, +0, +4) -> r0		+n = n*4(sp)

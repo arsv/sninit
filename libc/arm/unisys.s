@@ -15,6 +15,11 @@ errno:	.word 0
 .global unisys6
 .global errno
 
+// Each syscall does
+//	stmfd	sp!,{r4,r5,r7,lr}
+// before jumping to unisys*, that's 4*4=16 bytes, so the original stack
+// content starts at [sp,#16].
+
 unisys6:				// 6-arg syscall
 	ldr	r5, [sp,#20]
 unisys5:				// 5-arg syscall
