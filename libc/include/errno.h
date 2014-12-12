@@ -5,6 +5,4 @@
 
 extern int errno;
 
-extern int *__errno_location(void);
-
 #endif
