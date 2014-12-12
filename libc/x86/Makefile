@@ -1,4 +1,4 @@
-# Running this Makefile is *NOT* a part of a normal build process!
+# Running this Makefile is *NOT* a part of normal build process!
 # The library is built using top-level Makefile
 # This one is only for re-generating arch-specific syscall files.
 
