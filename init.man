@@ -1,7 +1,7 @@
 .TH init 8
 '''
 .SH NAME
-{init} \- system supervisor.
+{INIT} \- system supervisor.
 '''
 .SH SYNOPSIS
 {/sbin}/{init} [\fIkernel options\fR]

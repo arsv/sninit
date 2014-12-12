@@ -165,7 +165,7 @@ endif
 
 # --- Implicit rules -----------------------------------------------------------
 
-%.5 %.8: %.man | mansubst
+%.5 %.8: %.man mansubst
 	./mansubst $< > $@ 
 
 .c.o:

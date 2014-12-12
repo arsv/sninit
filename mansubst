@@ -1,20 +1,19 @@
 #!/bin/sh
 
 INIT=sninit
-sbindir=$(grep ^sbindir Makefile | sed -e 's/.*=\s*//')
-init=$(grep ^init\ = Makefile | sed -e 's/.*=\s*//')
-telinit=$(grep ^telinit\ = Makefile | sed -e 's/.*=\s*//')
-tabbase=$(grep ^inittab\ = Makefile | sed -e 's/.*=\s*//')
+sbindir=$(grep ^sbindir config.mk | sed -e 's/.*:=\s*//')
+s=$(grep "^s :=" Makefile | sed -e 's/.*:=\s*//')
 initctl=$(grep '^#define INITCTL' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
 inittab=$(grep '^#define INITTAB' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
 initdir=$(grep '^#define INITDIR' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
 initdir=${initdir:-/etc/initdir}
+tabbase=`basename "$inittab"`
 
 exec sed \
 	-e "s!{INIT}!$INIT!g" \
 	-e "s!{/sbin}!$sbindir!g" \
-	-e "s!{init}!$init!g" \
-	-e "s!{telinit}!$telinit!g" \
+	-e "s!{init}!${s}init!g" \
+	-e "s!{telinit}!${s}telinit!g" \
 	-e "s!{inittab}!$tabbase!g" \
 	-e "s!{@initctl}!$initctl!g" \
 	-e "s!{/etc/inittab}!$inittab!g" \
