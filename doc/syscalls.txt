@@ -1,0 +1,75 @@
+Syscalls and functions calls
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+On most architectures, calling convention differs between functions and syscalls.
+Sometimes it's just different registers (r10 vs rcx for arg 4 on x86_64),
+sometimes it's stack vs registers (args 5 and 6 on arm).
+
+Yet, looking at section 2 man pages gives an impression that syscalls
+are in fact functions, and that cc will translate them as function calls.
+
+But shouldn't cc be told to code syscalls as syscalls right away,
+by placing relevant data in the places the kernel expects them in?
+
+Well, turns out both approaches are used in practice.
+
+
+Syscalls as functions
+~~~~~~~~~~~~~~~~~~~~~
+Most libc implementations, including glibc, dietlibc and the bundled libc
+declare syscalls as functions, and move the data to the right places
+in assembler code.
+
+This results in a very clear declaration code, exactly as man pages say.
+
+The price is several additional instructions for most sane architectures,
+and about half a screen of code in pathological cases (x86), typically
+shared among all syscalls.
+
+Standard function calls also place no restriction on the tools used.
+Pretty much any compiler, and linker and any debugger should be able
+to handle them right away.
+
+
+Inlined syscalls
+~~~~~~~~~~~~~~~~
+Alternatively, gcc can be told where to place syscall arguments,
+essentially implementing a custom calling convention.
+The only libc I'm aware of that uses this approach is musl.
+
+The result is a very clear output code with no redundant instructions.
+
+The price, however, turns out to be quite high in practice.
+A custom calling convention replaces function declarations with inline
+asm code in header, cluttering them and confusing debuggers.
+
+Tell gdb to "break stat"? Chances are high it will not work.
+Target cc does not support inline asm? Well bad for you.
+
+And atop of that, it turns out executable size reduction
+due to lack of argument-moving code is negligible.
+
+
+Common syscall code
+~~~~~~~~~~~~~~~~~~~
+While a bit unexpected, it turns out there is some common code to run after
+syscall has returned.
+That code is needed to handle errno and return value, and it is needed even
+if syscalls are inlined.
+
+Which means even less difference between inlined syscalls and syscalls-as-functions.
+
+The question is whether there will be errno code only, or argument moving and errno code
+in the common syscall routine.
+Individual syscall code barely changes.
+On arm, syscall-as-function entails one additional instruction per syscall.
+On x86_64, there is *no* difference.
+
+
+Decision for sninit
+~~~~~~~~~~~~~~~~~~~
+Bundled libc follows dietlibc and declares syscalls as functions.
+Argument-moving happens in unisys.s for all available architectures.
+
+At present, syscall code is not nearly the worst offender when it comes
+to redundant code size, so it makes sense for me to trade some extra cycles
+for the ease of debugging and code clarity.
