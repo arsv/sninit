@@ -68,7 +68,7 @@ So the decision was to put everything in clean .s files.
 
 Declaring constants in assembler leads to some code duplication,
 and requires checks to ensure they stay in line with bits/syscall.h
-Those values however are surprisingly stable in linux, so I see as lesser evil.
+Those values however are surprisingly stable in linux, so I see this as lesser evil.
 
 Same goes for structure member offsets — the code won't survive a change
-in kernel headers... but neither will something like 100% linux installations.
+in kernel headers... but neither will something like 100% of linux installations.
