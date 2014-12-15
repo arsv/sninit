@@ -61,7 +61,7 @@ clean::
 	rm -f *.o *.ho builtin.c
 
 distclean: clean
-	rm -f init telinit statictab *.[58]
+	rm -f init telinit statictab runcap *.[58]
 	$(MAKE) -C test clean
 
 # --- Built-in inittab ---------------------------------------------------------
