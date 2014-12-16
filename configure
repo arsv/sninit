@@ -29,7 +29,7 @@ usage() {
 cat <<END
 Usage: ./configure [options]
 
-Options are either "key=val" pairs, or just "key"s.
+Options take either "key" or "key=val" forms.
 For compatibility, --key=val and --with-key=val are accepted in most cases.
 
 Installation directories:
