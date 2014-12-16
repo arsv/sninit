@@ -13,7 +13,7 @@ unset libs libs_syscall
 unset tstype null
 
 lto=
-optimize=-Os
+optimize=auto
 debug=
 builtin=
 hostcc=gcc
@@ -219,17 +219,6 @@ done
 # Could be done in the loop above, if not for option order issues.
 # i.e. --with-clang --with-dietlibc vs --with-dietlibc --with-clang
 
-if [ -n "$optimize" ]; then
-	cflags=${cflags:+$cflags }$optimize
-fi
-if [ -n "$lto" ]; then
-	cflags=${cflags:+$cflags }$lto
-	ldflags=${ldflags:+$ldflags }$lto
-fi
-if [ -n "$debug" ]; then
-	cflags=${cflags:+$cflags }$debug
-fi
-
 test "$target" = "$build" || HOSTCC=${HOSTCC:-$hostcc}
 
 case "${cctype:-gcc}" in
@@ -257,7 +246,6 @@ esac
 #
 # XXX: it's a dirty hack that should be done differently
 if [ "$arch" == "x86" -a -z "$target" -a -z "$cc" ]; then
-	ccarch=`$CC -dumpmachine 2>/dev/null`
 	case "$ccarch" in
 		x86_64*)
 			CC="$CC -m32 -march=i686"
@@ -265,9 +253,38 @@ if [ "$arch" == "x86" -a -z "$target" -a -z "$cc" ]; then
 			;;
 	esac
 elif [ "$arch" == "x86_32" -a -z "$target" -a -z "$cc" ]; then
+	# Assuming native x86_32 compilers are non-existant
 	CC="$CC -mx32"
 	test -z "$HOSTCC" && HOSTCC="$hostcc"
 fi
+
+# Try to guess target architecture
+# This should be done *after* deciding $CC of course
+ccarch=`$CC -dumpmachine 2>/dev/null`
+test -z "$ccarch" -a -n "$target" && ccarch="$target"
+
+# Handle optimization
+if [ "$optimize" == 'auto' ]; then
+	case "$ccarch" in
+		# stdarg + x86 + SSE results in xmm* register handling bloat
+		# despite the fact those are never used in sninit
+		x86*) optimize="-Os -mno-sse" ;;
+		# without any better ideas, just optimize for size
+		*) optimize="-Os" ;;
+	esac
+fi
+
+if [ -n "$optimize" ]; then
+	cflags=${cflags:+$cflags }$optimize
+fi
+if [ -n "$lto" ]; then
+	cflags=${cflags:+$cflags }$lto
+	ldflags=${ldflags:+$ldflags }$lto
+fi
+if [ -n "$debug" ]; then
+	cflags=${cflags:+$cflags }$debug
+fi
+
 
 if [ "$inittab" != "-" ]; then
 	blocks="conf"
