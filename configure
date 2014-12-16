@@ -292,6 +292,14 @@ else
 	blocks="null"
 fi
 
+# See if we'd like to use bundled libc by default
+case "$libc:$arch:$ccarch" in
+	::x86_64*) libc=bundled arch=x86_64 ;;
+	# x86_32 is *not* reported as such and must be specified explicitly!
+	::x86*) libc=bundled arch=x86 ;;
+	::arm*) libc=bundled arch=arm ;;
+esac
+
 case "${libc:-syslibc}" in
 	bundled)
 		dieifnot "$arch" "Target architecture must be specified for bundled libc (--arch)"
