@@ -268,3 +268,31 @@ So why not use pointers array for inittab as well.
 
 As an added bonus, using arrays removes interconnecting stuff from initrec,
 leaving the structure clean.
+
+
+Variable argument lists handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+warn() uses printf-style syntax, and I like the way it looks.
+However, common C implementation (stdarg.h) produces kinda ugly
+code on modern processors.
+This is because va_* stuff was apparently designed with stack in mind,
+while modern cpus (x86_64, arm, mips) use registers instead
+(and lack indirect register addressing, not that it matters much).
+
+To make matters worse, there's warn(fmt, ...) which calls snprintf(buf, len, fmt, ...),
+note the move from 1st to 3rd position for fmt and subsequent arguments.
+
+Standard C is not expressive enough to declare warn() and/or vsnprintf
+with explicit argument placement, at least not the way I would accept.
+And doing so would introduce shaky assumptions for stack-based platforms,
+specifically on sizeof(long) <=> sizeof(void*) and their alignment.
+
+So for now the whole thing uses standard va_list approach.
+Which, just in case, means saving registers to the stack in warn()
+and using va_arg on those saved values.
+
+The only optimization used is disabling FPU, which is not used in sninit
+but which typically has some registers to save.
+
+Quick check reveals the losses are negligible, below 100 bytes for most
+architectures, so why bother.
