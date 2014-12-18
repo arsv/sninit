@@ -5,9 +5,9 @@
 
 /* The main configuration file aka inittab. */
 /* MAY be a relative path, which will PROBABLY end up with / for cwd */
-#define INITTAB "etc/inittab"
+#define INITTAB "/etc/inittab"
 /* Initdir, for service files. Leave undefined to disable initdir parsing */
-#define INITDIR "etc/initdir"
+#define INITDIR "/etc/initdir"
 
 /* Syslog socket for init's own messages. Do not change, it's a standard
    value hard-coded in several syslog(3) implementations. */
@@ -15,7 +15,7 @@
 
 /* Directory to put process logs to, for processes with "log" flag.
    See man/inittab.5 */
-#define LOGDIR "var/log"
+#define LOGDIR "/var/log"
 
 /* Timezone data, only used by sys_time_tz.c */
 #define LOCALTIME "/etc/localtime"

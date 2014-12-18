@@ -1,11 +1,11 @@
-# Target architecture for bundled libc
-ARCH := x86_64
+# Target architecture for bundled libc. Leave empty to use system libc.
+ARCH :=
 
 # Building
-CC := gcc
+CC := cc
 AS := $(CC) -c
 AR := ar
-CFLAGS := -Wall -g
+CFLAGS := -Os
 ASFLAGS :=
 LDFLAGS :=
 LIBS :=
@@ -17,12 +17,12 @@ sbindir := /sbin
 man5dir := /usr/share/man/man5
 man8dir := /usr/share/man/man8
 # Installation basename prefix (as in {,s,sn}init)
-s := 
+s :=
 
 # Built-in inittab
-builtin := 
+builtin :=
 # Needed for $(builtin) parse tool
-HOSTCC :=
+HOSTCC := gcc
 
 # Init block configuration: {conf|null} {tz|notz|libcts|nots} [sys|err] [dents,ppoll]
 #
@@ -39,7 +39,7 @@ HOSTCC :=
 #	err	strerror() (implied by sys)
 #	dents	getdents64() (only needed when linking against glibc)
 #	ppoll	ppoll via syscall() (only needed with unpatched dietlibc)
-initblocks := conf tz sys
+initblocks := conf sys tz dents
 
 # Set up bundled libc stuff
 # Note $/ here expands to the top-level directory
