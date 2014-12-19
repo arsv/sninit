@@ -23,24 +23,17 @@ environ: .word 0
 
 .text
 .align 4
-.set reorder
 .global __start
 .global _exit
 
 __start:
-#ifdef __pic__
+	/* "All userspace code in Linux is PIC code" -- http://www.linux-mips.org/wiki/PIC_code */
 	.set noreorder
 	bltzal $0,0f
 	nop
 0:	.cpload	$31
-	.set reorder
-#else
-	/* _gp is provided by the linker and points into the middle of the */
-	/* "small data" section (.sdata and .sbss) allocated by the */
-	/* -G 8 compiler option */
-	la      $gp, _gp
-#endif
 
+	.set reorder
 	move	$ra, $zero	/* prime stack frame */
 	lw	$a0, 0($sp)	/* load argc */
 	addu	$a1, $sp, 4	/* load argv.  huh?  should be 4, right? */

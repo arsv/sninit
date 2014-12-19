@@ -125,13 +125,13 @@ ifneq ($(ARCH),)
 
 # The smell of lisp is strong here
 libf := $(sort $(basename $(notdir\
-		$(wildcard libc/*.[csS])\
-		$(wildcard libc/$(ARCH)/*.[csS])\
-		$(wildcard libc/libtest/*.[csS]) )))
+		$(wildcard libc/*.[cs])\
+		$(wildcard libc/$(ARCH)/*.[cs])\
+		$(wildcard libc/libtest/*.[cs]) )))
 libs := $(foreach s, $(libf), $(basename $(firstword\
-		$(wildcard libc/$s.[csS])\
-		$(wildcard libc/$(ARCH)/$s.[csS])\
-		$(wildcard libc/libtest/$s.[csS]) )))
+		$(wildcard libc/$s.[cs])\
+		$(wildcard libc/$(ARCH)/$s.[cs])\
+		$(wildcard libc/libtest/$s.[cs]) )))
 libc := $(patsubst %,%.o,$(libs))
 # Yes this can be done with a single variable. No I won't do that.
 
@@ -173,9 +173,6 @@ endif
 
 .s.o:
 	$(AS) $(ASFLAGS) -o $@ $<
-
-.S.o:
-	$(CC) $(CFLAGS) -o $@ -c $<
 
 %: %.o
 	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
