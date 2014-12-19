@@ -28,10 +28,18 @@ environ: .word 0
 .global _exit
 
 __start:
+#ifdef __pic__
+	.set noreorder
+	bltzal $0,0f
+	nop
+0:	.cpload	$31
+	.set reorder
+#else
 	/* _gp is provided by the linker and points into the middle of the */
 	/* "small data" section (.sdata and .sbss) allocated by the */
 	/* -G 8 compiler option */
 	la      $gp, _gp
+#endif
 
 	move	$ra, $zero	/* prime stack frame */
 	lw	$a0, 0($sp)	/* load argc */
