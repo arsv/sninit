@@ -229,7 +229,7 @@ case "${cctype:-gcc}" in
 	# an option to select desired arch.
 	clang)
 		CC=${cc:-clang}
-		[ -n "$target" ] && cflags="-arch $target $cflags"
+		[ -n "$target" ] && CC="$CC -arch $target"
 		;;
 	# Unlike dietlibc, musl replaces compiler.
 	# No idea how they handle cross-builds, perhaps with different musl-executables?
