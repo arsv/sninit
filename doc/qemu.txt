@@ -1,0 +1,34 @@
+Running non-native executables with qemu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Use qemu-(arch) to run init and telinit built for (arch):
+
+    qemu-arm ./init
+
+Guest-arch syscalls will be passed to the host kernel, with necessary
+ABI conversion performed by qemu. To check syscalls being passed, use
+
+    qemu-arm -strace ./init
+
+This approach is very simple and works best for quick viability checks,
+tests and simple debugging using warn() calls.
+
+
+Debugging non-native executables with qemu and gdb
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The trick is to use qemu built-in gdb server.
+Start executable being debugged first:
+
+    qemu-mipsel -g 1234 ./init
+
+then connect gdb for debugging:
+
+    mipsel-linux-gnu-gdb -ex "target remote tcp::1234" ./init
+
+Note gdb must be target-gdb! Native one is not likely to be useful.
+
+TCP port (1234 in this example) is arbitrary. Check gdbserver(1)
+for more info.
+
+Beware of qemu(1), the page I have describes qemu-system-(arch) only,
+*not* qemu-(arch) which has different options. Try runnig qemu-(arch) -h
+instead.
