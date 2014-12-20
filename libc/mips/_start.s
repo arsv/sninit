@@ -27,7 +27,7 @@ environ: .word 0
 .global _exit
 
 __start:
-	/* "All userspace code in Linux is PIC code" -- http://www.linux-mips.org/wiki/PIC_code */
+	/* "All userspace code in Linux is PIC" -- http://www.linux-mips.org/wiki/PIC_code */
 	.set noreorder
 	bltzal $0,0f
 	nop
