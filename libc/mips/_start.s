@@ -24,10 +24,15 @@ environ: .word 0
 
 .text
 .align 4
-.global __start
-.global _exit
+/* MIPS toolchain apparently can be configure to use either _start or __start */
+/* Can be fixed by -Wl,-e -Wl,_start but that's ugly and hey, declaring extra */
+/* symbols is free! */
+.globl __start	
+.globl _start
+.globl _exit
 
 __start:
+_start:
 	/* "All userspace code in Linux is PIC" -- http://www.linux-mips.org/wiki/PIC_code */
 	.set noreorder
 	bltzal $0,0f
@@ -57,8 +62,11 @@ _exit:
 	li	$v0, NR_exit
 	syscall
 
-.type __start,function
-.size __start,_exit-__start
-
 .type _exit,function
 .size _exit,.-_exit
+
+.type _start,function
+.size _start,_exit-_start
+
+.type __start,function
+.size __start,0
