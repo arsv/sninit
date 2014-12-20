@@ -3,6 +3,7 @@
 .equ zero, 0
 .equ ra, 31
 .equ sp, 29
+.equ v0, 2
 .equ a0, 4
 .equ a1, 5
 .equ a2, 6
@@ -40,10 +41,6 @@ __start:
 
 	and	$sp, 0xfffffff8	/* align stack to 8 bytes */
 	subu	$sp, 24		/* make room for 4 arguments, RA + pad */
-	/* I don't understand the MIPS calling convention.  Why do you
-	   need to make room on the stack for arguments you pass in
-	   registers?  Anyway, if we don't do this, the arguments are
-	   garbled. */
 	sw	$ra, 20($sp)	/* close stack frame */
 
 	addu	$a2, $a0, 1	/* load envp */
@@ -54,9 +51,10 @@ __start:
 
 	la	$25, main
 	jalr	$25
+	move	$a0, $v0	/* main return is _exit's first arg */
 
 _exit:
-	li	$2,NR_exit
+	li	$v0, NR_exit
 	syscall
 
 .type __start,function
