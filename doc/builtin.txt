@@ -5,11 +5,16 @@ struct config with the data from initab. In case something goes wrong, like
 /etc/inittab being unreadable, init dies.
 
 It is possible to have a static initial value for the struct config,
-a "built-in inittab", to fall back if /etc/inittab is unreadable.
+a "built-in inittab", to fall back to if /etc/inittab is unreadable.
 
 The idea is to have some equivalent of sulogin built-in, to give the root
 a chance to fix the system manually, possibly calling telinit q later
 for another attempt to load inittab.
+
+Unlike sysvinit, sninit does not hardcode sulogin invocation and does not
+even treat it as a special case. A regular inittab (with any content
+allowed in normal circumstances) can be compiled and linked into sninit
+executable to be used as the fallback configuration.
 
 
 Building init with static inittab

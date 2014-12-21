@@ -215,8 +215,8 @@ Actually, there are two points here:
 Both were abandoned, for now at least.
 
 #1, telinit is much more independent from init than it is in sysvinit, due to lack
-of state passing. Otherwise there are no clear reasons to bundle them, so it was
-decided to keep them separate.
+of state passing. Other than that, there are no clear reasons to bundle them,
+so it was decided to keep them separate.
 
 #2, the list of builtins could have included telinit (or "fast telinit", without the need
 to exec anything), but the main reason why this may be needed is implementing euid, egid
