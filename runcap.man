@@ -28,7 +28,7 @@ Primary group, for \fBsetgid\fR(2) call.
 .IP "\fB@\fIgroup\fB,\fIgroup\fB,\fI...\fR" 4
 Supplementary groups, see \fBsetgroups\fR(2).
 .IP "\fB.\fR[\fIctdfxlqenpmETis\fR]\fIN\fR[\fB/\fIM\fR][\fIkMGmh\fR]" 4
-Process limits, see \fBsetrlimit\fR(2).
+Process limits, see below.
 .IP "\fB+\fIcap\fR" 4
 Retain named capability, see \fBcapabilities\fR(7) and Capabilities below.
 .P
