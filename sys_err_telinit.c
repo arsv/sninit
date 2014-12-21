@@ -28,7 +28,7 @@ char* strerror(int err)
 	int i = sizeof(buf)-1;
 	buf[i--] = '\0';
 	while(err && i >= 0) {
-		buf[i--] = err % 10;
+		buf[i--] = '0' + (err % 10);
 		err /= 10;
 	};
 
