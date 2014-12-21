@@ -1,6 +1,10 @@
 /* dietlibc lacks this definition */
 #ifndef SOCK_NONBLOCK
+#ifdef __mips__
+#define SOCK_NONBLOCK 00000200
+#else
 #define SOCK_NONBLOCK 00004000
+#endif
 #endif
 
 /* glibc intentionally omits getdents */

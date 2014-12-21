@@ -3,8 +3,9 @@
 
 #define AF_UNIX		1
 
-#define SOCK_DGRAM	1	/* MIPS! all other arches have it the other way around */
-#define SOCK_STREAM	2
+#define SOCK_DGRAM	1	/* MIPS! */
+#define SOCK_STREAM	2	/* (all other arches have it the other way around) */
+#define SOCK_NONBLOCK  0200	/* MIPS! */
 
 #define SO_PASSCRED	17	/* MIPS-specific */
 #define SOL_SOCKET	0xffff	/* MIPS-specific */
