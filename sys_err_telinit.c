@@ -22,6 +22,7 @@ char* strerror(int err)
 		r(EINTR);	/* poll; unlikely for other syscalls */
 		r(EINVAL);	/* generic, unlikely */
 		r(EACCES);	/* execve */
+		r(EPERM);	/* sendmsg, bad build */
 		r(EIO);		/* unlikely, bad news */
 	}
 
