@@ -27,8 +27,8 @@ static void dohup(struct initrec* p, int v);
 /* cmd here is what telinit sent to initctl.
    The actual command is always cmd[0], while cmd[1:] is (optional) argument.
    Examples:
-   	"q"		reconfigure
-   	"=9"		switch to runlevel 9
+	"q"		reconfigure
+	"9"		switch to runlevel 9
 	"dhttpd"	disable (stop) service named "httpd"
 
    warn() sends messages back to telinit */

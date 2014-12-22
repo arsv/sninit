@@ -17,20 +17,26 @@ stream of data, which telinit is expected to pass to stderr.
 Commands themselves consist of one-letter command code, followed by
 optional argument.
 
-Possible commands (see init_cmds.c for a full list):
+Possible commands:
 
 	?	output current state and list of running processes
 	5	switch to (primary) runlevel 5
 	4e	switch to runlevel 4e
 	+a	activate secondary runlevel a
 	-cd	deactivate secondary runlevels c and d
-	rname	stop process "name"
+	rname	restart process "name"
 	dname	disable/stop process "name"
 	ename	enable/start process "name"
+	pname	pause process "name" (send SIGSTOP)
+	wname	resume (wake) process "name" (send SIGCONT)
+	hname	send SIGHUP to process "name"
 	q	reconfigure
 	R	reboot   = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_REBOOT)
 	H	halt     = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_HALT)
 	P	poweroff = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_POWEROFF)
+	S	sleep = switch to runlevel 8, assumed to be slippery
+Check parsecmd() in init_cmds.c for a full list, and cmdtbl[] in telinit.c
+for corresponding telinit commands.
 
 Current implementation does not indicate whether the command failed or not,
 so telinit always exits with code 0. This is almost inevitable, given most
