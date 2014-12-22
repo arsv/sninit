@@ -1,5 +1,5 @@
 # auto-generated, remove this line before editing
-.equ NR_getdents64, 4299
+.equ NR_getdents64, 4219
 
 .text
 .set reorder

@@ -228,7 +228,7 @@
 #define __NR_pivot_root			4216
 #define __NR_mincore			4217
 #define __NR_madvise			4218
-/* #define __NR_getdents64			4219 */
+#define __NR_getdents64			4219
 #define __NR_fcntl64			4220
 #define __NR_reserved221		4221
 #define __NR_gettid			4222
@@ -345,8 +345,6 @@
 #define __NR_perf_event_open            4296
 #define __NR_accept4                    4297
 #define __NR_recvmmsg                   4298
-/* There are at least three of them, 4219, 4299 and 43xx (?) */
-#define __NR_getdents64                 4299
 #define __NR_fanotify_init              4300
 #define __NR_fanotify_mark              4301
 #define __NR_prlimit64                  4302
