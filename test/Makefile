@@ -8,6 +8,10 @@ override LDFLAGS += -Wl,-z,muldefs
 # Disregard "static" and "inline", do not need them while testing
 override CFLAGS += -Dstatic= -Dinline=
 
+# Using $(RUN) directly before commands would result in " cmd"
+# when RUN is non-empty. So instead that space goes (condionally) to RUN_
+RUN_ := $(if $(RUN),$(RUN) ,)
+
 # Regular automated tests
 TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
@@ -28,9 +32,9 @@ RUNS = $(patsubst %,%.run,$(TESTS))
 # Force building before running, to avoid cluttering test output.
 run: $(TESTS) $(OUTS)
 $(RUNS): %.run: %
-	./$<
+	$(RUN_)./$<
 $(OUTS): %.out: % | test.sh
-	./$< > $@
+	$(RUN_)./$< > $@
 	@./test.sh $@
 .PHONY: $(OUTS) $(RUNS)
 

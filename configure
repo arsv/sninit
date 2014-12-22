@@ -19,7 +19,7 @@ builtin=
 hostcc=gcc
 
 unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
-unset initctl inittab runcap s cgdir blocks
+unset initctl inittab runcap s cgdir blocks run
 
 die() { echo "$@"; exit 1; }
 dieifnot() { test -n "$1" && return; shift; die "$@"; }
@@ -62,6 +62,8 @@ Target configuration:
 	devel		disable optimization, generate debug symbols,
 			set inittab=etc/inittab and initdir=etc/initdir
 			for testing and/or development
+
+	qemu=A		use qemu-A to run tests
 
 Libc selection (see INSTALL for explaination):
 	arch=L		use bundled libc for target arch \$L
@@ -210,6 +212,12 @@ while [ $# -gt 0 ]; do
 			optimize=
 			debug="-Wall -g"
 			;;
+		run|RUN) argreq
+			run="$val"
+			;;
+		qemu)
+			test -n "$val" && run="qemu-$val" || run="auto"
+			;;
 		*)
 			die "Unknown option $arg"
 			;;
@@ -345,10 +353,27 @@ case "${tstype:-$tsdefault}" in
 		;;
 esac
 
+# Try to guess which qemu to use if this was requested
+if [ "$run" == 'auto' ]; then
+	cclead=`echo "$ccarch" | sed -e 's/-.*//' -e 's/[^A-Za-z0-9_-]//'`
+	if [ -z "$cclead" -a -n "$target" ]; then
+		cclead=`echo "$target" | sed -e 's/-.*//'`
+	fi
+	qemu="qemu-$cclead"
+	if "$qemu" -version >& /dev/null; then
+		run="$qemu"
+	elif [ -n "$cclead" ]; then
+		die "Can't find qemu for $cclead"
+	else
+		die "Can't guess target architecture for qemu"
+	fi
+fi
+
 # Allow complete overwriting for these variables
 CFLAGS=${CFLAGS:-$cflags}
 LDFLAGS=${LDFLAGS:-$ldflags}
 LIBS=${LIBS:-$libs}
+RUN=${RUN:-$run}
 
 AS=${AS:-\$(CC) -c}
 AR=${AR:-ar}
@@ -378,6 +403,7 @@ sed -i \
 	-e "/^LIBS :=/s#:=.*#:= $LIBS#"\
 	-e "/^builtin :=/s#:=.*#:= $builtin#"\
 	-e "/^HOSTCC :=/s#:=.*#:= $HOSTCC#"\
+	-e "/^RUN :=/s#:=.*#:= $RUN#"\
 	-e "/^s :=/s#:=.*#:= $s#"\
 	-e "/^initblocks :=/s#:=.*#:= $blocks#"\
 	config.mk
@@ -405,6 +431,8 @@ test -n "$arch" -a "$AS" != "\$(CC) -c" && \
 echo "	CFLAGS=$CFLAGS"
 echo "	LDFLAGS=$LDFLAGS"
 echo "	LIBS=$LIBS"
+test -n "$RUN" && \
+ echo "	RUN=$RUN"
 echo
 echo "	initblocks: $blocks"
 echo

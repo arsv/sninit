@@ -11,6 +11,8 @@ LDFLAGS :=
 LIBS :=
 # for compatibility with GNU make built-in rules
 LDLIBS = $(LIBS)
+# Emulator to run tests on non-native platform
+RUN :=
 
 # Installation directories; check config.h for runtime paths
 sbindir := /sbin
