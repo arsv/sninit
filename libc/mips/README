@@ -1,0 +1,17 @@
+The code assumes MIPS o32 ABI.
+Should work well in big- and little-endian with no changes.
+Will not work on n32 and n64 systems.
+
+MIPS o32 calling convention:
+
+                 1   2   3   4   5    6
+Syscall     v0 (a0, a1, a2, a3, [4], [5]) -> v0
+Function       (a0, a1, a2, a3, [4], [5]) -> v0		[n] = n*4(sp)
+
+registers:	v0 v1 a0 a1 a2 a3 ... sp
+		 2  3  4  5  6  7 ... 29
+
+There are irregularities, like pipe(2) returning (v0, v1),
+but as far as sninit is concerned everything is neat and uniform,
+with functions and syscalls using exactly the same registers
+for their arguments.
