@@ -110,6 +110,8 @@ t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_map.o test.o
 
 t_transferpids: t_transferpids.o init_conf.o init_conf_map.o init_find.o test.o
 
+t_joincmd: t_joincmd.o init_cmds.o test.o
+
 # Libc tests
 x_openread: x_openread.o test.o
 
