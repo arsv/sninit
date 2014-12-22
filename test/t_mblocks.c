@@ -121,7 +121,7 @@ int main(void)
 	T(can_write(&m, 0, len));
 	T(can_read_back(&m, 0, len));
 
-	BASE = 0xF5800000;
+	BASE = 0x75800000;	/* Beware this *may* happen to be signed! (MIPS) */
 	off = m.ptr;
 	len += ext;
 	T(mextendblock(&m, ext));
