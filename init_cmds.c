@@ -123,6 +123,7 @@ static void setrunlevel(const char* p)
 	nextlevel = next;
 }
 
+/* Convert runlevel bitmask to readable string */
 static void rlstr(char* str, int len, int mask)
 {
 	char* p = str;	
