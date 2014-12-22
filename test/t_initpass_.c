@@ -66,9 +66,4 @@ void killed(struct initrec* p)
 	p->flags &= ~P_SIGTERM;
 }
 
-#define NOCALL(f) void f() { nocall(#f); }
-int nocall(const char* func)
-{
-	die("called %s()", func);
-}
 NOCALL(execinitrec);

@@ -75,3 +75,8 @@ char* heapdupnull(const char* s)
 {
 	return s ? heapdup(s) : NULL;
 }
+
+int nocall(const char* func)
+{
+	die("called %s()", func);
+}

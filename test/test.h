@@ -59,3 +59,6 @@
 char* heapdup(const char* s);
 char* heapdupnull(const char* s);
 void die(const char* fmt, ...) __attribute__((noreturn));
+
+int nocall(const char* f);
+#define NOCALL(f) void f() { nocall(#f); }
