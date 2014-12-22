@@ -70,11 +70,11 @@ void dump_env(struct memblock* block)
 	struct config* cfg = (struct config*) block->addr;
 	char** p;
 
-	printf("ENV: %p [%li]\n", cfg->env, (void*)cfg->env - block->addr);
+	printf("ENV: %p [%i]\n", cfg->env, (int)((void*)cfg->env - block->addr));
 	for(p = cfg->env; p && *p; p++) {
 		if(!checkptr(block, *p))
 			die("ENV %p bad pointer\n", p);
-		printf("%li = [%li] %s\n", (void*)p - block->addr, (void*)*p - block->addr, *p ? *p : "NULL");
+		printf("%i = [%i] %s\n", (int)((void*)p - block->addr), (int)((void*)*p - block->addr), *p ? *p : "NULL");
 	}
 }
 
