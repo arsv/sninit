@@ -34,19 +34,20 @@ Building with bundled libc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 sninit comes with a stripped-down, minimalistic subset of dietlibc
 capable just enough to fit sninit demands.
-Sample usage (cross-build for x86 on x86_64):
+Sample usage (cross-build for mips):
 
-	ARCH = x86
-	CC = gcc -m32 -march=i686
+	ARCH = mips
+	CC = mipsel-linux-gnu-gcc -march=mips2
 
 CC will be called with -nostdinc -nostdlib so it does not matter
 which libc, if any, it has in its sysroot.
 
-Only x86 and x86_64 architectures are supported at this moment.
-For any other targets, fall back to the original dietlibc.
+Check libc/ subdirectories to see which architectures are supported
+by bundled libc. For unsupported architectures, fall back to dietlibc
+or perhaps system libc.
 
 Using bundled libc provides little benefit over properly configured
-dietlibc in terms of code size (because it *is* dietlibc code,
+dietlibc in terms of executable size (because it *is* dietlibc,
 if perhaps re-written in some places) but instead gives clear,
 uncluttered libc code for debugging.
 
