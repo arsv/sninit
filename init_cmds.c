@@ -141,29 +141,39 @@ static void rlstr(char* str, int len, int mask)
 }
 
 #define MAXREPORTCMD 50
-/* join argv into a single string to be reported by telinit ? */
-static char* makecmd(char* buf, int len, char** argv)
+/* join argv into a single string to be reported by "telinit ?" */
+static char* joincmd(char* buf, int len, char** argv)
 {
 	char** arg;
 	int arglen;
 	int cpylen;
 	char* ret = buf;
 
-	len -= 5;
-	for(arg = argv; *arg && len; arg++) {
+	if(len < 4)	/* "...\0"; should never happen */
+		goto out;
+
+	len--; /* terminating \0 */
+	for(arg = argv; *arg && len > 0; arg++) {
 		arglen = strlen(*arg);
-		strncpy(buf, *arg, cpylen = (arglen <= len ? arglen : len));
+		cpylen = (arglen <= len ? arglen : len);
+
+		strncpy(buf, *arg, cpylen);
 		buf += cpylen;
 		len -= cpylen;
-		if(!len) break;
-		*(buf++) = ' ';
-		len--;
-	} if(*arg) {
-		strncpy(buf, " ...", cpylen = 4);
-		buf += cpylen;
-	}
-	*buf = '\0';
 
+		if(cpylen < arglen) {
+			break;
+		} else if(len > 0) {
+			*(buf++) = ' ';
+			len--;
+		}
+	} if(*arg) {
+		buf += (len > 3 ? 3 : len);
+		strncpy(buf - 3, "...", 3);
+	} else if(buf > ret && *(buf-1) == ' ')
+		buf--;
+
+out:	*buf = '\0';
 	return ret;
 }
 
@@ -173,7 +183,7 @@ static void dumpstate(void)
 	struct initrec *p, **pp;
 	char currstr[16];
 	char nextstr[16];
-	char cmdbuf[MAXREPORTCMD+5];		// " ...\0"
+	char cmdbuf[MAXREPORTCMD];		// " ...\0"
 	char* reportcmd;
 	
 	rlstr(currstr, 16, currlevel);
@@ -187,7 +197,7 @@ static void dumpstate(void)
 		if(p->flags & (C_ONCE | C_WAIT))
 			if(currlevel == nextlevel)
 				continue;
-		reportcmd = p->name[0] ? p->name : makecmd(cmdbuf, sizeof(cmdbuf), p->argv);
+		reportcmd = p->name[0] ? p->name : joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
 		if(p->pid > 0)
 			warn("%i\t%s", p->pid, reportcmd);
 		else
