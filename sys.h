@@ -12,3 +12,7 @@
 struct dirent64;
 extern int getdents64(int fd, struct dirent64 *dirp, size_t count);
 #endif
+
+#ifdef __UCLIBC__
+extern int getdents64(int fd, struct dirent64 *dirp, size_t count);
+#endif
