@@ -79,7 +79,7 @@ Symlink /usr/include/linux and /usr/include/asm to resp. $MUSL/include/linux
 and $MUSL/include/asm.
 
 
-Building with glibc
-~~~~~~~~~~~~~~~~~~~
-glibc does not provide getdents(2), even thought it is a linux system call.
+Building with glibc or uClibc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Both glibc and uclibc lack getdents(2), even thought it is a linux system call.
 Use sys_getdents.c instead.
