@@ -7,7 +7,7 @@ Given supported architecture, sninit can be built with a bare compiler.
 Reason for including libc:
 
 1. Tiered dependencies.
-   Init is the first process to start, and thus can
+   Init is the first process to start, and thus should
    not rely on anything else to be available, including any libs.
    This was extended to the build-time as well, so it can be built
    without any libs available for the target system.
@@ -27,7 +27,7 @@ Reason for including libc:
 
    With some effort, this can be achieved with a generic libc,
    but it's rarely done. And generic libc tends to be rather unreadable
-   anyway do to being generic.
+   anyway due to being generic.
 
 On the downside, bundled libc means explicit architecture requirements
 and more code to test.
@@ -38,7 +38,7 @@ Headers
 Bundled libc keeps standard libc header structure (20+ files).
 It makes little sense as far as only this libc and sninit are concerned,
 but I want to keep sninit compatible with standard libc, and the bundled
-one a drop-in replacement for that.
+libc a drop-in replacement for a generic one.
 
 
 Arch-dependent constants in bits/
@@ -48,8 +48,8 @@ have different values for different architectures; sparc and mips in particular
 stand out.
 
 The kernel (and dietlibc) approach to this is apparently a lot of #ifdefs,
-a pretty ugly solution in my opinion. The bundle libc uses independent bits/
-directory for each architecture. So stuff gets copies of course, but on
+a pretty ugly solution in my opinion. The bundled libc uses independent bits/
+directory for each architecture. Stuff gets copied of course, but on
 the other hand, a change in on arch files does not affect others.
 
 
@@ -60,15 +60,16 @@ This is in contrast to dietlibc which uses C-preprocessed assembler
 and musl which uses inline assembler in C files.
 
 Linux in general is assembler-unfriendly, with lots of stuff being
-declared in C headers. However, C preprocessor just does not play well
-when paired with assembler.
-#define's are ok, but that's about it. And even #define's do not keep
-(significant) newlines and do not look well in the debugger.
+declared in C headers. Atop of that, C preprocessor just does not play well
+when paired with assembler, dropping (significant) newlines and producing
+ugly source listings in debugger.
+
 So the decision was to put everything in clean .s files.
 
 Declaring constants in assembler leads to some code duplication,
-and requires checks to ensure they stay in line with bits/syscall.h
-Those values however are surprisingly stable in linux, so I see this as lesser evil.
+and requires checks to ensure they stay in sync with bits/syscall.h
+Those values however are surprisingly stable in linux, as changing them
+would wreak havoc upon production systems, so I see this as the lesser evil.
 
-Same goes for structure member offsets — the code won't survive a change
-in kernel headers... but neither will something like 100% of linux installations.
+Same goes for structure member offsets. The code won't survive a change
+in kernel headers, but neither will something close to 100% of all linux installations.

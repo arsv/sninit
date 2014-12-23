@@ -32,8 +32,8 @@ Indeed, with #A-#F considered,
 
 Common relaxations for #A-#F conditions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Both features #1 and #2 for pid 1 can be replaced with weaker ones
-if some of conditions #A-#F are relaxed by introducing additional special
+Features #1 and #2 for pid 1 can be replaced with weaker ones
+if some of conditions #A-#F are relaxed by introducing additional
 process(es) not allowed to die, in a form of uninterrupted lineage
 starting from init.
 
@@ -42,16 +42,18 @@ is the minimun init, found for example here:
   http://git.2f30.org/sinit/
 In this example, #1 is replaced by
   #1a. spawns a single child process not allowed to die
-with said child process satisfying
+with the child process satisfying
   #0. not allowed to die, and
   #1. (re)spawning child processes
+This way, pid 1 retains orphan-reaping function but delegates
+respawning to the child process.
 
-In the similar vein, it is possible to delegate orphan-reaping function
+In a similar vein, it is possible to delegate orphan-reaping function
 to a child process using prctl(PR_SET_CHILD_SUBREAPER).
 
-The key point here is that pid 1 in this example is incomplete as init,
-and it's only the whole two-process cluster that effectively implements
-#0, #1 and #2 features under #A-#F conditions. 
+The key point to note is that pid 1 in this example is incomplete
+as far as init functions are concerted, and it's only the whole two-process
+cluster that effectively implements #0, #1 and #2 features under #A-#F conditions. 
 
 Splitting init into two processes only changes its internal structure,
 and does not affect its functions.
@@ -61,10 +63,10 @@ Hybrid solutions
 ~~~~~~~~~~~~~~~~
 In the above sinit.c example, all children were delegated to a sub-init
 process. Complete delegation is not mandatory however, it is possible
-to have several sub-init processes each handling its own children.
+to have several sub-init processes each tending to its own children.
 
 It is also quite possible to make a hierarchy, allowing non-dying sub-init
-control (possibly dying) respawner process which in turn would control
+control a (possibly dying) respawner process which in turn would control
 (possibly dying) children.
 
       [init]			<-- non-dying
@@ -83,19 +85,22 @@ with a more capable respawner, without replacing the top-level init.
 Examples: sysvinit+initscripts, sysvinit+runit, sinit.c+runit,
 suckless init (sinit + shell scripts).
 
-Of particular note here is sysvinit+initscripts bundle, which extended
+Of particular note here is sysvinit+initscripts bundle, which extends
 quite capable sysvinit with what does not even qualify as a respawner.
 
 
 Does nesting makes sense?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-No. Complete init is a non-dying respawner, reaping is secondary to that.
+No. Complete init is a non-dying respawner, and (almost) any non-trivial
+respawner will by necessity act as a reaper.
 
-Any sub-init properly implementing #1 will also do #2 well.
-This is because re-spawning implies reaping, and #D means pid 1 will
-reap all orphans.
-Separating reaping into a separate process is pointless.
+This is because respawner needs to call waitpid(-1, ...) at some point
+to keep track of dying children it must restart, and kernel makes sure
+any orphan child will show up in init's waitpid results.
 
-Writing complete init is not that difficult.
-For generic systems, that is with #E and #F in place, there is little sense
-in going with anything less capable.
+Only if waitpid gets called with something other than -1 for pid does
+the above point fail. Doing that, however, hardly makes sense in an init.
+
+Moving reaping duties into a separate process is pointless.
+Writing complete init is not that difficult, and for generic systems
+(with #E and #F in place) there is little sense in going with anything less capable.
