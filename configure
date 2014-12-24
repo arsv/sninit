@@ -67,7 +67,7 @@ Target configuration:
 
 Libc selection (see INSTALL for explaination):
 	arch=L		use bundled libc for target arch \$L
-			possible L values: arm x86 x86_64 x86_32
+			possible L values: arm mips x86 x86_64 x86_32
 	syslibc		use whatever libc target toolchain was configured with
 	dietlibc	build with dietlibc (cc="diet gcc")
 	musl		build with musl (cc="musl-gcc")
@@ -306,6 +306,8 @@ case "$libc:$arch:$ccarch" in
 	# x86_32 is *not* reported as such and must be specified explicitly!
 	::x86*) libc=bundled arch=x86 ;;
 	::arm*) libc=bundled arch=arm ;;
+	::mips64*) ;;
+	::mips*) libc=bundled arch=mips ;;
 esac
 
 case "${libc:-syslibc}" in
