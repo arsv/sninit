@@ -49,7 +49,6 @@ int gidn = 0;
 gid_t gids[MAXGROUPS];
 /* Capabilities */
 uint32_t caps[VFS_CAP_U32] = { 0 };
-/* ulimits and cgroups are applied immediately, so no variables for them */
 
 /* Files for looking up uids and gids by name */
 struct rcfile {
