@@ -51,6 +51,10 @@ dietlibc in terms of executable size (because it *is* dietlibc,
 if perhaps re-written in some places) but instead gives clear,
 uncluttered libc code for debugging.
 
+Note "properly configured". Depending on target architecture,
+default dietlibc configuration may add several kB of bloat.
+See doc/dietlibc.txt
+
 
 Building with dietlibc
 ~~~~~~~~~~~~~~~~~~~~~~
