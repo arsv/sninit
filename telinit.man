@@ -1,7 +1,7 @@
 .TH {telinit} 8
 '''
 .SH NAME
-{{telinit}} \- pass commands to a running \fB{init}\fR(8) process.
+{telinit} \- pass commands to a running \fB{init}\fR(8) process.
 '''
 .SH SYNOPSIS
 \fB{telinit}\fR \fIrunlevel\fR
@@ -44,14 +44,14 @@ internally: start is equivalent to "^0" while stop is "0". See \fB{inittab}\fR(5
 '''
 .SH FILES
 .IP {@initctl}
-Unix domain socket {telinit} uses to contact init
+\fBunix\fR(7) domain socket {telinit} uses to contact init
 '''
 .SH CAVEATS
 Runlevel change and process status change commands sent by {telinit}
 are only executed after {telinit} has terminated the connection.
 The only errors reported for these commands are those apparent immediately
 by examining process record. Something like "named entry not found" will
-be reported, but execve(2) failure won't, at least not by {telinit} (syslog
+be reported, but \fBexecve\fR(2) failure won't, at least not by {telinit} (syslog
 will probably have it).
 .P
 Runlevel switch requests only start the move to another runlevel.
