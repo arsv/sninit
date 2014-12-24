@@ -16,29 +16,27 @@ init (pid 1) has in the kernel:
   C. init can not die
   D. orphans are re-assigned to init
 
-In the most general case, #1 and #2 are optional. The result is however
-a degenerate one-process system, with the init running idefinitely.
-For most practical cases, the following limitations can be assumed to
-be in place:
+Two more statements are assumed to be true to warrant using rather
+complex unix-style system in the first place:
   E. init should never be the only process running
      for any arbitrary large time interval past boot
   F. any non-init process is allowed to die
 
 Indeed, with #A-#F considered,
-#0 follows from #C
+#0 follows immediately from #C
 #2 follows from #F + #D + #A
 #1 follows from #E + #F + #A + #B
 
 
-Common relaxations for #A-#F conditions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Init clusters
+~~~~~~~~~~~~~
 Features #1 and #2 for pid 1 can be replaced with weaker ones
-if some of conditions #A-#F are relaxed by introducing additional
-process(es) not allowed to die, in a form of uninterrupted lineage
-starting from init.
+by introducing additional process(es) not allowed to die,
+in a form of uninterrupted lineage starting from init.
 
-The result can be called an "init cluster". Well-known example
-is the minimun init, found for example here:
+The result can be called an "init cluster".
+
+Well-known example is the minimun init, found for example here:
   http://git.2f30.org/sinit/
 In this example, #1 is replaced by
   #1a. spawns a single child process not allowed to die
@@ -89,10 +87,9 @@ Of particular note here is sysvinit+initscripts bundle, which extends
 quite capable sysvinit with what does not even qualify as a respawner.
 
 
-Does nesting makes sense?
-~~~~~~~~~~~~~~~~~~~~~~~~~
-No. Complete init is a non-dying respawner, and (almost) any non-trivial
-respawner will by necessity act as a reaper.
+Does separating respawner from init make sense?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+No. Any viable respawning init will by necessity act as a reaper.
 
 This is because respawner needs to call waitpid(-1, ...) at some point
 to keep track of dying children it must restart, and kernel makes sure
@@ -104,3 +101,20 @@ the above point fail. Doing that, however, hardly makes sense in an init.
 Moving reaping duties into a separate process is pointless.
 Writing complete init is not that difficult, and for generic systems
 (with #E and #F in place) there is little sense in going with anything less capable.
+
+
+Does nesting inits make sense?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Yes, it does, barely, and only if done in a very specific way.
+
+Running a complex respawner under supervision of a simple one
+adds a kind of protection against kernel panic due to the complex
+respawner dying.
+
+The assumption is that the simple respawner (say, a non-configurable
+mini-init only capable of restarting a single hard-coded command)
+is much more stable than a complete init, and that if the complete init
+fails, the mini-init will restart it.
+
+Whether or not restarting init is any better than a full system reboot
+after a kernel panic is an open question.
