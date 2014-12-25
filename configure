@@ -7,18 +7,20 @@
 # Testing makes little sense for a small, very linux-specific tool
 # like sninit which has no way of handling unusual evironments.
 
-unset target diet cc
+unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
+
+# configure uses lower-case variables to store "kinda-default" values
+# while resp. upper-case variables are used for unconditional overrides
+unset cc ar as cflags ldflags
+unset hostcc hostccflags
+
+unset target build host diet
 unset cctype libc 
 unset libs libs_syscall
 unset tstype null
 
-lto=
 optimize=auto
-debug=
-builtin=
-hostcc=gcc
-
-unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
+unset lto debug builtin 
 unset initctl inittab runcap s cgdir blocks run
 
 warn() { echo "$@" >&2; }
@@ -145,19 +147,25 @@ while [ $# -gt 0 ]; do
 			build=$val
 			hostcc=$val-gcc
 			;;
-		with-cc|cc|CC)
+		with-cc|cc)
 			cc=${val:-cc}
 			cctype=gcc
 			;;
-		with-as|as|AS) argreq
-			AS=$val
+		with-as|as) argreq
+			as=$val
 			;;
-		with-ar|ar|AR) argreq
-			AR=$val
+		with-ar|ar) argreq
+			ar=$val
 			;;
 		with-clang|clang)
 			cc=${val:-clang}
 			cctype=clang
+			;;
+		with-hostcc|hostcc) argreq
+			hostcc="$val"
+			;;
+		ccflags|asflags|hostccflags)
+			eval "$arq='$val'"
 			;;
 		arch|bundled|with-bundled|with-bundled-libc) argreq
 			libc=bundled
@@ -214,7 +222,7 @@ while [ $# -gt 0 ]; do
 			optimize=
 			debug="-Wall -g"
 			;;
-		run|RUN) argreq
+		run) argreq
 			run="$val"
 			;;
 		qemu)
@@ -225,58 +233,55 @@ while [ $# -gt 0 ]; do
 			# to configure, expecting unsupported ones to be ignored
 			warn "Warning: unused option $arg"
 			;;
+		CC|AR|AS|HOSTCC|RUN) argreq
+			eval "$arq='$val'"
+			;;
+		CFLAGS|ASFLAGS|LDFLAGS|LIBS)
+			eval "$arq='$val'"
+			;;
 		*)
 			die "Unknown option $arg"
 			;;
 	esac
 done
 
-# Could be done in the loop above, if not for option order issues.
+# The following could be done in the loop above, if not for option order issues.
 # i.e. --with-clang --with-dietlibc vs --with-dietlibc --with-clang
 
-test "$target" = "$build" || HOSTCC=${HOSTCC:-$hostcc}
-
-case "${cctype:-gcc}" in
+# Decide which cc to use
+case "$cc:${cctype:-gcc}" in
 	# gcc handles target with prefixed executables, like arm-linux-eabi-gcc
-	gcc)	CC=${cc:-${cross}gcc} ;;
-	cc)	CC=${cc:-${cross}cc} ;;
+	:gcc)	cc=${cross}gcc ;;
+	:cc)	cc=${cross}cc ;;
 	# clang makes no difference between native and cross-compilation, and only needs
 	# an option to select desired arch.
-	clang)
-		CC=${cc:-clang}
-		[ -n "$target" ] && CC="$CC -arch $target"
-		;;
+	:clang)	cc=clang; test -n "$target" && cc="$cc -arch $target" ;;
 	# Unlike dietlibc, musl replaces compiler.
 	# No idea how they handle cross-builds, perhaps with different musl-executables?
-	musl)
-		CC=${cc:-musl-gcc}
-		[ -n "$target" ] && die -e "Can't use --host/--target with musl\n"\
+	:musl)	cc=musl-gcc
+		test -n "$target" && die -e "Can't use --target with musl\n"\
 			"Use --with-musl=ARCH-musl-gcc or something similar instead."
 		;;
 esac
 
-# Check if we're trying to build x86 on an x86_64 host
-# It's a blind test but that's ok since unrecognized option
-# message is not likely to start with x86_64
-#
-# XXX: it's a dirty hack that should be done differently
-if [ "$arch" == "x86" -a -z "$target" -a -z "$cc" ]; then
-	case "$ccarch" in
-		x86_64*)
-			CC="$CC -m32 -march=i686"
-			test -z "$HOSTCC" && HOSTCC="$hostcc"
-			;;
-	esac
-elif [ "$arch" == "x86_32" -a -z "$target" -a -z "$cc" ]; then
-	# Assuming native x86_32 compilers are non-existant
-	CC="$CC -mx32"
-	test -z "$HOSTCC" && HOSTCC="$hostcc"
-fi
+# Decide which as and ar to use
+ar=${ar:-${cross}ar}
+as=${as:-\$(CC) -c}	# this will go straight into Makefile
 
 # Try to guess target architecture
 # This should be done *after* deciding $CC of course
-ccarch=`$CC -dumpmachine 2>/dev/null`
+ccarch=`$cc -dumpmachine 2>/dev/null`
 test -z "$ccarch" -a -n "$target" && ccarch="$target"
+
+# Check if we're trying to build x86 on an x86_64 host
+case "$arch:$ccarch" in
+	x86:x86_64*)
+		cc="$cc -m32 -march=i686"
+		;;
+	x86_32:x86_64*)
+		cc="$cc -mx32"
+		;;
+esac
 
 # Handle optimization
 if [ "$optimize" == 'auto' ]; then
@@ -289,6 +294,7 @@ if [ "$optimize" == 'auto' ]; then
 	esac
 fi
 
+# Join parts of CFLAGS into a single variable
 if [ -n "$optimize" ]; then
 	cflags=${cflags:+$cflags }$optimize
 fi
@@ -300,13 +306,6 @@ if [ -n "$debug" ]; then
 	cflags=${cflags:+$cflags }$debug
 fi
 
-
-if [ "$inittab" != "-" ]; then
-	blocks="conf"
-else
-	blocks="null"
-fi
-
 # See if we'd like to use bundled libc by default
 case "$libc:$arch:$ccarch" in
 	::x86_64*) libc=bundled arch=x86_64 ;;
@@ -316,6 +315,14 @@ case "$libc:$arch:$ccarch" in
 	::mips64*) ;;
 	::mips*) libc=bundled arch=mips ;;
 esac
+
+# Check which blocks init needs
+
+if [ "$inittab" != "-" ]; then
+	blocks="conf"
+else
+	blocks="null"
+fi
 
 case "${libc:-syslibc}" in
 	bundled)
@@ -379,13 +386,14 @@ if [ "$run" == 'auto' ]; then
 fi
 
 # Allow complete overwriting for these variables
+CC=${CC:-$cc}
+AS=${AS:-$as}
+AR=${AR:-$ar}
 CFLAGS=${CFLAGS:-$cflags}
 LDFLAGS=${LDFLAGS:-$ldflags}
 LIBS=${LIBS:-$libs}
+HOSTCC=${HOSTCC:-$hostcc}
 RUN=${RUN:-$run}
-
-AS=${AS:-\$(CC) -c}
-AR=${AR:-ar}
 
 # Default values for directory options, defined late because of $prefix dependency
 subprefix=${prefix:-/usr}
