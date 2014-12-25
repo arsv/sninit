@@ -21,7 +21,8 @@ hostcc=gcc
 unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
 unset initctl inittab runcap s cgdir blocks run
 
-die() { echo "$@"; exit 1; }
+warn() { echo "$@" >&2; }
+die() { echo "$@" >&2; exit 1; }
 dieifnot() { test -n "$1" && return; shift; die "$@"; }
 argreq() { dieifnot "$val" "$arg: value must be supplied"; }
 
@@ -118,6 +119,7 @@ while [ $# -gt 0 ]; do
 		man8dir) mandir=$val ;;
 		prefix) prefix=$val ;;
 		cgdir) cgdir=$val ;;
+		exec-prefix) ;;
 
 		program-prefix) s=$val ;;
 		with-s|s) s=s ;;
@@ -217,6 +219,11 @@ while [ $# -gt 0 ]; do
 			;;
 		qemu)
 			test -n "$val" && run="qemu-$val" || run="auto"
+			;;
+		with-*|without-*|enable-*|disable-*)
+			# autoconf compatibility; buildroot supplies a lot of generic options
+			# to configure, expecting unsupported ones to be ignored
+			warn "Warning: unused option $arg"
 			;;
 		*)
 			die "Unknown option $arg"
