@@ -270,7 +270,7 @@ as=${as:-\$(CC) -c}	# this will go straight into Makefile
 
 # Try to guess target architecture
 # This should be done *after* deciding $CC of course
-ccarch=`$cc -dumpmachine 2>/dev/null`
+ccarch=`${CC:-$cc} -dumpmachine 2>/dev/null`
 test -z "$ccarch" -a -n "$target" && ccarch="$target"
 
 # Check if we're trying to build x86 on an x86_64 host
