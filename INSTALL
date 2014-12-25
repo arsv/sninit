@@ -15,6 +15,15 @@ To try it on a system with another init installed, run
 You will get sinit, stelinit and /etc/sinittab.
 
 
+Cross-compiling
+~~~~~~~~~~~~~~~
+Set CC and AR in config.mk for your target architecture.
+Alternatively, run configure --target=(toolchain-prefix).
+
+sninit follows Linux kernel naming scheme, with CC for target executables
+and HOSTCC for build system executables.
+
+
 Which libc to use
 ~~~~~~~~~~~~~~~~~
 In most cases sninit should be built with dietlibc.
