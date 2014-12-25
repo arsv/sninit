@@ -48,5 +48,5 @@ initblocks := conf sys tz dents
 ifneq ($(ARCH),)
 override CFLAGS += -nostdinc -I$/libc/include -I$/libc/$(ARCH)
 override LDFLAGS += -nostdlib
-override LIBS := $/libc.a $(LIBS) -lgcc
+override LIBS := $(LIBS) $/libc.a
 endif

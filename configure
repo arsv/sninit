@@ -149,13 +149,16 @@ while [ $# -gt 0 ]; do
 			;;
 		with-cc|cc)
 			cc=${val:-cc}
-			cctype=gcc
 			;;
 		with-as|as) argreq
 			as=$val
 			;;
 		with-ar|ar) argreq
 			ar=$val
+			;;
+		with-gcc|gcc)
+			cc=${val:-gcc}
+			cctype=gcc
 			;;
 		with-clang|clang)
 			cc=${val:-clang}
@@ -273,6 +276,13 @@ as=${as:-\$(CC) -c}	# this will go straight into Makefile
 ccarch=`${CC:-$cc} -dumpmachine 2>/dev/null`
 test -z "$ccarch" -a -n "$target" && ccarch="$target"
 
+# GCC has a bad habit of skipping libgcc with -nostdlib,
+# which must be accounted for.
+ccver=`${CC:-$cc} --version 2>/dev/null | head -1`
+case "$cctype:$ccver" in
+	:*GCC*|:*gcc*) cctype=gcc ;;
+esac
+
 # Check if we're trying to build x86 on an x86_64 host
 case "$arch:$ccarch" in
 	x86:x86_64*)
@@ -330,6 +340,7 @@ case "${libc:-syslibc}" in
 		test -d "libc/$arch" || die "bundled libc: target $arch is not supported"
 		blocks="$blocks sys"
 		tsdefault=tz
+		test "$cctype" == "gcc" && libs=-lgcc
 		;;
 	musl)
 		tsdefault=libc
