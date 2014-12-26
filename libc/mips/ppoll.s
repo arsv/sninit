@@ -1,5 +1,9 @@
-# auto-generated, remove this line before editing
 .equ NR_ppoll, 4302
+.equ sizeof_sigset_t, 16
+
+.equ v0, 2
+.equ t9, 25
+.equ sp, 29
 
 .text
 .set reorder
@@ -7,9 +11,13 @@
 .ent ppoll
 
 ppoll:
-	li	$2, NR_ppoll
+	li	$v0, NR_ppoll
+	addi	$sp, $sp, -4
+	li	$t9, sizeof_sigset_t
+	sw	$t9, 0($sp)
 	syscall
-	la	$25, unisys
-	jr	$25
+	addi	$sp, $sp, 4
+	la	$t9, unisys
+	jr	$t9
 
 .end ppoll
