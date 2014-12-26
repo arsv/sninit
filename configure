@@ -11,7 +11,7 @@ unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
 
 # configure uses lower-case variables to store "kinda-default" values
 # while resp. upper-case variables are used for unconditional overrides
-unset cc ar as cflags ldflags
+unset cc ar as cflags asflags ldflags
 unset hostcc hostccflags
 
 unset target build host diet
@@ -314,6 +314,7 @@ if [ -n "$lto" ]; then
 fi
 if [ -n "$debug" ]; then
 	cflags=${cflags:+$cflags }$debug
+	asflags=${asflags:+$asflags }-g
 fi
 
 # See if we'd like to use bundled libc by default
@@ -427,6 +428,7 @@ sed -i \
 	-e "/^AS :=/s#:=.*#:= $AS#"\
 	-e "/^AR :=/s#:=.*#:= $AR#"\
 	-e "/^CFLAGS :=/s#:=.*#:= $CFLAGS#"\
+	-e "/^ASFLAGS :=/s#:=.*#:= $ASFLAGS#"\
 	-e "/^LDFLAGS :=/s#:=.*#:= $LDFLAGS#"\
 	-e "/^LIBS :=/s#:=.*#:= $LIBS#"\
 	-e "/^builtin :=/s#:=.*#:= $builtin#"\
