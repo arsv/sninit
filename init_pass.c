@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
@@ -19,6 +20,7 @@ extern void execinitrec(struct initrec* p);
 static void spawn(struct initrec* p);
 global void stop(struct initrec* p);
 
+static time_t monotime(void);
 static inline void swapi(int* a, int* b);
 static inline int shouldberunning(struct initrec* p);
 
@@ -161,14 +163,16 @@ static inline int shouldberunning(struct initrec* p)
    and write a message */
 static int waitneeded(struct initrec* p, time_t* last, time_t wait, const char* msg)
 {
-	time_t curtime = time(NULL);
-	int ttw = *last + wait - curtime;
+	time_t curtime = monotime();
+	time_t endtime = *last + wait;
 
-	if(ttw <= 0) {
+	if(endtime <= curtime) {
 		*last = curtime;
 		return 0;
 	} else {
-		if(timetowait < 0 || timetowait > ttw) timetowait = ttw;
+		int ttw = endtime - curtime;
+		if(timetowait < 0 || timetowait > ttw)
+			timetowait = ttw;
 		retwarn(1, "%s[%i] waiting %i seconds before %s", p->name, p->pid, ttw, msg);
 	}
 }
@@ -193,13 +197,13 @@ static void spawn(struct initrec* p)
 	pid = fork();
 	if(pid < 0) {
 		warn("%s[*] can't fork: %m", p->name);
-		p->lastrun = time(NULL);
+		p->lastrun = monotime();
 		return;
 	}
 
 	if(pid > 0) {
 		p->pid = pid;
-		p->lastrun = time(NULL);
+		p->lastrun = monotime();
 		warn("%s[%i] spawned", p->name, p->pid);
 		return;
 	}
@@ -252,4 +256,36 @@ void stop(struct initrec* p)
 static inline void swapi(int* a, int* b)
 {
 	int t = *b; *b = *a; *a = t;
+}
+
+/* dietlibc and kernels below 2.6.something have no CLOCK_BOOTTIME defined */
+#ifdef CLOCK_BOOTTIME
+#define INIT_CLOCK CLOCK_BOOTTIME
+#else
+#define INIT_CLOCK CLOCK_MONOTONIC
+#endif
+
+/* At bootup, the system starts with all lastrun=0 and possibly also
+   clock near 0, activating time_to_* timers even though no processes
+   have been started at time 0. To avoid delays, monotonic clocks are
+   shifted forward so that boot occurs at some time past 0.
+
+   The shift could have been as small as time_to_restart, but alas,
+   that is a config variable which may change, breaking monotonic
+   constraint. So instead it's set to the maximum possible ttr value.
+
+   Given ttr is just a short, and monotonic clocks always start at 0
+   at bootup, the resulting number is still smaller than even wall
+   clock value (as in time(2)) */
+#define INIT_CLOCK_OFFSET 0xFFFF
+
+/* monotonic equivalent of time(NULL) */
+static time_t monotime(void)
+{
+	struct timespec tp;
+
+	if(clock_gettime(INIT_CLOCK, &tp))
+		return 0;
+	
+	return tp.tv_sec + INIT_CLOCK_OFFSET;
 }

@@ -69,9 +69,9 @@ struct config {
 	char** env;			/* to be passed to execve in children */
 
 	/* time_* values are in seconds */
-	int time_to_restart;
-	int time_to_SIGKILL;	/* after sending SIGTERM, for processes refusing to die */
-	int time_to_skip;	/* after sending SIGKILL */
+	unsigned short time_to_restart;
+	unsigned short time_to_SIGKILL;	/* after sending SIGTERM, for processes refusing to die */
+	unsigned short time_to_skip;	/* after sending SIGKILL */
 
 	char* logdir;
 };

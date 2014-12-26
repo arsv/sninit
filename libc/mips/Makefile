@@ -4,7 +4,7 @@
 
 direct = fork execve kill getpid time
 direct += open close read write dup2 fstat ioctl getdents64 openat stat
-direct += mmap mremap munmap
+direct += mmap mremap munmap clock_gettime
 direct += socket bind connect listen accept sendto sendmsg recvmsg shutdown
 direct += prctl setresgid setresuid capset setsid getegid geteuid setrlimit
 direct += ppoll reboot send setsockopt sigaction sigprocmask waitpid
