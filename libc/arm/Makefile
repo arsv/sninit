@@ -10,7 +10,7 @@ direct4 += open close read write dup2 fstat ioctl getdents64 openat stat
 direct4 += munmap clock_gettime
 direct4 += socket bind connect listen accept sendmsg recvmsg shutdown
 direct4 += prctl setresgid setresuid capset setsid getegid geteuid setrlimit
-direct4 += ppoll reboot send sigaction sigprocmask
+direct4 += send sigaction sigprocmask
 direct5 = mremap setsockopt
 direct6 = sendto
 
@@ -19,7 +19,7 @@ directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))
 
 # for these, some argument mangling is required
-custom = mmap waitpid
+custom = mmap waitpid reboot ppoll
 
 # for quick syntax check
 AS = arm-none-eabi-gcc -c
