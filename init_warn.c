@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/socket.h>
+#include <errno.h>
 #include "config.h"
 #include "init.h"
 
@@ -61,6 +62,7 @@ int warn(const char* fmt, ...)
 	int taglen;
 	char over = ' ';
 	short mode;
+	int origerrno = errno;	/* timestamp() for instance may overwrite it */
 
 	/* Ok, got to decide where warn() should put the message */
 	switch(*fmt) {
@@ -89,6 +91,7 @@ int warn(const char* fmt, ...)
 	}
 	taglen = snprintf(buf + hdrlen, HDRBUF - hdrlen, "init: ");
 
+	errno = origerrno;
 	va_start(ap, fmt);
 	msglen = vsnprintf(buf + hdrlen + taglen, MSGBUF, fmt, ap);
 	va_end(ap);
