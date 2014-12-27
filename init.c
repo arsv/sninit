@@ -39,10 +39,11 @@ extern int configure(int);
 extern void setnewconf(void);
 
 extern void initpass(void);
-extern void pollfds(void);
+extern void pollctl(void);
 extern void acceptctl(void);
 extern void waitpids(void);
 
+static void sleepttw(void);
 static void sighandler(int sig);
 
 /* Overall logic in main: interate over inittab records (that's initpass()),
@@ -81,9 +82,12 @@ int main(int argc, char** argv)
 			setnewconf();
 
 		/* Block for at most $waitneeded, waiting for signals
-		   or telinit commands. Only set state flags here, do
-		   not do any processing. */
-		pollfds();
+		   or (if the socket is open) telinit commands.
+		   Only set state flags here, do not do any processing. */
+		if(initctlfd >= 0)
+			pollctl();
+		else
+			sleepttw();
 
 		/* reap dead children */
 		if(state & S_SIGCHLD)
@@ -212,7 +216,9 @@ static int setinitctl(void)
 
 	/* we're not going to block for connections, just accept whatever
 	   is already there; so it's SOCK_NONBLOCK */
-	initctlfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
+	if((initctlfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0)) < 0)
+		retwarn(-1, "Can't create control socket: %m");
+
 	if(bind(initctlfd, (struct sockaddr*)&addr, sizeof(addr))) 
 		gotowarn(close, "Can't bind %s: %m", INITCTL)
 	else if(listen(initctlfd, 1))
@@ -224,6 +230,14 @@ close:
 	close(initctlfd);
 	initctlfd = -1;
 	return -1;
+}
+
+/* Just like sleep(timetowait), except sleep indefinitely if ttw <= 0 */
+static void sleepttw(void)
+{
+	if(timetowait > 0)
+		alarm(timetowait);
+	pause();
 }
 
 /* A single handler for all four signals we care about. */

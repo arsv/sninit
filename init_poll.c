@@ -36,7 +36,7 @@ static void readcmd(int fd);
 
 /* called from the main loop */
 /* timetowait may be set by start() and spawn() */
-void pollfds(void)
+void pollctl(void)
 {
 	int r;
 	struct pollfd pfd;	
@@ -59,10 +59,21 @@ void pollfds(void)
 	r = ppoll(&pfd, 1, ppts, &defsigset);
 
 	if(r < 0) {
-		if(errno != EINTR)
+		if(errno != EINTR) {
 			warn("poll failed: %m");
-		/* EINTR, on the other hand, is ok (SIGCHLD etc) */
-		return;
+
+			/* Failed ppoll means the main loop becomes unconstrained,
+			   making init uncontrollable and wasting cpu cycles.
+			   Most ppoll failues are non-transient (or at least non-fast):
+			   EINVAL likely means a bad build, while ENOMEM may take some
+			   time to resolve. So until then, stop using ppoll completely,
+			   allong the main loop to go on with sleep() instead. */
+			if(initctlfd >= 0)
+				close(initctlfd);
+			initctlfd = -1;
+			/* SIGHUP can be used re-open initctl */
+		}
+		/* EINTR, on the other hand, is totally ok (SIGCHLD etc) */
 	} else if(r > 0) {
 		/* only one fd in pfd, so not that much choice here */
 		state |= S_INITCTL;
