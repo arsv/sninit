@@ -73,7 +73,7 @@ sninit draws ideas from busybox init, minit and the original sysvinit.
 "No-malloc" approach to memory management was inspired by rockbox,
 though in rockbox itself it was done in a different way.
 
-Small size and static linkage is mostly due to dietlibc and busybox.
+Small size and static linkage are mostly due to dietlibc and busybox.
 (see "Writing Small and Fast Software" by F. von Leitner).
 
 
