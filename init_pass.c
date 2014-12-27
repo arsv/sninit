@@ -258,7 +258,7 @@ static inline void swapi(int* a, int* b)
 	int t = *b; *b = *a; *a = t;
 }
 
-/* dietlibc and kernels below 2.6.something have no CLOCK_BOOTTIME defined */
+/* Kernels below 2.6.something have no CLOCK_BOOTTIME defined */
 #ifdef CLOCK_BOOTTIME
 #define INIT_CLOCK CLOCK_BOOTTIME
 #else
@@ -266,9 +266,9 @@ static inline void swapi(int* a, int* b)
 #endif
 
 /* At bootup, the system starts with all lastrun=0 and possibly also
-   clock near 0, activating time_to_* timers even though no processes
-   have been started at time 0. To avoid delays, monotonic clocks are
-   shifted forward so that boot occurs at some time past 0.
+   with the clock near 0, activating time_to_* timers even though
+   no processes have been started at time 0. To avoid delays, monotonic
+   clocks are shifted forward so that boot occurs at some time past 0.
 
    The shift could have been as small as time_to_restart, but alas,
    that is a config variable which may change, breaking monotonic
