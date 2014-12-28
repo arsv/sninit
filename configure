@@ -12,7 +12,7 @@ unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
 # configure uses lower-case variables to store "kinda-default" values
 # while resp. upper-case variables are used for unconditional overrides
 unset cc ar as cflags asflags ldflags
-unset hostcc hostccflags
+unset hostcc hostcflags
 
 unset target build host diet
 unset cctype libc 
@@ -167,7 +167,7 @@ while [ $# -gt 0 ]; do
 		with-hostcc|hostcc) argreq
 			hostcc="$val"
 			;;
-		ccflags|asflags|hostccflags)
+		cflags|asflags|hostcflags)
 			eval "$arq='$val'"
 			;;
 		arch|bundled|with-bundled|with-bundled-libc) argreq
