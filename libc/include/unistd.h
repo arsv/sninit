@@ -30,6 +30,9 @@ int execvp(const char *file, char *const argv[]);
 
 time_t time(time_t *t);
 
+unsigned int alarm(unsigned int seconds);
+int pause(void);
+
 int dup2 (int oldfd,int newfd);
 
 long syscall(int nr, ...);
