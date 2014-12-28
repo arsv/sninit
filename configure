@@ -20,7 +20,7 @@ unset libs libs_syscall
 unset tstype null
 
 optimize=auto
-unset lto debug builtin 
+unset lto debug depend builtin 
 unset initctl inittab runcap s cgdir blocks run
 
 warn() { echo "$@" >&2; }
@@ -61,8 +61,9 @@ Target configuration:
 
 	lto		use link-time optimization (GCC only)
 	debug		generate debug symbols
+	depend		generate dependencies using \$CC -MD
 
-	devel		disable optimization, generate debug symbols,
+	devel		disable optimization, generate debug symbols and dependencies,
 			set inittab=etc/inittab and initdir=etc/initdir
 			for testing and/or development
 
@@ -217,6 +218,9 @@ while [ $# -gt 0 ]; do
 		with-optimization|O|optimize)
 			optimize=${val:-$optimize}
 			;;
+		depend)
+			depend=${val:--MD}
+			;;
 		devel)
 			s=
 			inittab=etc/inittab
@@ -224,6 +228,7 @@ while [ $# -gt 0 ]; do
 			logdir=var/log
 			optimize=
 			debug="-Wall -g"
+			depend="-MD"
 			;;
 		run) argreq
 			run="$val"

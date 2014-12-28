@@ -58,7 +58,7 @@ install-man:
 	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/$sinittab.5
 
 clean::
-	rm -f *.o *.ho builtin.c
+	rm -f *.o *.ho *.d builtin.c
 
 distclean: clean
 	rm -f init telinit statictab runcap *.[58]
@@ -154,7 +154,7 @@ libc.a: $(libc)
 	$(AR) cru $@ $?
 
 clean::
-	rm -f libc.a libc/*.o libc/*/*.o
+	rm -f libc.a libc/*.[od] libc/*/*.[od]
 
 else
 
@@ -176,3 +176,7 @@ endif
 
 %: %.o
 	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
+
+
+# Include dependencies, if any
+-include *.d libc/*.d libc/*/*.d
