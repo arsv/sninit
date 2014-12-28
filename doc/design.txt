@@ -291,8 +291,8 @@ So for now the whole thing uses standard va_list approach.
 Which, just in case, means saving registers to the stack in warn()
 and using va_arg on those saved values.
 
-The only optimization used is disabling FPU, which is not used in sninit
-but which typically has some registers to save.
+The only optimization used is disabling FPU, which is not needed in sninit
+but which typically has some registers to save and iterate over.
 
 Quick check reveals the losses are negligible, below 100 bytes for most
 architectures, so why bother.

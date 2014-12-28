@@ -91,6 +91,13 @@ void pollctl(void)
    Commands are always supplemented with credentials passed as ancilliary
    data. See unix(7) for explaination. */
 
+/* It would make sense to put alarm() here to guard against irresponsible
+   telinits, providing a kind of auto-reset capability... well not.
+
+   Using alarm means introducing temporal restrictions in a non-rt system,
+   not a good idea by itself. And the only user who could benefit from that,
+   root, can just as well use kill -HUP 1 to reset the socket. */
+
 void acceptctl(void)
 {
 	int fd;
