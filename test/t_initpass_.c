@@ -61,7 +61,7 @@ void died(struct initrec* p)
 void killed(struct initrec* p)
 {
 	if(!(p->flags & P_SIGTERM))
-		warn("FAIL: %s has not been sent a signal\n", p->name);
+		warn("FAIL: %s has not been sent a signal", p->name);
 	p->pid = -1;
 	p->flags &= ~P_SIGTERM;
 }
