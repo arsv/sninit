@@ -43,6 +43,10 @@ static inline int shouldberunning(struct initrec* p);
    Note to have pid reset to 0, and thus allow re-run, at least one pass
    must be completed with !shouldberunning(p) for the entry. */
 
+#define wtype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE | C_WAIT))
+#define htype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
+#define owtype(p) ((p->flags & C_ONCE))
+
 void initpass(void)
 {
 	int waitfor = 0;
@@ -65,7 +69,7 @@ void initpass(void)
 
 			waitfor |= DYING;
 
-			if(p->flags & C_WAIT)
+			if(htype(p))
 				return;
 		}
 
@@ -74,23 +78,23 @@ void initpass(void)
 		if(shouldberunning(p))
 		{
 			if(p->pid > 0) {
-				if(p->flags & (C_ONCE | C_WAIT))
+				if(wtype(p))
 					return;
-				else if(p->flags & C_ONCE)
+				else if(owtype(p))
 					waitfor |= RUNNING;
 				continue;
 			}
 
-			if(p->pid < 0 && (p->flags & C_ONCE))
+			if(p->pid < 0 && owtype(p))
 				continue; /* has been run already */
-			if((p->flags & C_WAIT) && waitfor)
+			if(waitfor && wtype(p))
 				return;
 
 			spawn(p);
 
-			if(p->flags & C_ONCE)
+			if(owtype(p))
 				waitfor |= RUNNING;	/* we're not in nextlevel yet */
-			if(p->flags & C_WAIT)
+			if(wtype(p))
 				return;			/* off to wait for this process */
 		}
 
@@ -104,7 +108,7 @@ void initpass(void)
 	/* One we're here, reset pid for o-type entries, to run them when
 	   entering another runlevel with shouldberunning(p) true. */
 	for(pp = inittab; (p = *pp); pp++)
-		if(!shouldberunning(p) && (p->flags & C_ONCE) && (p->pid < 0))
+		if(!shouldberunning(p) && owtype(p) && (p->pid < 0))
 			p->pid = 0;
 
 	if((cfg->slippery & nextlevel) && !(cfg->slippery & currlevel)) {
