@@ -207,6 +207,7 @@ static void spawn(struct initrec* p)
 	if(pid > 0) {
 		p->pid = pid;
 		p->lastrun = monotime();
+		p->lastsig = 0;
 		return;
 	}
 
@@ -236,18 +237,18 @@ void stop(struct initrec* p)
 		if(waitneeded(p, &p->lastsig, cfg->time_to_SIGKILL, "sending SIGKILL"))
 			return;
 		warn("#%s[%i] sending SIGKILL", p->name, p->pid);
-		kill(p->pid, SIGKILL);
+		kill(-p->pid, SIGKILL);
 		p->flags |= P_SIGKILL;
 	} else {
 		warn("#%s[%i] terminating", p->name, p->pid);
-		kill(p->pid, (p->flags & C_USEABRT ? SIGABRT : SIGTERM));
+		kill(-p->pid, (p->flags & C_USEABRT ? SIGABRT : SIGTERM));
 		p->flags |= P_SIGTERM;
 
 		/* Attempt to wake the process up to recieve SIGTERM. */
 		/* This must be done *after* sending the killing signal
 		   to ensure SIGCONT does not arrive first. */
 		if(p->flags & P_SIGSTOP)
-			kill(p->pid, SIGCONT);
+			kill(-p->pid, SIGCONT);
 
 		/* make sure we'll get initpass to send SIGKILL if necessary */
 		if(timetowait < 0 || timetowait > cfg->time_to_SIGKILL)

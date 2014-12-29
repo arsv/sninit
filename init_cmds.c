@@ -238,7 +238,7 @@ static void dopause(struct initrec* p, int v)
 {
 	if(p->pid <= 0)
 		retwarn_("%s is not running", p->name);
-	if(kill(p->pid, v ? SIGSTOP : SIGCONT))
+	if(kill(-p->pid, v ? SIGSTOP : SIGCONT))
 		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
 
 	scflags(&(p->flags), P_SIGSTOP, v);
