@@ -18,8 +18,8 @@ Key things sninit does have:
   "telinit stop httpd" and so on
 + Sleep/suspend/hibernate as runlevels
 + Support for initdirs (one file per process),
-  as opposed to sysvinit inittab (one line per process)
-+ Small size; sninit is expected to be linked statically with dietlibc
+  in addition to sysvinit inittab (one line per process)
++ Small size and static linkage
 + Simplified memory management;
   no malloc, memory allocation only while reconfiguring
 
