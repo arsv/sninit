@@ -1,5 +1,6 @@
-This is a stripped-down subset of dietlibc, enough to build sninit
-but probably not for anything else.  See doc/libc.txt for explanation.
+This is a stripped-down subset of dietlibc, capable just enough
+to build sninit but probably not for anything else.
+See doc/libc.txt for explanation.
 
 Check http://www.fefe.de/dietlibc/ for the original source.
 
@@ -9,6 +10,5 @@ File structure:
 	*.c    		generic libc routines (string and time)
 	ARCH/		machine-specific syscall code
 	ARCH/bits/	machine-specific constants
-	ARCH/syscalls.h	syscall numbers
 
 There is no Makefile here; libc is built from the top source directory.

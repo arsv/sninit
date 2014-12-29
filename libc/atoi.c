@@ -5,7 +5,6 @@ int atoi(const char* s)
 	int v = 0;
 	int m = 0;
 
-	while(*s == ' '  ||  (unsigned int)(*s - 9) < 5u) s++;
 	switch (*s) {
 		case '-': m = 1;
 		case '+': ++s;

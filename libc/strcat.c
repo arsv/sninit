@@ -2,11 +2,13 @@
 
 char* strcat(register char* s,register const char* t)
 {
-  char *dest=s;
-  s+=strlen(s);
-  for (;;) {
-    if (!(*s = *t)) break; ++s; ++t;
-  }
-  return dest;
-}
+	char *dest = s;
+	s += strlen(s);
 
+	while((*s = *t)) {
+		++s;
+		++t;
+	}
+
+	return dest;
+}
