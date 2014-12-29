@@ -194,7 +194,7 @@ static void dumpstate(void)
 		warn("Switching %s to %s", currstr, nextstr);
 
 	for(pp = cfg->inittab; (p = *pp); pp++) {
-		if(p->flags & (C_ONCE | C_WAIT))
+		if(p->flags & C_ONCE)
 			if(currlevel == nextlevel)
 				continue;
 		reportcmd = p->name[0] ? p->name : joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
