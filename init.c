@@ -43,7 +43,6 @@ extern void pollctl(void);
 extern void acceptctl(void);
 extern void waitpids(void);
 
-static void sleepttw(void);
 static void sighandler(int sig);
 
 /* Overall logic in main: interate over inittab records (that's initpass()),
@@ -84,10 +83,7 @@ int main(int argc, char** argv)
 		/* Block for at most $waitneeded, waiting for signals
 		   or (if the socket is open) telinit commands.
 		   Only set state flags here, do not do any processing. */
-		if(initctlfd >= 0)
-			pollctl();
-		else
-			sleepttw();
+		pollctl();
 
 		/* reap dead children */
 		if(state & S_SIGCHLD)
@@ -230,14 +226,6 @@ close:
 	close(initctlfd);
 	initctlfd = -1;
 	return -1;
-}
-
-/* Just like sleep(timetowait), except sleep indefinitely if ttw <= 0 */
-static void sleepttw(void)
-{
-	if(timetowait > 0)
-		alarm(timetowait);
-	pause();
 }
 
 /* A single handler for all four signals we care about. */

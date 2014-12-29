@@ -8,3 +8,4 @@
 
 struct tm* gmtime_r(const time_t* t, struct tm* r);
 int clock_gettime(clockid_t clk_id, struct timespec *tp);
+int nanosleep(const struct timespec *req, struct timespec *rem);

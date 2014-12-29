@@ -1,15 +1,15 @@
 # auto-generated, remove this line before editing
-.equ NR_pause, 4029
+.equ NR_nanosleep, 4166
 
 .text
 .set reorder
-.global pause
-.ent pause
+.global nanosleep
+.ent nanosleep
 
-pause:
-	li	$2, NR_pause
+nanosleep:
+	li	$2, NR_nanosleep
 	syscall
 	la	$25, unisys
 	jr	$25
 
-.end pause
+.end nanosleep

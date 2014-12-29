@@ -1,6 +1,8 @@
 #define _GNU_SOURCE
 #include <poll.h>
+#include <time.h>
 #include <sys/socket.h>
+#include <signal.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -64,14 +66,16 @@ void pollctl(void)
 
 			/* Failed ppoll means the main loop becomes unconstrained,
 			   making init uncontrollable and wasting cpu cycles.
-			   Most ppoll failues are non-transient (or at least non-fast):
-			   EINVAL likely means a bad build, while ENOMEM may take some
-			   time to resolve. So until then, stop using ppoll completely,
-			   allong the main loop to go on with sleep() instead. */
-			if(initctlfd >= 0)
-				close(initctlfd);
-			initctlfd = -1;
-			/* SIGHUP can be used re-open initctl */
+			   To avoid that, let's try to slow things down a bit. */
+			/* And while we're at that, give init a chance
+			   to recieve SIGCHLD */
+			sigset_t cursigset;
+			pts.tv_sec = timetowait >= 0 ? timetowait : 1;
+			pts.tv_nsec = 0;
+
+			sigprocmask(SIG_SETMASK, &defsigset, &cursigset);
+			nanosleep(&pts, NULL);
+			sigprocmask(SIG_SETMASK, &cursigset, NULL);
 		}
 		/* EINTR, on the other hand, is totally ok (SIGCHLD etc) */
 	} else if(r > 0) {

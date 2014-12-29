@@ -7,7 +7,7 @@
 # which actually use those args.
 direct4 = fork execve kill getpid time
 direct4 += open close read write dup2 fstat ioctl getdents64 openat stat
-direct4 += munmap clock_gettime alarm pause
+direct4 += munmap clock_gettime nanosleep
 direct4 += socket bind connect listen accept sendmsg recvmsg shutdown
 direct4 += prctl setresgid setresuid capset setsid getegid geteuid setrlimit
 direct4 += send sigaction sigprocmask
