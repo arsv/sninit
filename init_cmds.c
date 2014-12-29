@@ -61,9 +61,9 @@ void parsecmd(char* cmd)
 		case 'S': nextlevel = (nextlevel & SUBMASK) | (1 << 8); break;
 		case 'Z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
 		/* halt */
-		case 'H': nextlevel = 0; rbcode = RB_HALT_SYSTEM; break;
-		case 'P': nextlevel = 0; rbcode = RB_POWER_OFF;   break;
-		case 'R': nextlevel = 0; rbcode = RB_AUTOBOOT;    break;
+		case 'H': nextlevel = 1; rbcode = RB_HALT_SYSTEM; break;
+		case 'P': nextlevel = 1; rbcode = RB_POWER_OFF;   break;
+		case 'R': nextlevel = 1; rbcode = RB_AUTOBOOT;    break;
 		/* process ops */
 		case 'r': dorestart(p); break;
 		case 'p': dopause(p, 1); break;

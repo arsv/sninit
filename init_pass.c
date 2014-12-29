@@ -115,9 +115,7 @@ void initpass(void)
 		/* nextlevel is slippery, turn back to currlevel */
 		swapi(&currlevel, &nextlevel);
 		/* We've got to make sure pollfds will return immediately. */
-		/* Something like SIGUSR1 would have worked as well, but SIGCHLD
-		   is enough for the purporse and there's already a handler */
-		kill(getpid(), SIGCHLD);
+		timetowait = 0;
 	} else {
 		currlevel = nextlevel;
 	} if(currlevel == (1<<0)) {
@@ -126,6 +124,7 @@ void initpass(void)
 		   the main loop. Since shouldberunning always fails against all-0-bits,
 		   this is a simple way to ensure no processes are left behind. */
 		nextlevel = 0;
+		timetowait = 0;
 	}
 }
 
