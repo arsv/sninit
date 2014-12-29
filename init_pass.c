@@ -207,7 +207,6 @@ static void spawn(struct initrec* p)
 	if(pid > 0) {
 		p->pid = pid;
 		p->lastrun = monotime();
-		warn("%s[%i] spawned", p->name, p->pid);
 		return;
 	}
 
