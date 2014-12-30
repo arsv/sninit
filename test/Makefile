@@ -15,10 +15,10 @@ RUN_ := $(if $(RUN),$(RUN) ,)
 # Regular automated tests
 TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
-	t_addstringarray t_addstrargarray t_fileblock \
-	t_tzinit t_initpass_pri t_initpass_sec t_initpass_wku \
+	t_addstringarray t_addstrargarray t_fileblock t_tzinit \
+	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
 	t_setrunlevels t_readinitdir t_rewireptsarray t_scratchptr \
-	t_transferpids
+	t_transferpids t_joincmd
 # Tests with manual check (for now)
 XTESTS = x_printf x_hello x_open
 
