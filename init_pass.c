@@ -176,7 +176,7 @@ static int waitneeded(struct initrec* p, time_t* last, time_t wait, const char* 
 		int ttw = endtime - curtime;
 		if(timetowait < 0 || timetowait > ttw)
 			timetowait = ttw;
-		retwarn(1, "%s[%i] waiting %i seconds before %s", p->name, p->pid, ttw, msg);
+		return 1;
 	}
 }
 
