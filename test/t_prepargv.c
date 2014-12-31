@@ -38,7 +38,7 @@ void dumpstr(const char* str, int len, char* pref)
 	int i;
 	if(pref) printf("%s: ", pref);
 	for(i = 0; i < len; i++)
-		if(str[i] >= 0x20 && str[i] < 0xFF)
+		if(str[i] >= 0x20 && str[i] < 0x7F)
 			printf("%c", str[i]);
 		else switch(str[i]) {
 			case '\0':
