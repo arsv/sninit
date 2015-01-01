@@ -177,6 +177,7 @@ while [ $# -gt 0 ]; do
 			;;
 		with-musl|musl)
 			cctype=musl
+			libc=musl
 			;;
 		with-dietlibc|dietlibc) argreq
 			diet=${val:-diet}
@@ -190,7 +191,7 @@ while [ $# -gt 0 ]; do
 		with-libc|libc)
 			libc=${val:-syslibc}
 			;;
-		with-syslibc|with-glibc|syslibc|glibc|libc)
+		with-syslibc|with-glibc|syslibc|glibc|libc|uclibc)
 			libc=syslibc
 			;;
 		with-timestamps|ts) argreq
