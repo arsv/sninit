@@ -10,3 +10,15 @@ ARM EABI calling convention:
                  1   2   3   4   5   6
 Syscall     r7 (r0, r1, r2, r3, r4, r5) -> r0
 Function       (r0, r1, r2, r3, +0, +4) -> r0		+n = n*4(sp)
+
+registers:	a1 a2 a3 a4 v1 v2 v3 v4 v5 sb  v7  v8  ip  sp  lr  pc
+		r0 r1 r2 r3 r4 r5 r6 r7 r8 r9 r10 r11 r12 r13 r14 r15
+callee saved:	             x  x  x  x  x  x   x   x       x
+
+
+IP (r12) may be used as a scratch register but not across a branch.
+So "ldr ip, =NR_...; b unisys" is a good idea but it won't work reliably.
+
+Given sninit's size however, it is *probably* safe to assume there will be
+no veneers and ip will remain untouched. Still, that won't work well for
+ppoll and sigprocmask due to sizeof_sigset_t argument.
