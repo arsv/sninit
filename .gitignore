@@ -9,6 +9,7 @@ telinit
 statictab
 runcap
 test/*
+misc/*
 !test/*.[ch]
 !test/*.txt
 !test/*.px
