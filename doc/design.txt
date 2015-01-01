@@ -296,3 +296,15 @@ but which typically has some registers to save and iterate over.
 
 Quick check reveals the losses are negligible, below 100 bytes for most
 architectures, so why bother.
+
+
+Environment variables in inittab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Current implementation allows setting environment variables in inittab.
+With envp being completely independent from initrecs, it would make a lot
+of sense to use a separate file for the environment, say, /etc/initenv.
+
+The problem is, there are typically one or two variables set in inittab
+(PATH and ... well that's about it). Too few to bother. And atop of that,
+handling a second file would slightly increase the size of init,
+compared to current guess-type-of-line code.
