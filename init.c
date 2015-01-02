@@ -239,7 +239,7 @@ static void sighandler(int sig)
 			
 		case SIGTERM:	/* C-c when testing */
 		case SIGINT:	/* C-A-Del with S_PID1 */
-			nextlevel = 0;
+			nextlevel = (1<<0);
 			break;
 
 		case SIGHUP:
