@@ -153,46 +153,63 @@ static int setrunlevels(struct fileblock* fb, struct initrec* entry, char* runle
 }
 
 static struct flagrec {
+	char key;
 	char* name;
 	int bits;
 } flagtbl[] = {
 	/* entry type */
-	{ "s",		0 },
-	{ "respawn",	0 },
-	{ "w",		C_ONCE | C_WAIT },
-	{ "wait",	C_ONCE | C_WAIT },
-	{ "o",		C_ONCE },
-	{ "once",	C_ONCE },
-	{ "h",		C_WAIT },
-	{ "hold",	C_WAIT },
+	{ 'S', "respawn", 0 },
+	{ 'W', "wait",	C_ONCE | C_WAIT },
+	{ 'O', "once",	C_ONCE },
+	{ 'H', "hold",	C_WAIT },
+	/* process control flags */
+	{ 'A', "abort",	C_USEABRT },
 	/* exec-side flags */
-	{ "abort",	C_USEABRT },
-	{ "null",	C_NULL },
-	{ "log",	C_LOG },
-	{ "tty",	C_TTY },
+	{ 'N', "null",	C_NULL },
+	{ 'L', "log",	C_LOG },
+	{ 'T', "tty",	C_TTY },
 	/* terminator */
-	{ NULL }
+	{ 0 }
 };
 
+/* Parse flags (3rd initline field) and adjust entry values accordingly.
+   flagstring is something like "wait,null", or "WN", or "W,null"; see flagtbl above.
+   XXX: maybe drop long flags?.. or short flags? */
 static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring)
 {
-	char* p;
+	char* p = flagstring;
 	struct flagrec* f;
 
-	if(!flagstring || !*flagstring)
-		return 0;
+	if(!p || !*p)
+		goto R;	/* return immediately, it's an empty string */
 
-	while((p = strsep(&flagstring, ",")) != NULL) {
-		for(f = flagtbl; f->name; f++)
+	if(*p < 'A' || *p > 'Z')
+		goto L; /* long options only */
+
+	for(; *p && *p != ','; p++) {
+		for(f = flagtbl; f->key; f++)
+			if(f->key == *p) {
+				entry->flags |= f->bits;
+				break;
+			}
+		if(!f->key)
+			retwarn(-1, "%s:%i: unknown flag %s", fb->name, fb->line, p);
+	}
+
+	/* skip "," after short-opts, or bail out if there's none */
+	if(*p) flagstring = p + 1; else goto R;
+
+L:	while((p = strsep(&flagstring, ",")) != NULL) {
+		for(f = flagtbl; f->key; f++)
 			if(!strcmp(p, f->name)) {
 				entry->flags |= f->bits;
 				break;
 			}
-		if(!f->name)
+		if(!f->key)
 			retwarn(-1, "%s:%i: unknown flag \"%s\"", fb->name, fb->line, p);
 	}
 
-	return 0;
+R:	return 0;
 }
 
 /* Parse the line, counting the entries and simultaineously
