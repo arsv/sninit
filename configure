@@ -171,7 +171,10 @@ while [ $# -gt 0 ]; do
 		cflags|asflags|hostcflags)
 			eval "$arq='$val'"
 			;;
-		arch|bundled|with-bundled|with-bundled-libc) argreq
+		bundled|with-bundled|with-bundled-libc)
+			libc=bundled
+			;;
+		arch) argreq
 			libc=bundled
 			arch="$val"
 			;;
@@ -323,15 +326,22 @@ if [ -n "$debug" ]; then
 	asflags=${asflags:+$asflags }-g
 fi
 
-# See if we'd like to use bundled libc by default
-case "$libc:$arch:$ccarch" in
-	::x86_64*) libc=bundled arch=x86_64 ;;
-	# x86_32 is *not* reported as such and must be specified explicitly!
-	::x86*) libc=bundled arch=x86 ;;
-	::arm*) libc=bundled arch=arm ;;
-	::mips64*) ;;
-	::mips*) libc=bundled arch=mips ;;
-esac
+# See if we'd like to use bundled libc by default,
+# and try to guess arch if bundled was specified without an arg
+if [ -z "$libc" -o "$libc" == 'bundled' ]; then
+	case "$arch:$ccarch" in
+		:x86_64*) arch=x86_64 ;;
+		# x86_32 is *not* reported as such and must be specified explicitly!
+		:x86*) arch=x86 ;;
+		:arm*) arch=arm ;;
+		:mips64*) ;;
+		:mips*) arch=mips ;;
+	esac
+fi; if [ "$libc" == 'bundled' -a -z "$arch" ]; then
+	die "Can't guess target architecture, use arch= option"
+elif [ -z "$libc" -a -n "$arch" ]; then
+	libc=bundled
+fi
 
 # Check which blocks init needs
 
