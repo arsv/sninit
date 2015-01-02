@@ -7,14 +7,14 @@
 {/sbin}/{init} [\fIkernel options\fR]
 '''
 .SH DESCRIPTION
-\fB{init}\fR is the first and only process kernel starts.
+\fBinit\fR is the first and only process kernel starts.
 It is expected to bring up the system, start daemons and user interface.
 .P
 During normal operation, init starts processes listed in inittab, and keeps
-restarting them unless when they die unless told otherwise.
+restarting them when they die unless told otherwise.
 .P
 The set of processes to start is determined by current runlevel.
-Upon startup, init switches to its default runlevel, initdefault.
+Upon startup, init switches to its default runlevel (3).
 Runlevel can be changed at any time, prompting a change in the running
 processes.  Individual processes can be started or stopped on demand.
 .P
@@ -22,23 +22,25 @@ All communication with init occurs via a socket, see \fB{telinit}\fR(8).
 Kernel does not expect init to exit, ever. In case it does, kernel panics.
 '''
 .SH USAGE
-Kernel starts /sbin/init unless init= option is passed to the kernel during boot.
+Kernel starts /sbin/init upon bootup, passing it any arguments from kernel
+command line the kernel itself failed to parse.
 Check Documentation/kernel-parameters.txt, Documentation/init.txt from the kernel source 
 for further information, as well as documentation for your bootloader (\fBgrub\fR, \fBuboot\fR etc)
 on how to pass kernel options.
 .P
-Passing "1", "2", ..., "9" among kernel options overrides \fIinitdefault\fR setting.
-Other kernel options are ignored. Init does not pass kernel options to any of the scripts it starts.
+Passing "1", "2", ..., "9" among kernel options sets default runlevel.
+Other kernel options are ignored.
+Init does not pass kernel options to any of the scripts it starts.
 .P
 During startup, init must be able to read its configuration files, {/etc/inittab}, unless
 it has a fallback inittab built in.
 .P
-The only way to contact a running init instance is to write to its control socket, {@initctl}.
+Commands can be passed to a running init instance via its control socket, {@initctl}.
 See \fB{telinit}\fR(8).
 '''
 .SH CONFIGURATION
-Primary configuration file is {/etc/inittab}, see \fB{inittab}\fR(8). The only other
-files init will read are those explicitly mentioned in inittab.
+Primary configuration file is {/etc/inittab}, see \fB{inittab}\fR(8).
+Init will also read files in {/etc/initdir}.
 
 During startup and upon receiving a reconfiguration request, init stores the data read
 from inittab in memory and does not try to re-read any of the files later.
@@ -62,6 +64,8 @@ Other user signals are ignored.
 .SH FILES
 .IP "{/etc/inittab}" 4
 Primary configuration file. See \fB{inittab}\fR(5).
+.IP "{/etc/initdir}" 4
+Service directory. See \fB{initdir}\fR(5).
 .IP "{@initctl}"
 Unix domain socket, for telinit communication. See \fB{telinit}\fR(8) and \fBunix\fR(7).
 '''
