@@ -163,6 +163,15 @@ libc.a:
 
 endif
 
+# --- Tests entry point --------------------------------------------------------
+#
+# This is only for convenience, so that "make test" would work from the top dir.
+
+.PHONY: test
+
+test: $(if $(ARCH),libc.a)
+	$(MAKE) -C test run
+
 # --- Implicit rules -----------------------------------------------------------
 
 %.5 %.8: %.man mansubst
