@@ -278,7 +278,7 @@ static inline void swapi(int* a, int* b)
    constraint. So instead it's set to the maximum possible ttr value.
 
    Given ttr is just a short, and monotonic clocks always start at 0
-   at bootup, the resulting number is still smaller than even wall
+   at bootup, the resulting number is still smaller than even the wall
    clock value (as in time(2)) */
 #define INIT_CLOCK_OFFSET 0xFFFF
 
