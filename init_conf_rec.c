@@ -153,59 +153,41 @@ static int setrunlevels(struct fileblock* fb, struct initrec* entry, char* runle
 }
 
 static struct flagrec {
-	char key;
 	char* name;
 	int bits;
 } flagtbl[] = {
 	/* entry type */
-	{ 'S', "respawn", 0 },
-	{ 'W', "wait",	C_ONCE | C_WAIT },
-	{ 'O', "once",	C_ONCE },
-	{ 'H', "hold",	C_WAIT },
+	{ "respawn",	0 },
+	{ "wait",	C_ONCE | C_WAIT },
+	{ "once",	C_ONCE },
+	{ "hold",	C_WAIT },
 	/* process control flags */
-	{ 'A', "abort",	C_USEABRT },
+	{ "abort",	C_USEABRT },
 	/* exec-side flags */
-	{ 'N', "null",	C_NULL },
-	{ 'L', "log",	C_LOG },
-	{ 'T', "tty",	C_TTY },
+	{ "null",	C_NULL },
+	{ "log",	C_LOG },
+	{ "tty",	C_TTY },
 	/* terminator */
-	{ 0 }
+	{ NULL }
 };
 
 /* Parse flags (3rd initline field) and adjust entry values accordingly.
-   flagstring is something like "wait,null", or "WN", or "W,null"; see flagtbl above.
-   XXX: maybe drop long flags?.. or short flags? */
+   flagstring is something like "respawn" or "wait,null" */
 static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring)
 {
 	char* p = flagstring;
 	struct flagrec* f;
 
 	if(!p || !*p)
-		goto R;	/* return immediately, it's an empty string */
+		goto R;
 
-	if(*p < 'A' || *p > 'Z')
-		goto L; /* long options only */
-
-	for(; *p && *p != ','; p++) {
-		for(f = flagtbl; f->key; f++)
-			if(f->key == *p) {
-				entry->flags |= f->bits;
-				break;
-			}
-		if(!f->key)
-			retwarn(-1, "%s:%i: unknown flag %s", fb->name, fb->line, p);
-	}
-
-	/* skip "," after short-opts, or bail out if there's none */
-	if(*p) flagstring = p + 1; else goto R;
-
-L:	while((p = strsep(&flagstring, ",")) != NULL) {
-		for(f = flagtbl; f->key; f++)
+	while((p = strsep(&flagstring, ",")) != NULL) {
+		for(f = flagtbl; f->name; f++)
 			if(!strcmp(p, f->name)) {
 				entry->flags |= f->bits;
 				break;
 			}
-		if(!f->key)
+		if(!f->name)
 			retwarn(-1, "%s:%i: unknown flag \"%s\"", fb->name, fb->line, p);
 	}
 

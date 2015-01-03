@@ -46,14 +46,9 @@ int main(void)
 	test("wait,null", C_WAIT | C_ONCE | C_NULL);
 	test("abort,log", C_USEABRT | C_LOG);
 
-	test("W", C_WAIT | C_ONCE);
-	test("WN", C_WAIT | C_ONCE | C_NULL);
-
-	test("W,null", C_WAIT | C_ONCE | C_NULL);
-
-	bad("W,");
 	bad("what");
-	bad(",null");
+	bad("wait,");
+	bad(",tty");
 
 	return 0;
 }
