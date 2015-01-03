@@ -66,6 +66,12 @@ Documentation
 See man pages and files in doc/ directory.
 
 
+Just how small exactly?
+~~~~~~~~~~~~~~~~~~~~~~~
+Statically linked init executable is around 20KB on x86_64 and 30KB on arm.
+telinit, which is a standalone executable, adds 4KB on x86_64 and 10KB on arm.
+
+
 Credits
 ~~~~~~~
 sninit draws ideas from busybox init, minit and the original sysvinit.
