@@ -31,7 +31,7 @@
 #define CMDBUF 100
 
 /* initrec name length (SysVinit standard value is 4+1) */
-#define NAMELEN 10
+#define NAMELEN 8
 
 /* Memory allocation granularity, for mmap(2). Should be something close to OS page size */
 #define IRALLOC 2048
