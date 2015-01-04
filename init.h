@@ -36,12 +36,8 @@
 #define weak __attribute__((weak))
 #define global
 
-/* Initrecs are kept in a double-linked list.
-   Why double: see initpass(), specifically the comments on kill/spawn order.
-   Why list: it would make just as much sense making them into an argv-style array,
-   i.e. pointers followed by structs, but that would require scratching the pointers
-   somehow, complicating configure() code.
-   Self-contained initrecs can be placed directly in newblock. */
+/* Each initrec represents a single process to be spawned.
+   Initrecs are kept in an argv-style structure in struct config.inittab */
 struct initrec {
 	char name[NAMELEN];
 
