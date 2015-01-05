@@ -1,0 +1,30 @@
+Files in this directory are meant primarily for developers.
+
+
+-- Why sninit was written the way it is written
+
+design.txt	  Various notes on sninit design
+builtin.txt	  What is builtin inittab, and why it is needed
+dependencies.txt  On systemd-style dependencies
+dietlibc.txt	  dietlibc configuration for sninit
+initdir.txt	  What is initdir
+limits.txt	  Setting limits for child processes (runcap)
+sublevels.txt	  Runlevels abcdef
+slippery.txt	  Slippery runlevels (sleep, suspend)
+
+libc.txt	  Bundled libc, what and why
+syscalls.txt	  Bundled libc: syscall implementation
+
+
+-- Using sninit
+
+initctl.txt	  Control socket protocol
+inittab.txt	  Inittab syntax
+sysvinit.txt	  Migrating from sysvinit
+qemu.txt	  Using qemu to test sninit builds
+
+
+-- General init-related thoughts
+
+init.txt	  What is init?
+direct.txt	  Direct configuration
