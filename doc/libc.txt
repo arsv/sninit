@@ -1,8 +1,7 @@
 Bundled libc
 ~~~~~~~~~~~~
-sninit comes with a stripped-down subset of dietlibc providing startup
-code, syscalls and routines sninit needs.
-Given supported architecture, sninit can be built with a bare compiler.
+sninit comes with a stripped-down subset of dietlibc providing minimal
+startup code, syscalls and standard libc routines sninit needs.
 
 Reason for including libc:
 

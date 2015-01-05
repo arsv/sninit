@@ -69,7 +69,7 @@ A complete configuration should look like this:
 	:~8:once:/sbin/network up
 	:~8:once:/sbin/usb on
 
-Commands shown are only for illustration, real system will probably have
+Commands shown are only for illustration, a real system will probably have
 something system-specific.
 
 Note the use of "once": in most cases, the hooks are independent,

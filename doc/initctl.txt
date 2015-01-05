@@ -39,7 +39,6 @@ Check parsecmd() in init_cmds.c for a full list, and cmdtbl[] in telinit.c
 for corresponding telinit commands.
 
 Current implementation does not indicate whether the command failed or not,
-so telinit always exits with code 0. This is almost inevitable, given most
+so telinit always exits with code 0. This is nearly inevitable, since most
 commands are deferred: the command itself only sets a flag, and the action
-is performed during initpass() (see init_pass.c) after closing telinit
-connection.
+is performed during initpass() after closing telinit connection.
