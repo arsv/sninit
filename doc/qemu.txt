@@ -9,8 +9,8 @@ ABI conversion performed by qemu. To check syscalls being passed, use
 
     qemu-arm -strace ./init
 
-This approach is very simple and works best for quick viability checks,
-tests and simple debugging using warn() calls.
+This simple approach works best for quick viability checks, tests
+(those from test/ directory) and simple debugging using warn() calls.
 
 
 Debugging non-native executables with qemu and gdb
@@ -30,5 +30,142 @@ TCP port (1234 in this example) is arbitrary. Check gdbserver(1)
 for more info.
 
 Beware of qemu(1), the page I have describes qemu-system-(arch) only,
-*not* qemu-(arch) which has different options. Try runnig qemu-(arch) -h
+*not* qemu-(arch) which has different options. Try running qemu-(arch) -h
 instead.
+
+
+Running init in a complete emulated system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Some aspects of init can only be tested on a dedicated linux system
+with the init running as pid 1.
+
+The easy way to do this is to use buildroot to make a bootable system
+image with sninit in it and then run it in qemu-system.
+
+Get buildroot, and make a minimalistic system for your target architecture.
+Using configs for some popular board is a good idea. Make sure busybox
+is enabled (it should be). It's ok to disable any other packages at this
+point. Build the system, and make sure it works in qemu.
+
+Example command (buildroot, arm, versatilepb board):
+
+    qemu-system-arm -machine versatilepb \
+        -kernel output/images/zImage \
+        -hda output/images/rootfs.ext2 \
+        -append "root=/dev/sda"
+
+Next build sninit for the target machine. This can be done
+	(a) within buildroot
+	(b) outside of buildroot using buildroot toolchain
+	(c) outside of buildroot using unrelated toolchain
+
+If you do (b) or (c), copy executables and inittab
+to $BUILDROOT/output/target/ and re-run make to get them
+into rootfs.img.
+
+Regardless of the path chosen, make sure you have sninit
+executables in your rootfs image:
+	$BUILDROOT/output/target/sbin/init
+	$BUILDROOT/output/target/sbin/telinit
+	$BUILDROOT/output/target/etc/inittab
+
+
+(a) Building sninit as a buildroot package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TODO: this requires package directory and patches, not uploaded anywhere yet.
+
+
+(b) Building sninit using buildroot toolchain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set CC and AR in config.mk, or run configure with the same values:
+	CC=BUILDROOT/output/host/usr/bin/TARGET-gcc
+	AR=BUILDROOT/output/host/usr/bin/TARGET-ar
+Substitute BUILDROOT and TARGET to match your particular
+configuration.
+
+Make sure ARCH= in config.mk matches TARGET,
+or leave it empty to use buildroot's libc.
+
+That's all actually, run make and it should work right away.
+
+
+(c) Building sninit using unrelated toolchain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This trick is only recommended for bundled libc builds.
+
+If you have *any* toolchain for TARGET installed in the system,
+you can use that to build sninit executables to use them
+in buildroot system. Set CC, AR and ARCH in config.mk, and build
+as usual.
+
+
+Debugging init in a complete emulated system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You will need a kernel and bootable rootfs image containing
+busybox, gdbserver and sninit. Refer to buildroot docs for building
+instructions.
+
+Build a target gdb for your host system too (BR2_PACKAGE_HOST_GDB=y)
+
+Enable serial port, and change kernel command line
+to start sh instead of the init:
+
+    qemu-system-arm -machine versatilepb \
+        -kernel output/images/zImage \
+        -hda output/images/rootfs.ext2 \
+        -append "root=/dev/sda init=/bin/sh" \
+	-serial pty
+
+Qemu will report allocated PTY slave device, something like /dev/pts/N
+Boot the target system and run
+
+    gdbserver /dev/ttyAMA0 /sbin/init
+
+in sh prompt. Use the right TTY name: most system provide ttyS0 or ttyS1
+but for ARMs it's ttyAMA0.
+
+Start gdb on the host system:
+
+    cd BUILDROOT/output/build/sninit
+    BUILDROOT/output/host/TARGET-gdb -ex "target remote /dev/pts/N" init
+
+Adjust sninit build directory and use the right pts device, the one that qemu
+reported before. If everything goes well, gdb will show the process stopped
+right after _start: symbol.
+Set breakpoints if necessary and use "cont" to unfreeze the process.
+
+Refer to gdbserver(1) and remote debugging sections in gdb manual
+for more info on using "target remote".
+
+Serial link is typically the easiest one to set up in qemu, but in some cases
+tcp may be a viable option. See qemu(1), especially on -net and -serial.
+
+
+Debugging pid 1 specific features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Running init under gdbserver means it won't get pid 1.
+To examine reboot, fool it by setting S_PID1:
+
+    (gdb) break main
+    (gdb) cont
+    Breakpoint ...
+    (gdb) set state |= 1
+
+There is no easy way to emulate orphans at this moment.
+If really necessary, try adding prctl(PR_SET_CHILD_SUBREAPER) to setup()
+and spawning some children that use setsid(). However, if things got this far,
+init's child-reaping functions are not likely to be buggy.
+
+
+Caveats
+~~~~~~~
+Qemu in linux-user mode (qemu-arm, as opposed to qemu-system-arm) does not
+check or translate hidden syscall arguments (e.g. sizeof(sigset_t) as
+5th ppoll(2) argument), and supplies the right values to the host kernel
+even if target gets them wrong.
+
+Typical presentation: executable works well on qemu-arm but fails
+with EINVAL from ppoll on qemu-system-arm.
+
+When working with syscalls, do not forget to test on qemu-system-(arch)
+even if everything works fine in qemu-(arch).
