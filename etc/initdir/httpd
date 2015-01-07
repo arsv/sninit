@@ -1,0 +1,4 @@
+#!/bin/sh
+#:2435
+
+exec sbin/dem1

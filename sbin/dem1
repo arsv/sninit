@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "- dem1 starting"
+sleep 10
+echo "- dem1 dying"
