@@ -12,9 +12,8 @@ struct memblock scratch;
 
 struct {
 	int called;
+	char* code;
 	char* name;
-	char* rlvls;
-	char* flags;
 	char* cmd;
 	int exe;
 } U;
@@ -30,12 +29,11 @@ int readinitdir(char* dir, int strict)
 	return str ? strdup(str) : NULL;
 }*/
 
-int addinitrec(struct fileblock* fb, char* name, char* rlvls, char* flags, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 {
 	U.called++;
+	U.code = code;
 	U.name = name;
-	U.rlvls = rlvls;
-	U.flags = flags;
 	U.cmd = cmd;
 	U.exe = exe;
 	return RET;
@@ -56,9 +54,9 @@ int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels)
 	return -1;
 }
 
-void test(input, name, rlvls, flags, cmd)
+void test(input, code, name, cmd)
 	const char *input;
-	const char *name, *rlvls, *flags, *cmd;
+	const char *name, *code, *cmd;
 {
 	char* data = alloca(strlen(input) + 1);
 	strcpy(data, input);
@@ -75,34 +73,27 @@ void test(input, name, rlvls, flags, cmd)
 	A(parseinitline(&fb, 0) == RET);
 
 	A(U.called == 1);
+	S(U.code, code);
 	S(U.name, name);
-	S(U.rlvls, rlvls);
-	S(U.flags, flags);
 	S(U.cmd, cmd);
 	A(U.exe == 0);
 }
 
+/* This whole test is a remnant of the times when initline format
+   actually required testing. At present there is little to test. */
 int main(void)
 {
 	/* generic line */
-	test("echo:123:wait,log:/bin/echo -n foo",
-		"echo", "123", "wait,log", "/bin/echo -n foo");
+	test("W123\techo\t/bin/echo -n foo",
+		"W123", "echo", "/bin/echo -n foo");
 
-	/* no name */
-	test(":123:wait,log:/bin/test",
-		"", "123", "wait,log", "/bin/test");
-
-	/* no rlvls */
-	test("test::wait,log:/bin/test",
-		"test", "", "wait,log", "/bin/test");
-
-	/* no flags */
-	test("test:123::/bin/test",
-		"test", "123", "", "/bin/test");
+	/* arbitrary spaces */
+	test("W123  echo \t /bin/echo -n foo",
+		"W123", "echo", "/bin/echo -n foo");
 
 	/* sh */
-	test("test:123:wait:!/bin/test",
-		"test", "123", "wait", "!/bin/test");
+	test("W123  test  !/bin/test",
+		"W123", "test", "!/bin/test");
 
 	return 0;
 }

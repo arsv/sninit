@@ -56,6 +56,13 @@
 		printf("%s:%i: OK " fmt "\n", __FILE__, __LINE__, __VA_ARGS__);\
 }
 
+#define Eq(val, exp, fmt) {\
+	if((val) == (exp)) \
+		printf("%s:%i: OK %s == %s\n", __FILE__, __LINE__, #val, #exp);\
+	else \
+		printf("%s:%i: FAIL %s = " fmt " != %s\n", __FILE__, __LINE__, #val, val, #exp);\
+}
+
 char* heapdup(const char* s);
 char* heapdupnull(const char* s);
 void die(const char* fmt, ...) __attribute__((noreturn));

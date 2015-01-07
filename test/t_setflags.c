@@ -14,41 +14,76 @@ void addstring(void) { };
 
 extern int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
-#define _(x) strcpy(buf, x)
+#define R0 (1<<0)
+#define R1 (1<<1)
+#define R2 (1<<2)
+#define R3 (1<<3)
+#define R4 (1<<4)
+#define R5 (1<<5)
+#define R6 (1<<6)
+#define R7 (1<<7)
+#define R8 (1<<8)
+#define R9 (1<<9)
+#define Ra (1<<0xa)
+#define Rf (1<<0xf)
 
-#define test(str, val)\
-	rec.flags = 0;\
-	T(setflags(&fb, &rec, _(str)));\
-	A(rec.flags == (val))
+struct fileblock fb = {
+	.name = "(none)",
+	.line = 0,
+	.buf = NULL,
+	.ls = NULL,
+	.le = NULL
+};
+struct initrec rec = {
+	.rlvl = 0
+};
 
-#define bad(str)\
-	rec.flags = 0xFE7F;\
-	T(!setflags(&fb, &rec, _(str)));\
-	A(rec.flags == 0xFE7F)
+#define sr(str) \
+	T(setflags(&fb, &rec, str))
+
+#define bb(str) \
+	T(!setflags(&fb, &rec, str))
+
+#define rl(str, exp) \
+	sr(str);\
+	Eq(rec.rlvl, exp, "%04X")
+
+#define fl(str, exp) \
+	sr(str);\
+	Eq(rec.flags, exp, "%04X")
+
+#define rf(str, er, ef) \
+	sr(str);\
+	Eq(rec.rlvl, er, "%04X");\
+	Eq(rec.flags, ef, "%04X")
 
 int main(void)
 {
-	struct fileblock fb = { .name = "none", .line = 1 };
-	struct initrec rec;
-	char buf[100];
+	rl("12",	R1 | R2);
+	rl("S12a",	R1 | R2 | Ra);
+	rl("12af",	R1 | R2 | Ra | Rf);
+	rl("9",		R9);
+	rl("0",		R0);
+	rl("a",		Ra | (PRIMASK & ~1));
+	rl("af",	Ra | Rf | (PRIMASK & ~1));
+	rl("",		(PRIMASK & ~1));
 
-	test("", 0);
+	// negation
+	rl("~",		R0);
+	rl("~789",	R0 | R1 | R2 | R3 | R4 | R5 | R6);
+	rl("~123a",	R0 | R4 | R5 | R6 | R7 | R8 | R9 | Ra);
 
-	test("respawn", 0);
-	test("once", C_ONCE);
-	test("wait", C_WAIT | C_ONCE);
-	test("hold", C_WAIT);
+	fl("S12",	0);
+	fl("O",		C_ONCE);
+	fl("W",		C_ONCE | C_WAIT);
+	fl("H",		C_WAIT);
 
-	test("log", C_LOG);
-	test("tty", C_TTY);
-	test("abort", C_USEABRT);
+	/* Runlevels and flags together */
+	rf("W12",	R1 | R2,	C_ONCE | C_WAIT);
 
-	test("wait,null", C_WAIT | C_ONCE | C_NULL);
-	test("abort,log", C_USEABRT | C_LOG);
-
-	bad("what");
-	bad("wait,");
-	bad(",tty");
+	/* incorrect cases */
+	bb("Z");
+	bb("?");
 
 	return 0;
 }

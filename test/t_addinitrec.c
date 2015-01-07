@@ -6,7 +6,7 @@
 struct memblock newblock;
 struct memblock scratchblock;
 
-extern int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char* cmd, int exe);
+extern int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 extern int mmapblock(struct memblock* m, int length);
 
 int main(void)
@@ -31,7 +31,7 @@ int main(void)
 	scratchblock.ptr += sizeof(struct scratch);
 	memset(scratchblock.addr, scratchblock.len, 0x00);
 
-	T(addinitrec(&fb, "foo", "12", "", heapdup("/bin/sh -c true"), 0));
+	T(addinitrec(&fb, "12", "foo", heapdup("/bin/sh -c true"), 0));
 
 	/* Sanity check for ptrlist */
 	A(SCR->inittab.head > 0);
@@ -56,7 +56,7 @@ int main(void)
 	A(pptr->lastsig == 0);
 
 	/* One more initrec */
-	T(addinitrec(&fb, "bar", "234", "", heapdup("/sbin/httpd"), 0));
+	T(addinitrec(&fb, "234", "bar", heapdup("/sbin/httpd"), 0));
 
 	/* Sanity check for ptrlist */
 	A(SCR->inittab.head < SCR->inittab.last);
