@@ -7,11 +7,10 @@
 
 extern struct memblock newblock;
 
-global int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char* cmd, int exe);
+global int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 global int addenviron(const char* def);
 
 static int prepargv(char* str, char** end);
-static int setrunlevels(struct fileblock* fb, struct initrec* entry, char* runlevels);
 static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
 extern int mextendblock(struct memblock* m, int size);
@@ -24,7 +23,7 @@ extern int scratchptr(offset listptr, offset ptr);
 extern int checkdupname(const char* name);
 
 /* Arguments:
-	   name="httpd", runlvl="2345", flags="log,null"
+	   code="S234", name="httpd"
    For argv, there are three options:
 	(1) exe=0 argv="/sbin/httpd -f /etc/httpd.conf"
 	(2) exe=0 argv="!httpd -f /etc/httpd.conf"
@@ -35,7 +34,7 @@ extern int checkdupname(const char* name);
 
 /* fb is the block we're parsing currently, used solely for error reporting */
 
-int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 {
 	offset entryoff;
 	struct initrec* entry;
@@ -50,17 +49,6 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 	if(mextendblock(&newblock, entrysize))	
 		return -1;
 	entryoff = newblock.ptr;
-	entry = blockptr(&newblock, entryoff, struct initrec*); 
-
-	memset(entry->name, 0, NAMELEN);
-	strncpy(entry->name, name, NAMELEN - 1);
-
-	entry->flags = 0;
-	entry->rlvl = 0;
-
-	entry->pid = 0;
-	entry->lastrun = 0;
-	entry->lastsig = 0;
 
 	/* Note: argv[] must be appended right after struct initrec */
 	newblock.ptr += entrysize;
@@ -78,11 +66,18 @@ int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char
 	} if(ret)
 		goto out;
 
-	/* add*array() calls above could very well change newblock.addr, invalidating existing entry value */
+	/* add*array() calls above could very well change newblock.addr,
+	   so entry pointer must be evaluated here and not next to entryoff */
 	entry = blockptr(&newblock, entryoff, struct initrec*); 
-	if(setrunlevels(fb, entry, runlvl))
-		goto out;
-	if(setflags(fb, entry, flags))
+
+	memset(entry->name, 0, NAMELEN);
+	strncpy(entry->name, name, NAMELEN - 1);
+
+	entry->pid = 0;
+	entry->lastrun = 0;
+	entry->lastsig = 0;
+
+	if(setflags(fb, entry, code))
 		goto out;
 
 	/* initrec has been added successfully, so note its offset to use when building inittab[] later */
@@ -127,19 +122,52 @@ int addenviron(const char* def)
 
    See doc/sublevels.txt for considerations re. sublevels handling. */
 
-static int setrunlevels(struct fileblock* fb, struct initrec* entry, char* runlevels)
-{
-	char* p;
-	char neg = (*runlevels == '~' ? *(runlevels++) : 0);
-	int rlvl = 0;
+static struct flagrec {
+	char c;
+	int bits;
+} flagtbl[] = {
+	/* entry type */
+	{ 'S',	0 },
+	{ 'W',	C_ONCE | C_WAIT },
+	{ 'O',	C_ONCE },
+	{ 'H',	C_WAIT },
+	/* process control flags */
+	{ 'A',	C_USEABRT },
+	/* exec-side flags */
+	{ 'N',	C_NULL },
+	{ 'Y',	C_TTY },
+	/* terminator */
+	{  0  }
+};
 
-	for(p = runlevels; *p; p++)
-		if(*p >= '0' && *p <= '9')
+/* Parse flags (3rd initline field) and adjust entry values accordingly.
+   flagstring is something like "respawn" or "wait,null" */
+static int setflags(struct fileblock* fb, struct initrec* entry, char* code)
+{
+	struct flagrec* f;
+	char* p;
+	int rlvl = 0;
+	int neg = 0;
+	int flags = 0;
+
+	for(p = code; *p; p++) {
+		if(*p == '-')
+			continue;
+		else if(*p == '~')
+			neg = 1;
+		else if(*p >= '0' && *p <= '9')
 			rlvl |= (1 << (*p - '0'));
 		else if(*p >= 'a' && *p <= 'f')
-			rlvl |= (1 << (*p - 'a' + 0xa));
-		else
-			retwarn(-1, "%s:%i: bad runlevel %c", fb->name, fb->line, *p);
+			rlvl |= (1 << (*p - 'a' + 10));
+		else {
+			for(f = flagtbl; f->c && f->c != *p; f++)
+				;
+			if(f->c)
+				flags |= f->bits;
+			else
+				retwarn(-1, "%s:%i: unknown flag %c", fb->name, fb->line, *p);
+		}
+	}
 
 	if(!(rlvl & PRIMASK))
 		rlvl |= (PRIMASK & ~1);
@@ -148,50 +176,9 @@ static int setrunlevels(struct fileblock* fb, struct initrec* entry, char* runle
 	if(neg) rlvl = (~(rlvl & PRIMASK) & PRIMASK) | (rlvl & SUBMASK);
 
 	entry->rlvl = rlvl;
+	entry->flags = flags;
 
 	return 0;
-}
-
-static struct flagrec {
-	char* name;
-	int bits;
-} flagtbl[] = {
-	/* entry type */
-	{ "respawn",	0 },
-	{ "wait",	C_ONCE | C_WAIT },
-	{ "once",	C_ONCE },
-	{ "hold",	C_WAIT },
-	/* process control flags */
-	{ "abort",	C_USEABRT },
-	/* exec-side flags */
-	{ "null",	C_NULL },
-	{ "log",	C_LOG },
-	{ "tty",	C_TTY },
-	/* terminator */
-	{ NULL }
-};
-
-/* Parse flags (3rd initline field) and adjust entry values accordingly.
-   flagstring is something like "respawn" or "wait,null" */
-static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring)
-{
-	char* p = flagstring;
-	struct flagrec* f;
-
-	if(!p || !*p)
-		goto R;
-
-	while((p = strsep(&flagstring, ",")) != NULL) {
-		for(f = flagtbl; f->name; f++)
-			if(!strcmp(p, f->name)) {
-				entry->flags |= f->bits;
-				break;
-			}
-		if(!f->name)
-			retwarn(-1, "%s:%i: unknown flag \"%s\"", fb->name, fb->line, p);
-	}
-
-R:	return 0;
 }
 
 /* Parse the line, counting the entries and simultaineously

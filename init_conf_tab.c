@@ -7,7 +7,7 @@
 extern struct memblock newblock;
 extern struct memblock scratchblock;
 
-extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* flags, char* cmd, int exe);
+extern int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 extern int addenviron(const char* string);
 extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
 
@@ -40,28 +40,43 @@ int readinittab(const char* file, int strict)
 	return strict ? ret : 0;
 }
 
+/* Like strsep(), but using /\s+/ for delimiter */
+static char* strssep(char** str)
+{
+	char* ret = *str;
+	char* ptr = ret;
+
+	for(ptr = ret; *ptr; ptr++)
+		if(*ptr == ' ' || *ptr == '\t')
+			break;
+	while(*ptr == ' ' || *ptr == '\t')
+		*(ptr++) = '\0';
+
+	*str = ptr;
+	return ret;
+}
+
 /* Parse current line from fb, the one marked by fb->ls and fb->le. */
 static int parseinitline(struct fileblock* fb, int strict)
 {
 	char* p;
-	char *name, *runlvl, *flags;
 	char* l = fb->ls;
 
 	if(!*l || *l == '#')
 		/* empty or comment line */
 		return 0;
 
-	p = strpbrk(l, ":=");
-	if(!p)
-		retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
+	if(!(p = strpbrk(l, "= \t")))
+		goto bad;
 	else if(*p == '=')
 		return (addenviron(l) >= 0 ? 0 : -1);
 
-	*(p++) = '\0'; name = l;
-	runlvl = strsep(&p, ":");
-	flags = strsep(&p, ":");
-	if(!flags || !runlvl)
-		return -1;
+	char* code = strssep(&l);
+	char* name = strssep(&l);
+	/* l is the command here */
 
-	return addinitrec(fb, name, runlvl, flags, p, 0);
+	if(code && name && l)
+		return addinitrec(fb, code, name, l, 0);
+
+bad:	retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
 }
