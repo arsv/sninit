@@ -1,5 +1,5 @@
 #!/bin/sh
 
-echo "- dem1 starting"
+echo "- httpd starting"
 sleep 10
-echo "- dem1 dying"
+echo "- httpd dying"
