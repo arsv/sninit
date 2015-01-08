@@ -66,8 +66,10 @@ static int parseinitline(struct fileblock* fb, int strict)
 		/* empty or comment line */
 		return 0;
 
-	if(!(p = strpbrk(l, "= \t")))
+	if(!(p = strpbrk(l, "= \t:")))
 		goto bad;
+	else if(*p == ':')
+		retwarn(-1, "%s:%i: SysV-style inittab detected, aborting");
 	else if(*p == '=')
 		return (addenviron(l) >= 0 ? 0 : -1);
 
