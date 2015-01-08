@@ -22,7 +22,7 @@ Lines starting with # are ignored by init
 .IP "\fIvariable\fR=\fIvalue\fR" 4
 Add \fIvariable\fR to the environment to be passed to processes started by init.
 Note init itself does not use environment variables in any way.
-.IP "\fIname\fR:\fIrunlevels\fR:\fIflags\fR:\fIcommand\fR" 4
+.IP "\fIflags\fR  \fIname\fR  \fIcommand\fR" 4
 Define a process to be started by init. Each process entry carries a single pid value,
 so there can be at most one running process for each entry at any given time.
 .P
@@ -33,37 +33,32 @@ However, the order of files within directory is not defined.
 '''
 .SS Naming entries
 \fIname\fR is a string used to identify this entry, in particular when stopping/starting
-processes with \fBtelinit\fR(8) and during reconfiguration. May be empty. If non-empty,
-should be unique, however init does not enforce this.
-'''
-.SS Runlevels
-\fIrunlevels\fR field defines runlevel bitmask for this entry: \fB234\fR means the process
-will be started on runlevels 2, 3 and 4, and stopped when not in any of these runleves.
-Empty value is allowed, meaning "all but 0".
+processes with \fBtelinit\fR(8) and during reconfiguration. Use "-" to denote empty name.
+Non-empty names should be unique.
 '''
 .SS Process Flags
-\fIflags\fR is a comma-separated list of process flags:
-.IP "wait" 4
+\fIflags\fR is a set of characters denoting process runlevels and respawn mode:
+.IP "W" 4
 Do not restart the process, and do not proceed further until it dies. If there are 
 proccesses with "once" flag set, wait until all of the die before running a "wait" process.
-.IP "once" 4
+.IP "O" 4
 Do not restart the process. Unlike \fBwait\fR, do proceed to run subsequent processes.
-.IP "respawn" 4
+.IP "S" 4
 Restart the process in case it dies. This flag does nothing, restarting is the default
 mode of operation for init.
-.IP "last" 4
+.IP "H" 4
 Do not send SIGTERM to this entry until all subsequent entries have died.
 Use for syslogd, to avoid losing messages during system shutdown.
 Note signals are sent to entries in reverse order, bottom-to-top.
-.IP "null" 4
+.IP "n" 4
 Open /dev/null on file descriptors 0, 1 and 2 (stdin, stdout and stderr) for the spawned process.
 Without this flag, the process inherits init's descriptors, typically /dev/console.
-.IP "log" 4
+.IP "l" 4
 Redirect file descriptors 1 and 2 to {/var/log}\fIname\fR for the spawned process.
-.IP "abort" 4
+.IP "t" 4
 Send SIGABRT instead of SIGTERM when stopping the process. Use if the process in question
 fails to die on SIGTERM.
-.IP "tty" 4
+.IP "y" 4
 Set up controlling tty for the process. See TIOCSCTTY in tty_ioctl(4). Use for interactive
 shells started by init. This flag is equivalent to "-" before the command is sysvinit and
 some other init implementations. 
