@@ -60,23 +60,21 @@ void pollctl(void)
 	/* See comments in setup() regarding defsigset. */
 	r = ppoll(&pfd, 1, ppts, &defsigset);
 
-	if(r < 0) {
-		if(errno != EINTR) {
-			warn("poll failed: %m");
+	if(r < 0 && errno != EINTR) {
+		/* Failed ppoll means the main loop becomes unconstrained,
+		   making init uncontrollable and wasting cpu cycles.
+		   To avoid that, let's try to slow things down a bit. */
+		warn("poll failed: %m");
 
-			/* Failed ppoll means the main loop becomes unconstrained,
-			   making init uncontrollable and wasting cpu cycles.
-			   To avoid that, let's try to slow things down a bit. */
-			/* And while we're at that, give init a chance
-			   to recieve SIGCHLD */
-			sigset_t cursigset;
-			pts.tv_sec = timetowait >= 0 ? timetowait : 1;
-			pts.tv_nsec = 0;
+		sigset_t cursigset;
+		pts.tv_sec = timetowait >= 0 ? timetowait : 1;
+		pts.tv_nsec = 0;
 
-			sigprocmask(SIG_SETMASK, &defsigset, &cursigset);
-			nanosleep(&pts, NULL);
-			sigprocmask(SIG_SETMASK, &cursigset, NULL);
-		}
+		/* ppoll also handles sigmask-lifting, try to work around that */
+		sigprocmask(SIG_SETMASK, &defsigset, &cursigset);
+		nanosleep(&pts, NULL);
+		sigprocmask(SIG_SETMASK, &cursigset, NULL);
+
 		/* EINTR, on the other hand, is totally ok (SIGCHLD etc) */
 	} else if(r > 0) {
 		/* only one fd in pfd, so not that much choice here */
