@@ -42,7 +42,9 @@ int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 
 	/* This can (and should) be done early, since it's easier to do when the new
 	   initrec is not yet linked to the list. */
-	if(checkdupname(name))
+	if(name[0] == '-' && !name[1])
+		name[0] = '\0';
+	else if(checkdupname(name))
 		retwarn(-1, "%s:%i: duplicate name %s", fb->name, fb->line, name);
 
 	int entrysize = sizeof(struct initrec);
