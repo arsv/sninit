@@ -5,7 +5,7 @@ Lines starting with # and empty lines are ignored.
 The remaining lines should have one of the following formats:
 
 	name=value
-	name:runlevels:options:command
+	flags	name	command
 
 Example:
 
@@ -17,12 +17,12 @@ Example:
 	LC_CTYPE=C
 
 	# Initrec lines
-	hwc:1234568:wait:/sbin/hwclock -s
-	sulogin:1::/bin/sulogin
+	W1234568   hwc          /sbin/hwclock -s
+	S1         sulogin      /bin/sulogin
 
 Initdir (service) files, when present, are handled as if they were
 appended at the end of inittab.
-Each file is equivalent to one initrec line.
+Each file is equivalent to one inittab line.
 See below for initdir file format description.
 
 
@@ -36,36 +36,32 @@ the existing process dies.
 
 Syntax:
 
-	name:runlevels:options:command
+	code   name   command
 
-name: any string up to 10 (NAMELEN in config.h) characters long.
-Can be empty; for s-type records, if non-empty, should be unique.
-Used in telinit start/stop commands, and as a basename for log files.
-Same as in sysvinit, except somewhat longer.
+name any string up to 7 (NAMELEN-1 in config.h) characters long.
+Use "-" to set empty name; for s-type records, non-empty names, should be unique.
+Name is used in telinit start/stop commands and for logging.
 Example: "mountfs", "tty2"
 
-runlevels: any substring of 0123456789. 
-Process is only run if sninit is in, or switches to, a runlevel listed
-in initrec's runlevels fields.
-Same as in sysvinit. Auxiliary runlevels (abc...) are not supported
-at this moment.
-Example: "345", "1" etc.
+code is a set of characters denoting entry type, runlevels and optional process flags.
 
-options: a comma-separated list of words. Currently supported options:
+	S		Restart process in case it dies. s-type record.
 
-	wait		Wait before this process finishes before proceeding to
-			the next one; indicates w-type record, see below.
-			Same as in sysvinit.
-	once		Neither wait nor respawn the process; o-type record.
-			Not in sysvinit.
-	respawn		Default. Restart process in case it dies. s-type record.
-			Same as in sysvinit. Can be omited.
-	tty		Provide process with a controlling tty (aka interactive mode).
+	W		Wait before this process finishes before proceeding to
+                        the next one; w-type record, see below.
+	O		Neither wait nor respawn the process; o-type record.
+
+	H		Like S, but wait for other processes to die before killing this one.
+
+	0..9		primary runlevel
+	a..f		secondary runlevel (sublevel, see sublevels.txt)
+
+	Y		Provide process with a controlling tty (aka interactive mode).
 			Same as + before command in sysvinit.
-	null		Redirect stdout and stderr to /dev/null
-	log		Redirect stdout and stderr to /var/log/name
-			(see LOGDIR in config.h; name as in the first field in this initrec line)
-	abort		When stopping process, use SIGABRT instead of SIGTERM
+
+	N		Redirect stdout and stderr to /dev/null
+
+	A		When stopping process, use SIGABRT instead of SIGTERM
 
 command: the command to run. Normally this field is split into argv array
 similar to how it happens in sh(1) and passed directly to execve(2). 
@@ -104,13 +100,13 @@ Two possible formats are recognized: pure service file, and a script.
 The first (and possibly the second) line of the file is used to determine its type.
 Pure service file, command is parsed and used in execve(2) call:
 
-	#:runlevels:flags
+	#:code
 	command
 
 Script:
 
 	#!interpreter
-	#:runlevels:flags
+	#:code
 	....
 
 Scripts must be executable (in chmod(2) sense, S_IX{USR,OTH}).
