@@ -92,6 +92,10 @@ infmt:			c = *(++fmt);
 					out = str ? str : "(null)";
 					len = str ? strlen(str) : 6;
 					break;
+				case 'c':
+					ibuf[0] = '\0' + va_arg(ap, int);
+					out = ibuf; len = 1;
+					break;
 				case 'i':
 					len = itostr(out = ibuf, IBUF, (flags & F_LONG) ? va_arg(ap, long) : va_arg(ap, int), 10);
 					break;
