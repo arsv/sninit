@@ -77,7 +77,7 @@ static int parseinitline(struct fileblock* fb, int strict)
 	char* name = strssep(&l);
 	/* l is the command here */
 
-	if(code && name && l)
+	if(code && name && *l)
 		return addinitrec(fb, code, name, l, 0);
 
 bad:	retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
