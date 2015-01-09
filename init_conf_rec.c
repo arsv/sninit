@@ -7,11 +7,11 @@
 
 extern struct memblock newblock;
 
-global int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 global int addenviron(const char* def);
+global int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 
 static int prepargv(char* str, char** end);
-static int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
+static int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
 extern int mextendblock(struct memblock* m, int size);
 extern int addstruct(int size);
@@ -79,10 +79,11 @@ int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 	entry->lastrun = 0;
 	entry->lastsig = 0;
 
-	if(setflags(fb, entry, code))
+	if(setrunflags(fb, entry, code))
 		goto out;
 
-	/* initrec has been added successfully, so note its offset to use when building inittab[] later */
+	/* initrec has been added successfully, so note its offset to use when
+	   building inittab[] later */
 	if(scratchptr(TABLIST, entryoff))
 		goto out;
 
@@ -105,25 +106,6 @@ int addenviron(const char* def)
 	return 0;
 }
 
-/* Initialize entry runlevels mask using :runlevels: field from inittab */
-
-/* Cases to consider:
-   	(empty)		all runlevels except 0, regardless of sublevels
-	123		runlevels 123, regardless of sublevels
-	123ab		runlevels 123, but only if sublevels a or b are active
-	ab		all runlevels except 0 if sublevels a or b are active
-	01		runlevels 0 and 1
-   Leaving out primary levels means (PRIMASK & ~1).
-   Leaving out sublevels, however, means 0 over SUBMASK.
-   This is because (1 << runlevel) is never zero, i.e. there's always one active
-   primary level, but zero mask for sublevels is quite possible.
-
-   That's all assuming fb->rlvl = (PRIMASK & ~1), which it is for all inittab
-   entries. For initdir entries, fb->rlvl may have different value, in which case
-   leaving out pri or sub part means using resp. pri or sub part of fb->rlvl.
-
-   See doc/sublevels.txt for considerations re. sublevels handling. */
-
 static struct flagrec {
 	char c;
 	int bits;
@@ -142,9 +124,19 @@ static struct flagrec {
 	{  0  }
 };
 
-/* Parse flags (3rd initline field) and adjust entry values accordingly.
-   flagstring is something like "respawn" or "wait,null" */
-static int setflags(struct fileblock* fb, struct initrec* entry, char* code)
+/* Parse runlevels and flags (1st initline field) into entry->rlvl
+   and entry->flags. Typical input: code="S123N".
+
+   When specified, runlevels are translated as is (i.e. "12a" = R1 | R2 | Ra),
+   however there are some special cases:
+	(none)		same as "123456789" (not 0 is *not* in the mask)
+	~12		all but 12, that is, "03456789"
+	~12a		same as "03456789a;
+			pri levels are inverted, sublevels aren't
+
+   See doc/sublevels.txt for considerations re. sublevels handling. */
+
+static int setrunflags(struct fileblock* fb, struct initrec* entry, char* code)
 {
 	struct flagrec* f;
 	char* p;

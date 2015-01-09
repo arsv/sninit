@@ -12,7 +12,7 @@ void checkdupname(void) { };
 void scratchptr(void) { };
 void addstring(void) { };
 
-extern int setflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
+extern int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
 #define R0 (1<<0)
 #define R1 (1<<1)
@@ -39,10 +39,10 @@ struct initrec rec = {
 };
 
 #define sr(str) \
-	T(setflags(&fb, &rec, str))
+	T(setrunflags(&fb, &rec, str))
 
 #define bb(str) \
-	T(!setflags(&fb, &rec, str))
+	T(!setrunflags(&fb, &rec, str))
 
 #define rl(str, exp) \
 	sr(str);\
