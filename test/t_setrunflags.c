@@ -10,7 +10,6 @@ void addstringarray(void) { };
 void mextendblock(void) { };
 void checkdupname(void) { };
 void scratchptr(void) { };
-void addstring(void) { };
 
 extern int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 

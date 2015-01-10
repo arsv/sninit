@@ -36,7 +36,7 @@ offset addstruct(struct memblock* m, int size, int extra)
 /* Copy $string to m (adjusting ptr accordingly) and return offset
    at which the string was placed in m.
    Memblock is assumed to have enough space to hold the string. */
-static int copystring(const char* string, int len)
+static int addstring(const char* string, int len)
 {
 	int ptr = newblock.ptr;
 	memcpy(newblock.addr + ptr, string, len);
@@ -76,7 +76,7 @@ int addstrargarray(const char* args[])
 
 	/* copy argv[] elements, filling pointers array */
 	for(p = args; *p && argc > 0; p++, argc--)
-		*(pa++) = NULL + copystring(*p, strlen(*p));
+		*(pa++) = NULL + addstring(*p, strlen(*p));
 	/* terminate pointer array */
 	while(argc-- >= 0)
 		*(pa++) = NULL;
@@ -109,7 +109,7 @@ int addstringarray(int n, const char* str, const char* end)
 	int i, l; const char* p;
 	for(i = 0, p = str; i < n && p < end; i++) {
 		l = strlenupto(p, end);
-		*(pa++) = NULL + copystring(p, l);
+		*(pa++) = NULL + addstring(p, l);
 		p += l + 1;
 	}; while(i++ <= n) {
 		*(pa++) = NULL;
