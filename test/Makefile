@@ -95,7 +95,7 @@ t_addstringarray: t_addstringarray.o init_conf_mem.o init_conf_map.o test.o
 
 t_addstrargarray: t_addstrargarray.o init_conf_mem.o init_conf_map.o test.o
 
-t_linknode: t_linknode.o init_conf_map.o init_conf_mem.o test.o
+t_linknode: t_linknode.o init_conf_rec.o init_conf_mem.o init_conf_map.o test.o
 
 t_rewireptsarray: t_rewireptsarray.o init_conf.o init_conf_map.o test.o
 

@@ -14,13 +14,12 @@ static int prepargv(char* str, char** end);
 static int addrecargv(char* cmd, int exe);
 static int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
-extern int mextendblock(struct memblock* m, int size);
-extern int addstruct(struct memblock* m, int size, int extra);
+extern int addstruct(int size, int extra);
 extern int addstring(const char* string);
 extern int addstringarray(int n, const char* str, const char* end);
 extern int addstrargarray(const char* args[]);
 
-extern int linknode(offset listptr, offset nodeptr);
+static int linknode(offset listptr, offset nodeptr);
 extern int checkdupname(const char* name);
 
 /* Arguments:
@@ -50,7 +49,7 @@ int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 		retwarn(-1, "%s:%i: duplicate name %s", fb->name, fb->line, name);
 
 	/* Put ptrnode and struct initrec itself */
-	if((nodeoff = addstruct(&newblock, sizeof(struct ptrnode) + sizeof(struct initrec), 0)) < 0)
+	if((nodeoff = addstruct(sizeof(struct ptrnode) + sizeof(struct initrec), 0)) < 0)
 		return -1;
 	entryoff = nodeoff + sizeof(struct ptrnode);
 
@@ -104,7 +103,7 @@ int addenviron(const char* def)
 	int len = strlen(def);
 	offset nodeoff;
 
-	if((nodeoff = addstruct(&newblock, sizeof(struct ptrnode) + len + 1, 0)) < 0)
+	if((nodeoff = addstruct(sizeof(struct ptrnode) + len + 1, 0)) < 0)
 		return -1;
 
 	offset dstoff = nodeoff + sizeof(struct ptrnode);
@@ -112,6 +111,24 @@ int addenviron(const char* def)
 
 	strncpy(dst, def, len + 1);
 	linknode(ENVLIST, nodeoff);
+
+	return 0;
+}
+
+static int linknode(offset listptr, offset nodeptr)
+{
+	struct ptrnode* node = newblockptr(nodeptr, struct ptrnode*);
+	struct ptrlist* list = newblockptr(listptr, struct ptrlist*);
+
+	if(!list->head)
+		list->head = nodeptr;
+	if(list->last)
+		newblockptr(list->last, struct ptrnode*)->next = nodeptr;
+
+	node->next = 0;
+
+	list->last = nodeptr;
+	list->count++;
 
 	return 0;
 }

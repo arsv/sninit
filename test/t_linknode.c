@@ -5,7 +5,7 @@
 
 struct memblock newblock;
 
-extern offset addstruct(struct memblock* m, int size, int extra);
+extern offset addstruct(int size, int extra);
 extern int mmapblock(struct memblock* m, int size);
 extern int linknode(offset listptr, offset ptr);
 
@@ -17,7 +17,7 @@ int main(void)
 
 	/* Skip some bytes at the start, place ptrlist,
 	   and move block pointer over */
-	int listlen = sizeof(struct ptrlist);
+	int listlen = sizeof(struct config) + sizeof(struct ptrlist);
 	mmapblock(&newblock, listlen + 100);
 	memset(newblock.addr, listlen + 100, 0);
 	newblock.ptr = listoff + listlen;
@@ -29,19 +29,19 @@ int main(void)
 	A(list->count == 0);
 
 	/* First pointer, head == last */
-	int node1ptr = addstruct(&newblock, sizeof(struct ptrnode), 0);
+	int node1ptr = addstruct(sizeof(struct ptrnode), 0);
 	T(linknode(listoff, node1ptr));
 	list = newblockptr(listoff, struct ptrlist*);
-	A(list->head == node1ptr);
-	A(list->last == node1ptr);
-	A(list->count == 1);
+	Eq(list->head, node1ptr, "%i");
+	Eq(list->last, node1ptr, "%i");
+	Eq(list->count, 1, "%i");
 	A(list->last > listoff);
-	A(list->last == newblock.ptr - sizeof(struct ptrnode));
+	Eq(list->last, newblock.ptr - sizeof(struct ptrnode), "%i");
 	node = newblockptr(list->last, struct ptrnode*);
 	A(node->next == 0);
 
 	/* Second pointer, head < last */
-	int node2ptr = addstruct(&newblock, sizeof(struct ptrnode), 0);
+	int node2ptr = addstruct(sizeof(struct ptrnode), 0);
 	T(linknode(listoff, node2ptr));
 	list = newblockptr(listoff, struct ptrlist*);
 	A(list->head == node1ptr);

@@ -22,13 +22,13 @@ extern struct memblock newblock;
 
 extern int mextendblock(struct memblock* m, int size);
 
-offset addstruct(struct memblock* m, int size, int extra)
+offset addstruct(int size, int extra)
 {
-	if(mextendblock(m, size + extra))
+	if(mextendblock(&newblock, size + extra))
 		return -1;
 
-	offset ret = m->ptr;
-	m->ptr += size;
+	offset ret = newblock.ptr;
+	newblock.ptr += size;
 
 	return ret;
 }
@@ -70,7 +70,7 @@ int addstrargarray(const char* args[])
 		argl += strlen(*p);
 
 	/* allocate the space */
-	if((po = addstruct(&newblock, (argc+1)*sizeof(char*), argc + argl)) < 0)
+	if((po = addstruct((argc+1)*sizeof(char*), argc + argl)) < 0)
 		return -1;
 	char** pa = newblockptr(po, char**);
 
@@ -101,7 +101,7 @@ static inline int strlenupto(const char* str, const char* end)
 int addstringarray(int n, const char* str, const char* end)
 {
 	offset po;
-	if((po = addstruct(&newblock, (n+1)*sizeof(char*), (end - str))) < 0)
+	if((po = addstruct((n+1)*sizeof(char*), (end - str))) < 0)
 		return -1;
 	char** pa = newblockptr(po, char**);
 
@@ -142,7 +142,7 @@ int addptrsarray(offset listoff, int terminate)
 	if(terminate & NULL_FRONT) ptrn++;
 	if(terminate & NULL_BACK ) ptrn++;
 
-	if((ptrsoff = addstruct(&newblock, ptrn*sizeof(void*), 0)) < 0)
+	if((ptrsoff = addstruct(ptrn*sizeof(void*), 0)) < 0)
 		return -1;
 
 	ptrs = newblockptr(ptrsoff, void**);
@@ -166,24 +166,6 @@ int addptrsarray(offset listoff, int terminate)
 		*ptrs = NULL;
 
 	return ptrsoff;
-}
-
-int linknode(offset listptr, offset nodeptr)
-{
-	struct ptrnode* node = newblockptr(nodeptr, struct ptrnode*);
-	struct ptrlist* list = newblockptr(listptr, struct ptrlist*);
-
-	if(!list->head)
-		list->head = nodeptr;
-	if(list->last)
-		newblockptr(list->last, struct ptrnode*)->next = nodeptr;
-
-	node->next = 0;
-
-	list->last = nodeptr;
-	list->count++;
-
-	return 0;
 }
 
 /* This is called during initrec parsing, way before NCF->inittab array
