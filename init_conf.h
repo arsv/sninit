@@ -37,11 +37,11 @@ struct fileblock {
 	char* le;
 };
 
+#define newblockptr(offset, type) ((type)(newblock.addr + offset))
+
 #define CFG ((struct config*) cfgblock.addr)
 #define NCF ((struct config*) newblock.addr)
-#define SCR ((struct scratch*) (newblock.addr + sizeof(struct config)))
-
-#define blockptr(block, offset, type) ((type)((block)->addr + offset))
+#define SCR newblockptr(sizeof(struct config), struct scratch*)
 
 /* Offsets of scratch.{inittab,env} within newblock */
 #define TABLIST (sizeof(struct config) + offsetof(struct scratch, inittab))

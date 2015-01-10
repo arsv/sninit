@@ -35,11 +35,11 @@ int main(void)
 	char* sp;
 	int spoff = stringsoff;
 	char** srcp = testargv;
-	char** dstp = blockptr(&newblock, argvoff, char**);
+	char** dstp = newblockptr(argvoff, char**);
 	int args[argc];
 	int* argp = args;
 	while(*srcp) {
-		sp = blockptr(&newblock, spoff, char*);
+		sp = newblockptr(spoff, char*);
 		strcpy(sp, *srcp);
 		*(dstp++) = NULL + spoff;
 		*(argp++) = spoff;		// save the offset the string was placed at
@@ -52,10 +52,10 @@ int main(void)
 	rewireptrsarray((void**) argv);
 
 	/* ..and check the results */
-	A(argv == blockptr(&newblock, argvoff, char**));
-	A(argv[0] == blockptr(&newblock, args[0], char*));
-	A(argv[1] == blockptr(&newblock, args[1], char*));
-	A(argv[2] == blockptr(&newblock, args[2], char*));
+	A(argv == newblockptr(argvoff, char**));
+	A(argv[0] == newblockptr(args[0], char*));
+	A(argv[1] == newblockptr(args[1], char*));
+	A(argv[2] == newblockptr(args[2], char*));
 	A(argv[3] == NULL);
 
 	return 0;

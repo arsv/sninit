@@ -23,7 +23,7 @@ int main(void)
 	newblock.ptr = listoff + listlen;
 
 	/* Sanity check, the list should be empty */
-	list = blockptr(&newblock, listoff, struct ptrlist*);
+	list = newblockptr(listoff, struct ptrlist*);
 	A(list->head == 0);
 	A(list->last == 0);
 	A(list->count == 0);
@@ -31,29 +31,29 @@ int main(void)
 	/* First pointer, head == last */
 	int node1ptr = addstruct(&newblock, sizeof(struct ptrnode), 0);
 	T(linknode(listoff, node1ptr));
-	list = blockptr(&newblock, listoff, struct ptrlist*);
+	list = newblockptr(listoff, struct ptrlist*);
 	A(list->head == node1ptr);
 	A(list->last == node1ptr);
 	A(list->count == 1);
 	A(list->last > listoff);
 	A(list->last == newblock.ptr - sizeof(struct ptrnode));
-	node = blockptr(&newblock, list->last, struct ptrnode*);
+	node = newblockptr(list->last, struct ptrnode*);
 	A(node->next == 0);
 
 	/* Second pointer, head < last */
 	int node2ptr = addstruct(&newblock, sizeof(struct ptrnode), 0);
 	T(linknode(listoff, node2ptr));
-	list = blockptr(&newblock, listoff, struct ptrlist*);
+	list = newblockptr(listoff, struct ptrlist*);
 	A(list->head == node1ptr);
 	A(list->last == node2ptr);
 	A(list->count == 2);
 	A(list->last > node1ptr);
 	A(list->last == newblock.ptr - sizeof(struct ptrnode));
-	node = blockptr(&newblock, list->last, struct ptrnode*);
+	node = newblockptr(list->last, struct ptrnode*);
 	A(node->next == 0);
 
 	/* Make sure nodes have been linked properly */
-	node = blockptr(&newblock, node1ptr, struct ptrnode*);
+	node = newblockptr(node1ptr, struct ptrnode*);
 	A(node->next == node2ptr);
 
 	return 0;

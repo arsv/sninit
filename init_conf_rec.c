@@ -61,7 +61,7 @@ int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 	/* Initialize the entry. Now because addrecargv() calls above could
 	   very well change newblock.addr, the entry pointer must be evaluated here
 	   and not next to entryoff above */
-	entry = blockptr(&newblock, entryoff, struct initrec*); 
+	entry = newblockptr(entryoff, struct initrec*); 
 
 	memset(entry->name, 0, NAMELEN);
 	strncpy(entry->name, name, NAMELEN - 1);
@@ -108,7 +108,7 @@ int addenviron(const char* def)
 		return -1;
 
 	offset dstoff = nodeoff + sizeof(struct ptrnode);
-	char* dst = blockptr(&newblock, dstoff, char*);
+	char* dst = newblockptr(dstoff, char*);
 
 	strncpy(dst, def, len + 1);
 	linknode(ENVLIST, nodeoff);

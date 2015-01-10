@@ -101,7 +101,7 @@ void setnewconf(void)
 
 static void initcfgblocks(void)
 {
-	struct config* cfg = blockptr(&newblock, 0, struct config*);
+	struct config* cfg = newblockptr(0, struct config*);
 
 	/* newblock has enough space for struct config, see configure() */
 	int nblen = sizeof(struct config) + sizeof(struct scratch);

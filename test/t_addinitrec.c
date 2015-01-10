@@ -35,9 +35,9 @@ int main(void)
 	A(SCR->inittab.head == dynhead + 10);
 	A(SCR->inittab.count == 1);
 
-	nptr = blockptr(&newblock, SCR->inittab.head, struct ptrnode*);
+	nptr = newblockptr(SCR->inittab.head, struct ptrnode*);
 	B(newblock, nptr);
-	pptr = blockptr(&newblock, SCR->inittab.head + sizeof(struct ptrnode), struct initrec*);
+	pptr = newblockptr(SCR->inittab.head + sizeof(struct ptrnode), struct initrec*);
 	B(newblock, pptr);
 
 	/* the structure itself should be initialized */
@@ -56,9 +56,9 @@ int main(void)
 	A(SCR->inittab.count == 2);
 
 	/* Same stuff, now with .last instead of .head */
-	nptr = blockptr(&newblock, SCR->inittab.last, struct ptrnode*);
+	nptr = newblockptr(SCR->inittab.last, struct ptrnode*);
 	B(newblock, nptr);
-	pptr = blockptr(&newblock, SCR->inittab.last + sizeof(struct ptrnode), struct initrec*);
+	pptr = newblockptr(SCR->inittab.last + sizeof(struct ptrnode), struct initrec*);
 	B(newblock, pptr);
 
 	/* the structure itself should be initialized */

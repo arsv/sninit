@@ -36,12 +36,12 @@ offset addstruct(struct memblock* m, int size, int extra)
 /* Copy $string to m (adjusting ptr accordingly) and return offset
    at which the string was placed in m.
    Memblock is assumed to have enough space to hold the string. */
-static int copystring(struct memblock* m, const char* string, int len)
+static int copystring(const char* string, int len)
 {
-	int ptr = m->ptr;
-	memcpy(m->addr + ptr, string, len);
-	*(blockptr(m, m->ptr + len, char*)) = '\0';
-	m->ptr += len + 1;
+	int ptr = newblock.ptr;
+	memcpy(newblock.addr + ptr, string, len);
+	*(newblockptr(ptr + len, char*)) = '\0';
+	newblock.ptr += len + 1;
 	return ptr;
 }
 
@@ -72,11 +72,11 @@ int addstrargarray(const char* args[])
 	/* allocate the space */
 	if((po = addstruct(&newblock, (argc+1)*sizeof(char*), argc + argl)) < 0)
 		return -1;
-	char** pa = blockptr(&newblock, po, char**);
+	char** pa = newblockptr(po, char**);
 
 	/* copy argv[] elements, filling pointers array */
 	for(p = args; *p && argc > 0; p++, argc--)
-		*(pa++) = NULL + copystring(&newblock, *p, strlen(*p));
+		*(pa++) = NULL + copystring(*p, strlen(*p));
 	/* terminate pointer array */
 	while(argc-- >= 0)
 		*(pa++) = NULL;
@@ -103,13 +103,13 @@ int addstringarray(int n, const char* str, const char* end)
 	offset po;
 	if((po = addstruct(&newblock, (n+1)*sizeof(char*), (end - str))) < 0)
 		return -1;
-	char** pa = blockptr(&newblock, po, char**);
+	char** pa = newblockptr(po, char**);
 
 	/* the first element is always there — it's the string itself */
 	int i, l; const char* p;
 	for(i = 0, p = str; i < n && p < end; i++) {
 		l = strlenupto(p, end);
-		*(pa++) = NULL + copystring(&newblock, p, l);
+		*(pa++) = NULL + copystring(p, l);
 		p += l + 1;
 	}; while(i++ <= n) {
 		*(pa++) = NULL;
@@ -128,8 +128,7 @@ int addstringarray(int n, const char* str, const char* end)
 
 int addptrsarray(offset listoff, int terminate)
 {
-	struct memblock* m = &newblock;
-	struct ptrlist* list = blockptr(m, listoff, struct ptrlist*);
+	struct ptrlist* list = newblockptr(listoff, struct ptrlist*);
 
 	int rem = list->count;
 	int ptrn = rem;
@@ -146,7 +145,7 @@ int addptrsarray(offset listoff, int terminate)
 	if((ptrsoff = addstruct(&newblock, ptrn*sizeof(void*), 0)) < 0)
 		return -1;
 
-	ptrs = blockptr(m, ptrsoff, void**);
+	ptrs = newblockptr(ptrsoff, void**);
 
 	/* leading NULL pointer is used as terminator when traversing inittab backwards */
 	if(terminate & NULL_FRONT) {
@@ -156,7 +155,7 @@ int addptrsarray(offset listoff, int terminate)
 
 	/* set up offsets; repoiting will happen later */
 	for(nodeoff = list->head; rem && nodeoff; rem--) {
-		node = blockptr(m, nodeoff, struct ptrnode*);
+		node = newblockptr(nodeoff, struct ptrnode*);
 		*(ptrs++) = NULL + nodeoff + sizeof(struct ptrnode);
 		nodeoff = node->next;
 	} if(rem)
@@ -171,13 +170,13 @@ int addptrsarray(offset listoff, int terminate)
 
 int linknode(offset listptr, offset nodeptr)
 {
-	struct ptrnode* node = blockptr(&newblock, nodeptr, struct ptrnode*);
-	struct ptrlist* list = blockptr(&newblock, listptr, struct ptrlist*);
+	struct ptrnode* node = newblockptr(nodeptr, struct ptrnode*);
+	struct ptrlist* list = newblockptr(listptr, struct ptrlist*);
 
 	if(!list->head)
 		list->head = nodeptr;
 	if(list->last)
-		blockptr(&newblock, list->last, struct ptrnode*)->next = nodeptr;
+		newblockptr(list->last, struct ptrnode*)->next = nodeptr;
 
 	node->next = 0;
 
@@ -198,8 +197,8 @@ int checkdupname(const char* name)
 	struct initrec* p;
 
 	while(po) {
-		n = blockptr(&newblock, po, struct ptrnode*);
-		p = blockptr(&newblock, po + sizeof(struct ptrnode), struct initrec*);
+		n = newblockptr(po, struct ptrnode*);
+		p = newblockptr(po + sizeof(struct ptrnode), struct initrec*);
 
 		if(p->name[0] && !strcmp(p->name, name))
 			return -1;
