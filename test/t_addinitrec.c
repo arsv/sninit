@@ -4,7 +4,6 @@
 #include "test.h"
 
 struct memblock newblock;
-struct memblock scratchblock;
 
 extern int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 extern int mmapblock(struct memblock* m, int length);
@@ -23,28 +22,22 @@ int main(void)
 
 	/* mmap a decidedly too small block, and set pointer somewhere in the middle
 	   to check how addinitrec will deal with the situation */
-	T(mmapblock(&newblock, sizeof(struct config) + 17));
-	newblock.ptr = sizeof(struct config) + 10;
+	int dynhead = sizeof(struct config) + sizeof(struct scratch);
+	T(mmapblock(&newblock, dynhead + 17));
+	newblock.ptr = dynhead + 10;
 	memset(newblock.addr, newblock.len, 0x00);
-
-	T(mmapblock(&scratchblock, 200));
-	scratchblock.ptr += sizeof(struct scratch);
-	memset(scratchblock.addr, scratchblock.len, 0x00);
 
 	T(addinitrec(&fb, "12", "foo", heapdup("/bin/sh -c true"), 0));
 
 	/* Sanity check for ptrlist */
 	A(SCR->inittab.head > 0);
 	A(SCR->inittab.head == SCR->inittab.last);
-	A(SCR->inittab.head == scratchblock.ptr - sizeof(struct ptrnode));
+	A(SCR->inittab.head == dynhead + 10);
 	A(SCR->inittab.count == 1);
 
-	/* This is pretty ugly, but also inevitable. SCR->inittab.head is
-	   offset of the first ptrnode, which in turn contains the offset
-	   of the added initrec. */
-	nptr = blockptr(&scratchblock, SCR->inittab.head, struct ptrnode*);
-	B(scratchblock, nptr);
-	pptr = blockptr(&newblock, nptr->ptr, struct initrec*);
+	nptr = blockptr(&newblock, SCR->inittab.head, struct ptrnode*);
+	B(newblock, nptr);
+	pptr = blockptr(&newblock, SCR->inittab.head + sizeof(struct ptrnode), struct initrec*);
 	B(newblock, pptr);
 
 	/* the structure itself should be initialized */
@@ -60,13 +53,12 @@ int main(void)
 
 	/* Sanity check for ptrlist */
 	A(SCR->inittab.head < SCR->inittab.last);
-	A(SCR->inittab.last == scratchblock.ptr - sizeof(struct ptrnode));
 	A(SCR->inittab.count == 2);
 
 	/* Same stuff, now with .last instead of .head */
-	nptr = blockptr(&scratchblock, SCR->inittab.last, struct ptrnode*);
-	B(scratchblock, nptr);
-	pptr = blockptr(&newblock, nptr->ptr, struct initrec*);
+	nptr = blockptr(&newblock, SCR->inittab.last, struct ptrnode*);
+	B(newblock, nptr);
+	pptr = blockptr(&newblock, SCR->inittab.last + sizeof(struct ptrnode), struct initrec*);
 	B(newblock, pptr);
 
 	/* the structure itself should be initialized */

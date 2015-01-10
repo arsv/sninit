@@ -17,7 +17,7 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock t_tzinit \
 	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
-	t_readinitdir t_rewireptsarray t_scratchptr \
+	t_readinitdir t_rewireptsarray t_linknode \
 	t_transferpids t_joincmd t_setrunflags t_findentry
 # Tests with manual check (for now)
 XTESTS = x_printf x_hello x_open
@@ -95,7 +95,7 @@ t_addstringarray: t_addstringarray.o init_conf_mem.o init_conf_map.o test.o
 
 t_addstrargarray: t_addstrargarray.o init_conf_mem.o init_conf_map.o test.o
 
-t_scratchptr: t_scratchptr.o init_conf_map.o init_conf_mem.o test.o
+t_linknode: t_linknode.o init_conf_map.o init_conf_mem.o test.o
 
 t_rewireptsarray: t_rewireptsarray.o init_conf.o init_conf_map.o test.o
 
@@ -109,7 +109,7 @@ t_initpass_wku: t_initpass_wku.o t_initpass_.o init_pass.o test.o
 t_initpass_rev: t_initpass_rev.o t_initpass_.o init_pass.o test.o
 t_initpass_off: t_initpass_off.o t_initpass_.o init_pass.o test.o
 
-t_setrunflags: t_setrunflags.o init_conf_rec.o test.o
+t_setrunflags: t_setrunflags.o init_conf_rec.o init_conf_mem.o test.o
 
 t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_map.o test.o
 

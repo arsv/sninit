@@ -40,7 +40,6 @@ const char* initdir = INITDIR;
 
 struct memblock cfgblock = { NULL };
 struct memblock newblock = { NULL };
-struct memblock scratchblock = { NULL };
 
 /* top-level functions handling configuration */
 int readinittab(const char* file, int strict);		/* /etc/inittab */
@@ -60,9 +59,7 @@ extern int addptrsarray(offset listoff, int terminate);
 
 int configure(int strict)
 {
-	if(mmapblock(&newblock, IRALLOC + sizeof(struct config)))
-		goto unmap;
-	if(mmapblock(&scratchblock, IRALLOC + sizeof(struct scratch)))
+	if(mmapblock(&newblock, IRALLOC + sizeof(struct config) + sizeof(struct scratch)))
 		goto unmap;
 
 	initcfgblocks();
@@ -79,12 +76,10 @@ int configure(int strict)
 		goto unmap;
 
 	rewirepointers();
-	munmapblock(&scratchblock);
 
 	return 0;
 
 unmap:	munmapblock(&newblock);
-	munmapblock(&scratchblock);
 	return -1;
 }
 
@@ -109,11 +104,9 @@ static void initcfgblocks(void)
 	struct config* cfg = blockptr(&newblock, 0, struct config*);
 
 	/* newblock has enough space for struct config, see configure() */
-	newblock.ptr += sizeof(struct config);
-	memset(newblock.addr, 0, sizeof(struct config));
-
-	scratchblock.ptr += sizeof(struct scratch);
-	memset(scratchblock.addr, 0, sizeof(struct scratch));
+	int nblen = sizeof(struct config) + sizeof(struct scratch);
+	newblock.ptr += nblen;
+	memset(newblock.addr, 0, nblen);
 
 	cfg->inittab = NULL;
 	cfg->env = NULL;

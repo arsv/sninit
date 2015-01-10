@@ -5,7 +5,6 @@
 #include "test.h"
 
 struct memblock newblock;
-struct memblock scratchblock;
 extern int memblockalign;
 
 int addstrargarray(const char* argv[]);

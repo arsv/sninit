@@ -5,14 +5,13 @@
 #include "test.h"
 
 struct memblock newblock;	/* to keep the linker happy */
-struct memblock scratchblock;
 
 int mextendblock() { return -1; }
 int addstrargarray() { return -1; }
 int checkdupname() { return -1; }
 int addstringarray() { return -1; }
-int scratchptr() { return -1; }
-int addstring() { return -1; }
+int linknode() { return -1; }
+int addstruct() { return -1; }
 
 extern int prepargv(char* str, char** end);
 

@@ -5,7 +5,6 @@
 #include "init_conf.h"
 
 extern struct memblock newblock;
-extern struct memblock scratchblock;
 
 extern int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 extern int addenviron(const char* string);
@@ -71,7 +70,7 @@ static int parseinitline(struct fileblock* fb, int strict)
 	else if(*p == ':')
 		retwarn(-1, "%s:%i: SysV-style inittab detected, aborting");
 	else if(*p == '=')
-		return (addenviron(l) >= 0 ? 0 : -1);
+		return addenviron(l);
 
 	char* code = strssep(&l);
 	char* name = strssep(&l);

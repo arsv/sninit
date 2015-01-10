@@ -14,7 +14,6 @@ int state;
 struct config* cfg;
 int currlevel;
 extern struct memblock newblock;
-extern struct memblock scratchblock;
 
 extern void initcfgblocks(void);
 extern int finishinittab(void);
@@ -98,8 +97,7 @@ void dump_inittab(struct memblock* block)
 
 int main(void)
 {
-	T(mmapblock(&newblock, IRALLOC + sizeof(struct config)));
-	T(mmapblock(&scratchblock, IRALLOC + sizeof(struct scratch)));
+	T(mmapblock(&newblock, IRALLOC + sizeof(struct config) + sizeof(struct scratch)));
 	initcfgblocks();
 
 	T(parseinitline_("# comment here"));

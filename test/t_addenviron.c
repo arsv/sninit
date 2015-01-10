@@ -9,7 +9,6 @@ struct config* cfg;
 char* inittab = NULL;
 
 extern struct memblock newblock;
-extern struct memblock scratchblock;
 extern int mmapblock(struct memblock* b, int len);
 extern void initcfgblocks(void);
 extern int finishinittab(void);
@@ -52,7 +51,6 @@ void check_all(char* tt, char** ep, char** test)
 int main(void)
 {
 	T(mmapblock(&newblock, 1024));
-	T(mmapblock(&scratchblock, 1024));
 	initcfgblocks();
 
 	scratch_all(test_env);

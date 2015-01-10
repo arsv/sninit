@@ -19,7 +19,6 @@
 #include "init_conf.h"
 
 extern struct memblock newblock;
-extern struct memblock scratchblock;
 
 extern int mextendblock(struct memblock* m, int size);
 
@@ -44,18 +43,6 @@ static int copystring(struct memblock* m, const char* string, int len)
 	*(blockptr(m, m->ptr + len, char*)) = '\0';
 	m->ptr += len + 1;
 	return ptr;
-}
-
-/* This is only used for environment variables.
-   Since copystring moves ptr, addstruct should not be used here. */
-int addstring(const char* string)
-{
-	int len = strlen(string);
-
-	if(mextendblock(&newblock, len))
-		return -1;
-
-	return copystring(&newblock, string, len);
 }
 
 /* add*array() functions are used to lay out initrec.argv[]
@@ -142,8 +129,7 @@ int addstringarray(int n, const char* str, const char* end)
 int addptrsarray(offset listoff, int terminate)
 {
 	struct memblock* m = &newblock;
-	struct memblock* b = &scratchblock;
-	struct ptrlist* list = blockptr(b, listoff, struct ptrlist*);
+	struct ptrlist* list = blockptr(m, listoff, struct ptrlist*);
 
 	int rem = list->count;
 	int ptrn = rem;
@@ -170,8 +156,8 @@ int addptrsarray(offset listoff, int terminate)
 
 	/* set up offsets; repoiting will happen later */
 	for(nodeoff = list->head; rem && nodeoff; rem--) {
-		node = blockptr(b, nodeoff, struct ptrnode*);
-		*(ptrs++) = NULL + node->ptr;
+		node = blockptr(m, nodeoff, struct ptrnode*);
+		*(ptrs++) = NULL + nodeoff + sizeof(struct ptrnode);
 		nodeoff = node->next;
 	} if(rem)
 		/* less elements than expected; this may break initpass, so let's not take chances */
@@ -183,27 +169,17 @@ int addptrsarray(offset listoff, int terminate)
 	return ptrsoff;
 }
 
-/* Add ptr to either scratch.inittab (listptr = TABLIST) or scratch.env (ENVLIST) */
-/* Passing arbitrary listptr here is a very bad idea. */
-int scratchptr(offset listptr, offset ptr)
+int linknode(offset listptr, offset nodeptr)
 {
-	offset nodeptr = addstruct(&scratchblock, sizeof(struct ptrnode), 0);
-
-	if(nodeptr < 0)
-		return -1;
-
-	/* This can only be done *after* extending the block,
-	   since mextendblock can very well move scratchblock.addr */
-	struct ptrnode* node = blockptr(&scratchblock, nodeptr, struct ptrnode*);
-	struct ptrlist* list = blockptr(&scratchblock, listptr, struct ptrlist*);
+	struct ptrnode* node = blockptr(&newblock, nodeptr, struct ptrnode*);
+	struct ptrlist* list = blockptr(&newblock, listptr, struct ptrlist*);
 
 	if(!list->head)
 		list->head = nodeptr;
 	if(list->last)
-		blockptr(&scratchblock, list->last, struct ptrnode*)->next = nodeptr;
+		blockptr(&newblock, list->last, struct ptrnode*)->next = nodeptr;
 
 	node->next = 0;
-	node->ptr = ptr;
 
 	list->last = nodeptr;
 	list->count++;
@@ -222,8 +198,8 @@ int checkdupname(const char* name)
 	struct initrec* p;
 
 	while(po) {
-		n = blockptr(&scratchblock, po, struct ptrnode*);
-		p = blockptr(&newblock, n->ptr, struct initrec*);
+		n = blockptr(&newblock, po, struct ptrnode*);
+		p = blockptr(&newblock, po + sizeof(struct ptrnode), struct initrec*);
 
 		if(p->name[0] && !strcmp(p->name, name))
 			return -1;

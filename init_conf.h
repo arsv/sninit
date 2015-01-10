@@ -1,5 +1,3 @@
-/* For cases when it's explicitly offset.
-   Most of the time however, it's just NULL-based void* */
 typedef int offset;
 
 /* mmaped blocks -- see init_mmem.c */
@@ -9,20 +7,18 @@ struct memblock {
 	int ptr;		/* current pointer (=first unused byte offset) */
 };
 
-/* Same structure both for inittab and envp.
-   There are more efficient ways to do it, but since we're talking about
-   maybe a page or so, why bother. */
-/* Pointer are in fact offsets. */
-struct ptrnode {
-	offset next;	/* relative to scratchblock */
-	offset ptr;	/* relative to newblock */
-};
-
+/* A linked list of ptrnode-s */
 struct ptrlist {
-	offset head;	/* both in scratchblock */
+	offset head;
 	offset last;
 	int count;
 };
+struct ptrnode {
+	offset next;
+	/* void payload[]; but alas we can't write this in C */
+};
+/* payload is actually either initrec (for scrath.inittab)
+   or an env string (scrach.env) */
 
 struct scratch {
 	struct ptrlist inittab;
@@ -43,13 +39,13 @@ struct fileblock {
 
 #define CFG ((struct config*) cfgblock.addr)
 #define NCF ((struct config*) newblock.addr)
-#define SCR ((struct scratch*) scratchblock.addr)
+#define SCR ((struct scratch*) (newblock.addr + sizeof(struct config)))
 
 #define blockptr(block, offset, type) ((type)((block)->addr + offset))
 
-/* For scratchptr() */
-#define TABLIST offsetof(struct scratch, inittab)
-#define ENVLIST offsetof(struct scratch, env)
+/* Offsets of scratch.{inittab,env} within newblock */
+#define TABLIST (sizeof(struct config) + offsetof(struct scratch, inittab))
+#define ENVLIST (sizeof(struct config) + offsetof(struct scratch, env))
 
 /* For addptrsarray */
 #define NULL_FRONT (1<<0)

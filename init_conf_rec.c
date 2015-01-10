@@ -11,15 +11,16 @@ global int addenviron(const char* def);
 global int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 
 static int prepargv(char* str, char** end);
+static int addrecargv(char* cmd, int exe);
 static int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
 extern int mextendblock(struct memblock* m, int size);
-extern int addstruct(int size);
+extern int addstruct(struct memblock* m, int size, int extra);
 extern int addstring(const char* string);
 extern int addstringarray(int n, const char* str, const char* end);
 extern int addstrargarray(const char* args[]);
 
-extern int scratchptr(offset listptr, offset ptr);
+extern int linknode(offset listptr, offset nodeptr);
 extern int checkdupname(const char* name);
 
 /* Arguments:
@@ -36,6 +37,7 @@ extern int checkdupname(const char* name);
 
 int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 {
+	offset nodeoff;
 	offset entryoff;
 	struct initrec* entry;
 	int ret;
@@ -47,29 +49,18 @@ int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 	else if(checkdupname(name))
 		retwarn(-1, "%s:%i: duplicate name %s", fb->name, fb->line, name);
 
-	int entrysize = sizeof(struct initrec);
-	if(mextendblock(&newblock, entrysize))	
+	/* Put ptrnode and struct initrec itself */
+	if((nodeoff = addstruct(&newblock, sizeof(struct ptrnode) + sizeof(struct initrec), 0)) < 0)
 		return -1;
-	entryoff = newblock.ptr;
+	entryoff = nodeoff + sizeof(struct ptrnode);
 
-	/* Note: argv[] must be appended right after struct initrec */
-	newblock.ptr += entrysize;
-
-	if(exe) {
-		const char* argv[] = { cmd, NULL };
-		ret = addstrargarray(argv);
-	} else if(*cmd == '!') {
-		for(cmd++; *cmd && *cmd == ' '; cmd++);
-		const char* argv[] = { "/bin/sh", "-c", cmd, NULL };
-		ret = addstrargarray(argv);
-	} else {
-		char* arge; int argc = prepargv(cmd, &arge);
-		ret = addstringarray(argc, cmd, arge);
-	} if(ret)
+	/* Put argv[] right after struct initrec */
+	if((ret = addrecargv(cmd, exe)))
 		goto out;
 
-	/* add*array() calls above could very well change newblock.addr,
-	   so entry pointer must be evaluated here and not next to entryoff */
+	/* Initialize the entry. Now because addrecargv() calls above could
+	   very well change newblock.addr, the entry pointer must be evaluated here
+	   and not next to entryoff above */
 	entry = blockptr(&newblock, entryoff, struct initrec*); 
 
 	memset(entry->name, 0, NAMELEN);
@@ -84,24 +75,43 @@ int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 
 	/* initrec has been added successfully, so note its offset to use when
 	   building inittab[] later */
-	if(scratchptr(TABLIST, entryoff))
-		goto out;
+	linknode(TABLIST, nodeoff);
 
 	return 0;
 
 out:	/* cancel the entry, resetting newblock.ptr */
-	newblock.ptr = entryoff;
+	newblock.ptr = nodeoff;
 	return -1;
+}
+
+static int addrecargv(char* cmd, int exe)
+{
+	if(exe) {
+		const char* argv[] = { cmd, NULL };
+		return addstrargarray(argv);
+	} else if(*cmd == '!') {
+		for(cmd++; *cmd && *cmd == ' '; cmd++);
+		const char* argv[] = { "/bin/sh", "-c", cmd, NULL };
+		return addstrargarray(argv);
+	} else {
+		char* arge; int argc = prepargv(cmd, &arge);
+		return addstringarray(argc, cmd, arge);
+	}
 }
 
 int addenviron(const char* def)
 {
-	offset p;
-       
-	if((p = addstring(def)) < 0)
+	int len = strlen(def);
+	offset nodeoff;
+
+	if((nodeoff = addstruct(&newblock, sizeof(struct ptrnode) + len + 1, 0)) < 0)
 		return -1;
-	if(scratchptr(ENVLIST, p))
-		return -1;
+
+	offset dstoff = nodeoff + sizeof(struct ptrnode);
+	char* dst = blockptr(&newblock, dstoff, char*);
+
+	strncpy(dst, def, len + 1);
+	linknode(ENVLIST, nodeoff);
 
 	return 0;
 }
