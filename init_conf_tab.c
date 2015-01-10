@@ -8,7 +8,6 @@ extern struct memblock newblock;
 
 extern int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 extern int addenviron(const char* string);
-extern int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels);
 
 extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
@@ -16,7 +15,6 @@ extern int nextline(struct fileblock* f);
 
 static int parseinitline(struct fileblock* fb, int strict);
 
-/* Top-level inittab format */
 /* Strict means bail out on errors immediately; with strict=0, it should continue
    as far as possible, assuming it's initial configuration with no fallback. */
 int readinittab(const char* file, int strict)

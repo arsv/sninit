@@ -6,10 +6,11 @@
 #include "sys.h"
 
 /* How reconfiguring works:
+   	0. newblock is mmapped
 	1. new config is compiled into newblock
 	2. processes not in the new inittab are stopped
 	3. remaining pids are transferred from inittab to newblock
-	4. newblock replaces inittab
+	4. newblock replaces inittab, cfgblock is munmapped
    Note that up until step 4 init uses the old inittab structure, because
    step 2 implies waiting for pids that have no place for them in newtab.
 
@@ -19,11 +20,6 @@
 
    In case init gets another reconfigure request while in the main
    loop during step 2, compiled newtab is discarded and we're back to step 1. */
-
-/* During configuration, two additional memblocks are mmaped: newblock and scratchblock.
-   newblock becomes cfgblock once configuration is done.
-   scratchblock is used to "scratch" arrays of unknown size,
-   to put the into newblock later. */
 
 /* Note that until rewirepointers() call late in the process, all pointers
    in struct config, struct initrec and envp aren't real pointers,
@@ -55,7 +51,6 @@ extern struct initrec* findentry(const char* name);
 extern int mmapblock(struct memblock* m, int size);
 extern void munmapblock(struct memblock* m);
 extern int addptrsarray(offset listoff, int terminate);
-
 
 int configure(int strict)
 {

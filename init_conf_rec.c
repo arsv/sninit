@@ -1,9 +1,10 @@
-/* Laying out split-but-not-completely-parsed-yet initrecs in newblock */
-
 #include <string.h>
 #include <stddef.h>
 #include "init.h"
 #include "init_conf.h"
+
+/* addinitrec() and addenviron() are called for each parsed inittab line
+   and their task is to copy stuff to newblock */
 
 extern struct memblock newblock;
 
@@ -15,24 +16,14 @@ static int addrecargv(char* cmd, int exe);
 static int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 
 extern int addstruct(int size, int extra);
-extern int addstring(const char* string);
 extern int addstringarray(int n, const char* str, const char* end);
 extern int addstrargarray(const char* args[]);
 
 static int linknode(offset listptr, offset nodeptr);
 extern int checkdupname(const char* name);
 
-/* Arguments:
-	   code="S234", name="httpd"
-   For argv, there are three options:
-	(1) exe=0 argv="/sbin/httpd -f /etc/httpd.conf"
-	(2) exe=0 argv="!httpd -f /etc/httpd.conf"
-	(3) exe=1 argv="/etc/rc/script"
-   Option (1) is parsed in-place, (2) is passed to sh -c, while (3) assumes
-   the file itself is executable and no arguments should be passed.
-   This all affects only the way initrec->argv is built.  */
-
-/* fb is the block we're parsing currently, used solely for error reporting */
+/* Arguments: code="S234", name="httpd". See addrecargv for cmd and exe handling.
+   fb is the block we're parsing currently, used solely for error reporting. */
 
 int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 {
@@ -78,26 +69,15 @@ int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 
 	return 0;
 
-out:	/* cancel the entry, resetting newblock.ptr */
+out:	/* Cancel the entry, resetting newblock.ptr
+	   This is enough to completely undo the effect of this function,
+	   assuming linknode hasn't been called to change values before
+	   the initial newblock.ptr (saved as nodeoff) */
 	newblock.ptr = nodeoff;
 	return -1;
 }
 
-static int addrecargv(char* cmd, int exe)
-{
-	if(exe) {
-		const char* argv[] = { cmd, NULL };
-		return addstrargarray(argv);
-	} else if(*cmd == '!') {
-		for(cmd++; *cmd && *cmd == ' '; cmd++);
-		const char* argv[] = { "/bin/sh", "-c", cmd, NULL };
-		return addstrargarray(argv);
-	} else {
-		char* arge; int argc = prepargv(cmd, &arge);
-		return addstringarray(argc, cmd, arge);
-	}
-}
-
+/* def is something like "PATH=/bin/sh" somewhere inside fb */
 int addenviron(const char* def)
 {
 	int len = strlen(def);
@@ -113,6 +93,30 @@ int addenviron(const char* def)
 	linknode(ENVLIST, nodeoff);
 
 	return 0;
+}
+
+/* Lay out argv[] array right after its parent initrec.
+   For the command, there are three options:
+	(1) exe=0 argv="/sbin/httpd -f /etc/httpd.conf"
+	(2) exe=0 argv="!httpd -f /etc/httpd.conf"
+	(3) exe=1 argv="/etc/rc/script"
+   Option (1) is parsed in-place, (2) is passed to sh -c, while (3) assumes
+   the file itself is executable and no arguments should be passed.
+   This all affects only the way initrec.argv is built. */
+
+static int addrecargv(char* cmd, int exe)
+{
+	if(exe) {
+		const char* argv[] = { cmd, NULL };
+		return addstrargarray(argv);
+	} else if(*cmd == '!') {
+		for(cmd++; *cmd && *cmd == ' '; cmd++);
+		const char* argv[] = { "/bin/sh", "-c", cmd, NULL };
+		return addstrargarray(argv);
+	} else {
+		char* arge; int argc = prepargv(cmd, &arge);
+		return addstringarray(argc, cmd, arge);
+	}
 }
 
 static int linknode(offset listptr, offset nodeptr)

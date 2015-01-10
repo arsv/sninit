@@ -1,25 +1,11 @@
-/* Routines here place/copy data to newblock and scratchblock.
-
-   Due to strict limitation on what is placed in each of the two blocks,
-   most exported functions have no struct memblock argument.
-   The caller (addinitrec and addeviron) should not know this
-   most of the time anyway. A simple rule is that add* calls
-   write to newblock while scratch* write to scratchblock.
- 
-   Offsets carry neither type nor base block information.
-   Care must be taken to use the right memblock.
-   The right block is newblock in all cases except:
-   	struct ptrnode.next
-	struct ptrlist.head
-	struct ptrlist.last
-   which reference scratchblock instead. */
-
 #include <string.h>
 #include "init.h"
 #include "init_conf.h"
 
-extern struct memblock newblock;
+/* All add* functions copy relevant data to newblock, adjust newblock.ptr
+   and return the offset the data was placed at (i.e. the old ptr value) */
 
+extern struct memblock newblock;
 extern int mextendblock(struct memblock* m, int size);
 
 offset addstruct(int size, int extra)
@@ -119,7 +105,7 @@ int addstringarray(int n, const char* str, const char* end)
 }
 
 /* Make type* array[] style structure in newblock from a ptrlist
-   located at listoff in scratchblock. The array is NULL-terminated
+   located at listoff in newblock. The array is NULL-terminated
    at the back and/or at the front.
    (inittab needs front NULL for reverse pass in initpass)
 
