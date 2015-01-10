@@ -14,25 +14,25 @@ static int runcmd(const char* cmd);
 static void die(const char* msg, const char* arg);
 
 static struct cmdrec {
-	char* name;
 	char cc;
 	char arg;
+	char name[10];
 } cmdtbl[] = {
-	{ "reload",	'q', 0 },
-	{ "restart",	'r', 1 },
-	{ "start",	'e', 1 },
-	{ "stop",	'd', 1 },
-	{ "pause",	'p', 1 },
-	{ "hup",	'h', 1 },
-	{ "uphup",	'u', 1 },
-	{ "resume",	'w', 1 },
-	{ "poweroff",	'P', 0 },
-	{ "halt",	'H', 0 },
-	{ "reboot",	'R', 0 },
-	{ "sleep",	'S', 0 },
-	{ "suspend",	'Z', 0 },
-	{ "?",		'?', 0 },
-	{ NULL }
+	{ 'q', 0, "reload",	},
+	{ 'r', 1, "restart",	},
+	{ 'e', 1, "start",	},
+	{ 'd', 1, "stop",	},
+	{ 'p', 1, "pause",	},
+	{ 'h', 1, "hup",	},
+	{ 'u', 1, "uphup",	},
+	{ 'w', 1, "resume",	},
+	{ 'P', 0, "poweroff",	},
+	{ 'H', 0, "halt",	},
+	{ 'R', 0, "reboot",	},
+	{ 'S', 0, "sleep",	},
+	{ 'Z', 0, "suspend",	},
+	{ '?', 0, "?",		},
+	{  0  }
 };
 
 // .bss is zero-initialized, so no need to call memset() later
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 		buf[0] = '-';
 		buf[1] = (*cmd - 'A' + 'a');
 	} else {
-		for(cr = cmdtbl; cr->name; cr++) {
+		for(cr = cmdtbl; cr->cc; cr++) {
 			if(!*cm1 && *cmd == cr->cc)
 				break;
 			if(!strcmp(cmd, cr->name))
