@@ -37,13 +37,31 @@ struct fileblock {
 	char* le;
 };
 
+/* newblock layout looks like this:
+
+       struct config;		<- NCF
+       struct scratch;		<- SCR
+       ptrnode
+       initrec
+       ptrnode
+       initrec
+       ptrnode
+       envline
+       ptrnode
+       initrec
+       ...
+       inittab[]
+       envp[]
+
+   Trailing arrays are only added in finishinittab */
+
 #define newblockptr(offset, type) ((type)(newblock.addr + offset))
 
 #define CFG ((struct config*) cfgblock.addr)
 #define NCF ((struct config*) newblock.addr)
 #define SCR newblockptr(sizeof(struct config), struct scratch*)
 
-/* Offsets of scratch.{inittab,env} within newblock */
+/* Offsets of scratch.{inittab,env} within newblock, for linknode */
 #define TABLIST (sizeof(struct config) + offsetof(struct scratch, inittab))
 #define ENVLIST (sizeof(struct config) + offsetof(struct scratch, env))
 
