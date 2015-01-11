@@ -1,65 +1,50 @@
 .TH init 8
 '''
 .SH NAME
-{INIT} \- system supervisor.
+init \- system supervisor.
 '''
 .SH SYNOPSIS
-{/sbin}/{init} [\fIkernel options\fR]
+/sbin/init [\fIkernel options\fR]
 '''
 .SH DESCRIPTION
-\fBinit\fR is the first and only process kernel starts.
-It is expected to bring up the system, start daemons and user interface.
+\fBinit\fR is process #1, the only process kernel starts directly.
+Upon startup, \fBinit\fR spawns processes to initialize and run the system.
+\fBinit\fR process is not allowed to die.
 .P
-During normal operation, init starts processes listed in inittab, and keeps
-restarting them when they die unless told otherwise.
-.P
-The set of processes to start is determined by current runlevel.
-Upon startup, init switches to its default runlevel (3).
-Runlevel can be changed at any time, prompting a change in the running
-processes.  Individual processes can be started or stopped on demand.
-.P
-All communication with init occurs via a socket, see \fB{telinit}\fR(8).
-Kernel does not expect init to exit, ever. In case it does, kernel panics.
+Additionally, \fBinit\fR adopts all orphaned processes in the system,
+becoming their parent process and reaping them when they die.
 '''
 .SH USAGE
-Kernel starts /sbin/init upon bootup, passing it any arguments from kernel
-command line the kernel itself failed to parse.
-Check Documentation/kernel-parameters.txt, Documentation/init.txt from the kernel source 
-for further information, as well as documentation for your bootloader (\fBgrub\fR, \fBuboot\fR etc)
-on how to pass kernel options.
+\fBinit\fR is started by the kernel and can not be killed by a user.
 .P
-Passing "1", "2", ..., "9" among kernel options sets default runlevel.
-Other kernel options are ignored.
-Init does not pass kernel options to any of the scripts it starts.
+All user communication with init occurs via its control socket,
+see \fBtelinit\fR(8).
 .P
-During startup, init must be able to read its configuration files, {/etc/inittab}, unless
-it has a fallback inittab built in.
+Kernel passes any arguments it does not recognize to init.
+Among those, "1", "2", ..., "9" set the default runlevel,
+the rest are silently ignored.
 .P
-Commands can be passed to a running init instance via its control socket, {@initctl}.
-See \fB{telinit}\fR(8).
+Check Documentation/kernel-parameters.txt, Documentation/init.txt from
+the kernel source on how to pass arguments to kernel (and subsequently to init).
 '''
 .SH CONFIGURATION
-Primary configuration file is {/etc/inittab}, see \fB{inittab}\fR(8).
-Init will also read files in {/etc/initdir}.
-
-During startup and upon receiving a reconfiguration request, init stores the data read
-from inittab in memory and does not try to re-read any of the files later.
+\fBinit\fR reads the list of processes to spawn from \fBinittab\fR(5),
+and (if enabled at compile time) \fBinitdir\fR(5). See those pages on
+syntax as well as usage guidelines.
+.P
+The files are parsed early during system startup, and no attempts are made
+to re-read them later. To initiate re-configuration after editing the file,
+use "telinit q". See \fBtelinit\fR(8).
 '''
 .SH ENVIRONMENT
-init does not use any environment variables and does not pass any inherited environment
-to child processes.
+\fBinit\fR does not use any environment variables and does not pass any inherited
+environment to child processes.
 .P
-The only variables processes spawned by init see are those set in \fB{inittab}\fR(8).
+The only variables processes spawned by init see are those set in \fBinittab\fR(5).
 All spawned processes get exactly the same environment.
-.P
-It is advised to set PATH value in inittab.
-In most cases this is also enough for normal operation.
 '''
 .SH SIGNALS
-{init} reopens its control socket on SIGHUP.
-However, configuration is not reloaded, use \fB{telinit}\fR(8) for that.
-.P
-Other user signals are ignored.
+\fBinit\fR attempts to reopen its control socket on SIGHUP. Other user signals are ignored.
 '''
 .SH FILES
 .IP "{/etc/inittab}" 4
