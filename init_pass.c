@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <time.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include "init.h"
 
 /* bits for waitfor */
@@ -19,6 +21,7 @@ extern void execinitrec(struct initrec* p);
 
 static void spawn(struct initrec* p);
 global void stop(struct initrec* p);
+static void child(struct initrec* p);
 
 static time_t monotime(void);
 static inline void swapi(int* a, int* b);
@@ -202,18 +205,39 @@ static void spawn(struct initrec* p)
 		warn("%s[*] can't fork: %m", p->name);
 		p->lastrun = monotime();
 		return;
-	}
-
-	if(pid > 0) {
+	} else if(pid > 0) {
 		p->pid = pid;
 		p->lastrun = monotime();
 		p->lastsig = 0;
 		return;
+	} else {
+		/* ok, we're in the child process */
+		close(initctlfd);
+		child(p);
+		_exit(-1);
+	}
+}
+
+static void child(struct initrec* p)
+{
+	setsid();
+
+	if(p->flags & C_TTY)
+		ioctl(0, TIOCSCTTY, 0);
+
+	if(p->flags & C_NULL) {
+		int nullfd = open("/dev/null", O_RDWR);
+		if(nullfd >= 0) {
+			dup2(nullfd, 0);
+			dup2(nullfd, 1);
+			dup2(nullfd, 2);
+		} else {
+			warn("%s[%i]: can't open /dev/null: %m", p->name, getpid());
+		}
 	}
 
-	/* ok, we're in the child process */
-	close(initctlfd);
-	execinitrec(p);
+	execve(p->argv[0], p->argv, cfg->env);
+	warn("%s[%i] exec(%s) failed: %m", p->name, getpid(), p->argv[0]);
 }
 
 void stop(struct initrec* p)

@@ -14,9 +14,7 @@
 #define C_WAIT		(1<<1)		/* w-type entry; wait before starting, wait until finished */
 #define C_USEABRT	(1<<2)		/* use SIGABRT instead of SIGINT when stopping process */
 #define C_NULL		(1<<3)		/* redirect stdout & stderr to /dev/null */
-#define C_LOG		(1<<4)		/* redirect stdout & stderr to /var/log/(name) */
-#define C_SH		(1<<5)		/* argv = [ /bin/sh -c "command" ]; for reference only, exec(argv) still works */
-#define C_TTY		(1<<6)		/* setup controlling tty for this process (aka interactive) */
+#define C_TTY		(1<<4)		/* setup controlling tty for this process (aka interactive) */
 
 #define P_MANUAL	(1<<8)		/* process has been enabled manually */
 #define P_SIGSTOP	(1<<9)		/* SIGSTOP has been sent */
