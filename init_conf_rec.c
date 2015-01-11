@@ -148,9 +148,6 @@ static struct flagrec {
 	{ 'H',	C_WAIT },
 	/* process control flags */
 	{ 'A',	C_USEABRT },
-	/* exec-side flags */
-	{ 'N',	C_NULL },
-	{ 'Y',	C_TTY },
 	/* terminator */
 	{  0  }
 };

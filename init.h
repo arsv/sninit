@@ -13,8 +13,6 @@
 #define C_ONCE		(1<<0)		/* o-type entry; run once, do not restart */
 #define C_WAIT		(1<<1)		/* w-type entry; wait before starting, wait until finished */
 #define C_USEABRT	(1<<2)		/* use SIGABRT instead of SIGINT when stopping process */
-#define C_NULL		(1<<3)		/* redirect stdout & stderr to /dev/null */
-#define C_TTY		(1<<4)		/* setup controlling tty for this process (aka interactive) */
 
 #define P_MANUAL	(1<<8)		/* process has been enabled manually */
 #define P_SIGSTOP	(1<<9)		/* SIGSTOP has been sent */
