@@ -5,7 +5,7 @@
 
 struct memblock newblock;
 
-extern int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
+extern int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe);
 extern int mmapblock(struct memblock* m, int length);
 
 int main(void)

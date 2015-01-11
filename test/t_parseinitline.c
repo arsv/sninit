@@ -12,7 +12,7 @@ struct memblock scratch;
 
 struct {
 	int called;
-	char* code;
+	char* mode;
 	char* name;
 	char* cmd;
 	int exe;
@@ -29,10 +29,10 @@ int readinitdir(char* dir, int strict)
 	return str ? strdup(str) : NULL;
 }*/
 
-int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe)
 {
 	U.called++;
-	U.code = code;
+	U.mode = mode;
 	U.name = name;
 	U.cmd = cmd;
 	U.exe = exe;
@@ -54,9 +54,9 @@ int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels)
 	return -1;
 }
 
-void test(input, code, name, cmd)
+void test(input, mode, name, cmd)
 	const char *input;
-	const char *name, *code, *cmd;
+	const char *name, *mode, *cmd;
 {
 	char* data = alloca(strlen(input) + 1);
 	strcpy(data, input);
@@ -73,7 +73,7 @@ void test(input, code, name, cmd)
 	A(parseinitline(&fb, 0) == RET);
 
 	A(U.called == 1);
-	S(U.code, code);
+	S(U.mode, mode);
 	S(U.name, name);
 	S(U.cmd, cmd);
 	A(U.exe == 0);

@@ -9,7 +9,7 @@
 extern struct memblock newblock;
 
 global int addenviron(const char* def);
-global int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
+global int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe);
 
 static int prepargv(char* str, char** end);
 static int addrecargv(char* cmd, int exe);
@@ -22,10 +22,10 @@ extern int addstrargarray(const char* args[]);
 static int linknode(offset listptr, offset nodeptr);
 extern int checkdupname(const char* name);
 
-/* Arguments: code="S234", name="httpd". See addrecargv for cmd and exe handling.
+/* Arguments: mode="S234", name="httpd". See addrecargv for cmd and exe handling.
    fb is the block we're parsing currently, used solely for error reporting. */
 
-int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe)
 {
 	offset nodeoff;
 	offset entryoff;
@@ -60,7 +60,7 @@ int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
 	entry->lastrun = 0;
 	entry->lastsig = 0;
 
-	if(setrunflags(fb, entry, code))
+	if(setrunflags(fb, entry, mode))
 		goto out;
 
 	/* initrec has been added successfully, so note its offset to use when
@@ -156,7 +156,7 @@ static struct flagrec {
 };
 
 /* Parse runlevels and flags (1st initline field) into entry->rlvl
-   and entry->flags. Typical input: code="S123N".
+   and entry->flags. Typical input: mode="S123N".
 
    When specified, runlevels are translated as is (i.e. "12a" = R1 | R2 | Ra),
    however there are some special cases:
@@ -167,7 +167,7 @@ static struct flagrec {
 
    See doc/sublevels.txt for considerations re. sublevels handling. */
 
-static int setrunflags(struct fileblock* fb, struct initrec* entry, char* code)
+static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 {
 	struct flagrec* f;
 	char* p;
@@ -175,7 +175,7 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* code)
 	int neg = 0;
 	int flags = 0;
 
-	for(p = code; *p; p++) {
+	for(p = mode; *p; p++) {
 		if(*p == '-')
 			continue;
 		else if(*p == '~')

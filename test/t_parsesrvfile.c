@@ -10,7 +10,7 @@
 
 struct {
 	int called;
-	char* code;
+	char* mode;
 	char* name;
 	char* cmd;
 	int exe;
@@ -19,10 +19,10 @@ struct {
 extern int parsesrvfile(struct fileblock* fb, char* basename);
 extern int mmapblock(struct memblock* m, int size);
 
-int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe)
 {
 	U.called++;
-	U.code = heapdupnull(code);
+	U.mode = heapdupnull(mode);
 	U.name = heapdupnull(name);
 	U.cmd = heapdupnull(cmd);
 	U.exe = exe;
@@ -34,9 +34,9 @@ int addenviron(const char* env)
 	return 0;
 }
 
-void test(input, code, cmd, exe)
+void test(input, mode, cmd, exe)
 	const char *input;
-	const char *code, *cmd;
+	const char *mode, *cmd;
 	int exe;
 {
 	char* data = heapdup(input);
@@ -54,7 +54,7 @@ void test(input, code, cmd, exe)
 	memset(&U, 0, sizeof(U));
 	A(parsesrvfile(&fb, base) == RET);
 	A(U.called == 1);
-	S(U.code, code);
+	S(U.mode, mode);
 	S(U.name, base);
 	S(U.cmd, cmd);
 	A(U.exe == exe);
