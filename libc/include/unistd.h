@@ -16,6 +16,8 @@ pid_t setsid (void);
 int setresuid(uid_t ruid, uid_t euid, uid_t suid);
 int setresgid(gid_t rgid, gid_t egid, gid_t sgid);
 
+int setpgid(pid_t pid, pid_t pgid);
+
 void _exit(int status) __attribute__((__noreturn__));
 
 int open(const char* pathname,int flags, ...);

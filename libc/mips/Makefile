@@ -7,7 +7,7 @@ direct += open close read write dup2 fstat ioctl getdents64 openat stat
 direct += mmap mremap munmap clock_gettime nanosleep
 direct += socket bind connect listen accept sendto sendmsg recvmsg shutdown
 direct += prctl setresgid setresuid capset setsid getegid geteuid setrlimit
-direct += send setsockopt sigaction sigprocmask waitpid
+direct += send setsockopt sigaction sigprocmask waitpid setpgid
 
 directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))
