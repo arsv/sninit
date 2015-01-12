@@ -135,3 +135,13 @@ is a bad idea. On the other hand, a standalone utility works really well:
 	runas $daemonuser /sbin/daemon
 
 This is also in line with tools like nice and cgexec.
+
+
+Update on capabilities
+~~~~~~~~~~~~~~~~~~~~~~
+All support for capset(2) has been removed from the companion utility,
+and its name has been changed to just "run". Current implementation of capabilities
+in linux kernel make them useless for the purpose.
+
+The rest of this document still applies, the companion utility is current used
+to set all child-side process attributes.
