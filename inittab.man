@@ -4,16 +4,11 @@
 {/etc/inittab} - \fBinit\fR(8) configuration file.
 '''
 .SH DESCRIPTION
-Inittab lists processes init should run, along with environment to pass to them.
+Inittab is a list of processes init should run, along with environment to pass to them.
 .P
-Upon startup, and each time reconfiguration request is received from \fBtelinit\fR(8),
+Upon startup, and each time reconfiguration is requested by \fBtelinit\fR(8),
 init parses inittab and stores it in its memory. During normal operation init does not
-make any attempts to read inittab.
-.P
-Init only accepts fully valid inittabs. In case init encounters incorrect syntax
-while parsing inittab, it reports error via \fBtelinit\fR(8) and/or \fBsyslog\fR(3)
-and retains its internal configuration. All parts of inittab parsed before the error
-are discarded.
+make any attempts to re-read inittab.
 '''
 .SH SYNTAX
 Inittab is a text file parsed in linewise manner. Empty lines are ignored.
@@ -21,47 +16,53 @@ Inittab is a text file parsed in linewise manner. Empty lines are ignored.
 Lines starting with # are ignored by init
 .IP "\fIvariable\fR=\fIvalue\fR" 4
 Add \fIvariable\fR to the environment to be passed to processes started by init.
-Note init itself does not use environment variables in any way.
-.IP "\fIflags\fR  \fIname\fR  \fIcommand\fR" 4
+.IP "\fImode\fR  \fIname\fR  \fIcommand\fR" 4
 Define a process to be started by init. Each process entry carries a single pid value,
 so there can be at most one running process for each entry at any given time.
 .P
 All lines are processes top-to-bottom. The relative order of environment and process lines
-is irrelevant, all spawned processes will get exactly the same environment. Processes from
-included service files are placed at the point where relevant \fB@\fIdirectory\fR line was.
-However, the order of files within directory is not defined.
+is irrelevant, all spawned processes will get exactly the same environment.
+'''
+.SS Entry mode
+\fImode\fR is a set of characters specifying how to run this entry, and which runlevels to run it on.
+.IP "S" 4
+Start the process, and keep restarting it in case it dies. This is the default mode, and "S" may be skipped.
+.IP "W" 4
+Wait for this process. Do not restart it, and do not proceed further until it dies. If there are 
+proccesses with "once" flag set, wait until all of the die before running a "wait" process.
+.IP "O" 4
+Run once. Do not restart the process. Unlike \fBwait\fR, do proceed to run subsequent entries.
+.IP "H" 4
+Hold this process. Like S, but wait for this process to die before proceeding to kill other processes.
+See below for possible applications.
+.P
+Only one of SWOH should be used for an entry. This is called "entry type", so a w-type entry
+is one with "W" character in mode field.
+Redirect file descriptors 1 and 2 to {/var/log}\fIname\fR for the spawned process.
+.IP "0...9" 4
+Run this entry on specified runlevel(s).
+.IP "a...f" 4
+Run this entry only if specified sublevel(s) are active.
+.IP "~" 4
+Invert runlevels mask, run this entry on all runlevels except those specified with 0...9.
+.IP "-" 4
+Silently ignored; may be used to align runlevel masks.
+.IP "A" 4
+Send SIGABRT instead of SIGTERM when stopping the process. Use if the process in question
+fails to die on SIGTERM.
+.P
+Examples: "W123" start on runlevels 1, 2 or 3, wait;
+"S01~" (re)start on all runlevels except 0 and 1; "S--2-4A" (re)start on runlevels 2 and 4,
+use SIGABRT to kill the process.
 '''
 .SS Naming entries
 \fIname\fR is a string used to identify this entry, in particular when stopping/starting
-processes with \fBtelinit\fR(8) and during reconfiguration. Use "-" to denote empty name.
-Non-empty names should be unique.
-'''
-.SS Process Flags
-\fIflags\fR is a set of characters denoting process runlevels and respawn mode:
-.IP "W" 4
-Do not restart the process, and do not proceed further until it dies. If there are 
-proccesses with "once" flag set, wait until all of the die before running a "wait" process.
-.IP "O" 4
-Do not restart the process. Unlike \fBwait\fR, do proceed to run subsequent processes.
-.IP "S" 4
-Restart the process in case it dies. This flag does nothing, restarting is the default
-mode of operation for init.
-.IP "H" 4
-Do not send SIGTERM to this entry until all subsequent entries have died.
-Use for syslogd, to avoid losing messages during system shutdown.
-Note signals are sent to entries in reverse order, bottom-to-top.
-.IP "n" 4
-Open /dev/null on file descriptors 0, 1 and 2 (stdin, stdout and stderr) for the spawned process.
-Without this flag, the process inherits init's descriptors, typically /dev/console.
-.IP "l" 4
-Redirect file descriptors 1 and 2 to {/var/log}\fIname\fR for the spawned process.
-.IP "t" 4
-Send SIGABRT instead of SIGTERM when stopping the process. Use if the process in question
-fails to die on SIGTERM.
-.IP "y" 4
-Set up controlling tty for the process. See TIOCSCTTY in tty_ioctl(4). Use for interactive
-shells started by init. This flag is equivalent to "-" before the command is sysvinit and
-some other init implementations. 
+processes with \fBtelinit\fR(8), as well as in syslog messages.
+Use "-" to denote empty name. Non-empty names should be unique.
+.P
+During reconfiguration, init matches entries with the same name, and transfers pids from
+the old configuration. For un-named entries, and in case names do not match, the old
+process gets killed and the new one started. This is mostly relevant for s-type entries.
 '''
 .SS Commands
 The last field, \fIcommand\fR, is the command to run. The field is parsed and passed as
@@ -75,6 +76,41 @@ instead.
 
 To use sh, prepend ! to the command. This will cause init to pass the command directly to
 /bin/sh -c without any parsing.
+'''
+.SH USAGE
+'''
+\fBinit\fR keeps runlevel mask to determine which subset of the entries should
+be running.
+.P
+At any point, init is in one of runlevels 0, 1, ... 9, with zero or more
+sublevels a, b, ..., f activated. Each entry has its own runlevel mask, with zero
+or more runlevels and zero or more sublevels. If an entry has current runlevel in its
+mask, and all sublevels from its mask are active, it is started. Otherwise, the entry
+gets killed.
+.P
+Example: "S123" entry is started on runlevel 1 but killed on runlevel 4; "S1ab" is started
+on runlevels 1ab, 1abc, but not on 1 or 1a or 1ac or 2.
+.P
+The entries are always started in top-to-bottom order, and killed bottom-to-top.
+Entry type determines how process death is handled: w-type entries are waited for, s-type
+entries are restarted and so on.
+.P
+Current runlevel may be changed using \fBtelinit\fR(8).
+.P
+All w-type and o-type entries are run upon entering specific runlevel.
+To run an entry on exit from a specific runlevel, negate that runlevel:
+"W3~" entry will be run when switching from runlevel 3 to any other runlevel.
+'''
+.SS Slippery runlevels
+Runlevels 7, 8 and 9 are designated "slippery".
+.P
+When init reaches a regular, non-slippery runlevel, it stays there; "reaches"
+here means all w-type and o-type entries have been run and exited.
+With slippery runlevels however, init starts switching back to the original runlevel
+immediately after reaching a slippery one.
+.P
+Slippery runlevels are intended to be used for sleep and suspend states, or generally
+for any system state that coincides with a process (a w-type entry in init terms) running.
 '''
 .SH NOTES
 This page describes inittab format for \fB{INIT}\fR package.
