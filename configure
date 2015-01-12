@@ -303,12 +303,13 @@ esac
 
 # Handle optimization
 if [ "$optimize" == 'auto' ]; then
+	optcommon="-Os -fno-asynchronous-unwind-tables"
 	case "$ccarch" in
 		# stdarg + x86 + SSE results in xmm* register handling bloat
 		# despite the fact those are never used in sninit
-		x86*) optimize="-Os -mno-sse" ;;
+		x86*) optimize="$optcommon -mno-sse" ;;
 		# without any better ideas, just optimize for size
-		*) optimize="-Os" ;;
+		*) optimize="$optcommon" ;;
 	esac
 fi
 
