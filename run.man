@@ -1,0 +1,90 @@
+.TH run 8
+'''
+.SH NAME
+\fBrun\fR \- set process credentials and exec specified command.
+'''
+.SH SYNOPSIS
+\fBrun\fR [\fIoptions\fR] \fIcommand\fR \fIargs\fR ...
+'''
+.SH DESCRIPTION
+\fBrun\fR executes specified command, possibly setting effective uid/gid,
+ulimits, redirecting output and adding its pid to cgroups.
+'''
+.SH USAGE
+The following options are accepted:
+.IP "\fB-u\fR\fIuser\fR" 4
+Set user, see \fBsetuid\fR(2).
+.IP "\fB-g\fR\fIgroup\fR" 4
+Set group, see \fBsetgid\fR(2).
+.IP "\fB-C\fR\fIcgroup\fR" 4
+Add process to specified cgroup.
+.IP "\fB-\fR[\fIctdfxlqenpmETis\fR]\fIN\fR[\fB/\fIM\fR][\fIkMGmh\fR]" 4
+Set process ulimits, see below.
+.IP "\fB-o\fR\fIfile\fR" 4
+Redirect stdout to \fIfile\fR.
+.IP "\fB-O\fR\fIfile\fR" 4
+Redirect stdout and stderr to \fIfile\fR.
+.IP "\fB-N\fR" 4
+Redirect stdout and stderr to /dev/null.
+.IP "\fB-S\fR" 4
+Start a new session by calling \fBsetsid\fR(2).
+.IP "\fB-Y\fR" 4
+Set stdout as the controlling TTY; see TIOCSCTTY in \fBtty_ioctl\fR(4).
+.P
+Process limits with respective C constants (see \fBsetrlimits\fR(2)):
+.PD 0
+.RS
+.TP
+\fBa\fR size of the process's virtual memory (RLIMIT_AS)
+.TP
+\fBc\fR size of core files created (RLIMIT_CORE)
+.TP
+\fBt\fR amount of cpu time in seconds (RLIMIT_CPU)
+.TP
+\fBd\fR size of a process's data segment (RLIMIT_DATA)
+.TP
+\fBf\fR size of files written (RLIMIT_FSIZE)
+.TP
+\fBx\fR number of file locks (RLIMIT_LOCKS)
+.TP
+\fBl\fR size that may be locked into memory (RLIMIT_MEMLOCK)
+.TP
+\fBq\fR number of bytes in POSIX message queues (RLIMIT_MSGQUEUE)
+.TP
+\fBe\fR scheduling priority (RLIMIT_NICE)
+.TP
+\fBn\fR number of open files (RLIMIT_NOFILE)
+.TP
+\fBp\fR number of threads (RLIMIT_NPROC)
+.TP
+\fBm\fR resident set size (RLIMIT_RSS)
+.TP
+\fBE\fR real-time scheduling priority (RLIMIT_RTPRIO)
+.TP
+\fBT\fR time in microseconds process with real-time
+schedule policy may consume without making a blocking syscall (RLIMIT_RTTIME)
+.TP
+\fBi\fR number of pending signals (RLIMIT_SIGPENDING)
+.TP
+\fBs\fR stack size (RLIMIT_STACK)
+.RE
+.PD 1
+.P
+'''
+.SH ENVIRONMENT
+$PATH is used to find specified command. See \fBexecvp\fR(1).
+'''
+.SH NOTES
+This page describes /sbin/run, a tool normally only available to the root user.
+For gdb simulator front-end typically installed as /usr/bin/run, see \fBrun\fR(1).
+'''
+.SH SEE ALSO
+Similar utilities: \fBsu\fR(1), \fBsudo\fR(1), \fBrunuser\fR(1), \fBulimit\fR in \fBbash\fR(1),
+\fBnice\fR(1), \fBcgexec\fR(1), \fBcapsh\fR(1), \fBsetsid\fR(1).
+.P
+Syscalls: \fBsetresuid\fR(2), \fBsetresgid\fR(2), \fBsetrlimit\fR(2),
+\fBsetpriority\fR(2), \fBexecve\fR(2).
+.P
+General concepts: \fBcredentials\fR(7), \fBcapabilities\fR(7),
+.br
+documentation/cgroups/ from the kernel source tree.

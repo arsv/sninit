@@ -21,7 +21,7 @@ unset tstype null
 
 optimize=auto
 unset lto debug depend builtin 
-unset initctl inittab runcap s cgdir blocks run
+unset initctl inittab run s cgbase logdir blocks run
 
 warn() { echo "$@" >&2; }
 die() { echo "$@" >&2; exit 1; }
@@ -119,7 +119,8 @@ while [ $# -gt 0 ]; do
 		man5dir) mandir=$val ;;
 		man8dir) mandir=$val ;;
 		prefix) prefix=$val ;;
-		cgdir) cgdir=$val ;;
+		logdir) logdir=$val ;;
+		cgbase) cgbase=$val ;;
 		exec-prefix) ;;
 
 		program-prefix) s=$val ;;
@@ -227,6 +228,7 @@ while [ $# -gt 0 ]; do
 			s=
 			inittab=etc/inittab
 			initdir=etc/initdir
+			logdir=var/log
 			optimize=
 			debug="-Wall -g"
 			depend="-MD"
@@ -428,7 +430,8 @@ mandir=${mandir:-$subprefix/share/man}
 man5dir=${man5dir:-$mandir/man5}
 man8dir=${man8dir:-$mandir/man8}
 sbindir=${sbindir:-$prefix/sbin}
-cgdir=${cgdir:-/sys/fs/cgroup}
+cgbase=${cgbase:-/sys/fs/cgroup}
+logdir=${logdir:-/var/log}
 sysconfdir=${sysconfdir:-$prefix/etc}
 initctl=${initctl:-@initctl}
 test "$inittab" != '-' && inittab=${inittab:-$sysconfdir/inittab} || unset inittab
@@ -459,8 +462,9 @@ sed -i \
 	config.h
 
 sed -i \
-	-e "/#define CGBASE/s#\".*#\"$cgdir\"#" \
-	runcap.c
+	-e "/#define CGBASE/s#\".*#\"$cgbase\"#" \
+	-e "/#define LOGDIR/s#\".*#\"$logdir\"#" \
+	run.h
 
 echo "Configuration updated. Check the values below, then run make."
 echo
@@ -480,10 +484,12 @@ echo
 echo "	inittab location: $inittab"
 echo "	initdir location: $initdir"
 echo "	control socket name: $initctl"
-echo "	cgroups mount path: $cgdir"
+echo
+echo "	cgroups path: $cgbase"
+echo "	log path: $logdir"
 echo
 echo "	binaries path: $sbindir"
-echo "	executable names: ${s}init ${s}telinit ${s}runcap"
+echo "	executable names: ${s}init ${s}telinit ${s}run"
 echo "	man section 5 path: $man5dir"
 echo "	man section 8 path: $man8dir"
 echo

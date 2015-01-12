@@ -7,7 +7,7 @@ builtin.c
 init
 telinit
 statictab
-runcap
+run
 test/*
 misc/*
 !test/*.[ch]

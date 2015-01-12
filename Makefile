@@ -8,11 +8,11 @@
 
 include config.mk
 
-all: init telinit runcap init.8 telinit.8 inittab.5 runcap.8
+all: init telinit run init.8 telinit.8 inittab.5 run.8
 
 # Force early libc build
 ifneq ($(ARCH),)
-init telinit runcap: libc.a
+init telinit run: libc.a
 endif
 
 init_conf = init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.o
@@ -37,19 +37,19 @@ telinit_sys = sys_err_telinit.o
 telinit: telinit.o \
 	$(sort $(foreach b,$(initblocks),$(telinit_$(b))))
 
-runcap_err = sys_err_telinit.o
-runcap_execvp = sys_execvp.o
-runcap_sys = sys_err_telinit.o sys_execvp.o
+run_err = sys_err_run.o
+run_execvp = sys_execvp.o
+run_sys = sys_err_telinit.o sys_execvp.o
 
-runcap: runcap.o \
-	$(sort $(foreach b,$(initblocks),$(runcap_$(b))))
+run: run.o \
+	$(sort $(foreach b,$(initblocks),$(run_$(b))))
 
 install: install-bin install-man
 
 install-bin:
 	install -m 0755 -D init $(DESTDIR)$(sbindir)/$sinit
 	install -m 0755 -D telinit $(DESTDIR)$(sbindir)/$stelinit
-	install -m 0755 -D runcap $(DESTDIR)$(sbindir)/$sruncap
+	install -m 0755 -D run $(DESTDIR)$(sbindir)/$srun
 
 install-man:
 	install -m 0644 -D init.8 $(DESTDIR)$(man8dir)/$sinit.8
@@ -60,7 +60,7 @@ clean::
 	rm -f *.o *.ho *.d builtin.c
 
 distclean: clean
-	rm -f init telinit statictab runcap *.[58]
+	rm -f init telinit statictab run *.[58]
 	$(MAKE) -C test clean
 
 # --- Built-in inittab ---------------------------------------------------------
