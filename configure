@@ -7,7 +7,7 @@
 # Testing makes little sense for a small, very linux-specific tool
 # like sninit which has no way of handling unusual evironments.
 
-unset prefix sbindir mandir man5dir man8dir logdir sysconfdir
+unset prefix sbindir mandir man5dir man8dir sysconfdir
 
 # configure uses lower-case variables to store "kinda-default" values
 # while resp. upper-case variables are used for unconditional overrides
@@ -40,7 +40,6 @@ Installation directories:
 	sbindir=	system binaries directory [\$prefix/sbin]
 	sysconfdir=	system configuration directory [\$prefix/etc]
 	mandir=		man pages directory [\$prefix/share/man]
-	logdir=		log directory [\$prefix/var/log], for spawned processes only
 
 Runtime paths configuration:
 	initctl=	init control socket [@initctl]
@@ -116,7 +115,6 @@ while [ $# -gt 0 ]; do
 
 		sysconfdir|configdir) sysconfdir=$val ;;
 		sbindir) sbindir=$val ;;
-		logdir) logdir=$val ;;
 		mandir) mandir=$val ;;
 		man5dir) mandir=$val ;;
 		man8dir) mandir=$val ;;
@@ -229,7 +227,6 @@ while [ $# -gt 0 ]; do
 			s=
 			inittab=etc/inittab
 			initdir=etc/initdir
-			logdir=var/log
 			optimize=
 			debug="-Wall -g"
 			depend="-MD"
@@ -431,7 +428,6 @@ mandir=${mandir:-$subprefix/share/man}
 man5dir=${man5dir:-$mandir/man5}
 man8dir=${man8dir:-$mandir/man8}
 sbindir=${sbindir:-$prefix/sbin}
-logdir=${logdir:-$prefix/var/log}
 cgdir=${cgdir:-/sys/fs/cgroup}
 sysconfdir=${sysconfdir:-$prefix/etc}
 initctl=${initctl:-@initctl}
@@ -459,7 +455,6 @@ unset nd; test -z "$initdir" && nd="//"
 sed -i \
 	-e "/^.*#define INITTAB/s@.*@$nt#define INITTAB \"$inittab\"@" \
 	-e "/^.*#define INITDIR/s@.*@$nd#define INITDIR \"$initdir\"@" \
-	-e "/#define LOGDIR/s#\".*#\"$logdir\"#" \
 	-e "/#define INITCTL/s#\".*#\"$initctl\"#" \
 	config.h
 
@@ -485,7 +480,6 @@ echo
 echo "	inittab location: $inittab"
 echo "	initdir location: $initdir"
 echo "	control socket name: $initctl"
-echo "	logdir location: $logdir"
 echo "	cgroups mount path: $cgdir"
 echo
 echo "	binaries path: $sbindir"

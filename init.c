@@ -107,7 +107,7 @@ reboot:
 
 static int setup(int argc, char** argv)
 {
-	/* Runlevel 0. This is necessary to make sure :~0:wait: type entries
+	/* Runlevel 0. This is necessary to make sure W0~ type entries
 	   get marked as "has been run" upon initialization. */
 	currlevel = 1 << 0;
 	nextlevel = INITDEFAULT;
