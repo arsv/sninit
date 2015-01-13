@@ -11,7 +11,7 @@ overbloated beast called systemd making its way into Arch linux.
 
 Features
 ~~~~~~~~
-Key things sninit does have:
+Key things sninit has:
 
 + Runlevels for process management
 + Starting/stopping individual processes manually
@@ -25,7 +25,7 @@ Key things sninit does have:
 
 Things sninit lacks:
 
-- system state management, including network, mounts, sysconfig and ulimits
+- built-in system state management (network/mounts/sysconfig/ulimits)
 - inter-process dependencies, systemd-style
 - support for kernels other than linux-2.6+
 - dbus, xml and other bloat
@@ -42,12 +42,12 @@ What is init
 ~~~~~~~~~~~~
 init is process 1 in Linux and other Unix-like systems.
 
-Upon booting itself, kernel starts one process, typically /sbin/init .
+Upon booting itself, kernel only starts one process, typically /sbin/init.
 This process is expected to initialize the system and start everything else,
 including user interface.
 This process is not expected to exit; in case it does, kernel panics.
 
-Typically init starts several processes in sequence, waiting for them
+Init starts several processes in sequence, waiting for them
 to finish, mounting filesystems, initializing devices and so on.
 Once the system is ready, daemon-like processes are spawned;
 when such process dies, it is respawned.
@@ -68,8 +68,8 @@ See man pages and files in doc/ directory.
 
 Just how small exactly?
 ~~~~~~~~~~~~~~~~~~~~~~~
-Statically linked init executable is around 20KB on x86_64 and 30KB on arm.
-telinit, which is a standalone executable, adds 4KB on x86_64 and 10KB on arm.
+Statically linked init executable is around 15KB on x86_64 and arm, 25KB on mips.
+telinit, which is a standalone executable, adds 3KB (x86_64 and arm) to 8KB (mips).
 
 
 Credits
