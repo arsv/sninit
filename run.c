@@ -71,6 +71,7 @@ static void adduser(char* p);
 static void addgroup(char* p);
 static void setlimit(char* p, int key);
 static void setcg(char* p);
+static void setprio(char* p);
 static void setsess(void);
 static void setctty(void);
 static void apply(char* cmd);
@@ -116,6 +117,8 @@ again:	switch(c = *(opt++)) {
 		case 'N': bits |= NULLOUT; goto again;
 		case 'S': setsess(); goto again;
 		case 'Y': setctty(); goto again;
+
+		case 'r': setprio(opt); break;
 
 		/* ulimit keys, closely following bash(1) ulimit command */
 		/* note T is used for RTTIME here; in bash, it's apparently NPROC */
@@ -319,6 +322,22 @@ static void setcg(char* cg)
 	if(write(fd, pid, strlen(pid)) <= 0)
 		die("Can't add process to ", cgp, ERRNO);
 	close(fd);
+}
+
+/* Linux uses 1..40 range for process priorities and a return of -1
+   from getpriority means error. Now of course glibc people can not
+   just stick with the native kernel data so they wrap to (apparently
+   POSIX-standard) range of -19..20 */
+#ifdef __GLIBC__
+#include <sys/syscall.h>
+#define setpriority(a, b, c) syscall(__NR_setpriority, a, b, c)
+#define getpriority(a, b)    syscall(__NR_getpriority, a, b)
+#endif
+
+static void setprio(char* p)
+{
+	if(setpriority(PRIO_PROCESS, 0, atoi(p)))
+		die("setpriority failed", NULL, ERRNO);
 }
 
 static void setsess(void)
