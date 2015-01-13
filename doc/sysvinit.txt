@@ -1,52 +1,45 @@
 Migrating from sysvinit
 ~~~~~~~~~~~~~~~~~~~~~~~
-sninit uses almost the same inittab syntax as sysvinit.
+SysV inittab format, also partially supported by busybox init:
 
-	name:runlevels:flags:command
+	name:runlevels:action:command
 
-There are some relatively minor differences explained below.
+sninit inittab format uses whitespaces for field separators,
+and merges runlevels and action into mode field:
+
+	mode	name	command
 
 
-Flags
-~~~~~
-In sysvinit "flags" field is called "action", and it is always a single word.
-In sninit, it's a comma-separated list of process flags.
-Most sysvinit actions translate easily into sninit flags:
 
-	respawn
-		accepted but ignored, respawning is the default mode for sninit
-	wait
-		leave as is
-	once
-		leave as is
-	boot
-		sninit equivalent is name::once:command,
-		that is, *empty* runlevels and "once" for action.
-	bootwait
-		sninit equivalent is name::wait:command,
-		again, with empty runlevels field.
-	off
-		leave as is. In sninit, the process still can be started with
-		"telinit start name". With no wait or once, implies respawn. [TODO]
-	ondemand
-		remove, leaving secondary runlevels in the runlevels field.
-		That is, name:ab:ondemand:command becomes name:ab::command.
-		With no additional flags, implies "respawn".
-	initdefault
-		not supported, specify desired runlevel in kernel command line.
-	sysninit
-		not supported, replace with "name::wait" and place somewhere
-		near the top of inittab.
-	powerwait
-	powerfail
-	powerokwait
-	powerfailnow
-		not supported, use runlevels and telinit to switch them.
-	ctrlaltdel
-		not supported. Upon receiving SIGINT, sninit will start switching
+Actions
+~~~~~~~
+respawn		use S with the same runlevels
+wait		use W with the same runlevels
+once		use O with the same runlevels
+
+sysninit	use W, no runlevels, and place before any other entries
+boot		use O, place before other entries but after sysinit
+bootwait	like boot but use W instead of O
+
+ondemand	use S with the same secondary runlevel
+		(that is, ":a:ondemand: becomes "Sa")
+	beware of multiple runlevels: for sysvinit, :ab:ondemand:
+	means either a or b, while in sninit it's a *and* b.
+
+off		not supported yet (TODO)
+
+initdefault	not supported, specify desired runlevel in kernel command line.
+
+powerwait	not supported; use secondary runlevels for tracking power state
+powerfail	 and telinit to switch them.
+powerokwait
+powerfailnow
+
+ctrlaltdel	not supported / not needed
+		Upon receiving SIGINT, sninit will start switching
 		to runlevel 0, rebooting the system once it's there.
-	kbrequest
-		not supported, sninit ignores SIGWINCH
+
+kbrequest	not supported, sninit ignores SIGWINCH
 
 
 Runlevels
@@ -58,16 +51,14 @@ be restarted later when init has already settled in runlevel M.
 
 Mixing primary (0123456789) and secondary (aka ondemand, abcdef) runlevels is allowed;
 "23a" means "run on / when entering runlevels primary runlevels 2 or 3, but ONLY if
-secondary runlevel a is activated". The rules for o-/w-type entries still hold though,
-so telinit +a will not start a "23a:wait" entry if init is in runlevel 2 or 3 already.
-On the other hand, s-type entries will be started immediately.
+secondary runlevel a is activated".
 
 While in sysvinit runlevels 0 and 6 were special mostly by convention, in sninit
 reaching runlevel 0 prompts a reboot(2) call and runlevel 6 should not be special
 in most sane configurations. Both halt, reboot and poweroff use runlevel 0, the
 only difference being the argument passed to reboot(2) in the end.
 
-Runleves 789 are allowed in sninit, but they are "slippery" unless configured otherwise.
+Runleves 789 are allowed in sninit, but designated "slippery" unless configured otherwise.
 That is, upon reaching any of these runlevels, init will immediately start a switch back
 to the last non-slippery runlevel it was in.
 This is to allow sleep/suspend to be implemented as runlevels, see slippery.txt.
@@ -75,19 +66,11 @@ This is to allow sleep/suspend to be implemented as runlevels, see slippery.txt.
 
 Commands
 ~~~~~~~~
-For interactive processes, use "tty" flag. Conventional "-command" does not work.
-
 If you want a command to be spawned via sh -c "command", request it
 explicitly: "!command". Unlike sysvinit, sninit does not spawn processes
 via shell just because there are unusual characters in the command.
 
-
-Names
-~~~~~
-name field in sninit is longer than in sysvinit. Names are not
-checked for uniqueness, but generally you want to keep them unique.
-
-Entry names are also used for logging, sysvinit does not do it.
+For interactive processes, run -Y. Conventional "-command" is not supported.
 
 
 Reboot and friends
