@@ -84,7 +84,7 @@ statictab := statictab.o init_conf.o init_conf_map.o init_conf_mem.o\
 
 ifndef HOSTCC
 
-statictab: $(statictab)
+statictab: $(statictab) $(if $(ARCH),libc.a)
 
 else
 

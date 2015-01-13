@@ -11,7 +11,7 @@ int state;
 struct config* cfg;
 extern struct memblock newblock;
 
-char* inittab = NULL;
+extern char* inittab;
 extern int configure(int strict);
 
 void die(const char* msg, ...);
@@ -39,9 +39,8 @@ int main(int argc, char** argv)
 
 void dump_config(struct config* cfg)
 {
-	/* Current init.h has #define NULL line thanks to musl,
-	   so there's no need to include stdlib.h */
 	printf("#include \"init.h\"\n\n");
+	printf("#define NULL ((void*)0)\n");	/* eh */
 
 	dump_tab("builtin_tab", cfg->inittab);
 	dump_env("builtin_env", cfg->env);
@@ -54,7 +53,6 @@ void dump_config(struct config* cfg)
 	printf("\t.time_to_restart = %i,\n", cfg->time_to_restart);
 	printf("\t.time_to_SIGKILL = %i,\n", cfg->time_to_SIGKILL);
 	printf("\t.time_to_skip = %i,\n", cfg->time_to_skip);
-	printf("\t.logdir = %s\n", quote(cfg->logdir));
 	printf("};\n\n");
 
 	printf("struct config* cfg = &builtin;\n");
@@ -98,8 +96,8 @@ void dump_rec(const char* var, int i, struct initrec* p)
 	printf("\t.rlvl = %i,\n", p->rlvl);
 	printf("\t.flags = %i,\n", p->flags);
 	printf("\t.pid = %i,\n", p->pid);
-	printf("\t.lastrun = %li,\n", p->lastrun);
-	printf("\t.lastsig = %li,\n", p->lastsig);
+	printf("\t.lastrun = %li,\n", (long)p->lastrun);
+	printf("\t.lastsig = %li,\n", (long)p->lastsig);
 	printf("\t.argv = { ");
 	for(a = p->argv; *a; a++)
 		// no quoting for now
@@ -112,34 +110,32 @@ void dump_rec(const char* var, int i, struct initrec* p)
 char* quote(const char* val)
 {
 	static char buf[1024];
-	if(!val) return "NULL";
-	snprintf(buf, 1024, "\"%s\"", val);
+	int len = strlen(val);
+	buf[0] = '"';
+	strncpy(buf + 1, val, 1000);
+	buf[len+1] = '"';
+	buf[len+2] = '\0';
 	return buf;
 }
 
 void die(const char* msg, ...)
 {
 	va_list ap;
-	char buf[256];
 
 	va_start(ap, msg);
-	vsnprintf(buf, 256, msg, ap);
+	vprintf(msg, ap);
 	va_end(ap);
 
-	write(2, buf, strlen(buf));
 	_exit(-1);
 }
 
 int warn(const char* msg, ...)
 {
 	va_list ap;
-	char buf[256];
 
 	va_start(ap, msg);
-	vsnprintf(buf, 256, msg, ap);
+	vprintf(msg, ap);
 	va_end(ap);
-
-	write(2, buf, strlen(buf));
 
 	return 0;
 }
