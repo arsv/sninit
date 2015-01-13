@@ -9,6 +9,9 @@ initdir=$(grep '^#define INITDIR' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
 initdir=${initdir:-/etc/initdir}
 tabbase=`basename "$inittab"`
 
+logdir=$(grep '^#define LOGDIR' run.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
+cgbase=$(grep '^#define CGBASE' run.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
+
 exec sed \
 	-e "s!{INIT}!$INIT!g" \
 	-e "s!{/sbin}!$sbindir!g" \
@@ -18,4 +21,6 @@ exec sed \
 	-e "s!{@initctl}!$initctl!g" \
 	-e "s!{/etc/inittab}!$inittab!g" \
 	-e "s!{/etc/initdir}!$initdir!g" \
+	-e "s!{/var/log}!$logdir!g" \
+	-e "s!{/sys/fs/cgroup}!$cgbase!g" \
 	"$@"

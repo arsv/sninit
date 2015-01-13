@@ -1,14 +1,14 @@
 .TH run 8
 '''
 .SH NAME
-\fBrun\fR \- set process credentials and exec specified command.
+\fBrun\fR \- set process properties and exec specified command.
 '''
 .SH SYNOPSIS
 \fBrun\fR [\fIoptions\fR] \fIcommand\fR \fIargs\fR ...
 '''
 .SH DESCRIPTION
 \fBrun\fR executes specified command, possibly setting effective uid/gid,
-ulimits, redirecting output and adding its pid to cgroups.
+priority, ulimits, redirecting output and adding its pid to cgroups.
 '''
 .SH USAGE
 The following options are accepted:
@@ -18,8 +18,6 @@ Set user, see \fBsetuid\fR(2).
 Set group, see \fBsetgid\fR(2).
 .IP "\fB-C\fR\fIcgroup\fR" 4
 Add process to specified cgroup.
-.IP "\fB-\fR[\fIctdfxlqenpmETis\fR]\fIN\fR[\fB/\fIM\fR][\fIkMGmh\fR]" 4
-Set process ulimits, see below.
 .IP "\fB-o\fR\fIfile\fR" 4
 Redirect stdout to \fIfile\fR.
 .IP "\fB-O\fR\fIfile\fR" 4
@@ -28,10 +26,16 @@ Redirect stdout and stderr to \fIfile\fR.
 Redirect stdout and stderr to /dev/null.
 .IP "\fB-S\fR" 4
 Start a new session by calling \fBsetsid\fR(2).
+.IP "\fB-r\fIN\fR" 4
+Change process priority (renice) to \fIN\fR, see \fBsetpriority\fR(2).
+Note \fBrun\fR uses kernel scale 1..40, with default priority 20 and
+highest priority 1.
 .IP "\fB-Y\fR" 4
 Set stdout as the controlling TTY; see TIOCSCTTY in \fBtty_ioctl\fR(4).
-.P
-Process limits with respective C constants (see \fBsetrlimits\fR(2)):
+.IP "\fB-\fIc\fIN\fR[\fB/\fIM\fR]" 4
+Set process ulimits. \fIN\fR is the soft limit, \fIM\fR is hard limit;
+in case only one number is specified, equal hard and soft limits are set.
+Possible limits with respective C constants (see \fBsetrlimits\fR(2)):
 .PD 0
 .RS
 .TP
@@ -71,8 +75,14 @@ schedule policy may consume without making a blocking syscall (RLIMIT_RTTIME)
 .PD 1
 .P
 '''
+.SH FILES
+.IP "\fB{/var/log}\fR" 4
+Default output directory for \fB-o\fR and \fB-O\fR.
+.IP "\fB{/sys/fs/cgroup}\fR" 4
+Default cgroup directory for \fB-C\fR.
+'''
 .SH ENVIRONMENT
-$PATH is used to find specified command. See \fBexecvp\fR(1).
+PATH is used to find specified command. See \fBexecvp\fR(1).
 '''
 .SH NOTES
 This page describes /sbin/run, a tool normally only available to the root user.
@@ -83,8 +93,6 @@ Similar utilities: \fBsu\fR(1), \fBsudo\fR(1), \fBrunuser\fR(1), \fBulimit\fR in
 \fBnice\fR(1), \fBcgexec\fR(1), \fBcapsh\fR(1), \fBsetsid\fR(1).
 .P
 Syscalls: \fBsetresuid\fR(2), \fBsetresgid\fR(2), \fBsetrlimit\fR(2),
-\fBsetpriority\fR(2), \fBexecve\fR(2).
+\fBsetpriority\fR(2), \fBexecve\fR(2), \fBsetsid\fR(2).
 .P
-General concepts: \fBcredentials\fR(7), \fBcapabilities\fR(7),
-.br
-documentation/cgroups/ from the kernel source tree.
+General concepts: \fBcredentials\fR(7), documentation/cgroups/ from the kernel source tree.
