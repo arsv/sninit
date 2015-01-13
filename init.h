@@ -64,8 +64,6 @@ struct config {
 	unsigned short time_to_restart;
 	unsigned short time_to_SIGKILL;	/* after sending SIGTERM, for processes refusing to die */
 	unsigned short time_to_skip;	/* after sending SIGKILL */
-
-	char* logdir;
 };
 
 /* Diagnostics; note this may go to syslog. */

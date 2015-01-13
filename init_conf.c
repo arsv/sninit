@@ -110,8 +110,6 @@ static void initcfgblocks(void)
 	cfg->time_to_SIGKILL = 2;
 	cfg->time_to_skip = 5;
 	cfg->slippery = SLIPPERY;
-
-	cfg->logdir = NULL;
 }
 
 static int finishinittab(void)
