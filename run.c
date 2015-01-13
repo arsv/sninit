@@ -297,14 +297,20 @@ char* ltoa(long num)
 static void setcg(char* cg)
 {
 	int cgl = strlen(CGBASE) + strlen(cg) + 15;
-	char cgp[cgl];
+	char buf[cgl];
 	int fd;
 	char* pid;
+	char* cgp;
 
-	strcpy(cgp, CGBASE);
-	strcat(cgp, "/");
-	strcat(cgp, cg);
-	strcat(cgp, "/tasks");
+	if(strchr(cg, '/')) {
+		cgp = cg;
+	} else {
+		strcpy(buf, CGBASE);
+		strcat(buf, "/");
+		strcat(buf, cg);
+		strcat(buf, "/tasks");
+		cgp = buf;
+	}
 
 	if((fd = open(cgp, O_WRONLY)) < 0)
 		die("Can't open ", cgp, ERRNO);
