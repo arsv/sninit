@@ -18,11 +18,12 @@ global void parsecmd(char* cmd);
 
 static void setrunlevel(const char* cmd);
 static void dumpstate(void);
+static void dumpidof(struct initrec* p);
 
 static void dorestart(struct initrec* p);
 static void doenable(struct initrec* p, int v);
 static void dopause(struct initrec* p, int v);
-static void dohup(struct initrec* p, int v);
+static void dohup(struct initrec* p);
 
 /* cmd here is what telinit sent to initctl.
    The actual command is always cmd[0], while cmd[1:] is (optional) argument.
@@ -46,7 +47,7 @@ void parsecmd(char* cmd)
 		case 'r':		/* restart */
 		case 'e': case 'd':	/* start, stop */
 		case 'p': case 'w':	/* pause, resume */
-		case 'h': case 'u':	/* hup, uphup */
+		case 'h': case 'i':	/* hup, pidof */
 			if(!(p = findentry(arg)))
 				retwarn_("can't find %s in inittab", arg);
 			break;
@@ -70,10 +71,10 @@ void parsecmd(char* cmd)
 		case 'w': dopause(p, 0); break;
 		case 'd': doenable(p, 0); break;
 		case 'e': doenable(p, 1); break;
-		case 'h': dohup(p, 0); break;
-		case 'u': dohup(p, 1); break;
+		case 'h': dohup(p); break;
 		/* state query */
 		case '?': dumpstate(); break;
+		case 'i': dumpidof(p); break;
 		/* reconfigure */
 		case 'q':
 			if(configure(1))
@@ -177,6 +178,12 @@ out:	*buf = '\0';
 	return ret;
 }
 
+static void dumpidof(struct initrec* p)
+{
+	if(p->pid > 0)
+		warn("%i", p->pid);
+}
+
 /* "telinit ?" output, the list of services and their current state */
 static void dumpstate(void)
 {
@@ -244,17 +251,10 @@ static void dopause(struct initrec* p, int v)
 	scflags(&(p->flags), P_SIGSTOP, v);
 }
 
-static void dohup(struct initrec* p, int orstart)
+static void dohup(struct initrec* p)
 {
-	if(p->pid <= 0) {
-		if(orstart) {
-			p->lastrun = 0;
-			p->rlvl  |=  (currlevel & PRIMASK);
-			p->flags |=  P_MANUAL;
-		} else {
-			warn("%s is not running", p->name);
-		}
-	} else {
+	if(p->pid <= 0)
+		warn("%s is not running", p->name);
+	else
 		kill(SIGHUP, p->pid);
-	}
 }

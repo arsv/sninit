@@ -24,7 +24,7 @@ static struct cmdrec {
 	{ 'd', 1, "stop",	},
 	{ 'p', 1, "pause",	},
 	{ 'h', 1, "hup",	},
-	{ 'u', 1, "uphup",	},
+	{ 'i', 1, "pidof",	},
 	{ 'w', 1, "resume",	},
 	{ 'P', 0, "poweroff",	},
 	{ 'H', 0, "halt",	},
