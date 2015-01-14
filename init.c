@@ -5,6 +5,7 @@
 #include <sys/reboot.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <time.h>
 #include <errno.h>
 #include <unistd.h>
 
@@ -17,6 +18,8 @@ int currlevel;		// currently occupied runlevel bitmask
 int nextlevel;		// the one we're switching to; =curlevel when we're done switching
 int state;		// S_* flags
 int timetowait;		// poll timeout, ms. Cleared in main(), set by waitneeded(), checked by pollfds()
+time_t passtime;	// time at the start of current initpass
+
 int warnfd;		// primary log fd (see init_warn.c)
 int rbcode;		// reboot code, for reboot(2)
 
@@ -34,6 +37,7 @@ static int setup(int argc, char** argv);
 static int setinitctl(void);
 static void setsignals(void);
 static void setargs(int argc, char** argv);
+static int setpasstime(void);
 
 extern int configure(int);
 extern void setnewconf(void);
@@ -61,6 +65,8 @@ int main(int argc, char** argv)
 {
 	if(setup(argc, argv))
 		goto reboot;	/* Initial setup failed badly */
+	if(setpasstime())
+		passtime = BOOTCLOCKOFFSET;
 
 	while(1)
 	{
@@ -84,6 +90,12 @@ int main(int argc, char** argv)
 		   or (if the socket is open) telinit commands.
 		   Only set state flags here, do not do any processing. */
 		pollctl();
+
+		/* Update monotime after ppoll for a new cycle. The assumption
+		   here is that acceptctl typically takes less time than pollctl. */
+		/* See comments in setpasstime() on error recovery */
+		if(setpasstime() && timetowait > 0)
+			passtime += timetowait;
 
 		/* reap dead children */
 		if(state & S_SIGCHLD)
@@ -248,4 +260,33 @@ static void sighandler(int sig)
 			setinitctl();
 			break;
 	}
+}
+
+/* Kernels below 2.6.something have no CLOCK_BOOTTIME defined */
+/* Should be in config.h, but CLOCK_BOOTTIME may not be defined there */
+#ifdef CLOCK_BOOTTIME
+#define INIT_CLOCK CLOCK_BOOTTIME
+#else
+#define INIT_CLOCK CLOCK_MONOTONIC
+#endif
+
+int setpasstime(void)
+{
+	struct timespec tp;
+
+	/* There are very few good ways to handle failing clock.
+	   In case clock fails, init will always assume ppoll gets
+	   no interrupts, slowly accumulating error if it does
+	   but still keeping the system afloat.
+
+	   Like with ppoll failures, ignoring these is a bad bad idea,
+	   no matter how unlikely they are, because of possible disruption
+	   of the main loop. */
+
+	if(clock_gettime(INIT_CLOCK, &tp))
+		retwarn(-1, "clock failed: %m");
+
+	passtime = tp.tv_sec + BOOTCLOCKOFFSET;
+
+	return 0;
 }

@@ -46,3 +46,10 @@
 /* Maximum full file name for service files; only affects initdirs */
 #define FULLNAMEMAX 256
 
+/* At bootup, the system starts with all lastrun=0 and possibly also
+   with the clock near 0, activating time_to_* timers even though
+   no processes have been started at time 0. To avoid delays, monotonic
+   clocks are shifted forward so that boot occurs at some time past 0 */
+/* This may be as low as the actual value of time_to_restart,
+   but just in case it's to the maximum possible time_to_restart value. */
+#define BOOTCLOCKOFFSET 0xFFFF
