@@ -251,6 +251,7 @@ static void sighandler(int sig)
 			
 		case SIGTERM:	/* C-c when testing */
 		case SIGINT:	/* C-A-Del with S_PID1 */
+			rbcode = RB_AUTOBOOT;
 			nextlevel = (1<<0);
 			break;
 
