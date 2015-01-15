@@ -3,9 +3,10 @@
 
 #define AF_UNIX		1
 
-#define SOCK_STREAM	1
-#define SOCK_DGRAM	2
-#define SOCK_NONBLOCK  04000
+#define SOCK_STREAM		1
+#define SOCK_DGRAM		2
+#define SOCK_NONBLOCK       04000
+#define SOCK_CLOEXEC     02000000
 
 #define SO_PASSCRED	16
 #define SOL_SOCKET	1
