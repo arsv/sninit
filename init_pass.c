@@ -38,7 +38,8 @@ static inline int shouldberunning(struct initrec* p);
 
 #define wtype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE | C_WAIT))
 #define htype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
-#define owtype(p) ((p->flags & C_ONCE))
+#define owtype(p)  ((p->flags & C_ONCE))
+#define hstype(p) (!(p->flags & C_ONCE))
 
 void initpass(void)
 {
@@ -82,6 +83,9 @@ void initpass(void)
 				continue; /* has been run already */
 			if(waitfor && wtype(p))
 				return;
+
+			if(hstype(p) && (cfg->slippery & nextlevel))
+				continue; /* these will be killed anyway */
 
 			spawn(p);
 
