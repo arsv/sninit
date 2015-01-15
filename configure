@@ -301,6 +301,23 @@ case "$arch:$ccarch" in
 		;;
 esac
 
+# See if we'd like to use bundled libc by default,
+# and try to guess arch if bundled was specified without an arg
+if [ -z "$libc" -o "$libc" == 'bundled' ]; then
+	case "$arch:$ccarch" in
+		:x86_64*) arch=x86_64 ;;
+		# x86_32 is *not* reported as such and must be specified explicitly!
+		:x86*) arch=x86 ;;
+		:arm*) arch=arm ;;
+		:mips64*) ;;
+		:mips*) arch=mips ;;
+	esac
+fi; if [ "$libc" == 'bundled' -a -z "$arch" ]; then
+	die "Can't guess target architecture, use arch= option"
+elif [ -z "$libc" -a -n "$arch" ]; then
+	libc=bundled
+fi
+
 # Handle optimization
 if [ "$optimize" == 'auto' ]; then
 	optcommon="-Os -fno-asynchronous-unwind-tables"
@@ -324,23 +341,6 @@ fi
 if [ -n "$debug" ]; then
 	cflags=${cflags:+$cflags }$debug
 	asflags=${asflags:+$asflags }-g
-fi
-
-# See if we'd like to use bundled libc by default,
-# and try to guess arch if bundled was specified without an arg
-if [ -z "$libc" -o "$libc" == 'bundled' ]; then
-	case "$arch:$ccarch" in
-		:x86_64*) arch=x86_64 ;;
-		# x86_32 is *not* reported as such and must be specified explicitly!
-		:x86*) arch=x86 ;;
-		:arm*) arch=arm ;;
-		:mips64*) ;;
-		:mips*) arch=mips ;;
-	esac
-fi; if [ "$libc" == 'bundled' -a -z "$arch" ]; then
-	die "Can't guess target architecture, use arch= option"
-elif [ -z "$libc" -a -n "$arch" ]; then
-	libc=bundled
 fi
 
 # Check which blocks init needs
