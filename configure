@@ -167,7 +167,7 @@ while [ $# -gt 0 ]; do
 		with-hostcc|hostcc) argreq
 			hostcc="$val"
 			;;
-		cflags|asflags|hostcflags)
+		cflags|asflags|hostcflags|ldflags)
 			eval "$arq='$val'"
 			;;
 		bundled|with-bundled|with-bundled-libc)
