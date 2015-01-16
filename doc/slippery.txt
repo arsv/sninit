@@ -75,3 +75,41 @@ something system-specific.
 Note the use of "once": in most cases, the hooks are independent,
 and "wait" on the sleep-trigger command ensures it will only be run after all
 o-type entries have exited.
+
+
+Handling services
+~~~~~~~~~~~~~~~~~
+When entering slippery runlevels, s-type entries that should be stopped are stopped
+but those that should be started are NOT started.
+
+This is in line with using slippery runlevels to implement system sleep states.
+Consider the following setup:
+
+	S1:137::/sbin/syslogd
+	S2:-37::/sbin/crond
+	S3:-3-::/sbin/networkd
+
+The idea here is that both S1 and S2 need no special treatment as far as sleep
+is concerned, but S3 must be restarted. During 3->7->3 transition everything
+goes well, but 1->7->1 transition without the above exception for s-entries
+would cause S2 to be started before going to sleep, and killed immediately after
+waking up.
+
+Removing 7 from S2 wouldn't help either, as it would result in S2
+being restarted during 3->7->3 transition. And ignoring s-entries completely
+when entering slippery levels (i.e. neither killing nor starting them) would
+break S3, which is expected to be restarted.
+
+
+Slippery runlevels and sublevels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Current implementation treats slippery runlevels as primary but makes them work
+a lot like secondary runlevels. In particular, the above example would have
+looked a lot simpler had the sleep level been a secondary one...
+
+Well not. All things considered, it does make sense to have a "sleep" level
+as a primary one.
+
+On a side note, slippery secondary runlevels can be implemented alongside
+primary ones, and it's about as easy as setting relevant bits in cfg->slippery.
+The problem is, I can't think of any good use case for them.
