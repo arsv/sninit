@@ -40,6 +40,7 @@ static inline int shouldberunning(struct initrec* p);
 #define htype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
 #define owtype(p)  ((p->flags & C_ONCE))
 #define hstype(p) (!(p->flags & C_ONCE))
+#define slippery(rlvl) (cfg->slippery & rlvl)
 
 void initpass(void)
 {
@@ -84,7 +85,7 @@ void initpass(void)
 			if(waitfor && wtype(p))
 				return;
 
-			if(hstype(p) && (cfg->slippery & nextlevel))
+			if(hstype(p) && slippery(nextlevel))
 				continue; /* these will be killed anyway */
 
 			spawn(p);
@@ -108,7 +109,7 @@ void initpass(void)
 		if(!shouldberunning(p) && owtype(p) && (p->pid < 0))
 			p->pid = 0;
 
-	if((cfg->slippery & nextlevel) && !(cfg->slippery & currlevel)) {
+	if(slippery(nextlevel) && !slippery(currlevel)) {
 		/* nextlevel is slippery, turn back to currlevel */
 		swapi(&currlevel, &nextlevel);
 		/* We've got to make sure pollfds will return immediately. */
