@@ -11,6 +11,7 @@ initdir.txt	  What is initdir
 limits.txt	  Setting limits for child processes (runcap)
 sublevels.txt	  Runlevels abcdef
 slippery.txt	  Slippery runlevels (sleep, suspend)
+newtab.txt	  Why a new inittab format
 
 libc.txt	  Bundled libc, what and why
 syscalls.txt	  Bundled libc: syscall implementation
