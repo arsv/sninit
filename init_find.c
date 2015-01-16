@@ -2,7 +2,7 @@
 #include "init.h"
 
 /* This tiny function is called from two wildly different places,
-   so to keep depencies sane it was moved to its own file.
+   so to keep dependencies sane it was moved to its own file.
 
    init_conf uses it when transferring pids (but init_conf_* may be left out)
    init_cmds uses it to start/stop entries (but statictab should not link cmds) */
