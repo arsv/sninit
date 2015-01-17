@@ -5,7 +5,7 @@
 
 extern const char* tzfile;
 
-extern void tzinit(void);
+extern void tzinit(time_t base);
 extern void tzparse(unsigned char* buf, int len, time_t t0);
 
 extern struct {
@@ -17,12 +17,6 @@ extern struct {
 
 time_t tztime;
 
-time_t time(time_t* tm)
-{
-	if(tm) *tm = tztime;
-	return tztime;
-}
-
 int main(void)
 {
 	memset(&tzinfo, sizeof(tzinfo), 0);
@@ -30,7 +24,7 @@ int main(void)
 	/* Regular entry */
 	tzfile = "t_tzinit_1.bin";
 	tztime = 1407707612;
-	tzinit();
+	tzinit(tztime);
 	A(tzinfo.set);
 	A(tzinfo.ts == 1396141200);
        	A(tzinfo.te == 1414285200);
@@ -40,7 +34,7 @@ int main(void)
 	/* Relevant interval is last-transition to +inf */
 	tztime = 2140045300;
 	tzinfo.set = 0;
-	tzinit();
+	tzinit(tztime);
 	A(tzinfo.set);
 	A(tzinfo.ts == 2140045200);
 	A(tzinfo.te == 0);
@@ -50,7 +44,7 @@ int main(void)
 	/* Relevant inverval is -inf to the first transition time */
 	tztime = -1441159324; /* (May 1924, really?) */
 	tzinfo.set = 0;
-	tzinit();
+	tzinit(tztime);
 	A(tzinfo.set);
 	A(tzinfo.ts == 0);
 	A(tzinfo.te == -1441159324);
@@ -62,7 +56,7 @@ int main(void)
 	tzinfo.dt = 1122;
 	tzfile = "t_tzinit_0.bin";
 	tztime = 1407707612;
-	tzinit();
+	tzinit(tztime);
 	A(tzinfo.set);
 	A(tzinfo.ts == 1234);	/* the correct behavior is not to change ts/te/dt in case tzparse fails */
        	A(tzinfo.te == 5678);	/* (ok more like implemented behavior, not necessary correct) */
@@ -74,7 +68,7 @@ int main(void)
 	tzinfo.dt = 1122;
 	tzfile = "t_tzinit_2.bin";
 	tztime = 1407707612;
-	tzinit();
+	tzinit(tztime);
 	A(tzinfo.set);
 	A(tzinfo.ts == 1234);	/* again, should keep the values */
        	A(tzinfo.te == 5678);
