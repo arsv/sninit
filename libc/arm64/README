@@ -8,7 +8,7 @@ ABI is nice and uniform:
 Syscall     x8 (x0, x1, x2, x3, x4, x5) -> x0
 Function       (x0, x1, x2, x3, x4, x5) -> x0
 
-No stack is used for syscalls, not even for return address.
+No stack needed for syscalls, not even to hold return address.
 
 ARM64 uses asm-generic syscall numbers, with non-flagged
 syscalls being deprecated in favor of flagged ones.

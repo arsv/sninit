@@ -17,9 +17,8 @@ environ: .dword 0
 
 _start:
 
-	mov	x29, #0			/* FP */
 	mov	x30, #0			/* LR */
-	mov	x29, sp			/* ??? */
+	mov	x29, sp			/* FP */
 
 	ldr	x0, [sp]		/* argc */
 	add	x1, sp, #8		/* argv */
