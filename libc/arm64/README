@@ -1,0 +1,16 @@
+ARMv8 64bit mode, aka Aarch64 aka arm64.
+Toolchains are usually aarch64-* while linux kernel uses arm64
+for arch name, probably to avoid confusion between Aarch32 and
+(nonexistant yet?) short-pointer version of arm64.
+
+ABI is nice and uniform:
+
+Syscall     x8 (x0, x1, x2, x3, x4, x5) -> x0
+Function       (x0, x1, x2, x3, x4, x5) -> x0
+
+No stack is used for syscalls, not even for return address.
+
+ARM64 uses asm-generic syscall numbers, with non-flagged
+syscalls being deprecated in favor of flagged ones.
+(waitpid <- wait4, sigaction <- rt_sigaction, open <- openat etc)
+TODO: implement fork <- clone, and document them or something.
