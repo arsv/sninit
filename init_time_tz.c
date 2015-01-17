@@ -34,7 +34,7 @@ struct {
 
 extern int mktimestamp(char* p, int l, time_t ts);
 
-static void tzinit(void);
+static void tzinit(time_t base);
 static void tzparse(unsigned char* buf, int len, time_t t0);
 
 /* This is somewhat illogical to do heavy file operations
@@ -47,20 +47,22 @@ static void tzparse(unsigned char* buf, int len, time_t t0);
 
 int timestamp(char* buf, int len)
 {
-	time_t t = time(NULL);
+	struct timespec tp = { 0, 0 };
+	
+	clock_gettime(CLOCK_REALTIME, &tp);
 
 	if(!tzinfo.set
-	|| (tzinfo.ts && t < tzinfo.ts)
-	|| (tzinfo.te && t < tzinfo.te))
-		tzinit();
+	|| (tzinfo.ts && tp.tv_sec < tzinfo.ts)
+	|| (tzinfo.te && tp.tv_sec < tzinfo.te))
+		tzinit(tp.tv_sec);
 
-	return mktimestamp(buf, len, t + tzinfo.dt);
+	return mktimestamp(buf, len, tp.tv_sec + tzinfo.dt);
 }
 
 /* Load /etc/localtime, initializing tzinfo structure above */
 /* Should have been (strong) void tzset(), but alas, tzset happens
    to be a strong symbol in dietlibc. */
-static void tzinit(void)
+static void tzinit(time_t base)
 {
 	int fd;
 	struct stat st;
@@ -75,7 +77,7 @@ static void tzinit(void)
 	if((buf = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0)) == MAP_FAILED)
 		goto out;
 
-	tzparse(buf, st.st_size, time(NULL));
+	tzparse(buf, st.st_size, base);
 
 	munmap(buf, st.st_size);
 out:	close(fd);

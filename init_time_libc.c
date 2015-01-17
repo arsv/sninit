@@ -6,10 +6,10 @@
 
 int timestamp(char* buf, int len)
 {
-	time_t now;
+	struct timespec tp = { 0, 0 };
 
-	time(&now);
-	strftime(buf, len, "%h %e %T ", localtime(&now));
+	clock_gettime(CLOCK_REALTIME, &tp);
+	strftime(buf, len, "%h %e %T ", localtime(&tp.tv_sec));
 
 	return strlen(buf);
 }
