@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 	if(setup(argc, argv))
 		goto reboot;	/* Initial setup failed badly */
 	if(setpasstime())
-		passtime = BOOTCLOCKOFFSET;
+		passtime = BOOTCLOCKOFFSET;	/* see setpasstime comments below */
 
 	while(1)
 	{
@@ -263,14 +263,12 @@ static void sighandler(int sig)
 	}
 }
 
-/* Kernels below 2.6.something have no CLOCK_BOOTTIME defined */
-/* Should be in config.h, but CLOCK_BOOTTIME may not be defined there */
-#ifdef CLOCK_BOOTTIME
-#define INIT_CLOCK CLOCK_BOOTTIME
-#else
-#define INIT_CLOCK CLOCK_MONOTONIC
-#endif
-
+/* At bootup, the system starts with all lastrun=0 and possibly also
+   with the clock near 0, activating time_to_* timers even though
+   no processes have been started at time 0. To avoid delays, monotonic
+   clocks are shifted forward so that boot occurs at some time past 0 */
+/* This may be as low as the actual value of time_to_restart,
+   but just in case it's to the maximum possible time_to_restart value. */
 int setpasstime(void)
 {
 	struct timespec tp;
@@ -284,7 +282,7 @@ int setpasstime(void)
 	   no matter how unlikely they are, because of possible disruption
 	   of the main loop. */
 
-	if(clock_gettime(INIT_CLOCK, &tp))
+	if(clock_gettime(CLOCK_MONOTONIC, &tp))
 		retwarn(-1, "clock failed: %m");
 
 	passtime = tp.tv_sec + BOOTCLOCKOFFSET;
