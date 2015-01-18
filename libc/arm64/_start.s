@@ -16,7 +16,6 @@ environ: .dword 0
 .global environ
 
 _start:
-
 	mov	x30, #0			/* LR */
 	mov	x29, sp			/* FP */
 
@@ -26,6 +25,7 @@ _start:
 	add	x2, x1, x0, lsl #3	/* &argv[argc] */
 	add	x2, x2, #4		/* envp	 */
 	str	x2, [x3, #0]		/* environ = envp */
+
 	bl	main
 
 _exit:
