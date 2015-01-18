@@ -17,13 +17,14 @@ unisys:
 
 	add	w1, w0, #0x1, lsl #12
 	cmp	w1, #0xfff
-	b.hi	1f
-	adr	x1, errno
+	b.ls	1f
+	ret	/* no error */
+
+1:	adr	x1, errno
 	neg	w0, w0
 	str	w0, [x1]
 	mov	x0, #-1
-
-1:	ret
+	ret	/* error */
 
 .size unisys,.-unisys
 .type unisys,function
