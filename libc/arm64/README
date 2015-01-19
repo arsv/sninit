@@ -1,14 +1,18 @@
-ARMv8 64bit mode, aka Aarch64 aka arm64.
-Toolchains are usually aarch64-* while linux kernel uses arm64
-for arch name, probably to avoid confusion between Aarch32 and
-(nonexistant yet?) short-pointer version of arm64.
+ARMv8 64bit mode, aka Aarch64.
+
+Toolchains (gcc) prefer aarch64-* while linux kernel uses arm64
+for arch name. Since regular 32-bit ARM (aka Aarch32) files are
+in arm/ directory, this one is arm64/ for consistency.
+The name arm32 gets reserved for Aarch64 with short pointers.
+
 
 ABI is nice and uniform:
 
 Syscall     x8 (x0, x1, x2, x3, x4, x5) -> x0
 Function       (x0, x1, x2, x3, x4, x5) -> x0
 
-No stack needed for syscalls, not even to hold return address.
+Stack interaction is not needed at all, parameters are passed
+in registers and ret handles lr/pc stuff.
 
 ARM64 uses asm-generic syscall numbers, with non-flagged
 syscalls being deprecated in favor of flagged ones.
