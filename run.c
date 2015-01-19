@@ -381,14 +381,15 @@ static int openlog(const char* name)
 	return checkopen(outbuf);
 }
 
-const char* basename(const char* path)
+/* const char* actually but alas this is how it is declared in <string.h> */
+char* basename(const char* path)	
 {
 	const char* p = path;
 	const char* q = path;
 
 	while(*p) if(*(p++) == '/') q = p;
 
-	return q;
+	return (char*)q;
 }
 
 static void apply(char* cmd)
