@@ -390,7 +390,6 @@
 
 /* DEPRECATED! */
 
-#define __NR_fork 1079
 #define __NR_time 1062
 
 #endif
