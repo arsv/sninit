@@ -267,8 +267,10 @@ static void sighandler(int sig)
    with the clock near 0, activating time_to_* timers even though
    no processes have been started at time 0. To avoid delays, monotonic
    clocks are shifted forward so that boot occurs at some time past 0 */
-/* This may be as low as the actual value of time_to_restart,
-   but just in case it's to the maximum possible time_to_restart value. */
+/* The offset may be as low as the actual value of time_to_restart,
+   but since time_to_restart is a short using 0xFFFF is a viable option.
+   After all, even with offset that large monotonic clock values are much
+   much lower than those routinely returned by CLOCK_REALTIME. */
 int setpasstime(void)
 {
 	struct timespec tp;
