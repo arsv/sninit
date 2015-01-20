@@ -24,6 +24,7 @@
 #include <sys/resource.h>
 #include <sys/prctl.h>
 #include <sys/ioctl.h>
+#include <sys/fsuid.h>
 #include <string.h>
 #include <errno.h>
 
@@ -43,6 +44,8 @@
 /* Cgroups and ulimits are applied immediately, no need to store those */
 int uid = -1;
 int gid = -1;
+int fsuid = -1;
+int fsgid = -1;
 /* Secondary groups */
 int gidn = 0;
 gid_t gids[MAXGROUPS];
@@ -68,7 +71,6 @@ struct rcfile {
 };
 
 static void parseopt(char* opt);
-static void adduser(char* p);
 static void addgroup(char* p);
 static void setlimit(char* p, int key);
 static void setcg(char* p);
@@ -76,6 +78,9 @@ static void setprio(char* p);
 static void setsess(void);
 static void setctty(void);
 static void apply(char* cmd);
+
+static uid_t finduser(char* p, int* logingroup);
+static gid_t findgroup(char* p);
 
 #define noreturn __attribute__((noreturn))
 static void die(const char* msg, const char* arg, const char* err) noreturn;
@@ -109,9 +114,12 @@ static void parseopt(char* opt)
 again:	switch(c = *(opt++)) {
 		case '\0': break;
 
-		case 'u': adduser(opt);	break;
-		case 'g': addgroup(opt);break;
-		case 'C': setcg(opt);	break;
+		case 'g': addgroup(opt);		break;
+		case 'u':   uid = finduser(opt, &gid);	break;
+		case 'F': fsuid = finduser(opt, &fsgid);break;
+		case 'G': fsgid = findgroup(opt);	break;
+		case 'C': setcg(opt);			break;
+
 		case 'O': bits |= REDIRERR;
 		case 'o': bits |= REDIROUT;
 			  out = opt; break;
@@ -200,17 +208,15 @@ static int isnumeric(char* s)
 	return 1;
 }
 
-static void adduser(char* user)
+static uid_t finduser(char* user, int* gidp)
 {
 	char* l;
 	char* name;
 	char* uidstr;
 	char* gidstr;
 
-	if(isnumeric(user)) {
-		uid = atoi(user);
-		return;
-	}
+	if(isnumeric(user))
+		return atoi(user);
 
 	rcmapfile(&passwd);
 	while((l = rcnextline(&passwd))) {
@@ -222,9 +228,9 @@ static void adduser(char* user)
 		gidstr = strsep(&l, ":");
 		if(!uidstr || !gidstr)
 			continue;
-		uid = atoi(uidstr);
-		gid = atoi(gidstr);
-		return;
+		if(gidp && *gidp < 0)
+			*gidp = atoi(gidstr);
+		return atoi(uidstr);
 	}
 
 	die("Unknown user ", user, NULL);
@@ -398,6 +404,13 @@ char* basename(const char* path)
 static void apply(char* cmd)
 {
 	int outfd;
+
+	if(fsuid >= 0)
+		if(setfsuid(fsuid))
+			die("setfsuid failed", NULL, ERRNO);
+	if(fsgid >= 0)
+		if(setfsgid(fsgid))
+			die("setfsgid failed", NULL, ERRNO);
 
 	if(gid >= 0)
 		if(setresgid(gid, gid, gid))
