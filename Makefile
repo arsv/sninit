@@ -38,7 +38,7 @@ telinit: telinit.o \
 
 run_err = sys_err_run.o
 run_execvp = sys_execvp.o
-run_sys = sys_err_telinit.o sys_execvp.o
+run_sys = sys_err_run.o sys_execvp.o
 
 run: run.o \
 	$(sort $(foreach b,$(initblocks),$(run_$(b))))

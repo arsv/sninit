@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-/* Error messages for runcap. See sys_err_init.c for explaination. */
+/* Error messages for run. See sys_err_init.c for explaination. */
 /* This is similar to telinit */
 
 extern char* ltoa(long n);
@@ -12,10 +12,9 @@ char* strerror(int err)
 {
 	switch(err) {
 		r(EAGAIN);	/* setresuid */
-		r(EPERM);	/* setresuid, capset */
-		r(EFAULT);	/* capset, open */
-		r(EINVAL);	/* capset */
-		r(ESRCH);	/* capset */
+		r(EPERM);	/* setresuid */
+		r(EFAULT);	/* open */
+		r(EINVAL);	/* any, bad news */
 		r(ELOOP);	/* open, unlikely */
 		r(EACCES);	/* open */
 		r(EISDIR);	/* open */
