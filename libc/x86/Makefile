@@ -3,7 +3,7 @@
 # This one is only for re-generating arch-specific syscall files.
 
 # syscalls that do no require any additional setup
-direct = fork execve kill getpid time waitpid setfsuid setfsgid
+direct = fork execve kill getpid waitpid setfsuid setfsgid
 direct += open close read write dup2 fstat ioctl getdents64 openat stat
 direct += mremap munmap clock_gettime nanosleep setpgid setpriority getpriority
 direct += prctl setresgid setresuid capset setsid getegid geteuid setrlimit
@@ -18,7 +18,7 @@ gens = $(directs) $(sockets)
 genr = $(patsubst %.s,x-%,$(gens))
 
 # for these, some argument mangling is required
-custom = ppoll reboot sigaction sigprocmask time socketcall mmap
+custom = ppoll reboot sigaction sigprocmask socketcall mmap
 
 # for quick syntax check
 AS = gcc -m32 -march=i686 -c
