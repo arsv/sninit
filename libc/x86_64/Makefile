@@ -7,7 +7,7 @@ direct = fork execve kill getpid setfsuid setfsgid
 direct += open close read write dup2 fstat ioctl getdents64 openat stat
 direct += mmap mremap munmap clock_gettime nanosleep setpriority getpriority
 direct += socket setsockopt bind connect listen accept sendto sendmsg recvmsg shutdown
-direct += prctl setresgid setresuid capset setsid getegid geteuid setrlimit setpgid
+direct += prctl setresgid setresuid setsid getegid geteuid setrlimit setpgid
 
 directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))

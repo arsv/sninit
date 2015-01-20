@@ -6,7 +6,7 @@ direct = fork execve kill getpid
 direct += close read write fstat ioctl getdents64
 direct += munmap clock_gettime nanosleep
 direct += socket bind connect listen accept sendmsg recvmsg shutdown
-direct += prctl setresgid setresuid capset setsid getegid geteuid setrlimit
+direct += prctl setresgid setresuid setsid getegid geteuid setrlimit
 direct += setpgid setpriority getpriority setfsuid setfsgid
 direct += mremap setsockopt
 
