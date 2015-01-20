@@ -2,16 +2,17 @@
    could have been implemented in sninit (but wasn't).
    See doc/limits.txt for discussion of the problem.
 
-   Yet even with background like this, runcap is completely independent
-   from sninit. It could easily be packaged and distributed as a stanalone utility.
+   Yet even with background like this, runcap is completely independent from
+   sninit. It could easily be packaged and distributed as a stanalone utility.
 
    This perfect separation of functions was actually one of the main reasons
    to make it standalone, vs. having all this built into init. */
 
 /* The original name for this tool was "runcap", and it could set capabilities
-   among other things. However, it turned out capabilities are badly broken in Linux
-   at least as far as impose-restrictions-upon-child approach is considered,
-   so all support for them was dropped and the tool was renamed to just "run". */
+   among other things. However, it turned out capabilities are badly broken
+   in Linux at least as far as impose-restrictions-upon-child approach is
+   considered, so all support for them was dropped and the tool was renamed
+   to just "run". */
 
 #define _GNU_SOURCE
 #include <stdlib.h>
@@ -76,7 +77,8 @@ static void setsess(void);
 static void setctty(void);
 static void apply(char* cmd);
 
-static void die(const char* msg, const char* arg, const char* err) __attribute__((noreturn));
+#define noreturn __attribute__((noreturn))
+static void die(const char* msg, const char* arg, const char* err) noreturn;
 
 int main(int argc, char** argv)
 {
@@ -94,7 +96,7 @@ int main(int argc, char** argv)
 		else
 			parseopt(argp + 1);
 	} if(!*argv)
-		die("Usage: run [options] command arg arg arg ...", NULL, NULL);
+		die("Usage: run [options] command arg arg ...", NULL, NULL);
 	
 	apply(*argv);
 	execvp(*argv, argv);
@@ -121,7 +123,7 @@ again:	switch(c = *(opt++)) {
 		case 'r': setprio(opt); break;
 
 		/* ulimit keys, closely following bash(1) ulimit command */
-		/* note T is used for RTTIME here; in bash, it's apparently NPROC */
+		/* note T is used for RTTIME here; in bash, it's NPROC */
 		case 'a': setlimit(opt, RLIMIT_AS);	break;
 		case 'c': setlimit(opt, RLIMIT_CORE);	break;
 		case 't': setlimit(opt, RLIMIT_CPU);	break;
@@ -141,12 +143,13 @@ again:	switch(c = *(opt++)) {
 		/* musl lacks this? */
 		case 'T': setlimit(opt, RLIMIT_RTTIME); break;
 #endif
-		default: *opt = '\0'; die("Unsupported option -", (opt-1), NULL);
+		default: *opt = '\0';
+			 die("Unsupported option -", (opt-1), NULL);
 	}
 }
 
 /* rc* to avoid name clashes with init_conf_mem, keeping ctags consistent */
-/* Note there's no munmap; mmaped files are dropped during exec, so why bother */
+/* There's no munmap; mmaped files are dropped during exec, so why bother */
 static void rcmapfile(struct rcfile* f)
 {
 	int fd;
@@ -265,8 +268,8 @@ static void addgroup(char* group)
 };
 
 /* Limits could have been stored just like uid/gids... except it's not needed.
-   Unlike uid/gid changes, limit settings are independent and do not prevent run
-   from doing its work even if set immediately. So, why bother. */
+   Unlike uid/gid changes, limit settings are independent and do not prevent
+   run from doing its work even if set immediately. So, why bother. */
 static void setlimit(char* lim, int key)
 {
 	char* hard;
