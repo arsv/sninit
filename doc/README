@@ -17,7 +17,7 @@ libc.txt	  Bundled libc, what and why
 syscalls.txt	  Bundled libc: syscall implementation
 
 
--- Using sninit
+-- Usage notes
 
 initctl.txt	  Control socket protocol
 inittab.txt	  Inittab syntax
