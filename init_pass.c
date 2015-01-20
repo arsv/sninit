@@ -144,13 +144,12 @@ void initpass(void)
 
 static inline int shouldberunning(struct initrec* p)
 {
+	if(p->flags & P_DISABLE)
+		/* manually disabled */
+		return 0;
 	if(!(p->rlvl & nextlevel & PRIMASK))
 		/* not in this primary level */
 		return 0;
-	if(p->flags & P_MANUAL)
-		/* manually enabled, ignore sublevels */
-		/* manual disable drops bit from rlvl */
-		return 1;
 	if(!(p->rlvl & SUBMASK))
 		/* sublevels not defined = run in all sublevels */
 		return 1;

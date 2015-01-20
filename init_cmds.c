@@ -21,7 +21,8 @@ static void dumpstate(void);
 static void dumpidof(struct initrec* p);
 
 static void dorestart(struct initrec* p);
-static void doenable(struct initrec* p, int v);
+static void dodisable(struct initrec* p, int v);
+static void dostart(struct initrec* p);
 static void dopause(struct initrec* p, int v);
 static void dohup(struct initrec* p);
 
@@ -45,7 +46,8 @@ void parsecmd(char* cmd)
 
 	switch(*cmd) {
 		case 'r':		/* restart */
-		case 'e': case 'd':	/* start, stop */
+		case 'e': case 'd':	/* enable, disable */
+		case 's': case 't':	/* start, stop */
 		case 'p': case 'w':	/* pause, resume */
 		case 'h': case 'i':	/* hup, pidof */
 			if(!(p = findentry(arg)))
@@ -69,8 +71,10 @@ void parsecmd(char* cmd)
 		case 'r': dorestart(p); break;
 		case 'p': dopause(p, 1); break;
 		case 'w': dopause(p, 0); break;
-		case 'd': doenable(p, 0); break;
-		case 'e': doenable(p, 1); break;
+		case 'd': dodisable(p, 1); break;
+		case 'e': dodisable(p, 0); break;
+		case 's': dostart(p); break;
+		case 't': dodisable(p, 1); break;
 		case 'h': dohup(p); break;
 		/* state query */
 		case '?': dumpstate(); break;
@@ -228,17 +232,39 @@ static void clearts(struct initrec* p)
 	p->lastsig = 0;
 }
 
+/* Now what this does is a forced start of a service
+   (unlike enable which is more like "release brakes")
+
+   The idea is to change runlevel mask so that the entry
+   would be started in current runlevel, *and* let the
+   service go down after a runlevel switch if it is
+   configured to do so. Forcing always-on state with something
+   like P_ENABLED may break sleep modes and expected shutdown
+   routine.
+ 
+   There is no dostop because to P_DISABLE is enough to
+   force-stop a process regardless of its configured runlevels */
+
+static void dostart(struct initrec* p)
+{
+	clearts(p);
+	p->rlvl |= (nextlevel & PRIMASK);
+	p->rlvl &= (nextlevel & SUBMASK) | PRIMASK;
+	p->flags &= ~P_DISABLE;
+}
+
+/* Without any other changes (runlevels or whatever),
+   the entry will be restarted during the first initpass after its death. */
 static void dorestart(struct initrec* p)
 {
 	clearts(p);
 	stop(p);
 }
 
-static void doenable(struct initrec* p, int v)
+static void dodisable(struct initrec* p, int v)
 {
 	clearts(p);
-	scflags(&(p->rlvl), currlevel & PRIMASK, v);
-	scflags(&(p->flags), P_MANUAL, v);
+	scflags(&(p->flags), P_DISABLE, v);
 }
 
 static void dopause(struct initrec* p, int v)

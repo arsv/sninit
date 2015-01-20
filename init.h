@@ -14,7 +14,7 @@
 #define C_WAIT		(1<<1)		/* w-type entry; wait before starting, wait until finished */
 #define C_USEABRT	(1<<2)		/* use SIGABRT instead of SIGINT when stopping process */
 
-#define P_MANUAL	(1<<8)		/* process has been enabled manually */
+#define P_DISABLE	(1<<8)		/* process has been disabled manually */
 #define P_SIGSTOP	(1<<9)		/* SIGSTOP has been sent */
 #define P_SIGTERM	(1<<10)		/* SIGTERM (or SIGABRT) has been sent to this process */
 #define P_SIGKILL	(1<<11)		/* SIGKILL has been sent to this process */

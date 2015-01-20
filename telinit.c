@@ -20,8 +20,10 @@ static struct cmdrec {
 } cmdtbl[] = {
 	{ 'q', 0, "reload",	},
 	{ 'r', 1, "restart",	},
-	{ 'e', 1, "start",	},
-	{ 'd', 1, "stop",	},
+	{ 's', 1, "start",	},
+	{ 't', 1, "stop",	},
+	{ 'e', 1, "enable",	},
+	{ 'd', 1, "disable",	},
 	{ 'p', 1, "pause",	},
 	{ 'h', 1, "hup",	},
 	{ 'i', 1, "pidof",	},
