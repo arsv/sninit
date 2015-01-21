@@ -23,7 +23,7 @@ static inline int shouldberunning(struct initrec* p);
    There are two principal passes over inittab: bottom-to-top that kills
    processes first, and top-to-bottom that spawns processes. Backwards
    pass is needed to C_WAIT without C_ONCE, i.e. waiting for things to
-   die before killing certain s-type records (syslog primarily).
+   die before killing certain r-type records (syslog primarily).
 
    In case a C_WAIT entry is reached during either pass, relevant action
    is performed and initpass return.
@@ -31,14 +31,14 @@ static inline int shouldberunning(struct initrec* p);
    Blocking wait is never used, init waits for w-type entries in ppoll().
  
    Because no explicit list pointer is kept during runlevel switching,
-   things get a bit tricky with w-/o-type entries which are traversed
+   things get a bit tricky with w-/e-type entries which are traversed
    several times but should only be run once.
    Note to have pid reset to 0, and thus allow re-run, at least one pass
    must be completed with !shouldberunning(p) for the entry. */
 
 #define wtype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE | C_WAIT))
 #define htype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
-#define owtype(p)  ((p->flags & C_ONCE))
+#define ewtype(p)  ((p->flags & C_ONCE))
 #define hstype(p) (!(p->flags & C_ONCE))
 #define slippery(rlvl) (cfg->slippery & rlvl)
 
@@ -75,12 +75,12 @@ void initpass(void)
 			if(p->pid > 0) {
 				if(wtype(p))
 					return;
-				else if(owtype(p))
+				else if(ewtype(p))
 					waitfor |= RUNNING;
 				continue;
 			}
 
-			if(p->pid < 0 && owtype(p))
+			if(p->pid < 0 && ewtype(p))
 				continue; /* has been run already */
 			if(waitfor && wtype(p))
 				return;
@@ -90,7 +90,7 @@ void initpass(void)
 
 			spawn(p);
 
-			if(owtype(p))
+			if(ewtype(p))
 				waitfor |= RUNNING;	/* we're not in nextlevel yet */
 			if(wtype(p))
 				return;			/* off to wait for this process */
@@ -106,7 +106,7 @@ void initpass(void)
 	/* One we're here, reset pid for o-type entries, to run them when
 	   entering another runlevel with shouldberunning(p) true. */
 	for(pp = inittab; (p = *pp); pp++)
-		if(!shouldberunning(p) && owtype(p) && (p->pid < 0))
+		if(!shouldberunning(p) && ewtype(p) && (p->pid < 0))
 			p->pid = 0;
 
 	if(slippery(nextlevel) && !slippery(currlevel)) {

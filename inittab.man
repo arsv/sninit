@@ -30,7 +30,7 @@ Start the process, and keep restarting it in case it dies. This is the default m
 .IP "W" 4
 Wait for this process. Do not restart it, and do not proceed further until it dies. If there are 
 proccesses with "once" flag set, wait until all of the die before running a "wait" process.
-.IP "O" 4
+.IP "E" 4
 Run once. Do not restart the process. Unlike \fBwait\fR, do proceed to run subsequent entries.
 .IP "H" 4
 Hold this process. Like S, but wait for this process to die before proceeding to kill other processes.

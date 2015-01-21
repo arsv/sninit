@@ -11,7 +11,7 @@ LOCALE=C
 # System initialization
 W	rw	/sbin/mount -o remount,rw /
 S	-	/sbin/syslogd -n
-O	-	/sbin/hwlock -s
+E	-	/sbin/hwlock -s
 
 # VTs
 S1	su	/sbin/sulogin

@@ -49,7 +49,7 @@ code is a set of characters denoting entry type, runlevels and optional process 
 
 	W		Wait before this process finishes before proceeding to
                         the next one; w-type record, see below.
-	O		Neither wait nor respawn the process; o-type record.
+	E		Neither wait nor respawn the process; e-type record.
 
 	H		Like S, but wait for other processes to die before killing this one.
 

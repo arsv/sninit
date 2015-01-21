@@ -144,7 +144,7 @@ static struct flagrec {
 	/* entry type */
 	{ 'S',	0 },
 	{ 'W',	C_ONCE | C_WAIT },
-	{ 'O',	C_ONCE },
+	{ 'E',	C_ONCE },
 	{ 'H',	C_WAIT },
 	/* process control flags */
 	{ 'A',	C_USEABRT },

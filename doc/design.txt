@@ -33,7 +33,7 @@ sninit keeps all initrecs in the same list, using the same initrec structures,
 and has to loop through all of them even while sitting in a single runlevel.
 
 The alternative is to keep a list of s-type records separately,
-and only check for w- and o-type records when switching runlevels.
+and only check for w- and e-type records when switching runlevels.
 
 There is no clear answer here, not for me at least, but uniform
 list is clearly simpler and the price (both cpu and mem) looks negligible.
@@ -125,7 +125,7 @@ As in
 	(p4; p5; p6) &
 and waiting for them to finish.
 Currently sninit only allows this by putting "p1; p2; p3" in a shell script,
-"p4; p5; p6" in another script and running the scripts as o-type entries.
+"p4; p5; p6" in another script and running the scripts as e-type entries.
 
 I can't see a simple solution here, so it's left unimplemented for now.
 

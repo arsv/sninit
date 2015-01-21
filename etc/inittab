@@ -3,8 +3,8 @@
 PATH=/bin
 VAR=value
 
-O	i1	sbin/ini1
-O	i2	sbin/ini2
+E	i1	sbin/ini1
+E	i2	sbin/ini2
 W	i3	sbin/ini3
 
 S	s1	sbin/srv1
