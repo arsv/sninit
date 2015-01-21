@@ -38,7 +38,7 @@
 /* fs/fcntl.c */
 #define __NR_dup 23
 #define __NR_dup3 24
-#define __NR3264_fcntl 25
+#define __NR_fcntl 25
 
 /* fs/inotify_user.c */
 #define __NR_inotify_init1 26
@@ -98,10 +98,9 @@
 
 /* fs/readdir.c */
 #define __NR_getdents64 61
-#define __ARCH_WANT_COMPAT_SYS_GETDENTS64
 
 /* fs/read_write.c */
-#define __NR3264_lseek 62
+#define __NR_lseek 62
 #define __NR_read 63
 #define __NR_write 64
 #define __NR_readv 65
@@ -112,7 +111,7 @@
 #define __NR_pwritev 70
 
 /* fs/sendfile.c */
-#define __NR3264_sendfile 71
+#define __NR_sendfile 71
 
 /* fs/select.c */
 #define __NR_pselect6 72
@@ -387,9 +386,5 @@
 #define __NR_getrandom 278
 #define __NR_memfd_create 279
 #define __NR_bpf 280
-
-/* DEPRECATED! */
-
-#define __NR_time 1062
 
 #endif
