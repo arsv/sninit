@@ -73,7 +73,7 @@ int main(void)
 	rl("~123a",	R0 | R4 | R5 | R6 | R7 | R8 | R9 | Ra);
 
 	fl("S12",	0);
-	fl("O",		C_ONCE);
+	fl("E",		C_ONCE);
 	fl("W",		C_ONCE | C_WAIT);
 	fl("H",		C_WAIT);
 
