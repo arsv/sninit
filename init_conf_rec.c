@@ -137,21 +137,6 @@ static int linknode(offset listptr, offset nodeptr)
 	return 0;
 }
 
-static struct flagrec {
-	char c;
-	int bits;
-} flagtbl[] = {
-	/* entry type */
-	{ 'S',	0 },
-	{ 'W',	C_ONCE | C_WAIT },
-	{ 'E',	C_ONCE },
-	{ 'H',	C_WAIT },
-	/* process control flags */
-	{ 'A',	C_USEABRT },
-	/* terminator */
-	{  0  }
-};
-
 /* Parse runlevels and flags (1st initline field) into entry->rlvl
    and entry->flags. Typical input: mode="S123N".
 
@@ -166,30 +151,28 @@ static struct flagrec {
 
 static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 {
-	struct flagrec* f;
 	char* p;
 	int rlvl = 0;
 	int neg = 0;
 	int flags = 0;
 
-	for(p = mode; *p; p++) {
-		if(*p == '-')
-			continue;
-		else if(*p == '~')
-			neg = 1;
-		else if(*p >= '0' && *p <= '9')
-			rlvl |= (1 << (*p - '0'));
-		else if(*p >= 'a' && *p <= 'f')
-			rlvl |= (1 << (*p - 'a' + 10));
-		else {
-			for(f = flagtbl; f->c && f->c != *p; f++)
-				;
-			if(f->c)
-				flags |= f->bits;
-			else
+	for(p = mode; *p; p++)
+		switch(*p) {
+			case '-': continue;
+			/* runlevels */
+			case '~': neg = 1; break;
+			case '0' ... '9': rlvl |= (1 << (*p - '0' +  0)); break;
+			case 'a' ... 'f': rlvl |= (1 << (*p - 'a' + 10)); break;
+			/* entry type */
+			case 'H': flags |= C_WAIT;
+			case 'S': break;
+			case 'W': flags |= C_WAIT;
+			case 'E': flags |= C_ONCE; break;
+			/* misc flags */
+			case 't': flags |= C_USEABRT; break;
+			default:
 				retwarn(-1, "%s:%i: unknown flag %c", fb->name, fb->line, *p);
 		}
-	}
 
 	if(!(rlvl & PRIMASK))
 		rlvl |= (PRIMASK & ~1);
