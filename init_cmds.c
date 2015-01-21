@@ -182,6 +182,12 @@ out:	*buf = '\0';
 	return ret;
 }
 
+/* Both dump* functions use warn() for output. That's ok since
+   warnfd is the telinit connection whenever command is being
+   processed. */
+/* (still if telinit drop connection prematurely, some stuff may
+   spill into syslog, hm) */
+
 static void dumpidof(struct initrec* p)
 {
 	if(p->pid > 0)
@@ -225,7 +231,8 @@ static void scflags(unsigned short* dst, unsigned short flags, int setclear)
 		*dst &= ~flags;
 }
 
-/* Clear timestamps, forcing immediate action for spawn() and/or stop() */
+/* User commands like start or stop should prompt immediate action,
+   disregarding possible time_to_* timeouts. */
 static void clearts(struct initrec* p)
 {
 	p->lastrun = 0;
@@ -242,9 +249,8 @@ static void clearts(struct initrec* p)
    like P_ENABLED may break sleep modes and expected shutdown
    routine.
  
-   There is no dostop because to P_DISABLE is enough to
+   There is no dostop because P_DISABLE is enough to
    force-stop a process regardless of its configured runlevels */
-
 static void dostart(struct initrec* p)
 {
 	clearts(p);
