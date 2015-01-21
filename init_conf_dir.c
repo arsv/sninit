@@ -75,6 +75,7 @@ out:	close(dirfd);
 	return ret;
 }
 
+/* Some direntries in initdir should be silently ignored */
 static inline int skipdirent(struct dirent64* de)
 {
 	char dt;
@@ -98,10 +99,6 @@ static inline int skipdirent(struct dirent64* de)
 
 	return 0;
 }
-
-/* Make a full directory name for $dir when included from a file named $base.
-	base="/etc/inittab" dir="services" -> "/etc/services"
-   Returns basename offset, see the call above */
 
 static int parsesrvfile(struct fileblock* fb, char* basename)
 {
