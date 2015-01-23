@@ -25,7 +25,8 @@ Among those, "1", "2", ..., "9" set the default runlevel,
 the rest are silently ignored.
 .P
 Check Documentation/kernel-parameters.txt, Documentation/init.txt from
-the kernel source on how to pass arguments to kernel (and subsequently to init).
+the kernel source on how to pass arguments to kernel
+(and subsequently to init).
 '''
 .SH CONFIGURATION
 \fBinit\fR reads the list of processes to spawn from \fBinittab\fR(5),
@@ -37,16 +38,18 @@ to re-read them later. To initiate re-configuration after editing the file,
 use "telinit q". See \fBtelinit\fR(8).
 '''
 .SH ENVIRONMENT
-\fBinit\fR does not use any environment variables and does not pass any inherited
-environment to child processes.
+\fBinit\fR does not use any environment variables and does not pass
+any inherited environment to child processes.
 .P
-The only variables processes spawned by init see are those set in \fBinittab\fR(5).
-All spawned processes get exactly the same environment.
+The only variables processes spawned by init see are those set
+in \fBinittab\fR(5). All spawned processes get exactly the same environment.
 '''
 .SH SIGNALS
-Only signals listed below can be sent to init by a user process (see \fBkill\fR(2)).
+Only signals listed below can be sent to init by a user process
+(see \fBkill\fR(2)).
 .IP "\fBSIGHUP\fR" 4
-Instructs init to reopen its control socket. Can be used to reset a hung telinit connection.
+Instructs init to reopen its control socket. Can be used to reset a hung
+telinit connection.
 .IP "\fBSIGINT\fR" 4
 Initiates system shutdown (a switch to runlevel 0, in reboot mode).
 Pressing Ctrl+Alt+Del on the system console typically results in this signal
@@ -61,11 +64,12 @@ Primary configuration file. See \fB{inittab}\fR(5).
 .IP "{/etc/initdir}" 4
 Service directory. See \fB{initdir}\fR(5).
 .IP "{@initctl}"
-Unix domain socket, for telinit communication. See \fB{telinit}\fR(8) and \fBunix\fR(7).
+Unix domain socket, for telinit communication.
+See \fB{telinit}\fR(8) and \fBunix\fR(7).
 '''
 .SH NOTES
-This page describes init from {INIT} package. Other implementations, in particular
-sysvinit, behave somewhat differently.
+This page describes init from {INIT} package.
+Other implementations, in particular sysvinit, behave somewhat differently.
 '''
 .SH SEE ALSO
 \fB{telinit}\fR(8), \fB{inittab}\fR(5).

@@ -4,72 +4,83 @@
 {/etc/inittab} - \fBinit\fR(8) configuration file.
 '''
 .SH DESCRIPTION
-Inittab is a list of processes init should run, along with environment to pass to them.
+Inittab is a list of processes init should run, along with environment to pass
+to them.
 .P
 Upon startup, and each time reconfiguration is requested by \fBtelinit\fR(8),
-init parses inittab and stores it in its memory. During normal operation init does not
-make any attempts to re-read inittab.
+init parses inittab and stores it in its memory. During normal operation init
+does not make any attempts to re-read inittab.
 '''
 .SH SYNTAX
 Inittab is a text file parsed in linewise manner. Empty lines are ignored.
 .IP "# \fIcomment\fR" 4
 Lines starting with # are ignored by init
 .IP "\fIvariable\fR=\fIvalue\fR" 4
-Add \fIvariable\fR to the environment to be passed to processes started by init.
+Add \fIvariable\fR to the environment to be passed to processes started
+by init.
 .IP "\fImode\fR  \fIname\fR  \fIcommand\fR" 4
-Define a process to be started by init. Each process entry carries a single pid value,
-so there can be at most one running process for each entry at any given time.
+Define a process to be started by init. Each process entry carries a single
+pid value, so there can be at most one running process for each entry at any
+given time.
 .P
-All lines are processes top-to-bottom. The relative order of environment and process lines
-is irrelevant, all spawned processes will get exactly the same environment.
+All lines are processes top-to-bottom. The relative order of environment
+and process lines is irrelevant, all spawned processes will get exactly
+the same environment.
 '''
 .SS Entry mode
-\fImode\fR is a set of characters specifying how to run this entry, and which runlevels to run it on.
+\fImode\fR is a set of characters specifying how to run this entry, and which
+runlevels to run it on.
 .IP "s" 4
-Start the process, and keep restarting it in case it dies. This is the default mode, and "S" may be skipped.
+Start the process, and keep restarting it in case it dies. This is the default
+mode, and "S" may be skipped.
 .IP "S" 4
-Like s, but wait for this process to die before proceeding to kill other processes.
+Like s, but wait for this process to die before proceeding to kill
+other processes.
 .IP "r" 4
-Run once. Do not restart the process. Unlike \fBwait\fR, do proceed to run subsequent entries.
+Run once. Do not restart the process. Unlike \fBwait\fR, do proceed to run
+subsequent entries.
 .IP "R" 4
-Run once and wait until the process exits. Do not restart it, and do not proceed further until it dies.
+Run once and wait until the process exits. Do not restart it, and do not
+proceed further until it dies.
 .IP "0...9" 4
 Run this entry on specified runlevel(s).
 .IP "a...f" 4
 Run this entry only if specified sublevel(s) are active.
 .IP "~" 4
-Invert runlevels mask, run this entry on all runlevels except those specified with 0...9.
+Invert runlevels mask, run this entry on all runlevels except those
+specified with 0...9.
 .IP "-" 4
 Silently ignored; may be used to align runlevel masks.
 .IP "k" 4
-Kill the process with SIGABRT instead of SIGTERM. Use if the process in question
-fails to die on SIGTERM.
+Kill the process with SIGABRT instead of SIGTERM. Use if the process
+in question fails to die on SIGTERM.
 .P
 Examples: "R123" start on runlevels 1, 2 or 3, wait;
-"s01~" (re)start on all runlevels except 0 and 1; "s--2-4k" (re)start on runlevels 2 and 4,
-use SIGABRT to kill the process.
+"s01~" (re)start on all runlevels except 0 and 1; "s--2-4k" (re)start
+on runlevels 2 and 4, use SIGABRT to kill the process.
 '''
 .SS Naming entries
-\fIname\fR is a string used to identify this entry, in particular when stopping/starting
-processes with \fBtelinit\fR(8), as well as in syslog messages.
-Use "-" to denote empty name. Non-empty names should be unique.
+\fIname\fR is a string used to identify this entry, in particular when
+stopping/starting processes with \fBtelinit\fR(8), as well as in syslog
+messages. Use "-" to denote empty name. Non-empty names should be unique.
 .P
-During reconfiguration, init matches entries with the same name, and transfers pids from
-the old configuration. For un-named entries, and in case names do not match, the old
-process gets killed and the new one started. This is mostly relevant for s-type entries.
+During reconfiguration, init matches entries with the same name, and transfers
+pids from the old configuration. For un-named entries, and in case names do not
+match, the old process gets killed and the new one started. This is mostly
+relevant for s-type entries.
 '''
 .SS Commands
-The last field, \fIcommand\fR, is the command to run. The field is parsed and passed as
-the second argument to \fBexecve\fR(2) call.
+The last field, \fIcommand\fR, is the command to run. The field is parsed and
+passed as the second argument to \fBexecve\fR(2) call.
 
-Unless specifically told otherwise, init does not call \fBsh\fR(1) to handle the command,
-and only does limited command parsing on its own. Single and double quotes are handled
-properly, but variable substitution, output redirects, compound statements etc. and not
-supported. Also, $PATH, even if set, has no effect; use absolute names for executables
-instead.
+Unless specifically told otherwise, init does not call \fBsh\fR(1) to handle
+the command, and only does limited command parsing on its own. Single and
+double quotes are handled properly, but variable substitution, output
+redirects, compound statements etc. and not supported. Also, $PATH,
+even if set, has no effect; use absolute names for executables instead.
 
-To use sh, prepend ! to the command. This will cause init to pass the command directly to
-/bin/sh -c without any parsing.
+To use sh, prepend ! to the command. This will cause init to pass the command
+directly to /bin/sh -c without any parsing.
 '''
 .SH USAGE
 '''
@@ -77,17 +88,17 @@ To use sh, prepend ! to the command. This will cause init to pass the command di
 be running.
 .P
 At any point, init is in one of runlevels 0, 1, ... 9, with zero or more
-sublevels a, b, ..., f activated. Each entry has its own runlevel mask, with zero
-or more runlevels and zero or more sublevels. If an entry has current runlevel in its
-mask, and all sublevels from its mask are active, it is started. Otherwise, the entry
-gets killed.
+sublevels a, b, ..., f activated. Each entry has its own runlevel mask,
+with zero or more runlevels and zero or more sublevels. If an entry has
+current runlevel in its mask, and all sublevels from its mask are active,
+it is started. Otherwise, the entry gets killed.
 .P
-Example: "s123" entry is started on runlevel 1 but killed on runlevel 4; "s1ab" is started
-on runlevels 1ab, 1abc, but not on 1 or 1a or 1ac or 2.
+Example: "s123" entry is started on runlevel 1 but killed on runlevel 4;
+"s1ab" is started on runlevels 1ab, 1abc, but not on 1 or 1a or 1ac or 2.
 .P
-The entries are always started in top-to-bottom order, and killed bottom-to-top.
-Entry type determines how process death is handled: R-type entries are waited for, s-type
-entries are restarted and so on.
+The entries are always started in top-to-bottom order, and killed
+bottom-to-top. Entry type determines how process death is handled:
+R-type entries are waited for, s-type entries are restarted and so on.
 .P
 Current runlevel may be changed using \fBtelinit\fR(8).
 .P

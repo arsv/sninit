@@ -86,13 +86,16 @@ PATH is used to find specified command. See \fBexecvp\fR(1).
 '''
 .SH NOTES
 This page describes /sbin/run, a tool normally only available to the root user.
-For gdb simulator front-end typically installed as /usr/bin/run, see \fBrun\fR(1).
+For gdb simulator front-end typically installed as /usr/bin/run,
+see \fBrun\fR(1).
 '''
 .SH SEE ALSO
-Similar utilities: \fBsu\fR(1), \fBsudo\fR(1), \fBrunuser\fR(1), \fBulimit\fR in \fBbash\fR(1),
+Similar utilities: \fBsu\fR(1), \fBsudo\fR(1), \fBrunuser\fR(1),
+\fBulimit\fR in \fBbash\fR(1),
 \fBnice\fR(1), \fBcgexec\fR(1), \fBcapsh\fR(1), \fBsetsid\fR(1).
 .P
 Syscalls: \fBsetresuid\fR(2), \fBsetresgid\fR(2), \fBsetrlimit\fR(2),
 \fBsetpriority\fR(2), \fBexecve\fR(2), \fBsetsid\fR(2).
 .P
-General concepts: \fBcredentials\fR(7), documentation/cgroups/ from the kernel source tree.
+General concepts: \fBcredentials\fR(7), documentation/cgroups/ from the kernel
+source tree.
