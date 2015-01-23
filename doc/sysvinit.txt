@@ -49,19 +49,20 @@ started in-between runlevels, i.e. when moving from runlevel N to runlevel M.
 Services, or s-type entries ("respawn") are started during the switch, but may
 be restarted later when init has already settled in runlevel M.
 
-Mixing primary (0123456789) and secondary (aka ondemand, abcdef) runlevels is allowed;
-"23a" means "run on / when entering runlevels primary runlevels 2 or 3, but ONLY if
-secondary runlevel a is activated".
+Mixing primary (0123456789) and secondary (aka ondemand, abcdef) runlevels
+is allowed; "23a" means "run on / when entering runlevels primary runlevels
+2 or 3, but ONLY if secondary runlevel a is activated".
 
-While in sysvinit runlevels 0 and 6 were special mostly by convention, in sninit
-reaching runlevel 0 prompts a reboot(2) call and runlevel 6 should not be special
-in most sane configurations. Both halt, reboot and poweroff use runlevel 0, the
-only difference being the argument passed to reboot(2) in the end.
+While in sysvinit runlevels 0 and 6 were special mostly by convention,
+in sninit reaching runlevel 0 prompts a reboot(2) call and runlevel 6 should
+not be special in most sane configurations. Both halt, reboot and poweroff use
+runlevel 0, the only difference being the argument passed to reboot in the end.
 
-Runleves 789 are allowed in sninit, but designated "slippery" unless configured otherwise.
-That is, upon reaching any of these runlevels, init will immediately start a switch back
-to the last non-slippery runlevel it was in.
-This is to allow sleep/suspend to be implemented as runlevels, see slippery.txt.
+Runleves 789 are allowed in sninit, but designated "slippery" unless configured
+otherwise. That is, upon reaching any of these runlevels, init will immediately
+start a switch back to the last non-slippery runlevel it was in.
+This is to allow sleep/suspend to be implemented as runlevels,
+see slippery.txt.
 
 
 Commands
@@ -76,8 +77,8 @@ For interactive processes, run -Y. Conventional "-command" is not supported.
 Reboot and friends
 ~~~~~~~~~~~~~~~~~~
 In sninit, reboot, poweroff and halt are all runlevel 0, which is assumed
-to mean "stop everything".  Also, there are no reboot, poweroff and halt commands;
-use telinit reboot, telinit poweroff and telinit halt instead.
+to mean "stop everything".  Also, there are no reboot, poweroff and halt
+commands; use telinit reboot, telinit poweroff and telinit halt instead.
 
 
 Signals
@@ -92,6 +93,6 @@ for /dev/initctl, it may be necessary.
 
 sninit ignores SIGWINCH. No replacement as this point, it is just ignored.
 
-sninit handles SIGINT somewhat differently due to different approach to rebooting.
-Still, the end result should be exactly the same, Ctrl-Alt-Del, if allowed
-to reach init, will cause the system to reboot.
+sninit handles SIGINT somewhat differently due to different approach
+to rebooting.  Still, the end result should be exactly the same, Ctrl-Alt-Del,
+if allowed to reach init, will cause the system to reboot.

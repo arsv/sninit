@@ -33,9 +33,9 @@ Possible commands:
 	wname	resume (wake) process "name" (send SIGCONT)
 	hname	send SIGHUP to process "name"
 	q	reconfigure
-	R	reboot   = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_REBOOT)
-	H	halt     = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_HALT)
-	P	poweroff = switch to runlevel 0, call reboot(LINUX_REBOOT_CMD_POWEROFF)
+	R	reboot   = switch to runlevel 0, call reboot(CMD_REBOOT)
+	H	halt     = switch to runlevel 0, call reboot(CMD_HALT)
+	P	poweroff = switch to runlevel 0, call reboot(CMD_POWEROFF)
 	S	sleep = switch to runlevel 8, assumed to be slippery
 Check parsecmd() in init_cmds.c for a full list, and cmdtbl[] in telinit.c
 for corresponding telinit commands.

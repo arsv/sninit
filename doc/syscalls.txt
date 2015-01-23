@@ -1,8 +1,8 @@
 Syscalls and functions calls
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-On most architectures, calling convention differs between functions and syscalls.
-Sometimes it's just different registers (r10 vs rcx for arg 4 on x86_64),
-sometimes it's stack vs registers (args 5 and 6 on arm).
+On most architectures, calling convention differs between functions
+and syscalls. Sometimes it's just different registers (r10 vs rcx for
+arg 4 on x86_64), sometimes it's stack vs registers (args 5 and 6 on arm).
 
 Yet, looking at section 2 man pages gives an impression that syscalls
 are in fact functions, and that cc will translate them as function calls.
@@ -56,10 +56,11 @@ syscall has returned.
 That code is needed to handle errno and return value, and it is needed even
 if syscalls are inlined.
 
-Which means even less difference between inlined syscalls and syscalls-as-functions.
+Which means even less difference between inlined syscalls
+and syscalls-as-functions.
 
-The question is whether there will be errno code only, or argument moving and errno code
-in the common syscall routine.
+The question is whether there will be errno code only, or argument moving
+and errno code in the common syscall routine.
 Individual syscall code barely changes.
 On arm, syscall-as-function entails one additional instruction per syscall.
 On x86_64, there is *no* difference.

@@ -43,8 +43,8 @@ However, when a slippery runlevel is reached, init instead exchanges
 currlevel and nextlevel, prompting immediate return to the original runlevel.
 
 Unless changed in config.h, slippery runlevels are 7, 8 and 9,
-and in telinit, commands "sleep" and "suspend" are hard-coded to request a switch
-to runlevels 8 and 9 respectively.
+and in telinit, commands "sleep" and "suspend" are hard-coded to request
+a switch to runlevels 8 and 9 respectively.
 The intended usage is:
 	9	suspend-to-disk
 	8	suspend-to-memory
@@ -79,8 +79,8 @@ e-type entries have exited.
 
 Handling services
 ~~~~~~~~~~~~~~~~~
-When entering slippery runlevels, s-type entries that should be stopped are stopped
-but those that should be started are NOT started.
+When entering slippery runlevels, s-type entries that should be stopped
+are stopped but those that should be started are NOT started.
 
 This is in line with using slippery runlevels to implement system sleep states.
 Consider the following setup:
@@ -92,8 +92,8 @@ Consider the following setup:
 The idea here is that both P1 and P2 need no special treatment as far as sleep
 is concerned, but P3 must be restarted. During 3->7->3 transition everything
 goes well, but 1->7->1 transition without the above exception for s-entries
-would cause P2 to be started before going to sleep, and killed immediately after
-waking up.
+would cause P2 to be started before going to sleep, and killed immediately
+after waking up.
 
 Removing 7 from P2 wouldn't help either, as it would result in P2
 being restarted during 3->7->3 transition. And ignoring s-entries completely

@@ -39,15 +39,17 @@ Syntax:
 	code   name   command
 
 name any string up to 7 (NAMELEN-1 in config.h) characters long.
-Use "-" to set empty name; for s-type records, non-empty names, should be unique.
-Name is used in telinit start/stop commands and for logging.
+Use "-" to set empty name; for s-type records, non-empty names,
+should be unique.  Name is used in telinit start/stop commands and for logging.
 Example: "mountfs", "tty2"
 
-code is a set of characters denoting entry type, runlevels and optional process flags.
+code is a set of characters denoting entry type, runlevels and optional
+process flags.
 
 	s		Restart process in case it dies
 
-	S		Like S, but wait for other processes to die before killing this one.
+	S		Like S, but wait for other processes to die before
+			killing this one.
 
 	R		Wait before this process finishes before proceeding to
                         the next one
@@ -56,7 +58,8 @@ code is a set of characters denoting entry type, runlevels and optional process 
 	0..9		primary runlevel
 	a..f		secondary runlevel (sublevel, see sublevels.txt)
 
-	k		When killing the process, use SIGABRT instead of SIGTERM
+	k		When killing the process, use SIGABRT
+			instead of SIGTERM
 
 command: the command to run. Normally this field is split into argv array
 similar to how it happens in sh(1) and passed directly to execve(2). 
@@ -92,8 +95,8 @@ Each file provides a single initrec. Only s-type (respawn) records are allowed,
 due to files in directory being inherently unordered.
 
 Two possible formats are recognized: pure service file, and a script.
-The first (and possibly the second) line of the file is used to determine its type.
-Pure service file, command is parsed and used in execve(2) call:
+The first (and possibly the second) line of the file is used to determine its
+type.  Pure service file, command is parsed and used in execve(2) call:
 
 	#:code
 	command
@@ -113,18 +116,19 @@ In both cases the file's basename is used for the name field in initrec.
 
 How sninit works
 ~~~~~~~~~~~~~~~
-During startup, sninit compiles all initrecs from inittab and initdir into an ordered list.
-Entries from inittab come first, exactly in the same order as they appear in inittab.
-The order of the entries from initdir is not defined (and depends on how getdents(2) reads
-the directory), but they all come after inittab entries.
+During startup, sninit compiles all initrecs from inittab and initdir into
+an ordered list. Entries from inittab come first, exactly in the same order
+as they appear in inittab. The order of the entries from initdir is not defined
+(and depends on how getdents(2) reads the directory), but they all come after
+inittab entries.
 
 Next, sninit runs through the list, and spawns all processes that
 should be spawned for a given runlevel.
-When spawning R-type entries, sninit breaks the loop and waits until the processes dies.
-Upon encountering s-type entries whose process died, sninit respawns the process.
-r-type entries are neither waited for nor respawned.
-Processes which are running but aren't intended for current runlevel are killed.
-The loop is re-run as needed.
+When spawning R-type entries, sninit breaks the loop and waits until
+the processes dies. Upon encountering s-type entries whose process died,
+sninit respawns the process.  r-type entries are neither waited for
+nor respawned. Processes which are running but aren't intended for current
+runlevel are killed. The loop is re-run as needed.
 
 When reconfiguration is requested, sninit compiles the new configuration,
 transferring existing process data (pids etc) for matching entries.

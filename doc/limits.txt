@@ -93,38 +93,39 @@ versus
 
 (2)	daemon:1234:log,null:/sbin/runcap ~daemonuser,%dcgroup /sbin/daemon
 
-In both cases, init compiles ~daemonuser,%dcgroup into its internal inittab representation,
-it's just the form that differs.
+In both cases, init compiles ~daemonuser,%dcgroup into its internal inittab
+representation, it's just the form that differs.
 
 In the first case, init is expected to handle semantics of those fields,
-i.e. to note that "daemonuser" is a name to setuid() to, and "dcgroup" is cgroup name,
-probably splitting them into relevant initrec fields.
+i.e. to note that "daemonuser" is a name to setuid() to, and "dcgroup" is
+cgroup name, probably splitting them into relevant initrec fields.
 
-In the second case, the whole "~daemonuser,%dcgroup" string is stored in initrec.argv[1]
-as is, without any parsing.
+In the second case, the whole "~daemonuser,%dcgroup" string is stored in
+initrec.argv[1] as is, without any parsing.
 
-Aside from having caps in different parts of the initline, the only principal difference
-between (1) and (2) is error reporting. With early parsing in (1), this may happen at
-telinit q stage. Late parsing (2) means init will see cap parsing errors as daemon's
-failure to start.
+Aside from having caps in different parts of the initline, the only principal
+difference between (1) and (2) is error reporting. With early parsing in (1),
+this may happen at telinit q stage. Late parsing (2) means init will see cap
+parsing errors as daemon's failure to start.
 
-How much of a problem it is? The answer is not clear, few caps allow parsing errors,
-and those that do (setuid for instance) may actually benefit from late name resolving.
+How much of a problem it is? The answer is not clear, few caps allow parsing
+errors, and those that do (setuid for instance) may actually benefit from late
+name resolving.
 
 
 Early vs late name resolving
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-With built-in caps implementation, it makes sense to store userids in compiled inittab,
-not usernames. Thus init must read passwd in configure(), which happens very very early
-in the boot process.
-Possibly before even mounting the real root, say, in case pivot_root is involved.
-In contrast, anything child-side will read passwd at the time process is spawned.
+With built-in caps implementation, it makes sense to store userids in compiled
+inittab, not usernames. Thus init must read passwd in configure(), which
+happens very very early in the boot process. Possibly before even mounting
+the real root, say, in case pivot_root is involved. In contrast, anything
+child-side will read passwd at the time process is spawned.
 
-On the other hand, nothing really prevents one from storing username in compiled inittab
-and doing late passwd even with the code built in into init.
+On the other hand, nothing really prevents one from storing username in
+compiled inittab and doing late passwd even with the code built in into init.
 
-Using early username resolution certain advantages, too. Namely, once inittab has been
-compiled, it does not depend on external files anymore.
+Using early username resolution certain advantages, too. Namely, once inittab
+has been compiled, it does not depend on external files anymore.
 
 
 Dropping priviledges mid-way
@@ -145,8 +146,8 @@ This is also in line with tools like nice and cgexec.
 Update on capabilities
 ~~~~~~~~~~~~~~~~~~~~~~
 All support for capset(2) has been removed from the companion utility,
-and its name has been changed to just "run". Current implementation of capabilities
-in linux kernel make them useless for the purpose.
+and its name has been changed to just "run". Current implementation
+of capabilities in linux kernel make them useless for the purpose.
 
 The rest of this document still applies, the companion utility is current used
 to set all child-side process attributes.

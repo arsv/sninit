@@ -71,4 +71,5 @@ Those values however are surprisingly stable in linux, as changing them
 would wreak havoc upon production systems, so I see this as the lesser evil.
 
 Same goes for structure member offsets. The code won't survive a change
-in kernel headers, but neither will something close to 100% of all linux installations.
+in kernel headers, but neither will something close to 100% of all linux
+installations.

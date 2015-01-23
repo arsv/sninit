@@ -83,9 +83,9 @@ When are dependencies needed?
   I can only recall one such pair, smbd/nmbd, and those were fixed years ago.
   Again, consider one of the daemons going down.
 
-* Parts of system state configuration (network interfaces, netfilter, time, sysctl,
-  proc, sys and so on) are generally independent from each other, and most of the time
-  are special cases anyway.
+* Parts of system state configuration (network interfaces, netfilter, time,
+  sysctl, proc, sys and so on) are generally independent from each other,
+  and most of the time are special cases anyway.
 
 * Mountpoints are a part of system state, see the point above.
   The idea is that the filesystem must be set up early (as a part of the global
@@ -99,55 +99,56 @@ No need to babysit daemons, they are quite capable on their own.
 
 On mountpoints
 ~~~~~~~~~~~~~~
-It can be argued that mountpoints (specifically, successfully mounting something
-somewhere) do make (half-)valid dependencies that can be useful.
+It can be argued that mountpoints (specifically, successfully mounting
+something somewhere) do make (half-)valid dependencies that can be useful.
 
-A simple example: solid-state / with system, /var/cache/squid on rotating media,
+A simple example: solid-state / with system, /var/cache on rotating media,
 and squid that should only be started if the cache partition is available.
 
 sninit approach in cases like this is to start everything, regardless.
-Upon not finding its cache directories, squid will die. Or upon finding them read-only.
-There is always a way to move relevant checks to the daemon and/or its startup scripts,
-closer to the point of actual use.
+Upon not finding its cache directories, squid will die. Or upon finding them
+read-only.  There is always a way to move relevant checks to the daemon
+and/or its startup scripts, closer to the point of actual use.
 
-Proceeding as far as possible gives root an option to access the host and fix the system.
-This is opposite of a really annoying Arch initscripts feature,
+Proceeding as far as possible gives root an option to access the host and fix
+the system.  This is opposite of a really annoying Arch initscripts feature,
 which would shut down the system if there was a minor problem during startup.
 
 There is possibility that proceeding may compromise system security.
-Think of iptables failing while the rest of the system including network does start.
-This however requires extensive damage to the system, and thus makes the point
-of protecting it from within moot. Think of iptables.conf being readable but truncated.
-So it is not something that should be done in init.
+Think of iptables failing while the rest of the system including network does
+start. This however requires extensive damage to the system, and thus makes
+the point of protecting it from within moot. Think of iptables.conf being
+readable but truncated.  So it is not something that should be done in init.
 
 
 Reordering entries
 ~~~~~~~~~~~~~~~~~~
-One possible application of proper explicit dependencies is forcing different entry
-ordering for different runlevel pairs when switching. For example,
+One possible application of proper explicit dependencies is forcing different
+entry ordering for different runlevel pairs when switching. For example,
 
 	:25:wait:e1
 	:25:wait:e2
 
-can only be executed as "e1; e2" with current code, there is no way to make it "e1; e2"
-when going 0->2 and "e2; e1" when going 3->5.
-This isn't really important for r-type entries, since it's easy to implement different
-orders by duplicating entries:
+can only be executed as "e1; e2" with current code, there is no way to make it
+"e1; e2" when going 0->2 and "e2; e1" when going 3->5.
+This isn't really important for r-type entries, since it's easy to implement
+different orders by duplicating entries:
 
 	:5:wait:e2
 	:25:wait:e1
 	:2:wait:e2
 
-Still, I see no good real-life scenarios which would require reordering, so I call it
-non-issue for now.
+Still, I see no good real-life scenarios which would require reordering,
+so I call it a non-issue for now.
 
 
 Killing syslogd and C_LAST
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-Syslogd is an s-type entry. However, to avoid losing messages, it makes sense to kill
-it last. That is, do not send SIGTERM until other services dies and were reaped.
+Syslogd is an s-type entry. However, to avoid losing messages, it makes sense
+to kill it last. That is, do not send SIGTERM until other services dies and
+were reaped.
 
 This is implemented now as C_WAIT w/o C_ONCE (S-entry).
-The issue look pretty insignificant, but implementation is relatively cheap, so why not.
-Key point is bottom-top-bottom initpass to kill processes, which is a nice feature
-for other reasons too.
+The issue look pretty insignificant, but implementation is relatively cheap,
+so why not. The key point is bottom-top-bottom initpass to kill processes,
+which is a nice feature for other reasons too.

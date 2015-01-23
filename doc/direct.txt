@@ -35,8 +35,8 @@ Now loadkeys source contains basically the same if() statement:
 		if(/* -m option was supplied */)
 			/* load keymap */
 
-rc.conf adds a wrapper atop of loadfont, without actually changing (simplifying) anything.
-The above code can simply be replaced with
+rc.conf adds a wrapper atop of loadfont, without actually changing
+(simplifying) anything.  The above code can simply be replaced with
 
 	/etc/rc.local	(host-specific file)
 		loadfont -m ru-utf UniCyr_8x16
@@ -44,86 +44,93 @@ The above code can simply be replaced with
 or maybe just
 		loadfont UniCyr_8x16
 
-or maybe just skipped if there's no need to load font (empty FONT nor KEYMAP is set in rc.conf).
+or maybe just skipped if there's no need to load font
+(empty FONT nor KEYMAP is set in rc.conf).
 
 Writing "loadfont -m ru-utf UniCyr_8x16" in an executable startup file is what
-I call "direct configuration", as opposed to setting variables which indirectly affect
-loadkeys call later. It's equivalent semantically, but shorter and, well, direct.
+I call "direct configuration", as opposed to setting variables which indirectly
+affect loadkeys call later. It's equivalent semantically, but shorter and,
+well, direct.
 
 
 Why direct configuration?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Direct configuration is always simpler, but it's not the only advantage.
-It's much less system-dependent, more versatile, and generally much better documented.
+It's much less system-dependent, more versatile, and generally much better
+documented.
 
-In this example, loadkeys is pretty much a standard Linux utility, coming from either
-kbd package or busybox. There's loadkeys(1) man page in almost any system.
-On the other hand, rc.conf is Arch-specific. It's necessary to consult Arch wiki to
-find out which variables to set, and in most non-trivial cases also check /etc/rc.sysninit
-for the actual commands.
-And then you go to some Ubuntu system, and start digging through its own, ridiculously complicated,
-indirect configuration scripts just to find out how the same utility (loadkeys) is started on that
-particular system.
+In this example, loadkeys is pretty much a standard Linux utility, coming from
+either kbd package or busybox. There's loadkeys(1) man page in almost any
+system. On the other hand, rc.conf is Arch-specific. It's necessary to consult
+Arch wiki to find out which variables to set, and in most non-trivial cases
+also check /etc/rc.sysninit for the actual commands.
+And then you go to some Ubuntu system, and start digging through its own,
+ridiculously complicated, indirect configuration scripts just to find out how
+the same utility (loadkeys) is started on that particular system.
 
-Adding a level of abstraction over loadkeys could make sense if loadkeys was ridiculously
-difficult to use. It is not, and even if it were, the Linux way to fix that is rewriting
-loadkeys, not adding wrappers atop.
+Adding a level of abstraction over loadkeys could make sense if loadkeys was
+ridiculously difficult to use. It is not, and even if it were, the Linux way
+to fix that is rewriting loadkeys, not adding wrappers atop.
 
 
 Pre-existing implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Direct configuration has been used for a long time in a specific area: iptables and shaper
-configuration. Due to complexity of the commands involved, iptables configuration was almost
-invariably stored as initialization code, as opposed to data.
+Direct configuration has been used for a long time in a specific area: iptables
+and shaper configuration. Due to complexity of the commands involved, iptables
+configuration was almost invariably stored as initialization code, as opposed
+to data.
 Even tools like iptables-save/iptables-restore stay close to command syntax.
 
-In a way, the iptables example shows the blurry line between data-definition and code-definition
-of the initial system state.
+In a way, the iptables example shows the blurry line between data-definition
+and code-definition of the initial system state.
 
 
 Keeping startup scripts simple
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Few people seem to get it, but Linux is very easy to boot.
-Most of the time one needs just a handful of mostly independent commands to get a fully
-usable system.
+Most of the time one needs just a handful of mostly independent commands to get
+a fully usable system.
 Still, most distributions tend to push unnecessary complex, poorly documented
-startup scripts. Sometimes to ridiculous degrees, like this little pearl from my Arch system:
+startup scripts. Sometimes to ridiculous degrees, like this little pearl from
+my Arch system:
 
 	/etc/config/ntpd	(host-specific file)
 
 	# arguments passed to ntpd when started
 	NTPD_ARGS="-g -u ntp"
 
-Just making /etc/rc.d/ntpd (which currently loads /etc/config/ntpd) a configuration file
-and editing that file would have the same effect.
+Just making /etc/rc.d/ntpd (which currently loads /etc/config/ntpd)
+a configuration file and editing that file would have the same effect.
 
 
 Implications for sninit
 ~~~~~~~~~~~~~~~~~~~~~~
-Direct configuration can be implemented with pretty much any init, it is not sninit-specific.
-However, sninit was written with direct configuration in mind.
+Direct configuration can be implemented with pretty much any init, it is not
+sninit-specific. However, sninit was written with direct configuration in mind.
 
 sninit strongly assumes /etc/inittab is a host-specific configuration file.
-This was the key consideration for @dir lines syntax, in particular (not) implementing sleep
-hooks as a w-type initdir.
+This was the key consideration for @dir lines syntax, in particular
+(not) implementing sleep hooks as a w-type initdir.
 
-If inittab was a distro-specific, distro-updatable and generally non-changeable file,
-it would make sense to do something like this:
+If inittab was a distro-specific, distro-updatable and generally non-changeable
+file, it would make sense to do something like this:
 
 	@8:once:/etc/rc/sleep
 
-with said directory containing basically what pm-tools call "hooks". Configuration like
-this would allow users to add their own hooks without changing the (distro-supplied) inittab.
+with said directory containing basically what pm-tools call "hooks".
+Configuration like this would allow users to add their own hooks without
+changing the (distro-supplied) inittab.
 
-(It would also allow the distro to install additional hooks without the need for users
-to do any manual configuration, as it is done with services. However, for sleep hooks it
-is NOT relevant. Sleep hooks depend on hardware configuration more than on anything else,
-and hardware is specific to each individual system.)
+(It would also allow the distro to install additional hooks without the need
+for users to do any manual configuration, as it is done with services.
+However, for sleep hooks it is NOT relevant. Sleep hooks depend on hardware
+configuration more than on anything else, and hardware is specific to each
+individual system.)
 
-Now assuming direct configuration approach, having a directory like this makes no sense.
-Since /etc/inittab is assumed to be editable for each individual system, all sleep-related
-configuration goes there. This keeps things readable.
+Now assuming direct configuration approach, having a directory like this makes
+no sense. Since /etc/inittab is assumed to be editable for each individual
+system, all sleep-related configuration goes there. This keeps things readable.
 
-Having ordered things in a file also removes the need to order files in a directory,
-thus removing the need for all those 10-sd.sh, 20-network.sh and other lingering shadows
-of our ZX BASIC past.
+Having ordered things in a file also removes the need to order files
+in a directory, thus removing the need for all those 10-sd.sh, 20-network.sh
+and other lingering shadows of our ZX BASIC past.

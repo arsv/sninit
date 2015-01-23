@@ -9,7 +9,7 @@ runlevels. Here's how they affect when an initrec will be started:
 
 	123	runlevels 1, 2 or 3, regardless of sublevels
 	12a	runlevels 1 or 2, but only if sublevel a is active
-	12ab	runlevels 1 or 2, but only if at least one of sublevels a, b is active
+	12ab	runlevels 1 or 2, if at least one of sublevels a, b is active
 	(empty)	all runlevels except 0
 	ab	all runlevels except 0 if either a or b is active
 
@@ -29,8 +29,8 @@ deactivates sublevels b and c.
 
 Sysvinit compatibility
 ~~~~~~~~~~~~~~~~~~~~~~
-When used without specifying primary runlevels, sublevels act just like ondemand
-runlevels in sysvinit. Specifically,
+When used without specifying primary runlevels, sublevels act just like
+ondemand runlevels in sysvinit. Specifically,
 	
 	name:a:ondemand:command
 
@@ -38,14 +38,15 @@ in sysvinit translates into
 	
 	name:a::command
 
-in sninit. Telinit commands are somewhat different, in sninit it's always "+a" instead
-of just "a" to activate sublevel a.
+in sninit. Telinit commands are somewhat different, in sninit it's always "+a"
+instead of just "a" to activate sublevel a.
 
 
 Init state and switching sublevels
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The actual runlevels sninit switches between are combinations of one primary runlevel
-and some (possibly empty) set of sublevels. The complete runlevel after
+The actual runlevels sninit switches between are combinations of one primary
+runlevel and some (possibly empty) set of sublevels.
+The complete runlevel after
 
 	telinit 4
 	telinit +ac
@@ -55,56 +56,61 @@ Activating sublevel b in this situation with
 	
 	telinit +b
 
-would result in sninit switching from runlevel "4ac" to to runlevel "4abc", running
-r-type entries if necessary just like when switching primary runlevels.
+would result in sninit switching from runlevel "4ac" to to runlevel "4abc",
+running r-type entries if necessary just like when switching primary runlevels.
 
-Currently switching primary runlevel results in the change of the primary runlevel
-only, i.e. in the above situation running
+Currently switching primary runlevel results in the change of the primary
+runlevel only, i.e. in the above situation running
 
 	telinit 5
 
-will move sninit to runlevel "5abc", not just "5". This may or may not change in the future.
+will move sninit to runlevel "5abc", not just "5". This may or may not change
+in the future.
 
 
 Rationale
 ~~~~~~~~~
-While relatively easy to implement, ondemand runlevels are not among sysvinit's most used
-features. Actually, their role in sysvinit is similar to the role of initrec names
-in sninit: starting/stopping processes on the fly with telinit. There are only three of them,
-so they are not terribly useful, but the idea is the same anyway.
+While relatively easy to implement, ondemand runlevels are not among sysvinit's
+most used features. Actually, their role in sysvinit is similar to the role
+of initrec names in sninit: starting/stopping processes on the fly with
+telinit. There are only three of them, so they are not terribly useful,
+but the idea is the same anyway.
 
-In sninit, the main reason for implementing sublevels was handling independent aspects
-of system state, specifically laptop power mode.
+In sninit, the main reason for implementing sublevels was handling independent
+aspects of system state, specifically laptop power mode.
 
-Power modes behave a lot like runlevels, in that there are some script to run when switching
-to battery power, there are some scripts to run when going back to mains and so on.
-However, save for some special cases, the switch between battery and mains does not warrant
-a change in the running daemons — or equivalently, and change in the (primary) runlevel.
+Power modes behave a lot like runlevels, in that there are some script to run
+when switching to battery power, there are some scripts to run when going back
+to mains and so on.  However, save for some special cases, the switch between
+battery and mains does not warrant a change in the running daemons
+(or equivalently, and change in the (primary) runlevel).
 
 Sublevels provide a reasonably clean and readable way to handle this situation.
-Having battery/mains mode as a sublevel means primary runlevels can be used solely for
-managing running daemons.
+Having battery/mains mode as a sublevel means primary runlevels can be used
+solely for managing running daemons.
 
 
 Initial state and negated conditions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-One possible drawback of the current implementation is that it makes it hard to do
-things like "keep the process running UNLESS sublevel x is active".
+One possible drawback of the current implementation is that it makes it hard
+to do things like "keep the process running UNLESS sublevel x is active".
 This is only important because the initial state of the sublevels is all-0.
 
-For the laptop power mode problem, it is not really relevant. Laptop can very well start
-on battery, so it's always a matter of checking the state during startup.
+For the laptop power mode problem, it is not really relevant. Laptop can very
+well start on battery, so it's always a matter of checking the state during
+startup.
 
-For other cases, the only solution for now is having some of sublevels set in INITDEFAULT.
+For other cases, the only solution for now is having some of sublevels set
+in INITDEFAULT.
 
 
 Negated primary runlevels mask
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Tilde in inittab affects primary runlevels only.
 That is, "123a" means "levels 1, 2 or 3 with sublevel a active",
-and "~123a" means "any level except 1, 2 or 3 with sublevel a active", or equivalently,
-"levels 0, 4, 5, 6, 7, 8, 9 with sublevel a active".
+and "~123a" means "any level except 1, 2 or 3 with sublevel a active",
+or equivalently, "levels 0, 4, 5, 6, 7, 8, 9 with sublevel a active".
 
 As stated above, negating sublevels mask makes little sense.
-Atop of that, the intended usage implies adding "a" to "~123" should work more or less
-the same way as adding "a" to "0456789".
+Atop of that, the intended usage implies adding "a" to "~123" should work
+more or less the same way as adding "a" to "0456789".

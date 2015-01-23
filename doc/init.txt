@@ -51,7 +51,8 @@ to a child process using prctl(PR_SET_CHILD_SUBREAPER).
 
 The key point to note is that pid 1 in this example is incomplete
 as far as init functions are concerted, and it's only the whole two-process
-cluster that effectively implements #0, #1 and #2 features under #A-#F conditions. 
+cluster that effectively implements #0, #1 and #2 features under
+#A-#F conditions. 
 
 Splitting init into two processes only changes its internal structure,
 and does not affect its functions.
@@ -100,7 +101,8 @@ the above point fail. Doing that, however, hardly makes sense in an init.
 
 Moving reaping duties into a separate process is pointless.
 Writing complete init is not that difficult, and for generic systems
-(with #E and #F in place) there is little sense in going with anything less capable.
+(with #E and #F in place) there is little sense in going with anything
+less capable.
 
 
 Does nesting inits make sense?
