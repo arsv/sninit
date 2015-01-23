@@ -25,20 +25,14 @@ is irrelevant, all spawned processes will get exactly the same environment.
 '''
 .SS Entry mode
 \fImode\fR is a set of characters specifying how to run this entry, and which runlevels to run it on.
-.IP "S" 4
+.IP "s" 4
 Start the process, and keep restarting it in case it dies. This is the default mode, and "S" may be skipped.
-.IP "W" 4
-Wait for this process. Do not restart it, and do not proceed further until it dies. If there are 
-proccesses with "once" flag set, wait until all of the die before running a "wait" process.
-.IP "E" 4
+.IP "S" 4
+Like s, but wait for this process to die before proceeding to kill other processes.
+.IP "r" 4
 Run once. Do not restart the process. Unlike \fBwait\fR, do proceed to run subsequent entries.
-.IP "H" 4
-Hold this process. Like S, but wait for this process to die before proceeding to kill other processes.
-See below for possible applications.
-.P
-Only one of SWOH should be used for an entry. This is called "entry type", so a w-type entry
-is one with "W" character in mode field.
-Redirect file descriptors 1 and 2 to {/var/log}\fIname\fR for the spawned process.
+.IP "R" 4
+Run once and wait until the process exits. Do not restart it, and do not proceed further until it dies.
 .IP "0...9" 4
 Run this entry on specified runlevel(s).
 .IP "a...f" 4
@@ -47,12 +41,12 @@ Run this entry only if specified sublevel(s) are active.
 Invert runlevels mask, run this entry on all runlevels except those specified with 0...9.
 .IP "-" 4
 Silently ignored; may be used to align runlevel masks.
-.IP "A" 4
-Send SIGABRT instead of SIGTERM when stopping the process. Use if the process in question
+.IP "k" 4
+Kill the process with SIGABRT instead of SIGTERM. Use if the process in question
 fails to die on SIGTERM.
 .P
-Examples: "W123" start on runlevels 1, 2 or 3, wait;
-"S01~" (re)start on all runlevels except 0 and 1; "S--2-4A" (re)start on runlevels 2 and 4,
+Examples: "R123" start on runlevels 1, 2 or 3, wait;
+"s01~" (re)start on all runlevels except 0 and 1; "s--2-4k" (re)start on runlevels 2 and 4,
 use SIGABRT to kill the process.
 '''
 .SS Naming entries
@@ -88,29 +82,29 @@ or more runlevels and zero or more sublevels. If an entry has current runlevel i
 mask, and all sublevels from its mask are active, it is started. Otherwise, the entry
 gets killed.
 .P
-Example: "S123" entry is started on runlevel 1 but killed on runlevel 4; "S1ab" is started
+Example: "s123" entry is started on runlevel 1 but killed on runlevel 4; "s1ab" is started
 on runlevels 1ab, 1abc, but not on 1 or 1a or 1ac or 2.
 .P
 The entries are always started in top-to-bottom order, and killed bottom-to-top.
-Entry type determines how process death is handled: w-type entries are waited for, s-type
+Entry type determines how process death is handled: R-type entries are waited for, s-type
 entries are restarted and so on.
 .P
 Current runlevel may be changed using \fBtelinit\fR(8).
 .P
-All w-type and o-type entries are run upon entering specific runlevel.
+All r-type entries are run upon entering specific runlevel.
 To run an entry on exit from a specific runlevel, negate that runlevel:
-"W3~" entry will be run when switching from runlevel 3 to any other runlevel.
+"R3~" entry will be run when switching from runlevel 3 to any other runlevel.
 '''
 .SS Slippery runlevels
 Runlevels 7, 8 and 9 are designated "slippery".
 .P
 When init reaches a regular, non-slippery runlevel, it stays there; "reaches"
-here means all w-type and o-type entries have been run and exited.
+here means all r-type entries have been run and exited.
 With slippery runlevels however, init starts switching back to the original runlevel
 immediately after reaching a slippery one.
 .P
 Slippery runlevels are intended to be used for sleep and suspend states, or generally
-for any system state that coincides with a process (a w-type entry in init terms) running.
+for any system state that coincides with a process (an R-type entry in init terms) running.
 '''
 .SH NOTES
 This page describes inittab format for \fB{INIT}\fR package.

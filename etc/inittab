@@ -3,15 +3,15 @@
 PATH=/bin
 VAR=value
 
-E	i1	sbin/ini1
-E	i2	sbin/ini2
-W	i3	sbin/ini3
+r	i1	sbin/ini1
+r	i2	sbin/ini2
+R	i3	sbin/ini3
 
-S	s1	sbin/srv1
-S	s2	sbin/srv2
-S	s3	sbin/srv3
+s	s1	sbin/srv1
+s	s2	sbin/srv2
+s	s3	sbin/srv3
 
-W8	ss	!echo sleeping
-W8~	sw	!echo wakeup
+R8	ss	!echo sleeping
+R8~	sw	!echo wakeup
 
 # vim: ft=
