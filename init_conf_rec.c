@@ -170,7 +170,6 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 			case 'i': rlvl |= PRIMASK & ~L0; break;
 			case 'z': rlvl |= PRIMASK &  SLIPPERY & ~L01; break;
 			case 'y': rlvl |= PRIMASK & ~SLIPPERY & ~L01; break;
-			case 'u': rlvl |= L0; break;
 			/* entry type */
 			case '+': /* an alias for S the same way - is an alias for s */
 			case 'S': flags |= C_WAIT;
