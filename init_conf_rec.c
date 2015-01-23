@@ -149,6 +149,9 @@ static int linknode(offset listptr, offset nodeptr)
 
    See doc/sublevels.txt for considerations re. sublevels handling. */
 
+#define L0	(1<<0)
+#define L01	((1<<0) | (1<<1))
+
 static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 {
 	char* p;
@@ -163,19 +166,25 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 			case '~': neg = 1; break;
 			case '0' ... '9': rlvl |= (1 << (*p - '0' +  0)); break;
 			case 'a' ... 'f': rlvl |= (1 << (*p - 'a' + 10)); break;
+			/* runlevel ranges */
+			case 'i': rlvl |= PRIMASK & ~L0; break;
+			case 'z': rlvl |= PRIMASK &  SLIPPERY & ~L01; break;
+			case 'y': rlvl |= PRIMASK & ~SLIPPERY & ~L01; break;
+			case 'u': rlvl |= L0; break;
 			/* entry type */
-			case 'H': flags |= C_WAIT;
-			case 'S': break;
-			case 'W': flags |= C_WAIT;
-			case 'E': flags |= C_ONCE; break;
+			case '+': /* an alias for S the same way - is an alias for s */
+			case 'S': flags |= C_WAIT;
+			case 's': break;
+			case 'R': flags |= C_WAIT;
+			case 'r': flags |= C_ONCE; break;
 			/* misc flags */
-			case 't': flags |= C_USEABRT; break;
+			case 'k': flags |= C_USEABRT; break;
 			default:
 				retwarn(-1, "%s:%i: unknown flag %c", fb->name, fb->line, *p);
 		}
 
 	if(!(rlvl & PRIMASK))
-		rlvl |= (PRIMASK & ~1);
+		rlvl |= (PRIMASK & ~L01);
 
 	/* Due to the way sublevels are handled, simply negating them makes no sense */
 	if(neg) rlvl = (~(rlvl & PRIMASK) & PRIMASK) | (rlvl & SUBMASK);
