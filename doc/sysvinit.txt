@@ -13,16 +13,16 @@ and merges runlevels and action into mode field:
 
 Actions
 ~~~~~~~
-respawn		use S with the same runlevels
-wait		use W with the same runlevels
-once		use E with the same runlevels
+respawn		use s with the same runlevels
+once		use r with the same runlevels
+wait		use R with the same runlevels
 
-sysninit	use W, no runlevels, and place before any other entries
-boot		use E, place before other entries but after sysinit
-bootwait	like boot but use W instead of O
+sysninit	use R, no runlevels, and place before any other entries
+boot		use r, place before other entries but after sysinit
+bootwait	like boot but use R instead of r
 
-ondemand	use S with the same secondary runlevel
-		(that is, ":a:ondemand: becomes "Sa")
+ondemand	use s with the same secondary runlevel
+		(that is, ":a:ondemand: becomes "sa")
 	beware of multiple runlevels: for sysvinit, :ab:ondemand:
 	means either a or b, while in sninit it's a *and* b.
 
@@ -44,7 +44,7 @@ kbrequest	not supported, sninit ignores SIGWINCH
 
 Runlevels
 ~~~~~~~~~
-In sninit, w-type and e-type entries ("wait" and "once" respectively) are only
+In sninit, r-type entries ("wait" and "once") are only
 started in-between runlevels, i.e. when moving from runlevel N to runlevel M.
 Services, or s-type entries ("respawn") are started during the switch, but may
 be restarted later when init has already settled in runlevel M.

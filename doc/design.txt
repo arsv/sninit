@@ -7,51 +7,6 @@ It is not intended for general users, but it may be helpful
 for those trying to extend sninit, or perhaps just to read the source.
 
 
-On initrecs
-~~~~~~~~~~~
-Initrec is an "init record", corresponding to one line in inittab
-(process-describing line that is) or a single file in an initdir.
-In the code it is called struct initrec.
-Each initrec holds at most one pid.
-
-Throughout the code, initrecs are classified as w, o and s type:
-
-				respawn		exclusive
-	s	service		yes		no
-	w	wait		no		yes
-	o	once		no		no
-
-Respawn determines how init should react when process dies
-"unexpectedly", as opposed to being killed by init.
-Exclusive means init should not start anything else while this
-particular process is running.
-
-
-Same uniform list for w/o- and s-type initrecs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sninit keeps all initrecs in the same list, using the same initrec structures,
-and has to loop through all of them even while sitting in a single runlevel.
-
-The alternative is to keep a list of s-type records separately,
-and only check for w- and e-type records when switching runlevels.
-
-There is no clear answer here, not for me at least, but uniform
-list is clearly simpler and the price (both cpu and mem) looks negligible.
-One clear advantage of uniform list is that it allows starting some
-services before performing w-type tasks:
-
-	mount::w:/bin/mount -a
-	syslog:::/sbin/syslogd
-	kbd::o:/sbin/setkeys ...
-	net::o:setup-network ...
-
-and so on. This way, syslogd will have a chance to come up before anything
-significant takes place, and thus to save some messages that otherwise could
-have been lost.
-
-Note: will have _a_chance_ to come up.
-Trying to make sure syslogd is up and running is a bad idea in my opinion;
-see dependencies.txt .
 
 
 telinit communication
@@ -85,24 +40,6 @@ is a very system-specific utility.
 supported in some BSD flavors)
 
 
-sninit does not discard startup entries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Both sysvinit and busybox init can drop entries that are only used to
-bring the system up (=to switch from runlevel 0 to some other runlevel).
-
-It is possible for sninit, too, but more difficult due to different memory
-allocation model. And if implemented, it will probably consume more space
-in the code than it will save in data.
-
-One clear way to do it is to mimic reconfiguration, copying cfgblock
-to newblock while filtering out entries not needed anymore.
-
-Another option is moving initrecs within cfgblock.
-This currently requires both tricky pointer work, and initrec length field.
-Or dropping pointers altogether and using offsets only, but this approach
-has its own drawbacks.
-
-
 The lack of console initialization in setup()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 sninit uses whatever it has got on fds 0, 1, 2.
@@ -116,18 +53,6 @@ no need to touch anything there.
 Daemons and startup scripts should be told to use /var/log or syslog
 instead of stderr (if not, let them use whatever the kernel
 provided to sninit). getty does console init on its own.
-
-
-Running parallel chains
-~~~~~~~~~~~~~~~~~~~~~~~
-As in
-	(p1; p2; p3) &
-	(p4; p5; p6) &
-and waiting for them to finish.
-Currently sninit only allows this by putting "p1; p2; p3" in a shell script,
-"p4; p5; p6" in another script and running the scripts as e-type entries.
-
-I can't see a simple solution here, so it's left unimplemented for now.
 
 
 systemd-style dependencies
@@ -208,38 +133,23 @@ If one needs, one can use proper shell scripts.
 
 Builtins
 ~~~~~~~~
-That is, bundling some commands with init, busybox-style. Or, perhaps, sh style.
+That is, bundling some commands with init, busybox-style. Or perhaps sh style.
 Actually, there are two points here:
 	1. telinit as a link to init, and
-	2. ":123:wait:run -u nobody daemon" with "run" being a part of init
+	2. "R123 - run -u nobody daemon" with "run" being a part of init
 Both were abandoned, for now at least.
 
-#1, telinit is much more independent from init than it is in sysvinit, due to lack
-of state passing. Other than that, there are no clear reasons to bundle them,
-so it was decided to keep them separate.
+#1, telinit is much more independent from init than it is in sysvinit, due to
+lack of state passing. Other than that, there are no clear reasons to bundle
+them, so it was decided to keep them separate.
 
-#2, the list of builtins could have included telinit (or "fast telinit", without the need
-to exec anything), but the main reason why this may be needed is implementing euid, egid
-and ulimit setting. This stuff must be done in the child process, and e[ug]id requires reading
-additional passwd and group, which is not something init needs.
+#2, the list of builtins could have included telinit (or "fast telinit",
+without the need to exec anything), but the main reason why this may be needed
+is implementing euid, egid and ulimit setting. This stuff must be done in the
+child process, and e[ug]id requires reading additional passwd and group, which
+is not something init needs.
 
 This was abandoned completely in favor of companion utility, see limits.txt.
-
-
-Runlevels and flags
-~~~~~~~~~~~~~~~~~~~
-The 2nd and 3rd fields in an init line describe essentially the same things.
-Runlevels, the 2nd field, uses one-letter keys while the 3rd field uses comma-separated
-words. It makes a lots of sense to merge them, leaving a single field containing a mix
-of flags and runlevels.
-
-This idea was abandoned for several reasons:
-1. separate runlevels field allows an empty value as a shorthand for ^0
-2. when mixing one-digit and one-word keys, some kind of separator between them is still
-   needed, and ":" works just as well as any other separator.
-3. more complicated syntax for the flags field was planned, and that would not mix well
-   with one-digit runlevels
-4. on-demand runlevels do not mix well flags
 
 
 Current runlevel in argv[0]
@@ -249,25 +159,8 @@ Sysvinit has this feature. It's easy to implement, too.
 
 Still I can't find any reason why this may be useful. Especially in sysvinit.
 
-For those extremely rare occasions when it's needed, telinit ? provides the answer.
-
-
-Internal inittab: list vs array
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(early versions had single-linked list of initrecs)
-
-Initial reason for change: any viable "last" keyword implementation
-needs reverse traversal of the inittab.
-
-This is only part true, it was possible to implement last with two
-top-to-bottom passes and little code size increase.
-Using double-linked list, while possible, results in pretty ugly code.
-
-Subsequent reasoning: init has a lot of a argv-style structures.
-So why not use pointers array for inittab as well.
-
-As an added bonus, using arrays removes interconnecting stuff from initrec,
-leaving the structure clean.
+For those extremely rare occasions when it's needed, telinit ? provides
+the answer.
 
 
 Variable argument lists handling
@@ -279,8 +172,9 @@ This is because va_* stuff was apparently designed with stack in mind,
 while modern cpus (x86_64, arm, mips) use registers instead
 (and lack indirect register addressing, not that it matters much).
 
-To make matters worse, there's warn(fmt, ...) which calls snprintf(buf, len, fmt, ...),
-note the move from 1st to 3rd position for fmt and subsequent arguments.
+To make matters worse, there's warn(fmt, ...) which calls
+snprintf(buf, len, fmt, ...), note the move from 1st to 3rd position for fmt
+and subsequent arguments.
 
 Standard C is not expressive enough to declare warn() and/or vsnprintf
 with explicit argument placement, at least not the way I would accept.
@@ -304,7 +198,10 @@ Current implementation allows setting environment variables in inittab.
 With envp being completely independent from initrecs, it would make a lot
 of sense to use a separate file for the environment, say, /etc/initenv.
 
-The problem is, there are typically one or two variables set in inittab
-(PATH and ... well that's about it). Too few to bother. And atop of that,
+The problem is, there are typically only one or two variables set in inittab
+(PATH and... well that's about it). Too few to bother. And atop of that,
 handling a second file would slightly increase the size of init,
 compared to current guess-type-of-line code.
+
+The move to crontab-like format largely alleviated the issue.
+Assignments look a lot less out of place now.

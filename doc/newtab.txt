@@ -12,7 +12,7 @@ Later on, the format has been changed to crontab-style "newtab":
 Note whitespace-separated fields, and flags merged with runlevels.
 
 In current implementation, the formats are essentially equivalent. 
-SysV-style "wait" and "once" are replaced with "W" and "O" respectively,
+SysV-style "wait" and "once" are replaced with "R" and "r" respectively,
 rlvls field is used with no changed.
 
 

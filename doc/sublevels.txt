@@ -56,7 +56,7 @@ Activating sublevel b in this situation with
 	telinit +b
 
 would result in sninit switching from runlevel "4ac" to to runlevel "4abc", running
-e-type and w-type entries if necessary just like when switching primary runlevels.
+r-type entries if necessary just like when switching primary runlevels.
 
 Currently switching primary runlevel results in the change of the primary runlevel
 only, i.e. in the above situation running

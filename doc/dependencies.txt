@@ -3,7 +3,7 @@ On systemd-style dependencies
 
 Early in the project there were plans to have systemd-style dependecies
 between initrecs.  This idea has been abandoned completely in favor
-of much simplier w/o/s-type initrecs.
+of much simplier r/s-type initrecs.
 
 My opinion is that it's a bad solution looking for a problem.
 
@@ -131,7 +131,7 @@ ordering for different runlevel pairs when switching. For example,
 
 can only be executed as "e1; e2" with current code, there is no way to make it "e1; e2"
 when going 0->2 and "e2; e1" when going 3->5.
-This isn't really important for w-type entries, since it's easy to implement different
+This isn't really important for r-type entries, since it's easy to implement different
 orders by duplicating entries:
 
 	:5:wait:e2
@@ -147,7 +147,7 @@ Killing syslogd and C_LAST
 Syslogd is an s-type entry. However, to avoid losing messages, it makes sense to kill
 it last. That is, do not send SIGTERM until other services dies and were reaped.
 
-This is implemented now with "last" keyword. The issue look pretty insignificant,
-but Implementation is relatively cheap, so why not.
-Turning inittab into a double-linked list and doing bottom-top-bottom initpass
-is all that's needed.
+This is implemented now as C_WAIT w/o C_ONCE (S-entry).
+The issue look pretty insignificant, but implementation is relatively cheap, so why not.
+Key point is bottom-top-bottom initpass to kill processes, which is a nice feature
+for other reasons too.

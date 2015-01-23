@@ -8,6 +8,7 @@ builtin.txt	  What is builtin inittab, and why it is needed
 dependencies.txt  On systemd-style dependencies
 dietlibc.txt	  dietlibc configuration for sninit
 initdir.txt	  What is initdir
+initrec.txt	  Internal data structure
 limits.txt	  Setting limits for child processes (runcap)
 sublevels.txt	  Runlevels abcdef
 slippery.txt	  Slippery runlevels (sleep, suspend)

@@ -17,8 +17,8 @@ Example:
 	LC_CTYPE=C
 
 	# Initrec lines
-	W1234568   hwc          /sbin/hwclock -s
-	S1         sulogin      /bin/sulogin
+	R1234568   hwc          /sbin/hwclock -s
+	s1         sulogin      /bin/sulogin
 
 Initdir (service) files, when present, are handled as if they were
 appended at the end of inittab.
@@ -45,23 +45,18 @@ Example: "mountfs", "tty2"
 
 code is a set of characters denoting entry type, runlevels and optional process flags.
 
-	S		Restart process in case it dies. s-type record.
+	s		Restart process in case it dies
 
-	W		Wait before this process finishes before proceeding to
-                        the next one; w-type record, see below.
-	E		Neither wait nor respawn the process; e-type record.
+	S		Like S, but wait for other processes to die before killing this one.
 
-	H		Like S, but wait for other processes to die before killing this one.
+	R		Wait before this process finishes before proceeding to
+                        the next one
+	r		Neither wait nor respawn the process
 
 	0..9		primary runlevel
 	a..f		secondary runlevel (sublevel, see sublevels.txt)
 
-	Y		Provide process with a controlling tty (aka interactive mode).
-			Same as + before command in sysvinit.
-
-	N		Redirect stdout and stderr to /dev/null
-
-	A		When stopping process, use SIGABRT instead of SIGTERM
+	k		When killing the process, use SIGABRT instead of SIGTERM
 
 command: the command to run. Normally this field is split into argv array
 similar to how it happens in sh(1) and passed directly to execve(2). 
@@ -125,9 +120,9 @@ the directory), but they all come after inittab entries.
 
 Next, sninit runs through the list, and spawns all processes that
 should be spawned for a given runlevel.
-When spawning w-type entries, sninit breaks the loop and waits until the processes dies.
+When spawning R-type entries, sninit breaks the loop and waits until the processes dies.
 Upon encountering s-type entries whose process died, sninit respawns the process.
-o-type entries are neither waited for nor respawned.
+r-type entries are neither waited for nor respawned.
 Processes which are running but aren't intended for current runlevel are killed.
 The loop is re-run as needed.
 
