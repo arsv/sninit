@@ -100,11 +100,20 @@ Runlevels 7, 8 and 9 are designated "slippery".
 .P
 When init reaches a regular, non-slippery runlevel, it stays there; "reaches"
 here means all r-type entries have been run and exited.
-With slippery runlevels however, init starts switching back to the original runlevel
-immediately after reaching a slippery one.
+With slippery runlevels however, init starts switching back to the original
+runlevel immediately after reaching a slippery one.
 .P
-Slippery runlevels are intended to be used for sleep and suspend states, or generally
-for any system state that coincides with a process (an R-type entry in init terms) running.
+Slippery runlevels are intended to be used for sleep and suspend states,
+or generally for any system state that coincides with a process (an R-type
+entry in init terms) running.
+'''
+.SS Foreground daemons
+Any process doing \fBdaemon\fR(3) style startup will confuse init if configured
+as an s-type entry, since init has no way to track the daemonized child process
+and will attemp to take action immediately after the parent exits.
+.P
+Whenever possible, processes must be intructed to run in foreground mode.
+Most daemons allow this; check relevant man pages.
 '''
 .SH NOTES
 This page describes inittab format for \fB{INIT}\fR package.
