@@ -7,6 +7,8 @@ include ../config.mk
 override LDFLAGS += -Wl,-z,muldefs
 # Disregard "static" and "inline", do not need them while testing
 override CFLAGS += -Dstatic= -Dinline=
+# Prevent clang for doing early linking within modules
+override CFLAGS += -ffunction-sections
 
 # Using $(RUN) directly before commands would result in " cmd"
 # when RUN is non-empty. So instead that space goes (condionally) to RUN_
