@@ -1,0 +1,77 @@
+.TH initdir 5
+'''
+.SH NAME
+{/etc/initdir}/* - \fBinit\fR(8) service files.
+'''
+.SH DESCRIPTION
+Service files provide an alternative to \fBinittab\fR(5) for
+describing init process entries. Whereas inittab has one line
+per entry in a single file, initdir uses one file for each entry. 
+.P
+Init treats initdir entries as if they were appended to inittab, that
+is, they are started last and stopped first. Unlike inittab, initdir
+lacks any fixed entry ordering; in particular, entries are not sorted
+by name.
+.P
+Service files are simple text files or shell scripts, possibly
+containing entry \fIflags\fR field similar to inittab lines.
+The (base)name of the file stands for \fIname\fR field of the entry.
+The \fIcommand\fR is either the contents of the file, or (in case of
+executable shell scripts) the full file path.
+.P
+Other than than, there is no difference between inittab entries and
+initdir entries. See \fBinittab\fR(5) for semantics and general usage
+notes.
+'''
+.SH SYNTAX
+There are two slighly different flavors of service files.
+The first one is a plain file:
+.P
+.EX
+    \fB#:\fIflags\fR
+    \fIcommand arg arg arg\fR ...
+.EE
+.P
+which gets the same treatment as any \fBinittab\fR(5) line.
+In particular, \fIcommand\fR is parsed and stored in the initrec
+the same way it is done with inittab entries.
+.P
+The second is a script (shell or otherwise):
+.P
+.EX
+    \fB#!\fIinterpreter\fR
+    \fB#:\fIflags\fR
+    \fIinterpreter-code\fR
+    \fIinterpreter-code\fR
+    \fIinterpreter-code\fR
+.EE
+.P
+Files or this kind must be executable, and init will use the full file
+path as the command to run. Only \fIflags\fR are parsed by init in this
+case, the rest is left to \fIinterpreter\fR.
+.P
+In both cases, \fB#:\fIflags\fR line may be omited, which is equivalent
+to using \fB-\fR in inittab.
+'''
+.SH USAGE
+Service files are meant primarily for package-managed systems as a easy
+way to add managed init entries, vs.  modifying inittab each time
+a package is installed or uninstalled.
+.P
+Scripts may also be useful for daemons that need external initialization code,
+like creating/purging cache directories for squid.
+.P
+Whenever a script is used, it should typically end with an \fBexec\fR(3) call
+or some equivalent thereof to replace \fIinterpreter\fR with the actual daemon
+process. Leaving \fIinterpreter\fR running only makes sense if there is some
+cleanup to do after the deamon dies.
+'''
+.SH COMPATIBILITY
+Service files used by {INIT} are not compatible with SysV \fBinitscript\fR(5)s.
+Typical initscript is expected to spawn a child process and return immediately,
+similar to \fBdaemon\fR(3) behavior which they often use. In contrast, a service
+script spawns (or execs) a foreground process and remains running until the process
+dies.
+'''
+.SH SEE ALSO
+\fBinit\fR(8), \fBtelinit\fR(8), \fBinittab\fR(5)

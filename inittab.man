@@ -4,12 +4,32 @@
 {/etc/inittab} - \fBinit\fR(8) configuration file.
 '''
 .SH DESCRIPTION
-Inittab is a list of processes init should run, along with environment to pass
-to them.
+Inittab is a list of commands init should run.
 .P
-Upon startup, and each time reconfiguration is requested by \fBtelinit\fR(8),
-init parses inittab and stores it in its memory. During normal operation init
-does not make any attempts to re-read inittab.
+Each relevant line in inittab describes a single entry (an initrec)
+containing a command to run and a pid of the process. For each entry,
+init spawns a child process, which in turn executes the command.
+Init records the pids of the child processes and keeps tracking them
+until processes die, so that each entry either holds a pid of a running
+process, or an indication that the process is not running.
+.P
+At any point, init is in one of runlevels 0, 1, ... 9, with zero or more
+sublevels a, b, ..., f activated. Each entry has its own runlevel mask,
+with zero or more runlevels and zero or more sublevels.
+.P
+When processing an entry, init decides whether it should be running
+or not using current runlevel and entry's runlevel mask.
+Subsequentry the entry is either spawned, killed or skipped.
+Entries are always started in top-to-bottom order, and killed
+bottom-to-top.
+.P
+In case a tracked process dies, init attempts to respawn the relevant entry
+unless the entry is explicitly marked as run-once. A typical configuration
+would include run-once system initialization commands and respawn entries
+for various system services (daemons).
+.P
+Along with the entries itself, inittab may also contain environment
+variables to be passed to the spawned processes via \fBexecve\fR(2).
 '''
 .SH SYNTAX
 Inittab is a text file parsed in linewise manner. Empty lines are ignored.
@@ -18,56 +38,65 @@ Lines starting with # are ignored by init
 .IP "\fIvariable\fR=\fIvalue\fR" 4
 Add \fIvariable\fR to the environment to be passed to processes started
 by init.
-.IP "\fImode\fR  \fIname\fR  \fIcommand\fR" 4
-Define a process to be started by init. Each process entry carries a single
-pid value, so there can be at most one running process for each entry at any
-given time.
+.IP "\fIflags\fR  \fIname\fR  \fIcommand\fR" 4
+Define an initrec. The fields (flags, name and command) may be separated
+with spaces or tabs. None of the fields may be omited; use "-" to specify
+an empty flags or name. See below for the meaning of each of the three fields.
 .P
-All lines are processes top-to-bottom. The relative order of environment
-and process lines is irrelevant, all spawned processes will get exactly
-the same environment.
+Init parses and later spawns the entries in top-to-bottom order.
+Depending on flags and current runlevel, some entries may be skipped,
+but not reordered.
+.P
+The relative order of environment and process lines is irrelevant.
+All spawned processes will get exactly the same environment.
 '''
-.SS Entry mode
-\fImode\fR is a set of characters specifying how to run this entry, and which
-runlevels to run it on.
-.IP "s" 4
-Start the process, and keep restarting it in case it dies. This is the default
-mode, and "S" may be skipped.
-.IP "S" 4
-Like s, but wait for this process to die before proceeding to kill
-other processes.
-.IP "r" 4
-Run once. Do not restart the process. Unlike \fBwait\fR, do proceed to run
-subsequent entries.
-.IP "R" 4
-Run once and wait until the process exits. Do not restart it, and do not
-proceed further until it dies.
-.IP "0...9" 4
+.SS Entry flags
+The first field, \fIflags\fR, is a set of characters describing how the entry
+should be handled by init. The order of characters is not relevant.
+.IP "\fB-\fR" 4
+Silently ignored, and can be used to pad runlevel masks.
+Without \fBr\fR or \fBw\fR, implies respawning entry.
+.IP "\fB+\fR" 4
+When stopping this process, wait until other processes die before
+sending signal to this one.
+.IP "\fBr\fR" 4
+Run once. Do not restart the process.
+.IP "\fBw\fR" 4
+Run once and wait for this process.
+Do not restart it, and do not proceed further until it dies.
+.P
+Exactly one of \fB-+rw\fR characters should be used for any entry.
+.IP "\fB0\fR...\fB9\fR" 4
 Run this entry on specified runlevel(s).
-.IP "a...f" 4
+.IP "\fBa\fR...\fBf\fR" 4
 Run this entry only if specified sublevel(s) are active.
-.IP "~" 4
+.P
+Note runlevels are ORed while sublevels are ANDed, so "123ab" means
+the entry should be run on levels 1 or 2 or 3, but only with both
+sublevels a and b active.
+.IP "\fB~\fR" 4
 Invert runlevels mask, run this entry on all runlevels except those
-specified with 0...9.
-.IP "-" 4
-Silently ignored; may be used to align runlevel masks.
-.IP "k" 4
+specified with 0...9. Sublevels are not inverted.
+.IP "\fB?\fR" 4
+Disable this entry, do not run anything until \fBtelinit enable \fIname\fR
+command is issued.
+.IP "\fBk\fR" 4
 Kill the process with SIGABRT instead of SIGTERM. Use if the process
 in question fails to die on SIGTERM.
 .P
-Examples: "R123" start on runlevels 1, 2 or 3, wait;
-"s01~" (re)start on all runlevels except 0 and 1; "s--2-4k" (re)start
+Examples: \fBw12-4\fR start on runlevels 1, 2 or 4, wait;
+\fB01~\fR (re)start on all runlevels except 0 and 1; \fB--2-4k\fR (re)start
 on runlevels 2 and 4, use SIGABRT to kill the process.
 '''
 .SS Naming entries
 \fIname\fR is a string used to identify this entry, in particular when
 stopping/starting processes with \fBtelinit\fR(8), as well as in syslog
-messages. Use "-" to denote empty name. Non-empty names should be unique.
+messages. Use \fB-\fR to denote empty name. Non-empty names should be unique.
 .P
 During reconfiguration, init matches entries with the same name, and transfers
 pids from the old configuration. For un-named entries, and in case names do not
 match, the old process gets killed and the new one started. This is mostly
-relevant for s-type entries.
+relevant for respawning entries.
 '''
 .SS Commands
 The last field, \fIcommand\fR, is the command to run. The field is parsed and
@@ -76,47 +105,75 @@ passed as the second argument to \fBexecve\fR(2) call.
 Unless specifically told otherwise, init does not call \fBsh\fR(1) to handle
 the command, and only does limited command parsing on its own. Single and
 double quotes are handled properly, but variable substitution, output
-redirects, compound statements etc. and not supported. Also, $PATH,
+redirects, compound statements etc. and not supported. $PATH,
 even if set, has no effect; use absolute names for executables instead.
 
 To use sh, prepend ! to the command. This will cause init to pass the command
 directly to /bin/sh -c without any parsing.
 '''
 .SH USAGE
+The primary role of inittab is listing commands needed to bring the system up
+after booting the kernel. Typically this involves run-once entries performing
+runtime kernel configuration (filesystems, network) and respawning entries
+for system daemons and user interface.
+.P
+Transition to other system states (reboot, shutdown, sleep) may be described
+if appropriate, using run-once entries to alter kernel state and runlevel
+masks to start or stop certain system services.
 '''
-\fBinit\fR keeps runlevel mask to determine which subset of the entries should
-be running.
+.SS Runlevel designation
+Certain runlevels have particular meaning assigned to them, either by common
+practice or by certain built-in constraints:
+.IP "0" 4
+System shutdown (reset, halt or poweroff).
+.IP "\fB1\fR" 4
+Single-user mode, or recovery mode.
+.IP "\fB2\fR" 4
+Spare recovery runlevel.
+.IP "\fB3\fR" 4
+Default runlevel, common or multi-user mode
+.IP "\fB4\fR-\fB6\fR" 4
+Spare regular runlevels.
+.IP "\fB7\fR" 4
+Spare slippery runlevel.
+.IP "\fB8\fR" 4
+Sleep.
+.IP "\fB9\fR" 4
+Suspend.
 .P
-At any point, init is in one of runlevels 0, 1, ... 9, with zero or more
-sublevels a, b, ..., f activated. Each entry has its own runlevel mask,
-with zero or more runlevels and zero or more sublevels. If an entry has
-current runlevel in its mask, and all sublevels from its mask are active,
-it is started. Otherwise, the entry gets killed.
+These designation are mostly guidelines, the user is free to decide how
+to use particular runlevels. There are some limitations however.
 .P
-Example: "s123" entry is started on runlevel 1 but killed on runlevel 4;
-"s1ab" is started on runlevels 1ab, 1abc, but not on 1 or 1a or 1ac or 2.
+Runlevel 0 can only be used for system shutdown.
+Upon reaching it, init calls \fBreboot\fR(2).
 .P
-The entries are always started in top-to-bottom order, and killed
-bottom-to-top. Entry type determines how process death is handled:
-R-type entries are waited for, s-type entries are restarted and so on.
+Single-user runlevels 1 and 2 are not in the default entry runlevel mask,
+while multi-user levels 3-6 and slippery levels 7-9 are. A respawning entry
+without explicitly specified runlevel mask will be started on multi-user
+levels only, and will not be restarted after sleep or suspend.
 .P
-Current runlevel may be changed using \fBtelinit\fR(8).
-.P
-All r-type entries are run upon entering specific runlevel.
-To run an entry on exit from a specific runlevel, negate that runlevel:
-"R3~" entry will be run when switching from runlevel 3 to any other runlevel.
+Slippery status of runlevels 7, 8, 9 is hard-coded and can not be changed at runtime.
+Also, \fBtelinit\fR(8) commands "sleep" and "suspend" are hard-coded to
+invoke runlevels 8 and 9 respectively.
 '''
-.SS Slippery runlevels
-Runlevels 7, 8 and 9 are designated "slippery".
+.SS Entering and exiting runlevels
+Run-once entries are only spawned during transition from runlevel A to
+runlevel B if A is not in entry's runlevel mask and B is. Combined with
+negation flag, this allows implementing "on entry" and "on exit" masks.
 .P
-When init reaches a regular, non-slippery runlevel, it stays there; "reaches"
-here means all r-type entries have been run and exited.
-With slippery runlevels however, init starts switching back to the original
-runlevel immediately after reaching a slippery one.
+An entry marked r3 will be run on entering runlevel 3, and entry marked
+r3~ will be run upon exiting runlevel 3 to any other runlevel.
 .P
-Slippery runlevels are intended to be used for sleep and suspend states,
-or generally for any system state that coincides with a process (an R-type
-entry in init terms) running.
+The same applies to the default runlevel mask, which is 3-9. An entry
+marked just "r" will be run when the system boots (in non-recovery mode),
+while an entry marked "r~" will be run on system shutdown (from
+a non-recovery mode). A typical application is to run mount -a as "r"
+and umount -a as "r~".
+.P
+Due to special status of runlevel 0, entries marked r0 will be run
+during shutdown and r0~ entries will be run during boot. This differs
+from r~ and r respectively in case runlevels 1 and 2 are considered: r0~
+entry will be started when entering runlevel 1, r entry will not.
 '''
 .SS Foreground daemons
 Any process doing \fBdaemon\fR(3) style startup will confuse init if configured
@@ -126,10 +183,59 @@ and will attemp to take action immediately after the parent exits.
 Whenever possible, processes must be intructed to run in foreground mode.
 Most daemons allow this; check relevant man pages.
 '''
-.SH NOTES
+.SS Slippery runlevels
+When init reaches a regular, non-slippery runlevel, it stays there.
+Upon reaching a slippery runlevel, init starts switching back to the original
+runlevel immediately.
+.P
+Slippery runlevels are intended to be used for sleep-like states,
+or generally for any system state that coincides with a process running.
+In case of sleep, the command is "echo mem > /sys/power/state",
+or possibly \fBpm-suspend\fR(8).
+.P
+Enter/exit rules apply to slippery runlevels as well. Pre-sleep run-once
+commands should be marked r8 while wakeup commands should go with r8~.
+.P
+Some daemons may not be able to sleep, and must be stopped before entering
+sleep mode and restarted after waking up. To implement this, remove relevant
+slippery runlevel from daemon's mask; \fBm\fR and \fBz\fR flags may come
+handy here.
+'''
+.SH COMPATIBILITY
 This page describes inittab format for \fB{INIT}\fR package.
-Other init implementations, in particular sysvinit, use different conventions
-and in some cases different syntax.
+It is not compatible with the traditional SysVinit format.
+.P
+SysVinit format uses four-field colon-separated entry description:
+.IP "\fIname\fB:\fIrunlevels\fB:\fIaction\fB:\fIcommand\fR" 8
+.P
+The meaning of \fIname\fR and \fIcommand\fR is the same;
+\fIrunlevels\fR field, when non-empty, closely matches \fB[0-9a-c]\fR in \fIflags\fR.
+.P
+Common values for the 3rd field, \fIaction\fR, and their equivalents for {INIT}:
+.IP "\fBrespawn\fR" 4
+Respawning entry, \fB-\fR in \fIflags\fR.
+.IP "\fBonce\fR" 4
+Run-once entry, \fBr\fR in \fIflags\fR.
+.IP "\fBwait\fR" 4
+Same as \fBw\fR in \fIflags\R.
+.IP "\fBboot\fR, \fBbootwait\fR, \fBsysinit\fB" 4
+Same as \fBr0~\fR, \fBw0~\fR, \fBw0~\fR respectively, placed close to the top of inittab.
+.IP "\fBondemand\fR" 4
+Respawning entry for sublevels a-c.
+.IP "\fBpowerwait\fR, \fBpowerfail\fR, \fBpowerokwait\fR" 4
+Entries to run on certain UPS signals; not supported by {INIT}.
+.IP "\fBctrlaltdel\fR, \fBkbrequest\fR" 4
+Entries to run on SIGTERM and SIGWINCH respectively; not supported by {INIT}.
+.P
+SysVinit-compatible implementations tend to use initscripts system instead of
+\fBinitdir\fR(5), making automated translation between two formats pointless.
+Shutdown/reboot handling differs as well, and sleep modes are not typically
+supported.
+.P
+Because of incompatibilities, translating SysV-style inittab for use with {INIT}
+rarely makes sense. Instead, these section should be used to understand the meaning
+of a particular SysV-style configuration, allowing later re-implementation using
+{INIT} approaches.
 '''
 .SH SEE ALSO
 \fBinit\fR(8), \fBtelinit\fR(8)
