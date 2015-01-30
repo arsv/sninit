@@ -1,6 +1,7 @@
 #include <string.h>
 #include "../init.h"
 #include "../init_conf.h"
+#include "../config.h"
 #include "test.h"
 
 /* Empty symbols to keep the linker happy */
@@ -59,26 +60,26 @@ struct initrec rec = {
 int main(void)
 {
 	rl("12",	R1 | R2);
-	rl("s12a",	R1 | R2 | Ra);
+	rl("+12a",	R1 | R2 | Ra);
 	rl("12af",	R1 | R2 | Ra | Rf);
 	rl("9",		R9);
 	rl("0",		R0);
-	rl("a",		Ra | (PRIMASK & ~3));
-	rl("af",	Ra | Rf | (PRIMASK & ~3));
-	rl("",		(PRIMASK & ~3));
+	rl("a",		Ra | (PRIMASK & ~SPECIAL));
+	rl("af",	Ra | Rf | (PRIMASK & ~SPECIAL));
+	rl("",		(PRIMASK & ~SPECIAL));
 
 	// negation
-	rl("~",		R0 | R1);
+	rl("~",		R0 | R1 | R2);
 	rl("~789",	R0 | R1 | R2 | R3 | R4 | R5 | R6);
 	rl("~123a",	R0 | R4 | R5 | R6 | R7 | R8 | R9 | Ra);
 
-	fl("s12",	0);
+	fl("12",	0);
 	fl("r",		C_ONCE);
-	fl("R",		C_ONCE | C_WAIT);
-	fl("S",		C_WAIT);
+	fl("w",		C_ONCE | C_WAIT);
+	fl("+",		C_WAIT);
 
 	/* Runlevels and flags together */
-	rf("R12",	R1 | R2,	C_ONCE | C_WAIT);
+	rf("w12",	R1 | R2,	C_ONCE | C_WAIT);
 
 	/* incorrect cases */
 	bb("Z");

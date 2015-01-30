@@ -142,15 +142,12 @@ static int linknode(offset listptr, offset nodeptr)
 
    When specified, runlevels are translated as is (i.e. "12a" = R1 | R2 | Ra),
    however there are some special cases:
-	(none)		same as "123456789" (not 0 is *not* in the mask)
+	(none)		same as "3456789" (not 012 are *not* in the mask)
 	~12		all but 12, that is, "03456789"
 	~12a		same as "03456789a;
 			pri levels are inverted, sublevels aren't
 
    See doc/sublevels.txt for considerations re. sublevels handling. */
-
-#define L0	(1<<0)
-#define L01	((1<<0) | (1<<1))
 
 static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 {
@@ -167,14 +164,11 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 			case '0' ... '9': rlvl |= (1 << (*p - '0' +  0)); break;
 			case 'a' ... 'f': rlvl |= (1 << (*p - 'a' + 10)); break;
 			/* runlevel ranges */
-			case 'i': rlvl |= PRIMASK & ~L0; break;
-			case 'z': rlvl |= PRIMASK &  SLIPPERY & ~L01; break;
-			case 'y': rlvl |= PRIMASK & ~SLIPPERY & ~L01; break;
+			case 'm': rlvl |= PRIMASK & ~SLIPPERY & ~SPECIAL; break;
+			case 'z': rlvl |= PRIMASK &  SLIPPERY & ~SPECIAL; break;
 			/* entry type */
-			case '+': /* an alias for S the same way - is an alias for s */
-			case 'S': flags |= C_WAIT;
-			case 's': break;
-			case 'R': flags |= C_WAIT;
+			case '+': flags |= C_WAIT; break;
+			case 'w': flags |= C_WAIT;
 			case 'r': flags |= C_ONCE; break;
 			/* misc flags */
 			case 'k': flags |= C_USEABRT; break;
@@ -183,7 +177,7 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 		}
 
 	if(!(rlvl & PRIMASK))
-		rlvl |= (PRIMASK & ~L01);
+		rlvl |= (PRIMASK & ~SPECIAL);
 
 	/* Due to the way sublevels are handled, simply negating them makes no sense */
 	if(neg) rlvl = (~(rlvl & PRIMASK) & PRIMASK) | (rlvl & SUBMASK);
