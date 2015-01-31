@@ -8,7 +8,7 @@
 
 include config.mk
 
-all: init telinit run init.8 telinit.8 inittab.5 run.8
+all: init telinit run init.8 telinit.8 inittab.5 initdir.5 run.8
 
 # Force early libc build
 ifneq ($(ARCH),)
