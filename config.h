@@ -26,6 +26,9 @@
 /* Slippery runlevels, default value unless something else is declared in inittab. */
 #define SLIPPERY ((1 << 7) | (1 << 8) | (1 << 9))
 
+/* Special (recovery) levels, excluded from the default entry mask */
+#define SPECIAL ((1 << 0) | (1 << 1) | (1 << 2))
+
 /* telinit command buffer size, also the maximum allowed command size. */
 /* init will reject commands longer than this. */
 #define CMDBUF 100
