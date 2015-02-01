@@ -217,7 +217,7 @@ Respawning entry, \fB-\fR in \fIflags\fR.
 .IP "\fBonce\fR" 4
 Run-once entry, \fBr\fR in \fIflags\fR.
 .IP "\fBwait\fR" 4
-Same as \fBw\fR in \fIflags\R.
+Same as \fBw\fR in \fIflags\fR.
 .IP "\fBboot\fR, \fBbootwait\fR, \fBsysinit\fB" 4
 Same as \fBr0~\fR, \fBw0~\fR, \fBw0~\fR respectively, placed close to the top of inittab.
 .IP "\fBondemand\fR" 4
