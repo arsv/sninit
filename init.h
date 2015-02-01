@@ -13,7 +13,12 @@
 #define C_ONCE		(1<<0)		/* o-type entry; run once, do not restart */
 #define C_WAIT		(1<<1)		/* w-type entry; wait before starting, wait until finished */
 #define C_USEABRT	(1<<2)		/* use SIGABRT instead of SIGINT when stopping process */
-
+#define C_DOF		(1<<3)		/* disable on failure */
+#define C_ROFa		(1<<4)		/* runlevel change on failure */
+#define C_ROFb		(1<<5)		/* (a/b combination determines target runlevel) */
+#define C_HUSH		(1<<6)		/* do not warn about this entry */
+/* C_* flags are only set in configure(),
+   P_* flags may be changed at runtime */
 #define P_DISABLE	(1<<8)		/* process has been disabled manually */
 #define P_SIGSTOP	(1<<9)		/* SIGSTOP has been sent */
 #define P_SIGTERM	(1<<10)		/* SIGTERM (or SIGABRT) has been sent to this process */

@@ -171,7 +171,13 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 			case 'w': flags |= C_WAIT;
 			case 'r': flags |= C_ONCE; break;
 			/* misc flags */
+			case 'x': flags |= P_DISABLE; break;
+			case 'q': flags |= C_DOF; break;
+			case 'i': flags |= C_ROFa; break;
+			case 'j': flags |= C_ROFb; break;
+			case 'u': flags |= C_ROFa | C_ROFb; break;
 			case 'k': flags |= C_USEABRT; break;
+			case 'h': flags |= C_HUSH; break;
 			default:
 				retwarn(-1, "%s:%i: unknown flag %c", fb->name, fb->line, *p);
 		}

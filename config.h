@@ -23,11 +23,16 @@
 /* Default runlevel. May include sublevels. */
 #define INITDEFAULT (1 << 3)
 
-/* Slippery runlevels, default value unless something else is declared in inittab. */
+/* Slippery runlevels */
 #define SLIPPERY ((1 << 7) | (1 << 8) | (1 << 9))
 
 /* Special (recovery) levels, excluded from the default entry mask */
 #define SPECIAL ((1 << 0) | (1 << 1) | (1 << 2))
+
+/* Fallback runlevels, see C_ROFa and C_ROFb from init.h */
+#define FALLBACK1 1
+#define FALLBACK2 2
+#define FALLBACK3 3
 
 /* telinit command buffer size, also the maximum allowed command size. */
 /* init will reject commands longer than this. */

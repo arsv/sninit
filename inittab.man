@@ -77,12 +77,25 @@ sublevels a and b active.
 .IP "\fB~\fR" 4
 Invert runlevels mask, run this entry on all runlevels except those
 specified with 0...9. Sublevels are not inverted.
-.IP "\fB?\fR" 4
+.IP "\fBx\fR" 4
 Disable this entry, do not run anything until \fBtelinit enable \fIname\fR
 command is issued.
 .IP "\fBk\fR" 4
 Kill the process with SIGABRT instead of SIGTERM. Use if the process
 in question fails to die on SIGTERM.
+.P
+The following flags determine how entry failure (non-zero exit status)
+is handled.
+.IP "\fBq\fR" 4
+Disable this entry on failure.
+.IP "\fBi\fR" 4
+Switch to runlevel 1 on failure.
+.IP "\fBj\fR" 4
+Switch to runlevel 2 on failure.
+.IP "\fBu\fR" 4
+Switch to runlevel 4 on failure.
+.IP "\fBh\fR" 4
+Hush, do not report failures to syslog for this entry.
 .P
 Examples: \fBw12-4\fR start on runlevels 1, 2 or 4, wait;
 \fB01~\fR (re)start on all runlevels except 0 and 1; \fB--2-4k\fR (re)start
