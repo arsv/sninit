@@ -5,13 +5,13 @@ VAR=value
 
 r	i1	sbin/ini1
 r	i2	sbin/ini2
-R	i3	sbin/ini3
+w	i3	sbin/ini3
 
-s	s1	sbin/srv1
-s	s2	sbin/srv2
-s	s3	sbin/srv3
+-	s1	sbin/srv1
+-	s2	sbin/srv2
+-	s3	sbin/srv3
 
-R8	ss	!echo sleeping
-R8~	sw	!echo wakeup
+w8	ss	!echo sleeping
+w8~	sw	!echo wakeup
 
 # vim: ft=
