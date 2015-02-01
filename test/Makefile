@@ -20,7 +20,7 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addstringarray t_addstrargarray t_fileblock t_tzinit \
 	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
 	t_readinitdir t_rewireptsarray t_linknode \
-	t_transferpids t_joincmd t_setrunflags t_findentry
+	t_transferpids t_joincmd t_setrunflags t_findentry t_waitpids
 # Tests with manual check (for now)
 XTESTS = x_printf x_hello x_open
 
@@ -120,6 +120,8 @@ t_transferpids: t_transferpids.o init_conf.o init_conf_map.o init_find.o test.o
 t_joincmd: t_joincmd.o init_cmds.o test.o
 
 t_findentry: t_findentry.o init_find.o test.o
+
+t_waitpids: t_waitpids.o init_wait.o test.o
 
 # Libc tests
 x_openread: x_openread.o test.o
