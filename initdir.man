@@ -33,7 +33,7 @@ The first one is a plain file:
 .EE
 .P
 which gets the same treatment as any \fBinittab\fR(5) line.
-In particular, \fIcommand\fR is parsed and stored in the initrec
+In particular, \fIcommand\fR is parsed and stored 
 the same way it is done with inittab entries.
 .P
 The second is a script (shell or otherwise):

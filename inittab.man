@@ -6,7 +6,7 @@
 .SH DESCRIPTION
 Inittab is a list of commands init should run.
 .P
-Each relevant line in inittab describes a single entry (an initrec)
+Each relevant line in inittab describes a single entry
 containing a command to run and a pid of the process. For each entry,
 init spawns a child process, which in turn executes the command.
 Init records the pids of the child processes and keeps tracking them
@@ -39,7 +39,7 @@ Lines starting with # are ignored by init
 Add \fIvariable\fR to the environment to be passed to processes started
 by init.
 .IP "\fIflags\fR  \fIname\fR  \fIcommand\fR" 4
-Define an initrec. The fields (flags, name and command) may be separated
+Define an entry. The fields (flags, name and command) may be separated
 with spaces or tabs. None of the fields may be omited; use "-" to specify
 an empty flags or name. See below for the meaning of each of the three fields.
 .P
