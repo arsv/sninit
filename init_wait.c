@@ -72,7 +72,7 @@ static void failswitch(struct initrec* p)
 		default: return;
 	}
 
-	int next = (nextlevel & PRIMASK) | (1 << lvl);
+	int next = (nextlevel & SUBMASK) | (1 << lvl);
 	if(next == nextlevel)
 		return; /* already going there */
 
