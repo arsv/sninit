@@ -8,10 +8,18 @@ init \- system supervisor.
 '''
 .SH DESCRIPTION
 \fBinit\fR is process #1, the only process kernel starts directly.
-Upon startup, \fBinit\fR spawns processes to initialize and run the system.
-\fBinit\fR process is not allowed to die.
+The system remains running for as long as init process is alive.
 .P
-Additionally, \fBinit\fR adopts all orphaned processes in the system,
+The primary role of init is to start other processes. Init keeps
+a list of commands to spawn, which it executes sequentially.
+Init tracks pids of the spawned processes and, if configured so,
+respawns those that have died.
+.P
+To handle different system states, init keeps a number called
+\fIrunlevel\fR which determines the subset of processes that
+should be running at any given point.
+.P
+Init also adopts all orphaned processes in the system,
 becoming their parent process and reaping them when they die.
 '''
 .SH USAGE
@@ -21,7 +29,7 @@ All user communication with init occurs via its control socket,
 see \fBtelinit\fR(8).
 .P
 Kernel passes any arguments it does not recognize to init.
-Among those, "1", "2", ..., "9" set the default runlevel,
+Among those, \fB1\fR, \fB2\fR, ..., \fB6\fR set the default runlevel,
 the rest are silently ignored.
 .P
 Check Documentation/kernel-parameters.txt, Documentation/init.txt from
@@ -35,7 +43,7 @@ syntax as well as usage guidelines.
 .P
 The files are parsed early during system startup, and no attempts are made
 to re-read them later. To initiate re-configuration after editing the file,
-use "telinit q". See \fBtelinit\fR(8).
+use "telinit reload". See \fBtelinit\fR(8).
 '''
 .SH ENVIRONMENT
 \fBinit\fR does not use any environment variables and does not pass
