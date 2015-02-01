@@ -61,18 +61,21 @@ void stop(struct initrec* p)
 	} else if(p->flags & P_SIGKILL) {
 		if(waitneeded(p, &p->lastsig, cfg->time_to_skip, "skipping"))
 			return;
-		warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
+		if(!(p->flags & C_HUSH))
+			warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
 		p->pid = 0;
 		p->flags |= P_ZOMBIE;
 		p->flags &= ~(P_SIGKILL | P_SIGTERM);
 	} else if(p->flags & P_SIGTERM) {
 		if(waitneeded(p, &p->lastsig, cfg->time_to_SIGKILL, "sending SIGKILL"))
 			return;
-		warn("#%s[%i] sending SIGKILL", p->name, p->pid);
+		if(!(p->flags & C_HUSH))
+			warn("#%s[%i] sending SIGKILL", p->name, p->pid);
 		kill(-p->pid, SIGKILL);
 		p->flags |= P_SIGKILL;
 	} else {
-		warn("#%s[%i] terminating", p->name, p->pid);
+		if(!(p->flags & C_HUSH))
+			warn("#%s[%i] terminating", p->name, p->pid);
 		kill(-p->pid, (p->flags & C_USEABRT ? SIGABRT : SIGTERM));
 		p->flags |= P_SIGTERM;
 
