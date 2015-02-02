@@ -9,8 +9,6 @@ extern int initctlfd;
 extern int timetowait;
 extern time_t passtime;
 
-#define hush(p) (p->flags & C_HUSH)
-
 static int waitneeded(struct initrec* p, time_t* last, time_t wait);
 
 /* both spawn() and stop() should check relevant timeouts, do their resp.
@@ -45,8 +43,7 @@ void spawn(struct initrec* p)
 		/* ok, we're in the child process */
 		setpgid(0, 0);
 		execve(p->argv[0], p->argv, cfg->env);
-		if(!hush(p))
-			warn("%s[%i] exec(%s) failed: %m", p->name, getpid(), p->argv[0]);
+		warn("%s[%i] exec(%s) failed: %m", p->name, getpid(), p->argv[0]);
 		_exit(-1);
 	}
 }
@@ -67,8 +64,7 @@ void stop(struct initrec* p)
 		   restart the entry. */
 		if(waitneeded(p, &p->lastsig, cfg->time_to_skip))
 			return;
-		if(!hush(p))
-			warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
+		warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
 		p->pid = 0;
 		p->flags |= P_ZOMBIE;
 		p->flags &= ~(P_SIGKILL | P_SIGTERM);
@@ -76,8 +72,7 @@ void stop(struct initrec* p)
 		/* The process has been signalled, but has not died yet */
 		if(waitneeded(p, &p->lastsig, cfg->time_to_SIGKILL))
 			return;
-		if(!hush(p))
-			warn("#%s[%i] process refuses to die, sending SIGKILL", p->name, p->pid);
+		warn("#%s[%i] process refuses to die, sending SIGKILL", p->name, p->pid);
 		kill(-p->pid, SIGKILL);
 		p->flags |= P_SIGKILL;
 	} else {
