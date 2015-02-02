@@ -66,7 +66,7 @@ static int parseinitline(struct fileblock* fb, int strict)
 	if(!(p = strpbrk(l, "= \t:")))
 		goto bad;
 	else if(*p == ':')
-		retwarn(-1, "%s:%i: SysV-style inittab detected, aborting");
+		retwarn(-1, "%s:%i: SysV-style inittab detected, aborting", fb->name, fb->line);
 	else if(*p == '=')
 		return addenviron(l);
 

@@ -137,6 +137,7 @@ int nextline(struct fileblock* f)
 
 	f->ls = ls;
 	f->le = le;
+	f->line++;
 
 	return 1;
 }
