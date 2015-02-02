@@ -38,6 +38,7 @@ void spawn(struct initrec* p)
 		p->pid = pid;
 		p->lastrun = passtime;
 		p->lastsig = 0;
+		p->flags &= ~(P_SIGKILL | P_SIGTERM);
 		return;
 	} else {
 		/* ok, we're in the child process */
@@ -66,8 +67,6 @@ void stop(struct initrec* p)
 			return;
 		warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
 		p->pid = 0;
-		p->flags |= P_ZOMBIE;
-		p->flags &= ~(P_SIGKILL | P_SIGTERM);
 	} else if(p->flags & P_SIGTERM) {
 		/* The process has been signalled, but has not died yet */
 		if(waitneeded(p, &p->lastsig, cfg->time_to_SIGKILL))

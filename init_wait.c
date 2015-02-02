@@ -48,7 +48,7 @@ void waitpids(void)
 
 			/* mark the entry as safely dead */
 			p->pid = -1;
-			p->flags &= ~(P_SIGTERM | P_SIGKILL | P_ZOMBIE);
+			p->flags &= ~(P_SIGTERM | P_SIGKILL);
 		}
 	}
 

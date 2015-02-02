@@ -24,7 +24,6 @@
 #define P_SIGSTOP	(1<<10)		/* SIGSTOP has been sent */
 #define P_SIGTERM	(1<<11)		/* SIGTERM (or SIGABRT) has been sent to this process */
 #define P_SIGKILL	(1<<12)		/* SIGKILL has been sent to this process */
-#define P_ZOMBIE	(1<<13)		/* process failed to die after SIGKILL */
 
 /* Sublevels mask (struct initrec.rlvls) */
 #define PRIMASK		0x03FF		/* ------9876543210 */
