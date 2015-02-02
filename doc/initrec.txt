@@ -9,10 +9,10 @@ Throughout the code, initrecs are classified as s or r type:
 
 	new	sysvtab		respawn		exclusive
 	-------+---------------+---------------+---------
-	s	service		yes		no
-	S	hold		yes		yes
+	-	service		yes		no
+	+	hold		yes		yes
 	r	once		no		no
-	R	wait		no		yes
+	w	wait		no		yes
 
 Respawn determines how init should react when process dies
 "unexpectedly", as opposed to being killed by init.
@@ -34,10 +34,10 @@ list is clearly simpler and the price (both cpu and mem) looks negligible.
 One clear advantage of uniform list is that it allows starting some
 services before performing r-type tasks:
 
-	R	mount	/sbin/mount -a
-	S	syslog	/sbin/syslogd
-	r	-	/sbin/setkeys
-	r	-	/sbin/setup-network ...
+	mount	w   /sbin/mount -a
+	syslog	+   /sbin/syslogd
+	-	r   /sbin/setkeys
+	-	r   /sbin/setup-network ...
 
 and so on. This way, syslogd will have a chance to come up before anything
 significant takes place, and thus to save some messages that otherwise could

@@ -7,28 +7,29 @@ SysV inittab format, also partially supported by busybox init:
 sninit inittab format uses whitespaces for field separators,
 and merges runlevels and action into mode field:
 
-	mode	name	command
+	name   runflags   command
 
 
 
 Actions
 ~~~~~~~
-respawn		use s with the same runlevels
+respawn		nothing (or -), this is the default mode for sninit
 once		use r with the same runlevels
-wait		use R with the same runlevels
+wait		use w with the same runlevels
 
-sysninit	use R, no runlevels, and place before any other entries
+sysninit	use w, no runlevels, and place before any other entries
 boot		use r, place before other entries but after sysinit
-bootwait	like boot but use R instead of r
+bootwait	like boot but use w instead of r
 
-ondemand	use s with the same secondary runlevel
-		(that is, ":a:ondemand: becomes "sa")
+ondemand	use - with the same secondary runlevel
+		(that is, ":a:ondemand: becomes "a")
 	beware of multiple runlevels: for sysvinit, :ab:ondemand:
 	means either a or b, while in sninit it's a *and* b.
 
-off		not supported yet (TODO)
+off		use x
 
 initdefault	not supported, specify desired runlevel in kernel command line.
+		sninit behaves as if initdefault is always 3
 
 powerwait	not supported; use secondary runlevels for tracking power state
 powerfail	 and telinit to switch them.

@@ -21,7 +21,6 @@ syscalls.txt	  Bundled libc: syscall implementation
 -- Usage notes
 
 initctl.txt	  Control socket protocol
-inittab.txt	  Inittab syntax
 sysvinit.txt	  Migrating from sysvinit
 qemu.txt	  Using qemu to test sninit builds
 

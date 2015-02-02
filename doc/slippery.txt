@@ -62,19 +62,19 @@ Pre-sleep have 8 in runlevels field, post-sleep hooks have ~8.
 
 A complete configuration should look like this:
 
-	r8	-	/sbin/usb off
-	r8	-	/sbin/network down
-	R8	-	!echo mem > /sys/power/state
-	r8~	-	/sbin/vcreset
-	r8~	-	/sbin/network up
-	r8~	-	/sbin/usb on
+	-	r8	/sbin/usb off
+	-	r8	/sbin/network down
+	-	w8	!echo mem > /sys/power/state
+	-	r8~	/sbin/vcreset
+	-	r8~	/sbin/network up
+	-	r8~	/sbin/usb on
 
 Commands shown are only for illustration, a real system will probably have
 something system-specific.
 
-Note the use of E: in most cases, the hooks are independent,
-and W on the sleep-trigger command ensures it will only be run after all
-e-type entries have exited.
+Note the use of r: in most cases, the hooks are independent,
+and w on the sleep-trigger command ensures it will only be run after all
+r-type entries have exited.
 
 
 Handling services
@@ -85,9 +85,9 @@ are stopped but those that should be started are NOT started.
 This is in line with using slippery runlevels to implement system sleep states.
 Consider the following setup:
 
-	S137	P1	/sbin/syslogd
-	s-37	P2	/sbin/crond
-	s-3-	P3	/sbin/networkd
+	P1	+137	/sbin/syslogd
+	P2	--37	/sbin/crond
+	P3	--3-	/sbin/networkd
 
 The idea here is that both P1 and P2 need no special treatment as far as sleep
 is concerned, but P3 must be restarted. During 3->7->3 transition everything

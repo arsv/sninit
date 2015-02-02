@@ -1,136 +1,59 @@
-Inittab syntax
-~~~~~~~~~~~~~~
-Location: /etc/inittab (INITTAB in config.h)
-Lines starting with # and empty lines are ignored.
-The remaining lines should have one of the following formats:
+The new inittab format
+~~~~~~~~~~~~~~~~~~~~~~
+Up to some point during development, sninit used sysvinit-style
+inittab format ("sysvtab" for short):
 
-	name=value
-	flags	name	command
+	name:rlvls:flags:command
 
-Example:
+Later on, the format has been changed to crontab-style "newtab":
 
-	# A sample minimalistic inittab
+	name	runflags    command
 
-	# Environment setup
-	PATH=/bin:/sbin:/usr/bin
-	LOCALE=C
-	LC_CTYPE=C
+Note whitespace-separated fields, and flags merged with runlevels.
 
-	# Initrec lines
-	R1234568   hwc          /sbin/hwclock -s
-	s1         sulogin      /bin/sulogin
-
-Initdir (service) files, when present, are handled as if they were
-appended at the end of inittab.
-Each file is equivalent to one inittab line.
-See below for initdir file format description.
+In current implementation, the formats are essentially equivalent. 
+SysV-style "wait" and "once" are replaced with "w" and "r" respectively,
+rlvls field is used with no changed.
 
 
-Initrec lines
-~~~~~~~~~~~~~
-Each initrec describes a process to be run by init.
-Initrec stores a single pid, so at each given time there can be at most
-one process running per each initrec.
-This pid may change, as in case of respawning processes, but only after
-the existing process dies.
-
-Syntax:
-
-	code   name   command
-
-name any string up to 7 (NAMELEN-1 in config.h) characters long.
-Use "-" to set empty name; for s-type records, non-empty names,
-should be unique.  Name is used in telinit start/stop commands and for logging.
-Example: "mountfs", "tty2"
-
-code is a set of characters denoting entry type, runlevels and optional
-process flags.
-
-	s		Restart process in case it dies
-
-	S		Like S, but wait for other processes to die before
-			killing this one.
-
-	R		Wait before this process finishes before proceeding to
-                        the next one
-	r		Neither wait nor respawn the process
-
-	0..9		primary runlevel
-	a..f		secondary runlevel (sublevel, see sublevels.txt)
-
-	k		When killing the process, use SIGABRT
-			instead of SIGTERM
-
-command: the command to run. Normally this field is split into argv array
-similar to how it happens in sh(1) and passed directly to execve(2). 
-Quoted arguments are respected; variable substitutions, redirects and other
-shell-specific things aren't.
-
-
-Environment lines
+Why a new format?
 ~~~~~~~~~~~~~~~~~
-Processes started by init can not use any environment set up by any kind
-of init script like it's typically done with sysvinit.
-This is especially true for processes started without sh wrapping
-(sh can process /etc/profile before executing the command).
-Thus all environment the process needs must be provided by init via
-the third argument of execve(2).
+Less ugly and better fitting sninit's internal representation.
 
-sninit keeps a fixed environment and passes it to every process it runs.
-Syntax:
+The initial idea of sninit features called for a rather elaborate
+per-entry configuration. Back then, having one field for runlevels
+and another one for comma-separated list of value kinda made sense.
 
-	name=value
+	httpd:2345:respawn,uid=apache,gid=apache:/sbin/httpd
 
-The variables appear in envp[] in the same order they are listed in the file.
-All processes get exactly the same environment, even if some variables were
-declared below resp. initrec line.
+As development progressed, this evolved into
+	
+	httpd:::/sbin/runcap apache@apache /sbin/httpd
 
-Variable substitution is never performed, all values must be literal.
+while w-type entries started to look like
 
+	::wait:/sbin/whatever
 
-Initdir files
-~~~~~~~~~~~~~
-Location: /etc/rc/* (INITDIR in config.h)
-Each file provides a single initrec. Only s-type (respawn) records are allowed,
-due to files in directory being inherently unordered.
+and it made less and less sense to shoehorn it into sysvinit format,
+pretty ugly to begin with.
 
-Two possible formats are recognized: pure service file, and a script.
-The first (and possibly the second) line of the file is used to determine its
-type.  Pure service file, command is parsed and used in execve(2) call:
+Wherever things may be aligned, it's better to keep them aligned, so : were
+replaced with whitespace separators. And since sninit had already crontab-style
+environment variables, the whole thing started to look more like crontab.
 
-	#:code
-	command
-
-Script:
-
-	#!interpreter
-	#:code
-	....
-
-Scripts must be executable (in chmod(2) sense, S_IX{USR,OTH}).
-Neither the interpreter line nor the contents of script files are parsed.
-Instead, execve(2) gets the script name itself.
-
-In both cases the file's basename is used for the name field in initrec.
+Atop of that, sninit was never a drop-in replacement for sysvinit,
+and was not meant to be. So instead of somehow accepting somewhat compatible
+configuration with a different semantics (that is, a sysv-style inittab),
+the choice was made to reject it loudly.
 
 
-How sninit works
-~~~~~~~~~~~~~~~
-During startup, sninit compiles all initrecs from inittab and initdir into
-an ordered list. Entries from inittab come first, exactly in the same order
-as they appear in inittab. The order of the entries from initdir is not defined
-(and depends on how getdents(2) reads the directory), but they all come after
-inittab entries.
+Field order
+~~~~~~~~~~~
+SysV-style field order (name-...-command) has been kept intact.
+Command is the most variable part, so there is no other place to put it.
+Between flags-name- and name-flags-, the latter has been chosen
+to faciliate simple grep/sed operations on entry names:
 
-Next, sninit runs through the list, and spawns all processes that
-should be spawned for a given runlevel.
-When spawning R-type entries, sninit breaks the loop and waits until
-the processes dies. Upon encountering s-type entries whose process died,
-sninit respawns the process.  r-type entries are neither waited for
-nor respawned. Processes which are running but aren't intended for current
-runlevel are killed. The loop is re-run as needed.
+	/^name\>/
 
-When reconfiguration is requested, sninit compiles the new configuration,
-transferring existing process data (pids etc) for matching entries.
-For named entries, name is used as the key.
-Un-named entries are not transferred.
+Matching the 2nd field would require explicit pattern for the flags.
