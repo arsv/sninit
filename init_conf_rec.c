@@ -9,11 +9,11 @@
 extern struct memblock newblock;
 
 global int addenviron(const char* def);
-global int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe);
+global int addinitrec(struct fileblock* fb, char* name, char* flags, char* cmd, int exe);
 
 static int prepargv(char* str, char** end);
 static int addrecargv(char* cmd, int exe);
-static int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
+static int setrunflags(struct fileblock* fb, struct initrec* entry, char* flags);
 
 extern int addstruct(int size, int extra);
 extern int addstringarray(int n, const char* str, const char* end);
@@ -25,7 +25,7 @@ extern int checkdupname(const char* name);
 /* Arguments: mode="S234", name="httpd". See addrecargv for cmd and exe handling.
    fb is the block we're parsing currently, used solely for error reporting. */
 
-int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 {
 	offset nodeoff;
 	offset entryoff;
@@ -60,7 +60,7 @@ int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe)
 	entry->lastrun = 0;
 	entry->lastsig = 0;
 
-	if(setrunflags(fb, entry, mode))
+	if(setrunflags(fb, entry, rlvl))
 		goto out;
 
 	/* initrec has been added successfully, so note its offset to use when

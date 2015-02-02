@@ -11,7 +11,7 @@
 #include "init_conf.h"
 #include "sys.h"
 
-extern int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
+extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe);
 
 extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
@@ -103,7 +103,7 @@ static inline int skipdirent(struct dirent64* de)
 static int parsesrvfile(struct fileblock* fb, char* basename)
 {
 	int shebang = 0;
-	char* code;
+	char* rlvl;
 	char* cmd;
 
 	if(!nextline(fb))
@@ -118,11 +118,11 @@ static int parsesrvfile(struct fileblock* fb, char* basename)
 
 	/* Do we have #: line? If so, note runlevels and flags */
 	if(!strncmp(fb->ls, "#:", 2)) {
-		code = fb->ls + 2;	/* skip #: */
+		rlvl = fb->ls + 2;	/* skip #: */
 		if(!nextline(fb))
 			retwarn(-1, "%s: no command found", fb->name);
 	} else {
-		code = "";
+		rlvl = "";
 	}
 
 	if(shebang) {
@@ -140,5 +140,5 @@ static int parsesrvfile(struct fileblock* fb, char* basename)
 		cmd = fb->ls;
 	}
 
-	return addinitrec(fb, code, basename, cmd, shebang);
+	return addinitrec(fb, basename, rlvl, cmd, shebang);
 }

@@ -70,12 +70,12 @@ static int parseinitline(struct fileblock* fb, int strict)
 	else if(*p == '=')
 		return addenviron(l);
 
-	char* code = strssep(&l);
 	char* name = strssep(&l);
+	char* rlvl = strssep(&l);
 	/* l is the command here */
 
-	if(code && name && *l)
-		return addinitrec(fb, code, name, l, 0);
+	if(name && rlvl && *l)
+		return addinitrec(fb, name, rlvl, l, 0);
 
 bad:	retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
 }

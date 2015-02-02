@@ -38,8 +38,8 @@ Lines starting with # are ignored by init
 .IP "\fIvariable\fR=\fIvalue\fR" 4
 Add \fIvariable\fR to the environment to be passed to processes started
 by init.
-.IP "\fIflags\fR  \fIname\fR  \fIcommand\fR" 4
-Define an entry. The fields (flags, name and command) may be separated
+.IP "\fIname\fR  \fIflags\fR  \fIcommand\fR" 4
+Define an entry. The fields (name, flags and command) may be separated
 with spaces or tabs. None of the fields may be omited; use "-" to specify
 an empty flags or name. See below for the meaning of each of the three fields.
 .P
@@ -49,6 +49,16 @@ but not reordered.
 .P
 The relative order of environment and process lines is irrelevant.
 All spawned processes will get exactly the same environment.
+'''
+.SS Naming entries
+\fIname\fR is a string used to identify this entry, in particular when
+stopping/starting processes with \fBtelinit\fR(8), as well as in syslog
+messages. Use \fB-\fR to denote empty name. Non-empty names should be unique.
+.P
+During reconfiguration, init matches entries with the same name, and transfers
+pids from the old configuration. For un-named entries, and in case names do not
+match, the old process gets killed and the new one started. This is mostly
+relevant for respawning entries.
 '''
 .SS Entry flags
 The first field, \fIflags\fR, is a set of characters describing how the entry
@@ -100,16 +110,6 @@ Hush, do not report failures to syslog for this entry.
 Examples: \fBw12-4\fR start on runlevels 1, 2 or 4, wait;
 \fB01~\fR (re)start on all runlevels except 0 and 1; \fB--2-4k\fR (re)start
 on runlevels 2 and 4, use SIGABRT to kill the process.
-'''
-.SS Naming entries
-\fIname\fR is a string used to identify this entry, in particular when
-stopping/starting processes with \fBtelinit\fR(8), as well as in syslog
-messages. Use \fB-\fR to denote empty name. Non-empty names should be unique.
-.P
-During reconfiguration, init matches entries with the same name, and transfers
-pids from the old configuration. For un-named entries, and in case names do not
-match, the old process gets killed and the new one started. This is mostly
-relevant for respawning entries.
 '''
 .SS Commands
 The last field, \fIcommand\fR, is the command to run. The field is parsed and
