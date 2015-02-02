@@ -33,7 +33,7 @@ static struct cmdrec {
 	{ 'R', 0, "reboot",	},
 	{ 'S', 0, "sleep",	},
 	{ 'Z', 0, "suspend",	},
-	{ '?', 0, "?",		},
+	{ '?', 0, "list",	},
 	{  0  }
 };
 
