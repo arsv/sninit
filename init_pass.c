@@ -15,7 +15,7 @@ extern void spawn(struct initrec* p);
 extern void stop(struct initrec* p);
 
 static inline void swapi(int* a, int* b);
-static inline int shouldberunning(struct initrec* p);
+static int shouldberunning(struct initrec* p);
 
 /* Initpass: go through inittab, (re)starting entries
    that need to be (re)started and killing entries that should be killed.
@@ -142,7 +142,7 @@ void initpass(void)
    but (p->rlvl & SUBMASK == SUBMASK) means "run in *any* sublevel" and excludes
    no-active-sublevels case. */
 
-static inline int shouldberunning(struct initrec* p)
+static int shouldberunning(struct initrec* p)
 {
 	if(p->flags & (P_MANUAL | P_FAILED))
 		/* disabled, either manually or via C_DOF */
