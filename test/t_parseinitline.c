@@ -12,8 +12,8 @@ struct memblock scratch;
 
 struct {
 	int called;
-	char* mode;
 	char* name;
+	char* rlvl;
 	char* cmd;
 	int exe;
 } U;
@@ -29,11 +29,11 @@ int readinitdir(char* dir, int strict)
 	return str ? strdup(str) : NULL;
 }*/
 
-int addinitrec(struct fileblock* fb, char* mode, char* name, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 {
 	U.called++;
-	U.mode = mode;
 	U.name = name;
+	U.rlvl = rlvl;
 	U.cmd = cmd;
 	U.exe = exe;
 	return RET;
@@ -54,9 +54,9 @@ int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels)
 	return -1;
 }
 
-void test(input, mode, name, cmd)
+void test(input, name, rlvl, cmd)
 	const char *input;
-	const char *name, *mode, *cmd;
+	const char *name, *rlvl, *cmd;
 {
 	char* data = alloca(strlen(input) + 1);
 	strcpy(data, input);
@@ -73,8 +73,8 @@ void test(input, mode, name, cmd)
 	A(parseinitline(&fb, 0) == RET);
 
 	A(U.called == 1);
-	S(U.mode, mode);
 	S(U.name, name);
+	S(U.rlvl, rlvl);
 	S(U.cmd, cmd);
 	A(U.exe == 0);
 }
@@ -84,12 +84,12 @@ void test(input, mode, name, cmd)
 int main(void)
 {
 	/* generic line */
-	test("W123\techo\t/bin/echo -n foo",
-		"W123", "echo", "/bin/echo -n foo");
+	test("echo\tW123\t/bin/echo -n foo",
+		"echo", "W123", "/bin/echo -n foo");
 
 	/* arbitrary spaces */
-	test("W123  echo \t /bin/echo -n foo",
-		"W123", "echo", "/bin/echo -n foo");
+	test("echo  W123 \t /bin/echo -n foo",
+		"echo", "W123", "/bin/echo -n foo");
 
 	/* sh */
 	test("W123  test  !/bin/test",

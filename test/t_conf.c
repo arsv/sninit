@@ -105,8 +105,8 @@ int main(void)
 	T(parseinitline_("FOO=something"));
 	T(parseinitline_("PATH=/bin:/sbin:/usr/bin"));
 	T(parseinitline_(""));
-	T(parseinitline_("w12345   time    /sbin/hwclock -s"));
-	T(parseinitline_("w12345   mount   /bin/mount -a"));
+	T(parseinitline_("time    w12345   /sbin/hwclock -s"));
+	T(parseinitline_("mount   w12345   /bin/mount -a"));
 
 	T(finishinittab())
 	rewirepointers();

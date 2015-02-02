@@ -52,7 +52,7 @@ int parsesrvfile(struct fileblock* fb, char* basename)
 	return 0;
 }
 
-int addinitrec(struct fileblock* fb, char* name, char* runlvl, char* flags, char* cmd, int exe)
+int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 {
 	return 0;
 }
