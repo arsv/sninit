@@ -80,7 +80,7 @@ void parsecmd(char* cmd)
 		case '?': dumpstate(); break;
 		case 'i': dumpidof(p); break;
 		/* reconfigure */
-		case 'q':
+		case 'c':
 			if(configure(1))
 				warn("!configure failed");
 			else

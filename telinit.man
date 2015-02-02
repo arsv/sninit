@@ -24,24 +24,36 @@ Whatever output init may produce is passed to {telinit}'s stdout.
 Initiate a switch to specified runlevel.
 .IP [+-][abcdef]
 Activate/deactivate specified sublevel.
-.IP "?, status" 4
+.IP "\fB?\fR, \fBlist\fR" 4
 Request current status and process list from init.
-.IP "q, reload" 4
+.IP "\fBreload\fR" 4
 Reload configuration.
-.IP "halt, reboot, poweroff" 4
+.IP "\fBhalt\fR, \fBreboot\fR, \fBpoweroff\fR" 4
 Stop the system, possibly requesting reboot or poweroff.
 All three commands request a switch to runlevel 0, followed
 by \fBreboot\fR(2) call with LINUX_REBOOT_CMD_HALT, LINUX_REBOOT_CMD_RESTART
 or LINUX_REBOOT_CMD_POWER_OFF argument respectively.
-.IP "sleep, suspend" 4
+.IP "\fBsleep\fR, \fBsuspend\fR" 4
 Initiate a switch to runlevels 8 and 9 respectively.
 For these commands to work properly, relevant actions must be configured
 in inittab; init itself will not put the system to sleep.
-.IP "start, stop" 4
-Start or stop specified processes.
-Name is the first field from \fB{inittab}\fR(5) line, or file basename
-in \fBinitdir\fR(5). Both commands re-assign process runlevels mask internally:
-start is equivalent to "^0" while stop is "0". See \fB{inittab}\fR(5).
+.IP "\fBstart\fR \fIname\fR, \fBstop\fR \fIname\fR" 4
+Start or stop specified entries. In case the entry is not configured for current
+runlevel, adjust its runlevel mask and spawn it anyway.
+.IP "\fBrestart\fR \fIname\fR" 4
+Kill named process without changing its runlevel mask, forcing immediate respawn.
+.IP "\fBenable\fR \fIname\fR, \fBdisable\fR \fIname\fR" 4
+Enable or disable specified entries. Entries not configured for current runlevel
+will not be spawned after \fBenable\fR.
+.IP "\fBpause\fR \fIname\fR, \fBresume\fR \fIname\fR" 4
+Send SIGSTOP or SIGCONT to the process.
+.IP "\fBhup \fIname\fR\fR" 4
+Send SIGHUP to the process.
+.IP "\fBpidof \fIname\fR\fR" 4
+Print process id for the named entry.
+.P
+Wherever applicable, \fIname\fR is the first field from \fB{inittab}\fR(5) line,
+or file basename in \fBinitdir\fR(5).
 '''
 .SH FILES
 .IP {@initctl}
