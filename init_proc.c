@@ -9,7 +9,9 @@ extern int initctlfd;
 extern int timetowait;
 extern time_t passtime;
 
-static int waitneeded(struct initrec* p, time_t* last, time_t wait, const char* msg);
+#define hush(p) (p->flags & C_HUSH)
+
+static int waitneeded(struct initrec* p, time_t* last, time_t wait);
 
 /* both spawn() and stop() should check relevant timeouts, do their resp.
    actions if that's ok to do, or update timetowait via waitneeded call
@@ -22,11 +24,11 @@ void spawn(struct initrec* p)
 	if(p->pid > 0) {
 		/* this is not right, spawn() should only be called
 		   for entries that require starting */
-		warn("%s[%i] can't spawn, it's already running", p->name, p->pid);
+		warn("%s[%i] can't spawn, already running", p->name, p->pid);
 		return;
 	}
 
-	if(waitneeded(p, &p->lastrun, cfg->time_to_restart, "restarting"))
+	if(waitneeded(p, &p->lastrun, cfg->time_to_restart))
 		return;
 
 	pid = fork();
@@ -43,39 +45,44 @@ void spawn(struct initrec* p)
 		/* ok, we're in the child process */
 		setpgid(0, 0);
 		execve(p->argv[0], p->argv, cfg->env);
-		warn("%s[%i] exec(%s) failed: %m", p->name, getpid(), p->argv[0]);
+		if(!hush(p))
+			warn("%s[%i] exec(%s) failed: %m", p->name, getpid(), p->argv[0]);
 		_exit(-1);
 	}
 }
 
 void stop(struct initrec* p)
 {
-	if(p->pid <= 0) {
-		warn("#%s: attempted to stop process that's not running", p->name);
+	if(p->pid == 0 && (p->flags & P_SIGKILL))
+		/* Zombie, no need to report it */
 		return;
-	}
 
-	if(p->flags & P_ZOMBIE) {
-		warn("#%s[%i] SIGKILL already sent", p->name, p->pid);
-		return;
-	} else if(p->flags & P_SIGKILL) {
-		if(waitneeded(p, &p->lastsig, cfg->time_to_skip, "skipping"))
+	if(p->pid <= 0)
+		/* This can only happen on telinit stop ..., so let the user know */
+		retwarn_("%s: attempted to stop process that's not running", p->name);
+
+	if(p->flags & P_SIGKILL) {
+		/* The process has been sent SIGKILL, still refuses to kick the bucket.
+		   Just forget about it then, reset p->pid and let the next initpass
+		   restart the entry. */
+		if(waitneeded(p, &p->lastsig, cfg->time_to_skip))
 			return;
-		if(!(p->flags & C_HUSH))
+		if(!hush(p))
 			warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
 		p->pid = 0;
 		p->flags |= P_ZOMBIE;
 		p->flags &= ~(P_SIGKILL | P_SIGTERM);
 	} else if(p->flags & P_SIGTERM) {
-		if(waitneeded(p, &p->lastsig, cfg->time_to_SIGKILL, "sending SIGKILL"))
+		/* The process has been signalled, but has not died yet */
+		if(waitneeded(p, &p->lastsig, cfg->time_to_SIGKILL))
 			return;
-		if(!(p->flags & C_HUSH))
-			warn("#%s[%i] sending SIGKILL", p->name, p->pid);
+		if(!hush(p))
+			warn("#%s[%i] process refuses to die, sending SIGKILL", p->name, p->pid);
 		kill(-p->pid, SIGKILL);
 		p->flags |= P_SIGKILL;
 	} else {
-		if(!(p->flags & C_HUSH))
-			warn("#%s[%i] terminating", p->name, p->pid);
+		/* Regular stop() invocation, gently ask the process to leave
+		   the kernel process table */
 		kill(-p->pid, (p->flags & C_USEABRT ? SIGABRT : SIGTERM));
 		p->flags |= P_SIGTERM;
 
@@ -91,10 +98,14 @@ void stop(struct initrec* p)
 	}
 }
 
-/* Check whether $$last was at least $wait seconds ago; if not, update timetowait. */
-static int waitneeded(struct initrec* p, time_t* last, time_t wait, const char* msg)
+/* start() and stop() are called on each initpass for entries that should
+   be started/stopped, and initpass may be triggered sooner than expected
+   for unrelated reasons. So the idea is to take a look at passtime, and
+   only act if the time is up, otherwise just set ppoll timer so that
+   another initpass would be triggered when necessary. */
+static int waitneeded(struct initrec* p, time_t* last, time_t wait)
 {
-	time_t curtime = passtime;	/* time at the start of current initpass, see main() */
+	time_t curtime = passtime;	/* start of current initpass, see main() */
 	time_t endtime = *last + wait;
 
 	if(endtime <= curtime) {
