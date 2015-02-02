@@ -8,7 +8,7 @@ int nextlevel;
 
 /* Startup: I1 * I2 * I3 I4 I5 * rlswitch */
 struct initrec I0 = { .pid = 11, .flags = 0 };
-struct initrec I1 = { .pid = 22, .flags = C_HUSH | C_USEABRT | P_SIGTERM | P_ZOMBIE };
+struct initrec I1 = { .pid = 22, .flags = C_USEABRT | P_SIGTERM | P_ZOMBIE };
 struct initrec I2 = { .pid = 33, .flags = P_SIGTERM | P_SIGKILL };
 struct initrec I3 = { .pid = 44, .flags = 0 };
 struct initrec I4 = { .pid = 55, .flags = C_ROFa };
@@ -86,7 +86,7 @@ int main(void)
 	waitcnt = 1;
 	waitpids();
 	A(I1.pid == -1);
-	A(I1.flags == (C_HUSH | C_USEABRT));
+	A(I1.flags == (C_USEABRT));
 
 	/* C_DOF test */
 	waitcnt = 1;
