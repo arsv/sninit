@@ -92,7 +92,7 @@ int main(void)
 	waitcnt = 1;
 	waitpids();
 	A(I5.pid == -1);
-	A(I5.flags == (C_DOF | P_DISABLE));
+	A(I5.flags == (C_DOF | P_FAILED));
 
 	/* C_ROF test */
 	nextlevel = R6 | Ra | Rb;

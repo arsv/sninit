@@ -11,7 +11,7 @@ rig=${out/.out/.rig}
 if [ -f "$rig" ]; then
 	diff -q "$out" "$rig" || exit 1
 else
-	grep -q FAIL "$out" && cat "$out" && exit 1
+	grep -q '\<FAIL\>' "$out" && cat "$out" && exit 1
 fi
 
 exit 0

@@ -144,8 +144,8 @@ void initpass(void)
 
 static inline int shouldberunning(struct initrec* p)
 {
-	if(p->flags & P_DISABLE)
-		/* manually disabled */
+	if(p->flags & (P_MANUAL | P_FAILED))
+		/* disabled, either manually or via C_DOF */
 		return 0;
 	if(!(p->rlvl & nextlevel & PRIMASK))
 		/* not in this primary level */

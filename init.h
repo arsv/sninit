@@ -19,11 +19,12 @@
 #define C_HUSH		(1<<6)		/* do not warn about this entry */
 /* C_* flags are only set in configure(),
    P_* flags may be changed at runtime */
-#define P_DISABLE	(1<<8)		/* process has been disabled manually */
-#define P_SIGSTOP	(1<<9)		/* SIGSTOP has been sent */
-#define P_SIGTERM	(1<<10)		/* SIGTERM (or SIGABRT) has been sent to this process */
-#define P_SIGKILL	(1<<11)		/* SIGKILL has been sent to this process */
-#define P_ZOMBIE	(1<<12)		/* process failed to die after SIGKILL */
+#define P_MANUAL	(1<<8)		/* process has been disabled manually */
+#define P_FAILED	(1<<9)		/* process has been disabled manually */
+#define P_SIGSTOP	(1<<10)		/* SIGSTOP has been sent */
+#define P_SIGTERM	(1<<11)		/* SIGTERM (or SIGABRT) has been sent to this process */
+#define P_SIGKILL	(1<<12)		/* SIGKILL has been sent to this process */
+#define P_ZOMBIE	(1<<13)		/* process failed to die after SIGKILL */
 
 /* Sublevels mask (struct initrec.rlvls) */
 #define PRIMASK		0x03FF		/* ------9876543210 */

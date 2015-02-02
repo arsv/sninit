@@ -249,14 +249,14 @@ static void clearts(struct initrec* p)
    like P_ENABLED may break sleep modes and expected shutdown
    routine.
  
-   There is no dostop because P_DISABLE is enough to
+   There is no dostop because P_MANUAL is enough to
    force-stop a process regardless of its configured runlevels */
 static void dostart(struct initrec* p)
 {
 	clearts(p);
 	p->rlvl |= (nextlevel & PRIMASK);
 	p->rlvl &= (nextlevel & SUBMASK) | PRIMASK;
-	p->flags &= ~P_DISABLE;
+	p->flags &= ~(P_MANUAL | P_FAILED);
 }
 
 /* Without any other changes (runlevels or whatever),
@@ -270,7 +270,8 @@ static void dorestart(struct initrec* p)
 static void dodisable(struct initrec* p, int v)
 {
 	clearts(p);
-	scflags(&(p->flags), P_DISABLE, v);
+	scflags(&(p->flags), P_MANUAL, v);
+	p->flags &= ~P_FAILED;
 }
 
 static void dopause(struct initrec* p, int v)

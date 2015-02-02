@@ -59,7 +59,7 @@ static void faildisable(struct initrec* p)
 {
 	if(!(p->flags & C_HUSH))
 		warn("%s[%i] failed, disabling", p->name, p->pid);
-	p->flags |= P_DISABLE;
+	p->flags |= P_FAILED;
 }
 
 static void failswitch(struct initrec* p)
