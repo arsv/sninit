@@ -123,6 +123,8 @@ t_findentry: t_findentry.o init_find.o test.o
 
 t_waitpids: t_waitpids.o init_wait.o test.o
 
+t_warn: t_warn.o init_warn.o sys_printf.o
+
 # Libc tests
 x_openread: x_openread.o test.o
 
