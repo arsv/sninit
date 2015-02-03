@@ -20,7 +20,7 @@
 /* C_* flags are only set in configure(),
    P_* flags may be changed at runtime */
 #define P_MANUAL	(1<<8)		/* process has been disabled manually */
-#define P_FAILED	(1<<9)		/* process has been disabled manually */
+#define P_FAILED	(1<<9)		/* process has been disabled via C_DOF */
 #define P_SIGSTOP	(1<<10)		/* SIGSTOP has been sent */
 #define P_SIGTERM	(1<<11)		/* SIGTERM (or SIGABRT) has been sent to this process */
 #define P_SIGKILL	(1<<12)		/* SIGKILL has been sent to this process */
