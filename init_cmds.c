@@ -82,7 +82,7 @@ void parsecmd(char* cmd)
 		/* reconfigure */
 		case 'c':
 			if(configure(1))
-				warn("!configure failed");
+				warn("Reconfiguration failed");
 			else
 				state |= S_RECONFIG;
 			break;

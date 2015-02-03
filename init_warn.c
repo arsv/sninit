@@ -72,8 +72,6 @@ int warn(const char* fmt, ...)
 			over = *(fmt++);
 	} if(over == '#')
 		mode = W_SYSLOG;		/* syslog only */
-	else if(over == '!')
-		mode = W_WARNFD | W_SYSLOG;	/* warnfd AND syslog; see W_* logic below */
 	else if(warnfd > 2)
 		mode = W_WARNFD;		/* user-action error */
 	else if(warnfd == 2)
