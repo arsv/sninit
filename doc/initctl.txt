@@ -19,7 +19,7 @@ optional argument.
 
 Possible commands:
 
-	?	output current state and list of running processes
+	?	output current state and the list of running processes
 	5	switch to (primary) runlevel 5
 	4e	switch to runlevel 4e
 	+a	activate secondary runlevel a
@@ -32,7 +32,7 @@ Possible commands:
 	pname	pause process "name" (send SIGSTOP)
 	wname	resume (wake) process "name" (send SIGCONT)
 	hname	send SIGHUP to process "name"
-	q	reconfigure
+	c	reconfigure
 	R	reboot   = switch to runlevel 0, call reboot(CMD_REBOOT)
 	H	halt     = switch to runlevel 0, call reboot(CMD_HALT)
 	P	poweroff = switch to runlevel 0, call reboot(CMD_POWEROFF)
@@ -44,3 +44,13 @@ Current implementation does not indicate whether the command failed or not,
 so telinit always exits with code 0. This is nearly inevitable, since most
 commands are deferred: the command itself only sets a flag, and the action
 is performed during initpass() after closing telinit connection.
+
+
+telinit q
+~~~~~~~~~
+In sysvinit, q can be used to reload, *or* to reset (rather long) timers,
+essentially triggering restart attempt for failed entries.
+The latter makes no sense in sninit, due to short timers and explicit start
+command. And reconfiguration on whim is not exactly the best thing to do.
+
+So q command was ditched, in favor of explicit "reload".
