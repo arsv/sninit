@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <string.h>
 #include <fcntl.h>
 #include "init.h"
 #include "init_conf.h"
@@ -13,8 +14,6 @@ int memblockalign = IRALLOC;
 
 /* m*block routines work with anonymous mmaped areas defined by struct memblock.
    m*file routines are for mmaped files, struct fileblock. */
-
-static int mremapblock(struct memblock* m, int size);
 
 int mmapblock(struct memblock* m, int size)
 {
@@ -28,9 +27,12 @@ int mmapblock(struct memblock* m, int size)
 		/* This is a relatively unlikely case when a new reconfigure
 		   request comes before newblock from the previous one
 		   is moved over to cfgblock. In such a case, try to re-use
-		   newblock without unmmaping it. */
+		   newblock without unmmaping it. Due to the way mextendblock
+		   works, the old block must be large enough; if it is not,
+		   it's a hard error. */
 		if(m->len < size)
-			return mremapblock(m, aligned);
+			return -1;
+		memset(m->addr, 0, m->len);
 	} else {
 		m->addr = mmap(NULL, aligned, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 		if(m->addr == MAP_FAILED)
@@ -49,17 +51,16 @@ int mextendblock(struct memblock* m, int size)
 	if(size % memblockalign)
 		size += (memblockalign - size % memblockalign);
 
-	return mremapblock(m, m->len + size);
-}
+	/* size is just an int, overflows are possible (but very unlikely) */
+	if(size < 0 || m->len + size < 0)
+		return -1;
 
-static int mremapblock(struct memblock* m, int size)
-{
-	void* np = mremap(m->addr, m->len, size, MREMAP_MAYMOVE);
+	void* np = mremap(m->addr, m->len, m->len + size, MREMAP_MAYMOVE);
 	if(np == MAP_FAILED)
 		return -1;
 
 	m->addr = np;
-	m->len = size;
+	m->len += size;
 	return 0;
 }
 
