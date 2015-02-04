@@ -7,7 +7,7 @@ direct += close read write fstat ioctl getdents64
 direct += munmap clock_gettime nanosleep
 direct += socket bind connect listen accept sendmsg recvmsg shutdown
 direct += prctl setresgid setresuid setsid getegid geteuid setrlimit
-direct += setpgid setpriority getpriority setfsuid setfsgid
+direct += setpgid setpriority getpriority setfsuid setfsgid umask
 direct += mremap setsockopt
 
 directs = $(patsubst %,%.s,$(direct))
