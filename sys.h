@@ -7,6 +7,11 @@
 #endif
 #endif
 
+/* again, dietlibc */
+#ifndef SOCK_CLOEXEC
+#define SOCK_CLOEXEC 02000000
+#endif
+
 /* glibc intentionally omits getdents */
 #ifdef __GLIBC__
 struct dirent64;
