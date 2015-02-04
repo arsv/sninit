@@ -32,7 +32,7 @@ Note \fBrun\fR uses kernel scale 1..40, with default priority 20 and
 highest priority 1.
 .IP "\fB-Y\fR" 4
 Set stdout as the controlling TTY; see TIOCSCTTY in \fBtty_ioctl\fR(4).
-.IP "\fB-\fIc\fIN\fR[\fB/\fIM\fR]" 4
+.IP "\fB+\fIc\fIN\fR[\fB/\fIM\fR]" 4
 Set process ulimits. \fIN\fR is the soft limit, \fIM\fR is hard limit;
 in case only one number is specified, equal hard and soft limits are set.
 Possible limits with respective C constants (see \fBsetrlimits\fR(2)):
@@ -43,34 +43,34 @@ Possible limits with respective C constants (see \fBsetrlimits\fR(2)):
 .TP
 \fBc\fR size of core files created (RLIMIT_CORE)
 .TP
-\fBt\fR amount of cpu time in seconds (RLIMIT_CPU)
-.TP
 \fBd\fR size of a process's data segment (RLIMIT_DATA)
+.TP
+\fBe\fR scheduling priority (RLIMIT_NICE)
 .TP
 \fBf\fR size of files written (RLIMIT_FSIZE)
 .TP
-\fBx\fR number of file locks (RLIMIT_LOCKS)
+\fBi\fR number of pending signals (RLIMIT_SIGPENDING)
 .TP
 \fBl\fR size that may be locked into memory (RLIMIT_MEMLOCK)
 .TP
-\fBq\fR number of bytes in POSIX message queues (RLIMIT_MSGQUEUE)
-.TP
-\fBe\fR scheduling priority (RLIMIT_NICE)
+\fBm\fR resident set size (RLIMIT_RSS)
 .TP
 \fBn\fR number of open files (RLIMIT_NOFILE)
 .TP
 \fBp\fR number of threads (RLIMIT_NPROC)
 .TP
-\fBm\fR resident set size (RLIMIT_RSS)
+\fBq\fR number of bytes in POSIX message queues (RLIMIT_MSGQUEUE)
 .TP
-\fBE\fR real-time scheduling priority (RLIMIT_RTPRIO)
+\fBr\fR real-time scheduling priority (RLIMIT_RTPRIO)
+.TP
+\fBs\fR stack size (RLIMIT_STACK)
+.TP
+\fBt\fR amount of cpu time in seconds (RLIMIT_CPU)
+.TP
+\fBx\fR number of file locks (RLIMIT_LOCKS)
 .TP
 \fBT\fR time in microseconds process with real-time
 schedule policy may consume without making a blocking syscall (RLIMIT_RTTIME)
-.TP
-\fBi\fR number of pending signals (RLIMIT_SIGPENDING)
-.TP
-\fBs\fR stack size (RLIMIT_STACK)
 .RE
 .PD 1
 .P

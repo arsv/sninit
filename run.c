@@ -71,8 +71,9 @@ struct rcfile {
 };
 
 static void parseopt(char* opt);
+static void parselim(char* opt);
 static void addgroup(char* p);
-static void setlimit(char* p, int key);
+static void setlimit(int key, char* p);
 static void setcg(char* p);
 static void setprio(char* p);
 static void setsess(void);
@@ -92,14 +93,20 @@ int main(int argc, char** argv)
 	name = *(argv++);
 
 	while(*argv) {
-		if(*(argp = *argv) != '-')
+		argp = *argv;
+
+		if(*argp != '-' && *argp != '+')
 			break;
 		else
 			argv++;
-		if(argp[1] == '-' && !argp[2])
+
+		if(*argp == '+')
+			parselim(argp + 1);
+		else if(argp[1] == '-' && !argp[2])
 			break;
 		else
 			parseopt(argp + 1);
+
 	} if(!*argv)
 		die("Usage: run [options] command arg arg ...", NULL, NULL);
 	
@@ -130,30 +137,48 @@ again:	switch(c = *(opt++)) {
 
 		case 'r': setprio(opt); break;
 
-		/* ulimit keys, closely following bash(1) ulimit command */
-		/* note T is used for RTTIME here; in bash, it's NPROC */
-		case 'a': setlimit(opt, RLIMIT_AS);	break;
-		case 'c': setlimit(opt, RLIMIT_CORE);	break;
-		case 't': setlimit(opt, RLIMIT_CPU);	break;
-		case 'd': setlimit(opt, RLIMIT_DATA);	break;
-		case 'f': setlimit(opt, RLIMIT_FSIZE);	break;
-		case 'x': setlimit(opt, RLIMIT_LOCKS);	break;
-		case 'l': setlimit(opt, RLIMIT_MEMLOCK);break;
-		case 'q': setlimit(opt, RLIMIT_MSGQUEUE);break;
-		case 'e': setlimit(opt, RLIMIT_NICE);	break;
-		case 'n': setlimit(opt, RLIMIT_NOFILE); break;
-		case 'p': setlimit(opt, RLIMIT_NPROC);	break;
-		case 'm': setlimit(opt, RLIMIT_RSS);	break;
-		case 'E': setlimit(opt, RLIMIT_RTPRIO); break;
-		case 'i': setlimit(opt, RLIMIT_SIGPENDING);break;
-		case 's': setlimit(opt, RLIMIT_STACK);	break;
-#ifdef RLIMIT_RTTIME
-		/* musl lacks this? */
-		case 'T': setlimit(opt, RLIMIT_RTTIME); break;
-#endif
 		default: *opt = '\0';
 			 die("Unsupported option -", (opt-1), NULL);
 	}
+}
+
+/* ulimits take a lot of letter space, *and* need somewhat
+   different treatment anyway. So -c is left for anything
+   that's not ulimit, while ulimits are specified with +c */
+static void parselim(char* opt)
+{
+	char c;
+	int key;
+
+	/* the keys follow bash(1) ulimit command */
+	switch(c = *(opt++)) {
+		case 'a': key = RLIMIT_AS;        break;
+		   /* b is not implemented */
+		case 'c': key = RLIMIT_CORE;      break;
+		case 'd': key = RLIMIT_DATA;      break;
+		case 'e': key = RLIMIT_NICE;      break;
+		case 'f': key = RLIMIT_FSIZE;     break;
+		case 'i': key = RLIMIT_SIGPENDING;break;
+		case 'l': key = RLIMIT_MEMLOCK;   break;
+		case 'm': key = RLIMIT_RSS;       break;
+		case 'n': key = RLIMIT_NOFILE;    break;
+		case 'q': key = RLIMIT_MSGQUEUE;  break;
+		case 'r': key = RLIMIT_RTPRIO;    break;
+		case 's': key = RLIMIT_STACK;     break;
+		case 't': key = RLIMIT_CPU;       break;
+		   /* u is not implemented */
+		   /* v is not implemented */
+		case 'x': key = RLIMIT_LOCKS;     break;
+		case 'T': key = RLIMIT_NPROC;     break;
+#ifdef RLIMIT_RTTIME
+		/* musl lacks this? */
+		case 'R': key = RLIMIT_RTTIME;    break;
+#endif
+		default: *opt = '\0';
+			 die("Unrecognized ulimit key +", (opt-1), NULL);
+	}
+
+	setlimit(key, opt);
 }
 
 /* rc* to avoid name clashes with init_conf_mem, keeping ctags consistent */
@@ -276,7 +301,7 @@ static void addgroup(char* group)
 /* Limits could have been stored just like uid/gids... except it's not needed.
    Unlike uid/gid changes, limit settings are independent and do not prevent
    run from doing its work even if set immediately. So, why bother. */
-static void setlimit(char* lim, int key)
+static void setlimit(int key, char* lim)
 {
 	char* hard;
 	char* soft;
