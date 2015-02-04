@@ -78,10 +78,12 @@ static void setcg(char* p);
 static void setprio(char* p);
 static void setsess(void);
 static void setctty(void);
+static void setmask(char* opt);
 static void apply(char* cmd);
 
 static uid_t finduser(char* p, int* logingroup);
 static gid_t findgroup(char* p);
+static int otoi(const char* p);
 
 #define noreturn __attribute__((noreturn))
 static void die(const char* msg, const char* arg, const char* err) noreturn;
@@ -130,6 +132,8 @@ again:	switch(c = *(opt++)) {
 		case 'O': bits |= REDIRERR;
 		case 'o': bits |= REDIROUT;
 			  out = opt; break;
+
+		case 'm': setmask(opt); break;
 
 		case 'n': bits |= NULLOUT; goto again;
 		case 's': setsess(); goto again;
@@ -384,6 +388,25 @@ static void setctty(void)
 {
 	if(ioctl(1, TIOCSCTTY, 0) < 0)
 		die("ioctl(TIOCSCTTY) failed", NULL, ERRNO);
+}
+
+static void setmask(char* p)
+{
+	/* octals are not used anywhere else in the code */
+	umask((*p == '0' ? otoi(p) : atoi(p)));
+	/* umask(2): the call always succeedes */
+}
+
+static int otoi(const char* p)
+{
+	int r = 0;
+	while(*p) {
+		if(*p >= '0' && *p <= '7')
+			r = r*8 + (*(p++) - '0');
+		else
+			break;
+	}
+	return r;
 }
 
 static int checkopen(const char* name)

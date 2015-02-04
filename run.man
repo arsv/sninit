@@ -30,6 +30,8 @@ Start a new session by calling \fBsetsid\fR(2).
 Change process priority (renice) to \fIN\fR, see \fBsetpriority\fR(2).
 Note \fBrun\fR uses kernel scale 1..40, with default priority 20 and
 highest priority 1.
+.IP "\fB-u\fR\fImask\fR" 4
+Set \fBumask\fR(2) for the spawned process.
 .IP "\fB-y\fR" 4
 Set stdout as the controlling TTY; see TIOCSCTTY in \fBtty_ioctl\fR(4).
 .IP "\fB+\fIc\fIN\fR[\fB/\fIM\fR]" 4
