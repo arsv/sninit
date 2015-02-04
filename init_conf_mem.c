@@ -2,8 +2,16 @@
 #include "init.h"
 #include "init_conf.h"
 
-/* All add* functions copy relevant data to newblock, adjust newblock.ptr
-   and return the offset the data was placed at (i.e. the old ptr value) */
+/* All add* functions copy relevant data to newblock,
+   possibly extending it, and adjust newblock.ptr accordingly.
+
+   addstruct, addstruct and addptrsarray return the offset
+   the data was placed at, or -1 in case of error.
+
+   addstrargarray and addstringarray only distingluish between
+   error and non-error, they are used for argv[] which is always
+   laid out after respective initrec and the actual offset is not
+   used anywhere. */
 
 extern struct memblock newblock;
 extern int mextendblock(struct memblock* m, int size);
@@ -19,9 +27,7 @@ offset addstruct(int size, int extra)
 	return ret;
 }
 
-/* Copy $string to m (adjusting ptr accordingly) and return offset
-   at which the string was placed in m.
-   Memblock is assumed to have enough space to hold the string. */
+/* string is len-long, and may not be 0-terminated */
 static int addstring(const char* string, int len)
 {
 	int ptr = newblock.ptr;
@@ -32,18 +38,8 @@ static int addstring(const char* string, int len)
 }
 
 /* add*array() functions are used to lay out initrec.argv[]
-   in newblock. Source strings can be counted in place if needed,
-   but memory required for pointers array is only allocated here.
-
    Source strings are usually in resp. fileblock and must be copied
-   to newblock. 
- 
-   Both functions return 0 or -1. There's no need to know offset
-   of the pointers array since it's always laid at the end of
-   struct initrec. */
-
-/* (char* a, char* b, char* c, ...) */
-/* Make [ a, b, c, ... ] into an argv-style structure */
+   to newblock. */
 int addstrargarray(const char* args[])
 {
 	int argc = 0;
@@ -80,10 +76,7 @@ static inline int strlenupto(const char* str, const char* end)
 /* Treating str as n concatenated 0-terminated lines, append
    argv-like structure to newblock.
    The pointers array is always NULL-terminated.
-   See prepargv() for how an array like this is formed.
-
-   Like with addstrargarray, there's no need to return
-   resulting structure offset. */
+   See prepargv() for how an array like this is formed. */
 int addstringarray(int n, const char* str, const char* end)
 {
 	offset po;
@@ -109,8 +102,12 @@ int addstringarray(int n, const char* str, const char* end)
    at the back and/or at the front.
    (inittab needs front NULL for reverse pass in initpass)
 
-   Because the pointers are only available when all the data has been placed,
-   the pointer array ends up after the actual data in newblock.  */
+   Because the pointers are only available when all the data has
+   been placed, the pointer array ends up after the actual data
+   in newblock, with back-referencing pointers.
+ 
+   This function is used to lay out config.inittab and config.env,
+   but not for initrec.argv which gets a different treatment. */
 
 int addptrsarray(offset listoff, int terminate)
 {
