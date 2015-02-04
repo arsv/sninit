@@ -50,3 +50,13 @@ override CFLAGS += -nostdinc -I$/libc/include -I$/libc/$(ARCH)
 override LDFLAGS += -nostdlib
 override LIBS := $(LIBS) $/libc.a
 endif
+
+# On arm, there is a circular dependency between libc.a and libgcc.a
+# which ld can not resolve on its own; the offending symbols are
+# raise(3) from libc and __aeabi_idiv{,mod} from libgcc.
+# What the following piece does is making sure there is libc after
+# libgcc *and* libgcc after libc, which kinda tricks ld into linking
+# everything together. Icky, considering -z muldefs above.
+ifeq ($(ARCH),arm)
+override LIBS := $(LIBS) $(LIBS)
+endif

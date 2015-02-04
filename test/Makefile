@@ -10,16 +10,6 @@ override CFLAGS += -Dstatic= -Dinline=
 # Prevent clang for doing early linking within modules
 override CFLAGS += -ffunction-sections
 
-# On arm, there is a circular dependency between libc.a and libgcc.a
-# which ld can not resolve on its own; the offending symbols are
-# raise(3) from libc and __aeabi_idiv{,mod} from libgcc.
-# What the following piece does is making sure there is libc after
-# libgcc *and* libgcc after libc, which kinda tricks ld into linking
-# everything together. Icky, considering -z muldefs above.
-ifeq ($(ARCH),arm)
-override LIBS := $(LIBS) $(LIBS)
-endif
-
 # Using $(RUN) directly before commands would result in " cmd"
 # when RUN is non-empty. So instead that space goes (condionally) to RUN_
 RUN_ := $(if $(RUN),$(RUN) ,)
