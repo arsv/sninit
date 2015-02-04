@@ -6,7 +6,7 @@
 #define SOCK_DGRAM	1	/* MIPS! */
 #define SOCK_STREAM	2	/* (all other arches have it the other way around) */
 #define SOCK_NONBLOCK  0200	/* MIPS! */
-#define SOCK_CLOEXEC 02000000	/* MIPS! */
+#define SOCK_CLOEXEC 02000000	/* common value */
 
 #define SO_PASSCRED	17	/* MIPS-specific */
 #define SOL_SOCKET	0xffff	/* MIPS-specific */
