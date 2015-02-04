@@ -131,9 +131,9 @@ again:	switch(c = *(opt++)) {
 		case 'o': bits |= REDIROUT;
 			  out = opt; break;
 
-		case 'N': bits |= NULLOUT; goto again;
-		case 'S': setsess(); goto again;
-		case 'Y': setctty(); goto again;
+		case 'n': bits |= NULLOUT; goto again;
+		case 's': setsess(); goto again;
+		case 'y': setctty(); goto again;
 
 		case 'r': setprio(opt); break;
 

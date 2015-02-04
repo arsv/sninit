@@ -22,15 +22,15 @@ Add process to specified cgroup.
 Redirect stdout to \fIfile\fR.
 .IP "\fB-O\fR\fIfile\fR" 4
 Redirect stdout and stderr to \fIfile\fR.
-.IP "\fB-N\fR" 4
+.IP "\fB-n\fR" 4
 Redirect stdout and stderr to /dev/null.
-.IP "\fB-S\fR" 4
+.IP "\fB-s\fR" 4
 Start a new session by calling \fBsetsid\fR(2).
 .IP "\fB-r\fIN\fR" 4
 Change process priority (renice) to \fIN\fR, see \fBsetpriority\fR(2).
 Note \fBrun\fR uses kernel scale 1..40, with default priority 20 and
 highest priority 1.
-.IP "\fB-Y\fR" 4
+.IP "\fB-y\fR" 4
 Set stdout as the controlling TTY; see TIOCSCTTY in \fBtty_ioctl\fR(4).
 .IP "\fB+\fIc\fIN\fR[\fB/\fIM\fR]" 4
 Set process ulimits. \fIN\fR is the soft limit, \fIM\fR is hard limit;
