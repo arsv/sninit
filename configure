@@ -367,12 +367,12 @@ case "${libc:-syslibc}" in
 		tsdefault=libc
 		;;
 	dietlibc-fixed)
-		CC="$diet $CC"
+		CC="$diet $cc"
 		blocks="$blocks sys"
 		tsdefault=tz
 		;;
 	dietlibc)
-		CC="$diet $CC"
+		CC="$diet $cc"
 		libs=-lcompat
 		blocks="$blocks sys ppoll"
 		tsdefault=tz
