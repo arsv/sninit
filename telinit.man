@@ -37,14 +37,17 @@ or LINUX_REBOOT_CMD_POWER_OFF argument respectively.
 Initiate a switch to runlevels 8 and 9 respectively.
 For these commands to work properly, relevant actions must be configured
 in inittab; init itself will not put the system to sleep.
-.IP "\fBstart\fR \fIname\fR, \fBstop\fR \fIname\fR" 4
-Start or stop specified entries. In case the entry is not configured for current
-runlevel, adjust its runlevel mask and spawn it anyway.
+.IP "\fBstart\fR \fIname\fR" 4
+Start entry \fIname\fR. In case the entry is not configured to be started on
+current runlevel, adjust its mask settings and start anyway.
 .IP "\fBrestart\fR \fIname\fR" 4
 Kill named process without changing its runlevel mask, forcing immediate respawn.
-.IP "\fBenable\fR \fIname\fR, \fBdisable\fR \fIname\fR" 4
-Enable or disable specified entries. Entries not configured for current runlevel
-will not be spawned after \fBenable\fR.
+.IP "\fBstop\fR \fIname\fR" 4
+Stop entry \fIname\fR.
+This command marks the entry as disabled without changing runlevel mask.
+.IP "\fBunstop\fR \fIname\fR" 4
+Undo \fBstop\fR command without changing runlevel mask like \fBstart\fR does.
+Depending on entry configuration, it may or may not be started immediately.
 .IP "\fBpause\fR \fIname\fR, \fBresume\fR \fIname\fR" 4
 Send SIGSTOP or SIGCONT to the process.
 .IP "\fBhup \fIname\fR\fR" 4

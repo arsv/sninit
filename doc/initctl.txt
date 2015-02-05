@@ -25,10 +25,9 @@ Possible commands:
 	+a	activate secondary runlevel a
 	-cd	deactivate secondary runlevels c and d
 	rname	restart process "name"
-	dname	disable process "name"
-	ename	enable process "name"
 	sname	start process "name"
 	tname	stop process "name"
+	uname	unstop process "name"
 	pname	pause process "name" (send SIGSTOP)
 	wname	resume (wake) process "name" (send SIGCONT)
 	hname	send SIGHUP to process "name"

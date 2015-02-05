@@ -46,8 +46,8 @@ void parsecmd(char* cmd)
 
 	switch(*cmd) {
 		case 'r':		/* restart */
-		case 'e': case 'd':	/* enable, disable */
 		case 's': case 't':	/* start, stop */
+		case 'u':		/* unstop */
 		case 'p': case 'w':	/* pause, resume */
 		case 'h': case 'i':	/* hup, pidof */
 			if(!(p = findentry(arg)))
@@ -72,9 +72,8 @@ void parsecmd(char* cmd)
 		case 'p': dopause(p, 1); break;
 		case 'w': dopause(p, 0); break;
 		case 'd': dodisable(p, 1); break;
-		case 'e': dodisable(p, 0); break;
+		case 'u': dodisable(p, 0); break;
 		case 's': dostart(p); break;
-		case 't': dodisable(p, 1); break;
 		case 'h': dohup(p); break;
 		/* state query */
 		case '?': dumpstate(); break;
