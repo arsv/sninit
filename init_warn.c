@@ -134,22 +134,20 @@ static int writefullnl(int fd, char *buf, size_t count)
 static int tryconnectsyslog(type)
 {
 	syslogtype = type;
-	syslogfd = socket(AF_UNIX, type, 0);
-	if(syslogfd < 0)
+	if((syslogfd = socket(AF_UNIX, type, 0)) < 0)
 		return -1;
 	return connect(syslogfd, &syslogaddr, sizeof(syslogaddr));
 }
 
 static int writesyslog(const char* buf, int count)
 {
-	if(syslogfd < 0) {
-		if(!tryconnectsyslog(SOCK_DGRAM))
-			goto send;
-		if(!tryconnectsyslog(SOCK_STREAM))
-			goto send;
-		return -1;
-	}
-
+	if(syslogfd >= 0)
+		goto send;
+	if(!tryconnectsyslog(SOCK_DGRAM))
+		goto send;
+	if(!tryconnectsyslog(SOCK_STREAM))
+		goto send;
+	return -1;
 send:
 	if(syslogtype == SOCK_STREAM)
 		count++;	/* include terminating \0 */
