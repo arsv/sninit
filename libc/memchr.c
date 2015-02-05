@@ -1,10 +1,12 @@
 #include <string.h>
 
-void* memchr(const void *s, int c, size_t n)
+void* memchr(const void* s, int c, size_t n)
 {
-	const unsigned char *pc = (unsigned char *) s;
-	for (;n--;pc++)
-		if (*pc == c)
-			return ((void *) pc);
+	const unsigned char *p = (unsigned char *) s;
+
+	for(; n--; p++)
+		if(*p == c)
+			return (void*)p;
+
 	return 0;
 }

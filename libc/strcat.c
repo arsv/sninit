@@ -1,14 +1,11 @@
 #include <string.h>
 
-char* strcat(register char* s,register const char* t)
+char* strcat(char* s, const char* t)
 {
-	char *dest = s;
-	s += strlen(s);
+	char* r = s;
 
-	while((*s = *t)) {
-		++s;
-		++t;
-	}
+	for(s += strlen(s); (*s = *t); s++, t++)
+		;
 
-	return dest;
+	return r;
 }

@@ -1,11 +1,14 @@
 #include <sys/types.h>
 #include <string.h>
 
-char *strpbrk(const char *s, const char *accept) {
-  register unsigned int i;
-  for (; *s; s++)
-    for (i=0; accept[i]; i++)
-      if (*s == accept[i])
-	return (char*)s;
-  return 0;
+char* strpbrk(const char* s, const char *accept)
+{
+	const char* a;
+
+	for(; *s; s++)
+		for(a = accept; *a; a++)
+			if(*s == *a)
+				return (char*)s;
+
+	return 0;
 }
