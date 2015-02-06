@@ -1,7 +1,7 @@
 #include <time.h>
 
 /* seconds per day */
-#define SPD 24*60*60
+#define SPD (24*60*60)
 
 /* days per month -- nonleap! */
 static const short spm[13] = {
@@ -27,32 +27,44 @@ static int isleap(int year)
 	return (!(year%4) && ((year%100) || !(year%400)));
 }
 
-struct tm *gmtime_r(const time_t *timep, struct tm *r)
+struct tm* gmtime_r(const time_t* timep, struct tm* r)
 {
-  time_t i;
-  register time_t work=*timep%(SPD);
-  r->tm_sec=work%60; work/=60;
-  r->tm_min=work%60; r->tm_hour=work/60;
-  work=*timep/(SPD);
-  r->tm_wday=(4+work)%7;
-  for (i=1970; ; ++i) {
-    register time_t k=isleap(i)?366:365;
-    if (work>=k)
-      work-=k;
-    else
-      break;
-  }
-  r->tm_year=i-1900;
-  r->tm_yday=work;
+	time_t i;
+	time_t dd = *timep / SPD;	/* date */
+	time_t tt = *timep % SPD;	/* time */
 
-  r->tm_mday=1;
-  if (isleap(i) && (work>58)) {
-    if (work==59) r->tm_mday=2; /* 29.2. */
-    work-=1;
-  }
+	/* Time */
+	r->tm_sec = tt % 60; tt /= 60;
+	r->tm_min = tt % 60; tt /= 60;
+	r->tm_hour = tt;
 
-  for (i=11; i && (spm[i]>work); --i) ;
-  r->tm_mon=i;
-  r->tm_mday+=work-spm[i];
-  return r;
+	/* Weekday, ref. 1970 and not the current year */
+	r->tm_wday = (4 + dd) % 7;
+
+	/* Year */
+	time_t dy;
+	for(i = 1970; ; i++)
+		if(dd >= (dy = isleap(i) ? 366 : 365))
+			dd -= dy;
+		else
+			break;
+
+	r->tm_year = i - 1900;
+	r->tm_yday = dd;
+
+	/* Month and day */
+	r->tm_mday = 1;
+	if(isleap(i) && (dd > 58)) {
+		if(dd == 59)		/* Feb 29 */
+			r->tm_mday = 2;
+		dd -= 1;
+	}
+
+	for(i = 11; i && (spm[i] > dd); --i)
+		;
+
+	r->tm_mon = i;
+	r->tm_mday += dd - spm[i];
+
+	return r;
 }
