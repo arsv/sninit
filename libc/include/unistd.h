@@ -34,6 +34,9 @@ time_t time(time_t *t);
 
 int dup2 (int oldfd,int newfd);
 
+int chroot(const char *path);
+int chdir(const char *path);
+
 long syscall(int nr, ...);
 
 #endif

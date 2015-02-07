@@ -3,7 +3,7 @@
 # This one is only for re-generating arch-specific syscall files.
 
 # syscalls that do no require any additional setup
-direct = fork execve kill getpid setfsuid setfsgid
+direct = fork execve kill getpid setfsuid setfsgid chroot chdir
 direct += open close read write dup2 fstat ioctl getdents64 openat stat
 direct += mmap mremap munmap clock_gettime nanosleep setpriority getpriority
 direct += socket setsockopt bind connect listen accept sendto sendmsg recvmsg shutdown

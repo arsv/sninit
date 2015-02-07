@@ -2,7 +2,7 @@
 # The library is built using top-level Makefile
 # This one is only for re-generating arch-specific syscall files.
 
-direct = execve kill getpid
+direct = execve kill getpid chroot chdir
 direct += close read write fstat ioctl getdents64
 direct += munmap clock_gettime nanosleep
 direct += socket bind connect listen accept sendmsg recvmsg shutdown
