@@ -42,7 +42,7 @@
 #define NAMELEN 8
 
 /* Memory allocation granularity, for mmap(2). Should be something close to OS page size */
-#define IRALLOC 2048
+#define IRALLOC 4096
 
 /* File size limit for inittab and (non-script) service files. */
 /* Files larger than this will be loudly rejected */
@@ -52,7 +52,8 @@
 #define DENTBUFSIZE 1024
 
 /* Maximum full file name for service files; only affects initdirs */
-#define FULLNAMEMAX 256
+/* Should be at least strlen(INITDIR) + NAMELEN + 2 */
+#define FULLNAMEMAX 64
 
 /* Clock offset to make sure boot happens at some point T > 0 */
 /* See comments around setpasstime for why this is necessary. */
