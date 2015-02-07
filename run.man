@@ -18,6 +18,8 @@ Set user, see \fBsetuid\fR(2).
 Set group, see \fBsetgid\fR(2).
 .IP "\fB-C\fR\fIcgroup\fR" 4
 Add process to specified cgroup.
+.IP "\fB-D\fR\fIdir\fR" 4
+Change working directory to \fIdir\fR.
 .IP "\fB-o\fR\fIfile\fR" 4
 Redirect stdout to \fIfile\fR.
 .IP "\fB-O\fR\fIfile\fR" 4
@@ -26,6 +28,9 @@ Redirect stdout and stderr to \fIfile\fR.
 Redirect stdout and stderr to /dev/null.
 .IP "\fB-s\fR" 4
 Start a new session by calling \fBsetsid\fR(2).
+.IP "\fB-R\fR\fIdir\fR" 4
+Change root directory to \fIdir\fR.
+Arguments for \fB-D\fR, \fB-o\fR, \fB-O\fR will be taken relative to the new root.
 .IP "\fB-r\fIN\fR" 4
 Change process priority (renice) to \fIN\fR, see \fBsetpriority\fR(2).
 Note \fBrun\fR uses kernel scale 1..40, with default priority 20 and

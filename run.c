@@ -51,6 +51,9 @@ int gidn = 0;
 gid_t gids[MAXGROUPS];
 /* Output redirection */
 char* out = NULL;
+/* chdir and chroot */
+char* wdir = NULL;
+char* root = NULL;
 /* Misc stuff to do (see constants above) */
 int bits = 0;
 
@@ -128,6 +131,8 @@ again:	switch(c = *(opt++)) {
 		case 'F': fsuid = finduser(opt, &fsgid);break;
 		case 'G': fsgid = findgroup(opt);	break;
 		case 'C': setcg(opt);			break;
+		case 'R': root = opt;			break;
+		case 'd': wdir = opt;			break;
 
 		case 'O': bits |= REDIRERR;
 		case 'o': bits |= REDIROUT;
@@ -477,6 +482,13 @@ static void apply(char* cmd)
 		if(outfd > 2)
 			close(outfd);
 	}
+
+	if(root)
+		if(chroot(root))
+			die("chroot failed", NULL, ERRNO);
+	if(wdir)
+		if(chdir(wdir))
+			die("chdir failed", NULL, ERRNO);
 
 	if(bits & (REDIROUT | REDIRERR)) {
 		outfd = openlog(out && *out ? out : basename(cmd));
