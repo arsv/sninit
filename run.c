@@ -36,9 +36,7 @@
 /* For bits below */
 #define SETSID   (1<<0)
 #define SETCTTY  (1<<1)
-#define REDIROUT (1<<2)
-#define REDIRERR (1<<3)
-#define NULLOUT  (1<<4)
+#define NULLOUT  (1<<2)
 
 /* Stored process attributes: uid/gids, fds, and session stuff */
 /* Cgroups and ulimits are applied immediately, no need to store those */
@@ -51,6 +49,7 @@ int gidn = 0;
 gid_t gids[MAXGROUPS];
 /* Output redirection */
 char* out = NULL;
+char* err = NULL;
 /* chdir and chroot */
 char* wdir = NULL;
 char* root = NULL;
@@ -128,15 +127,15 @@ again:	switch(c = *(opt++)) {
 
 		case 'g': addgroup(opt);		break;
 		case 'u':   uid = finduser(opt, &gid);	break;
-		case 'F': fsuid = finduser(opt, &fsgid);break;
+		case 'U': fsuid = finduser(opt, &fsgid);break;
 		case 'G': fsgid = findgroup(opt);	break;
-		case 'C': setcg(opt);			break;
+		case 'C': wdir = opt;			break;
 		case 'R': root = opt;			break;
-		case 'd': wdir = opt;			break;
+		case 'X': setcg(opt);			break;
 
-		case 'O': bits |= REDIRERR;
-		case 'o': bits |= REDIROUT;
-			  out = opt; break;
+		case 'l': err = opt;
+		case 'o': out = opt; break;
+		case 'e': err = opt; break;
 
 		case 'm': setmask(opt); break;
 
@@ -475,9 +474,9 @@ static void apply(char* cmd)
 	if(bits & (NULLOUT)) {
 		outfd = checkopen("/dev/null");
 		dup2(outfd, 0);
-		if(!(bits & REDIROUT))
+		if(!out)
 			dup2(outfd, 1);
-		if(!(bits & REDIRERR))
+		if(!err)
 			dup2(outfd, 2);
 		if(outfd > 2)
 			close(outfd);
@@ -490,14 +489,17 @@ static void apply(char* cmd)
 		if(chdir(wdir))
 			die("chdir failed", NULL, ERRNO);
 
-	if(bits & (REDIROUT | REDIRERR)) {
-		outfd = openlog(out && *out ? out : basename(cmd));
-		if(bits & REDIROUT)
-			dup2(outfd, 1);
-		if(bits & REDIRERR)
-			dup2(outfd, 2);
-		if(outfd > 2)
-			close(outfd);
+	if(out) {
+		outfd = openlog(*out ? out : basename(cmd));
+		dup2(outfd, 1);
+		close(outfd);
+	} if(err == out) {
+		/* only handle -l, do not check for rare -oFOO -eFOO case */
+		dup2(1, 2);
+	} else if(err) {
+		outfd = openlog(*err ? err : basename(cmd));
+		dup2(outfd, 2);
+		close(outfd);
 	}
 }
 
