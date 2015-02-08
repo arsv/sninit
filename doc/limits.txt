@@ -149,5 +149,12 @@ All support for capset(2) has been removed from the companion utility,
 and its name has been changed to just "run". Current implementation
 of capabilities in linux kernel make them useless for the purpose.
 
-The rest of this document still applies, the companion utility is current used
-to set all child-side process attributes.
+The rest of this document still applies, the companion utility
+is currently used to set all child-side process attributes.
+
+
+Further update on capabilities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Linux 3.5 with its PR_SET_NO_NEW_PRIVS seems to be a move in the right
+direction, but there is still no way to move bits from bounding
+to effective set without an exec call.
