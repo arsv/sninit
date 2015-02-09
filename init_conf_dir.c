@@ -97,6 +97,11 @@ static inline int skipdirent(struct dirent64* de)
 	return 0;
 }
 
+static int comment(const char* s)
+{
+	while(*s == ' ' || *s == '\t') s++; return !*s || *s == '#';
+}
+
 static int parsesrvfile(struct fileblock* fb, char* basename)
 {
 	int shebang = 0;
@@ -130,7 +135,7 @@ static int parsesrvfile(struct fileblock* fb, char* basename)
 	} else {
 		/* Get to first non-comment line, and that's it, the rest
 		   will be done in addinitrec. */
-		while(!*(fb->ls) || *(fb->ls) == '#')
+		while(comment(fb->ls))
 			if(!nextline(fb))
 				retwarn(-1, "%s: no command found", fb->name);
 

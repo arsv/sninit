@@ -86,8 +86,26 @@ int main(void)
 	test(	"#!/bin/sh\n"
 		"#:123\n"
 		"echo -n foo\n",
-
 		"123", "/etc/rc/foo", 1);
+
+	L("non-shebang, with comments");
+	test(	"# some comment goes here\n"
+		"/bin/echo -n foo\n",
+		"", "/bin/echo -n foo", 0);
+
+	L("non-shebang, with comments, empty line after");
+	test(	"# some comment goes here\n"
+		"\n"
+		"/bin/echo -n foo\n",
+		"", "/bin/echo -n foo", 0);
+
+	L("non-shebang, with comments, empty line in-between");
+	test(	"# some comment goes here\n"
+		"  \n"
+		"# some more comments\n"
+		"\n"
+		"/bin/echo -n foo\n",
+		"", "/bin/echo -n foo", 0);
 
 	return 0;
 }
