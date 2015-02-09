@@ -19,21 +19,18 @@ void spawn(struct initrec* p)
 {
 	int pid;
 
-	if(p->pid > 0) {
+	if(p->pid > 0)
 		/* this is not right, spawn() should only be called
 		   for entries that require starting */
-		warn("%s[%i] can't spawn, already running", p->name, p->pid);
-		return;
-	}
+		retwarn_("%s[%i] can't spawn, already running", p->name, p->pid);
 
 	if(waitneeded(p, &p->lastrun, cfg->time_to_restart))
 		return;
 
 	pid = fork();
 	if(pid < 0) {
-		warn("%s[*] can't fork: %m", p->name);
 		p->lastrun = passtime;
-		return;
+		retwarn_("%s[*] can't fork: %m", p->name);
 	} else if(pid > 0) {
 		p->pid = pid;
 		p->lastrun = passtime;

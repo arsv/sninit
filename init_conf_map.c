@@ -73,7 +73,7 @@ void munmapblock(struct memblock* m)
 	}
 };
 
-/* Due to average inittab being about 1-2k, it's always read whole;
+/* Due to average inittab being about 1-2k, it is always read whole;
    for service files, only the head is mmaped.
    Also, init makes no distinction between mmap failure and open failure,
    both mean the new inittab won't be used */
@@ -93,7 +93,7 @@ int mmapfile(struct fileblock* f, int maxlen)
 	if(!S_ISREG(st.st_mode))
 		gotowarn(out, "%s: not a regular file", f->name);
 	if(maxlen < 0 && st.st_size > -maxlen)
-		/* Note: because ints are used in lots of places,
+		/* Because ints are used in lots of places,
 		   it is a good idea to avoid loading anything that
 		   exceeds 2^31 when compiled into newblock */
 		gotowarn(out, "%s: file too large", f->name);

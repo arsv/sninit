@@ -23,7 +23,7 @@ static int shouldberunning(struct initrec* p);
    There are two principal passes over inittab: bottom-to-top that kills
    processes first, and top-to-bottom that spawns processes. Backwards
    pass is needed to C_WAIT without C_ONCE, i.e. waiting for things to
-   die before killing certain r-type records (syslog primarily).
+   die before killing certain s-type records (syslog primarily).
 
    In case a C_WAIT entry is reached during either pass, relevant action
    is performed and initpass return.
@@ -31,7 +31,7 @@ static int shouldberunning(struct initrec* p);
    Blocking wait is never used, init waits for w-type entries in ppoll().
  
    Because no explicit list pointer is kept during runlevel switching,
-   things get a bit tricky with w-/e-type entries which are traversed
+   things get a bit tricky with r-type entries which are traversed
    several times but should only be run once.
    Note to have pid reset to 0, and thus allow re-run, at least one pass
    must be completed with !shouldberunning(p) for the entry. */
@@ -103,7 +103,7 @@ void initpass(void)
 
 	/* Nothing more to run, we've done switching runlvls */
 
-	/* One we're here, reset pid for o-type entries, to run them when
+	/* One we're here, reset pid for r-type entries, to run them when
 	   entering another runlevel with shouldberunning(p) true. */
 	for(pp = inittab; (p = *pp); pp++)
 		if(!shouldberunning(p) && ewtype(p) && (p->pid < 0))

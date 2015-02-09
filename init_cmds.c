@@ -184,8 +184,6 @@ out:	*buf = '\0';
 /* Both dump* functions use warn() for output. That's ok since
    warnfd is the telinit connection whenever command is being
    processed. */
-/* (still if telinit drop connection prematurely, some stuff may
-   spill into syslog, hm) */
 
 static void dumpidof(struct initrec* p)
 {
