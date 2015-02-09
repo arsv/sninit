@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-/* Error messages for run. See sys_err_init.c for explaination. */
+/* Error messages for run. See sys_err_init.c for explanation. */
 /* This is similar to telinit */
 
 extern char* ltoa(long n);

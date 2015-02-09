@@ -3,7 +3,7 @@
    See doc/limits.txt for discussion of the problem.
 
    Yet even with background like this, runcap is completely independent from
-   sninit. It could easily be packaged and distributed as a stanalone utility.
+   sninit. It could easily be packaged and distributed as a standalone utility.
 
    This perfect separation of functions was actually one of the main reasons
    to make it standalone, vs. having all this built into init. */

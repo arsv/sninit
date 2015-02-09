@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-/* Error messages for telinit. See sys_err_init.c for explaination. */
+/* Error messages for telinit. See sys_err_init.c for explanation. */
 
 /* Note telinit does not use sys_printf, and expects strerror to do
    message-or-number trick itself. NULL should never be returned. */
