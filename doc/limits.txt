@@ -27,7 +27,7 @@ of using a companion utility vs having it all built into init.
 NOTE: the following deals with the original sysvtab configuration
 format. The resulting decision to move child-side code out of init
 was one of the main drives behind the move to newtab.
-See newtab.txt for explaination.
+See inittab.txt for explaination.
 
 
 Built-in limits
