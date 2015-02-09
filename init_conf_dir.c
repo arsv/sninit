@@ -1,5 +1,3 @@
-/* Parsing initdir files */
-
 #define _GNU_SOURCE
 #include <string.h>
 #include <dirent.h>
@@ -20,7 +18,6 @@ extern int nextline(struct fileblock* f);
 static inline int skipdirent(struct dirent64* de);
 static int parsesrvfile(struct fileblock* fb, char* basename);
 
-/* bb = base block, for the file that included this directory */
 int readinitdir(const char* dir, int strict)
 {
 	int dirfd;
