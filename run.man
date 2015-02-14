@@ -86,7 +86,7 @@ schedule policy may consume without making a blocking syscall (RLIMIT_RTTIME)
 '''
 .SH FILES
 .IP "\fB{/var/log}\fR" 4
-Default output directory for \fB-o\fR and \fB-O\fR.
+Default output directory for \fB-o\fR, \fB-e\fR and \fB-l\fR.
 .IP "\fB{/sys/fs/cgroup}\fR" 4
 Default cgroup directory for \fB-C\fR.
 '''
