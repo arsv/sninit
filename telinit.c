@@ -55,12 +55,6 @@ int main(int argc, char** argv)
 
 	if((*cmd >= '0' && *cmd <= '9') || *cmd == '-' || *cmd == '+') {
 		ptr = cmd;
-	} else if(!*cm1 && (*cmd >= 'a' && *cmd <= 'f')) {
-		buf[0] = '+';
-		buf[1] = *cmd;
-	} else if(!*cm1 && (*cmd >= 'A' && *cmd <= 'F')) {
-		buf[0] = '-';
-		buf[1] = (*cmd - 'A' + 'a');
 	} else {
 		for(cr = cmdtbl; cr->cc; cr++) {
 			if(!*cm1 && *cmd == cr->cc)
