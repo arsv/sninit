@@ -130,13 +130,13 @@ while [ $# -gt 0 ]; do
 		initctl) argreq
 			initctl=$val
 			;;
-		inittab) argreq
-			inittab=$val
+		inittab)
+			inittab=${val:--}
 			;;
-		initdir) argreq
-			initdir=$val
+		initdir)
+			initdir=${val:--}
 			;;
-		builtin|with-builtin) argreq
+		builtin|with-builtin)
 			builtin="$val"
 			;;
 		target|host) argreq
