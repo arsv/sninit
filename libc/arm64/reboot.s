@@ -1,7 +1,7 @@
 .equ NR_reboot, 142
 .equ LINUX_REBOOT_MAGIC1, 0xfee1dead
-.equ LINUX_REBOOT_MAGIC2, 672274793
-
+.equ LINUX_REBOOT_MAGIC2, 0x28121969
+/*                        ^ Torvalds' birthday, who could have thought */
 .text
 .global reboot
 
