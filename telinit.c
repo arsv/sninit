@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 				break;
 			if(!strcmp(cmd, cr->name))
 				break;
-		} if(!cr->name)
+		} if(!cr->cc)
 			die("Unknown command ", cmd);
 
 		buf[0] = cr->cc;
