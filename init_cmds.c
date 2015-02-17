@@ -86,7 +86,7 @@ void parsecmd(char* cmd)
 				state |= S_RECONFIG;
 			break;
 		default:
-			warn("unknown command");
+			warn("unknown command %s", cmd);
 	}
 }
 
