@@ -71,9 +71,9 @@ void parsecmd(char* cmd)
 		case 'r': dorestart(p); break;
 		case 'p': dopause(p, 1); break;
 		case 'w': dopause(p, 0); break;
-		case 'd': dodisable(p, 1); break;
-		case 'u': dodisable(p, 0); break;
 		case 's': dostart(p); break;
+		case 't': dodisable(p, 1); break;
+		case 'u': dodisable(p, 0); break;
 		case 'h': dohup(p); break;
 		/* state query */
 		case '?': dumpstate(); break;
