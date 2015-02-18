@@ -165,8 +165,7 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 			case 'a' ... 'f': rlvl |= (1 << (*p - 'a' + 10)); break;
 			/* runlevel ranges */
 			case '*': rlvl |= PRIMASK & ~1; break;
-			case 'm': rlvl |= PRIMASK & ~SLIPPERY & ~SPECIAL; break;
-			case 'z': rlvl |= PRIMASK &  SLIPPERY & ~SPECIAL; break;
+			case 'n': rlvl |= PRIMASK & ~SLIPPERY & ~SPECIAL; break;
 			/* entry type */
 			case '+':
 			case 'v': flags |= C_WAIT; break;
