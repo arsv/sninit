@@ -64,6 +64,8 @@ static void checkfailure(struct initrec* p, int status)
 			/* fast respawning only counts when exit status is nonzero
 			   if C_DOF is set; without C_DOF, all exits are counted. */
 			failed = toofast && failed;
+		else
+			failed = toofast;
 
 		if(failed && (p->flags & P_WAS_OK))
 			p->flags &= ~P_WAS_OK;
