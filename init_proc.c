@@ -39,7 +39,6 @@ void spawn(struct initrec* p)
 		return;
 	} else {
 		/* ok, we're in the child process */
-		setpgid(0, 0);
 		setsid();
 		execve(p->argv[0], p->argv, cfg->env);
 		warn("%s[%i] exec(%s) failed: %m", p->name, getpid(), p->argv[0]);
