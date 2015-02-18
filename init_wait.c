@@ -56,10 +56,6 @@ static void checkfailure(struct initrec* p, int status)
 {
 	int failed = (!WIFEXITED(status) || WEXITSTATUS(status));
 
-	if(p->flags & (C_ROFa | C_ROFb))
-		if(failed)
-			failswitch(p);
-
 	if(p->flags & C_DTF) {
 
 		int toofast = (passtime - p->lastrun <= cfg->time_to_restart);
@@ -67,11 +63,11 @@ static void checkfailure(struct initrec* p, int status)
 		if(p->flags & C_DOF)
 			/* fast respawning only counts when exit status is nonzero
 			   if C_DOF is set; without C_DOF, all exits are counted. */
-			toofast = toofast && failed;
+			failed = toofast && failed;
 
-		if(toofast && (p->flags & P_WAS_OK))
+		if(failed && (p->flags & P_WAS_OK))
 			p->flags &= ~P_WAS_OK;
-		else if(toofast)
+		else if(failed)
 			faildisable(p);
 		else
 			p->flags |= P_WAS_OK;
@@ -80,6 +76,12 @@ static void checkfailure(struct initrec* p, int status)
 		if(failed)
 			faildisable(p);
 	}
+
+	/* Use non-zero exit status *unless* DTF is given, in which case
+	   follow DTF logic (i.e. runlevel switch only if failed too fast) */
+	if(p->flags & (C_ROFa | C_ROFb))
+		if(failed)
+			failswitch(p);
 }
 
 static void faildisable(struct initrec* p)
