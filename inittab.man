@@ -66,7 +66,7 @@ should be handled by init. The order of characters is not relevant.
 .IP "\fB-\fR" 4
 Silently ignored, and can be used to pad runlevel masks.
 Without \fBr\fR or \fBw\fR, implies respawning entry.
-.IP "\fB+\fR" 4
+.IP "\fBv\fR" 4
 When stopping this process, wait until other processes die before
 sending signal to this one.
 .IP "\fBr\fR" 4
@@ -105,7 +105,8 @@ Switch to runlevel 2 on failure.
 .IP "\fBu\fR" 4
 Switch to runlevel 4 on failure.
 .IP "\fBh\fR" 4
-Hush, do not report failures to syslog for this entry.
+Hush, do not report failures to syslog for this entry. For a respawning
+entry, do not disable if it respawns too fast.
 .P
 Examples: \fBw12-4\fR start on runlevels 1, 2 or 4, wait;
 \fB01~\fR (re)start on all runlevels except 0 and 1; \fB--2-4k\fR (re)start
