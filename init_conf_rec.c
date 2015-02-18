@@ -188,6 +188,10 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 				retwarn(-1, "%s:%i: unknown flag %c", fb->name, fb->line, *p);
 		}
 
+	/* Assume DOF-DTF for regular, non-hushed services */
+	if(!(flags & (C_HUSH | C_ONCE | C_DOF | C_DTF)))
+		flags |= C_DOF | C_DTF;
+
 	if(!(rlvl & PRIMASK))
 		rlvl |= (PRIMASK & ~SPECIAL);
 
