@@ -42,7 +42,7 @@ int main(void)
 
 	/* the structure itself should be initialized */
 	S(pptr->name, "foo");
-	A(pptr->flags == 0);
+	A(pptr->flags == (C_DOF | C_DTF));
 	A(pptr->rlvl == ( (1<<1) | (1<<2) ));
 	A(pptr->pid == 0);
 	A(pptr->lastrun == 0);
@@ -63,7 +63,7 @@ int main(void)
 
 	/* the structure itself should be initialized */
 	S(pptr->name, "bar");
-	A(pptr->flags == 0);
+	A(pptr->flags == (C_DOF | C_DTF));
 	A(pptr->rlvl == ( (1<<2) | (1<<3) | (1<<4) ));
 	A(pptr->pid == 0);
 	A(pptr->lastrun == 0);

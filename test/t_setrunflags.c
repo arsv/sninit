@@ -73,10 +73,10 @@ int main(void)
 	rl("~789",	R0 | R1 | R2 | R3 | R4 | R5 | R6);
 	rl("~123a",	R0 | R4 | R5 | R6 | R7 | R8 | R9 | Ra);
 
-	fl("12",	0);
+	fl("12",	C_DOF | C_DTF);
 	fl("r",		C_ONCE);
 	fl("w",		C_ONCE | C_WAIT);
-	fl("+",		C_WAIT);
+	fl("+",		C_WAIT | C_DOF | C_DTF);
 
 	/* Runlevels and flags together */
 	rf("w12",	R1 | R2,	C_ONCE | C_WAIT);
