@@ -167,13 +167,11 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 			case '*': rlvl |= PRIMASK & ~1; break;
 			case 'n': rlvl |= PRIMASK & ~SLIPPERY & ~SPECIAL; break;
 			/* entry type */
-			case '+':
 			case 'v': flags |= C_WAIT; break;
 			case 'w': flags |= C_WAIT;
 			case 'r': flags |= C_ONCE; break;
 			/* disable on failure */
 			case 't': flags |= C_DTF; break;
-			case '?': flags |= C_DTF;
 			case 'q': flags |= C_DOF; break;
 			/* runlevel change on failure */
 			case 'i': flags |= C_ROFa; break;
