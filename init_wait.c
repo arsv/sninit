@@ -56,6 +56,10 @@ static void checkfailure(struct initrec* p, int status)
 {
 	int failed = (!WIFEXITED(status) || WEXITSTATUS(status));
 
+	if(p->flags & (P_SIGTERM | P_SIGKILL))
+		/* requested exit is always correct */
+		failed = 0;
+
 	if(p->flags & C_DTF) {
 
 		int toofast = (passtime - p->lastrun <= cfg->time_to_restart);
