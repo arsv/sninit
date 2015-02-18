@@ -62,20 +62,24 @@ Abandoned completely. See dependencies.txt.
 
 (...) respawns too fast, disabled for 5 minutes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sninit has uniform, reasonably low timeouts between spawning attempts.
+sninit either disables the entry immediately, or continues
+to respawn it with uniform, reasonably low timeouts (1-2s).
+The latter case also implies suppressing syslog output.
 
-The only reason to have these timeouts in the first place
-is to avoid consuming too much resources (cpu and possibly syslog)
-for a specific process that just fails to start.
-My opinion is that something like a couple of seconds is enough
-for this, CPU-wise at least. Syslog may need some more care.
+It is hard for me to imagine a situation when resuming
+respawning attempts after 5 minutes without an explicit
+command would make sense. If the problem is still there,
+it is not likely to go away on its own. And if the operator
+is there to fix the problem, he can also command init
+to unblock the entry.
 
-Measuring the time between spawn() calls, instead of the time
-between SIGCHLD and spawn(), means the first attempt to restart
-the process will occur immediately after it dies (assuming it
-was alive for more than the timeout value), but further attempts
-will be suspended. Makes more sense to me than sysvinit's idea of
-doing several fast respawns, then pausing for the whole 5 minutes.
+I'm still not sure what is the best way to handle a failing
+process. Practice shows that having a timed response is generally
+a good idea, and that when process fails it fails fast.
+Still a timed condition in a non-realtime OS is an incorrect one,
+and it is easy to see how it can be broken. So there is a second
+safeguard, a timeout between respawns, that prevents a non-paused
+fork loop.
 
 
 Services are s-type only
