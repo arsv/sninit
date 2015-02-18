@@ -201,7 +201,7 @@ static void transferpids(void)
 			continue;
 
 		q->pid = p->pid;
-		q->flags |= (p->flags & (P_MANUAL | P_FAILED));
+		q->flags |= (p->flags & (P_MANUAL | P_FAILED | P_WAS_OK));
 		q->lastrun = p->lastrun;
 		q->lastsig = p->lastsig;
 	}

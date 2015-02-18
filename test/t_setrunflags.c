@@ -83,7 +83,6 @@ int main(void)
 
 	/* incorrect cases */
 	bb("Z");
-	bb("?");
 
 	return 0;
 }

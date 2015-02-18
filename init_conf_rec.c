@@ -172,12 +172,15 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 			case 'v': flags |= C_WAIT; break;
 			case 'w': flags |= C_WAIT;
 			case 'r': flags |= C_ONCE; break;
-			/* misc flags */
-			case '?':
+			/* disable on failure */
+			case 't': flags |= C_DTF; break;
+			case '?': flags |= C_DTF;
 			case 'q': flags |= C_DOF; break;
+			/* runlevel change on failure */
 			case 'i': flags |= C_ROFa; break;
+			case 'u': flags |= C_ROFa;
 			case 'j': flags |= C_ROFb; break;
-			case 'u': flags |= C_ROFa | C_ROFb; break;
+			/* misc */
 			case 'k': flags |= C_USEABRT; break;
 			case 'h': flags |= C_HUSH; break;
 			case 'x': flags |= P_MANUAL; break;

@@ -5,6 +5,7 @@
 
 int state;
 int nextlevel;
+time_t passtime;
 
 /* Startup: I1 * I2 * I3 I4 I5 * rlswitch */
 struct initrec I0 = { .pid = 11, .flags = 0 };
