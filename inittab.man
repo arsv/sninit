@@ -142,7 +142,7 @@ masks to start or stop certain system services.
 .SS Runlevel designation
 Certain runlevels have particular meaning assigned to them, either by common
 practice or by certain built-in constraints:
-.IP "0" 4
+.IP "\fB0\fR" 4
 System shutdown (reset, halt or poweroff).
 .IP "\fB1\fR" 4
 Single-user mode, or recovery mode.
