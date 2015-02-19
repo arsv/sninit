@@ -1,6 +1,5 @@
-#:234:
+#:234
 # A non-script service file.
-# Comments and empty lines are ignored. 
-# Note however only the first command line will be executed.
+# Comments and empty lines at the start of file are ignored. 
 
 /sbin/xinetd -dontfork
