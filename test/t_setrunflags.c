@@ -60,7 +60,7 @@ struct initrec rec = {
 int main(void)
 {
 	rl("12",	R1 | R2);
-	rl("+12a",	R1 | R2 | Ra);
+	rl("v12a",	R1 | R2 | Ra);
 	rl("12af",	R1 | R2 | Ra | Rf);
 	rl("9",		R9);
 	rl("0",		R0);
@@ -76,7 +76,7 @@ int main(void)
 	fl("12",	C_DOF | C_DTF);
 	fl("r",		C_ONCE);
 	fl("w",		C_ONCE | C_WAIT);
-	fl("+",		C_WAIT | C_DOF | C_DTF);
+	fl("v",		C_WAIT | C_DOF | C_DTF);
 
 	/* Runlevels and flags together */
 	rf("w12",	R1 | R2,	C_ONCE | C_WAIT);
