@@ -23,7 +23,6 @@ static struct cmdrec {
 	{ 's', 1, "start",	},
 	{ 't', 1, "stop",	},
 	{ 'u', 1, "unstop",	},
-	{ 'd', 1, "disable",	},
 	{ 'p', 1, "pause",	},
 	{ 'h', 1, "hup",	},
 	{ 'i', 1, "pidof",	},
