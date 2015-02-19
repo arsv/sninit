@@ -66,14 +66,14 @@ should be handled by init. The order of characters is not relevant.
 .IP "\fB-\fR" 4
 Silently ignored, and can be used to pad runlevel masks.
 Without \fBr\fR or \fBw\fR, implies respawning entry.
-.IP "\fBv\fR" 4
-When stopping this process, wait until other processes die before
-sending signal to this one.
 .IP "\fBr\fR" 4
 Run once. Do not restart the process.
 .IP "\fBw\fR" 4
 Run once and wait for this process.
 Do not restart it, and do not proceed further until it dies.
+.IP "\fBv\fR" 4
+When stopping this process, wait until other processes die before
+sending signal to this one.
 .P
 Exactly one of \fBrwv\fR characters should be used for any entry.
 .IP "\fB0\fR...\fB9\fR" 4
@@ -90,13 +90,15 @@ specified with 0...9. Sublevels are not inverted.
 .IP "\fBx\fR" 4
 Do not spawn this entry until either \fBunstop\fR \fIname\fR
 or \fBstart\fR \fIname\fR telinit command is issued.
-command is issued.
 .IP "\fBk\fR" 4
 Kill the process with SIGABRT instead of SIGTERM. Use if the process
 in question fails to die on SIGTERM.
 .IP "\fBn\fR" 4
 Shorthand for runlevels 3456; spawn the service on all regular runlevels,
 but restart it when waking up from levels 789.
+.IP "\fB*\fR" 4
+Shorthand for runlevels 123456789. Entries marked this way will be spawned
+on boot, even if this system is booting into runlevels 1 or 2.
 .P
 The following flags determine how entry failure (non-zero exit status)
 is handled.
@@ -126,7 +128,7 @@ double quotes are handled properly, but variable substitution, output
 redirects, compound statements etc. and not supported. $PATH,
 even if set, has no effect; use absolute names for executables instead.
 
-To use sh, prepend ! to the command. This will cause init to pass the command
+To use sh, prepend \fB!\fR to the command. This will cause init to pass the command
 directly to /bin/sh -c without any parsing.
 '''
 .SH USAGE
@@ -183,15 +185,16 @@ An entry marked r3 will be run on entering runlevel 3, and entry marked
 r3~ will be run upon exiting runlevel 3 to any other runlevel.
 .P
 The same applies to the default runlevel mask, which is 3-9. An entry
-marked just "r" will be run when the system boots (in non-recovery mode),
-while an entry marked "r~" will be run on system shutdown (from
-a non-recovery mode). A typical application is to run mount -a as "r"
-and umount -a as "r~".
+marked just \fBr\fR will be run when the system boots (in non-recovery mode),
+while an entry marked \fBr~\fR will be run on system shutdown (from
+a non-recovery mode). A typical application is to run mount -a as \fBr\fR
+and umount -a as \fBr~\fR.
 .P
-Due to special status of runlevel 0, entries marked r0 will be run
-during shutdown and r0~ entries will be run during boot. This differs
-from r~ and r respectively in case runlevels 1 and 2 are considered: r0~
-entry will be started when entering runlevel 1, r entry will not.
+Due to special status of runlevel 0, entries marked \fBr0\fR will be run
+during shutdown and \fBr*\fR entries will be run during boot. This differs
+from \fBr~\fR and \fBr\fR respectively in case runlevels 1 and 2 are
+considered: \fBr*\fR entry will be started when entering runlevel 1,
+\fBr\fR entry will not.
 '''
 .SS Foreground daemons
 Any process doing \fBdaemon\fR(3) style startup will confuse init if configured
@@ -231,13 +234,15 @@ The meaning of \fIname\fR and \fIcommand\fR is the same;
 .P
 Common values for the 3rd field, \fIaction\fR, and their equivalents for {INIT}:
 .IP "\fBrespawn\fR" 4
-Respawning entry, \fB-\fR in \fIflags\fR.
+Respawning entry, no flags needed.
 .IP "\fBonce\fR" 4
 Run-once entry, \fBr\fR in \fIflags\fR.
 .IP "\fBwait\fR" 4
 Same as \fBw\fR in \fIflags\fR.
 .IP "\fBboot\fR, \fBbootwait\fR, \fBsysinit\fB" 4
-Same as \fBr0~\fR, \fBw0~\fR, \fBw0~\fR respectively, placed close to the top of inittab.
+Same as \fBr*\fR, \fBw*\fR, \fBw*\fR respectively, placed close to the top of inittab.
+Depending on the entry however, using \fBr\fR, \fBw\fR, \fBri\fR or \fBwi\fR may
+be a better approach.
 .IP "\fBondemand\fR" 4
 Respawning entry for sublevels a-c.
 .IP "\fBpowerwait\fR, \fBpowerfail\fR, \fBpowerokwait\fR" 4
