@@ -13,7 +13,7 @@ Note whitespace-separated fields, and flags merged with runlevels.
 
 In current implementation, the formats are essentially equivalent. 
 SysV-style "wait" and "once" are replaced with "w" and "r" respectively,
-rlvls field is used with no changed.
+rlvls field is used with no changes.
 
 
 Why a new format?
@@ -57,3 +57,33 @@ to faciliate simple grep/sed operations on entry names:
 	/^name\>/
 
 Matching the 2nd field would require explicit pattern for the flags.
+
+
+Entry flags
+~~~~~~~~~~~
+Sysvinit uses self-descriptive keywords for its action field,
+and a separate field for runlevels.
+
+	mount:12345:wait:/bin/mount -a
+
+In contrast, sninit has single-character flags mixed with
+runlevel specification:
+
+	mount	w*   /bin/mount -a
+
+Experiments at writing inittabs for bootable systems have shown that
+most of the time properly choosen defaults result in per-entry description
+only one or two characters long (in newtab format), and among those actual
+flags like r or w and runlevels like 0 or * take more or less equal roles.
+
+To some extent, this is already showing in sysvinit format, with only 3 actions
+out of 14 actually making use of runlevels field. Sysvinit has justification
+for that, with its fixed-four-fields format. With sninit, it is not that simple
+due to different internal representation, which heavily implies usable defaults
+of some sort.
+
+Another reason for choosing non-trivial defaults (i.e. something other than
+flags=0 rlvls=0) is having flag-less service files in initdir.
+Flag specification there remains ugly, and I see no way to improve
+the situation, but with sane defaults there is (almost) no need to do that.
+Incidentally, the choices made for initdir actually fit quite well in inittab.
