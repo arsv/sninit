@@ -9,18 +9,18 @@ PATH=/bin:/sbin:/usr/bin
 LOCALE=C
 
 # System initialization
-R	rw	/sbin/mount -o remount,rw /
-s	-	/sbin/syslogd -n
-r	-	/sbin/hwlock -s
+mount	w	/sbin/mount -o remount,rw /
+syslog	v	/sbin/syslogd -n
+clock	r	/sbin/hwlock -s
 
 # VTs
-s1	su	/sbin/sulogin
-s2345	tty1	/sbin/agetty --noclear -8 -s 38400 tty1 linux
-s2345	tty2	/sbin/agetty -8 -s 38400 tty2 linux
-s2345	tty3	/sbin/agetty -8 -s 38400 tty3 linux
-s2345	tty4	/sbin/agetty -8 -s 38400 tty4 linux
-s2345	tty5	/sbin/agetty -8 -s 38400 tty5 linux
-s2345	tty6	/sbin/agetty -8 -s 38400 tty6 linux
+su	s1	/sbin/sulogin
+tty1	s	/sbin/agetty --noclear -8 -s 38400 tty1 linux
+tty2	s	/sbin/agetty -8 -s 38400 tty2 linux
+tty3	s	/sbin/agetty -8 -s 38400 tty3 linux
+tty4	s	/sbin/agetty -8 -s 38400 tty4 linux
+tty5	s	/sbin/agetty -8 -s 38400 tty5 linux
+tty6	s	/sbin/agetty -8 -s 38400 tty6 linux
 
 # Shutdown
-R0	ro	/sbin/mount -o remount,ro /
+umount	r0	/sbin/mount -o remount,ro /
