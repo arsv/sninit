@@ -62,7 +62,8 @@ static void checkfailure(struct initrec* p, int status)
 
 	if(p->flags & C_DTF) {
 
-		int toofast = (passtime - p->lastrun <= cfg->time_to_restart);
+		int mintime = (p->flags & C_FAST ? cfg->time_to_restart : cfg->minimum_runtime);
+		int toofast = (passtime - p->lastrun <= mintime);
 
 		if(p->flags & C_DOF)
 			/* fast respawning only counts when exit status is nonzero

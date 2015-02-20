@@ -18,14 +18,15 @@
 #define C_ROFa		(1<<5)		/* runlevel change on failure */
 #define C_ROFb		(1<<6)		/* (a/b combination determines target runlevel) */
 #define C_HUSH		(1<<7)		/* do not warn about this entry */
+#define C_FAST		(1<<8)		/* use time_to_restart instead of minimum_runtime */
 /* C_* flags are only set in configure(),
    P_* flags may be changed at runtime */
-#define P_MANUAL	(1<<8)		/* process has been disabled manually */
-#define P_FAILED	(1<<9)		/* process has been disabled via C_DOF */
-#define P_SIGSTOP	(1<<10)		/* SIGSTOP has been sent */
-#define P_SIGTERM	(1<<11)		/* SIGTERM (or SIGABRT) has been sent to this process */
-#define P_SIGKILL	(1<<12)		/* SIGKILL has been sent to this process */
-#define P_WAS_OK	(1<<13)		/* previous run finished well (re. DOF and DTF) */
+#define P_MANUAL	(1<<9)		/* process has been disabled manually */
+#define P_FAILED	(1<<10)		/* process has been disabled via C_DOF */
+#define P_SIGSTOP	(1<<11)		/* SIGSTOP has been sent */
+#define P_SIGTERM	(1<<12)		/* SIGTERM (or SIGABRT) has been sent to this process */
+#define P_SIGKILL	(1<<13)		/* SIGKILL has been sent to this process */
+#define P_WAS_OK	(1<<14)		/* previous run finished well (re. DOF and DTF) */
 
 /* Sublevels mask (struct initrec.rlvls) */
 #define PRIMASK		0x03FF		/* ------9876543210 */
@@ -71,6 +72,7 @@ struct config {
 	unsigned short time_to_restart;
 	unsigned short time_to_SIGKILL;	/* after sending SIGTERM, for processes refusing to die */
 	unsigned short time_to_skip;	/* after sending SIGKILL */
+	unsigned short minimum_runtime;
 };
 
 /* Diagnostics; note this may go to syslog. */

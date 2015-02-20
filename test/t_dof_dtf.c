@@ -23,8 +23,8 @@ struct config testconfig = {
 	.initnum = sizeof(testinittab)/sizeof(void*) - 2,
 	.time_to_restart = 2,
 	.time_to_SIGKILL = 2,
-	.time_to_skip = 5
-
+	.time_to_skip = 5,
+	.minimum_runtime = 10
 };
 
 struct config* cfg = &testconfig;

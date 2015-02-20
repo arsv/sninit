@@ -113,6 +113,10 @@ Switch to runlevel 4 on failure.
 .IP "\fBh\fR" 4
 Do not disable this entry if it respawns too fast, and do not report
 failures to syslog.
+.IP "\fBs\fR" 4
+Fast entry. This entry is considered too fast only if it respawns faster
+than once every 2s. Slow entries, the ones without this flag, must be
+running for 20s at least.
 .P
 Examples: \fBw12-4\fR start on runlevels 1, 2 or 4, wait;
 \fB01~\fR (re)start on all runlevels except 0 and 1; \fB--2-4k\fR (re)start
