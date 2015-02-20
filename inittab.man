@@ -62,12 +62,18 @@ relevant for respawning entries.
 '''
 .SS Entry flags
 The first field, \fIflags\fR, is a set of characters describing how the entry
-should be handled by init. The order of characters is not relevant.
+should be handled by init.
+.P
+Unless specified otherwise, init will respawn the entry on runlevels 3-9,
+and take some effort to make sure respawns do not happen too frequently.
+Flags can be used to modify that behavior.
+.P
+The order of characters is not relevant.
 .IP "\fB-\fR" 4
 Silently ignored. Can be used to pad runlevel masks, or in case you need
-an entry with default settings in inittab. Implies respawning.
+an entry with default settings in inittab.
 .IP "\fBr\fR" 4
-Run once. Do not restart the process. Use this flag for independent system
+Run once. Do not respawn the process. Use this flag for independent system
 initialization entries, like sysctl or non-root mounts or early network setup.
 .IP "\fBw\fR" 4
 Run once and wait for this process. Do not restart it, and do not proceed
@@ -84,7 +90,7 @@ Run this entry on specified runlevel(s).
 .IP "\fBa\fR...\fBf\fR" 4
 Run this entry only if specified sublevel(s) are active.
 .P
-Note runlevels are ORed while sublevels are ANDed, so "123ab" means
+Note runlevels are ORed while sublevels are ANDed, so \fB123ab\fR means
 the entry should be run on levels 1 or 2 or 3, but only with both
 sublevels a and b active. See below for common runlevel designation.
 .IP "\fBn\fR" 4
@@ -114,7 +120,7 @@ to syslog and respawning entries that fail twice fast enough are disabled.
 .IP "\fBq\fR" 4
 Disable this entry on the first failure, without a restart attempt.
 .IP "\fBi\fR" 4
-Switch to runlevel 1 on failure. Mounting root rw will likely need this.
+Switch to runlevel 1 on failure. Mounting root read-write will likely need this.
 .IP "\fBj\fR" 4
 Switch to runlevel 2 on failure.
 .IP "\fBu\fR" 4
