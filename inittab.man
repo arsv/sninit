@@ -64,16 +64,19 @@ relevant for respawning entries.
 The first field, \fIflags\fR, is a set of characters describing how the entry
 should be handled by init. The order of characters is not relevant.
 .IP "\fB-\fR" 4
-Silently ignored, and can be used to pad runlevel masks.
-Without \fBr\fR or \fBw\fR, implies respawning entry.
+Silently ignored. Can be used to pad runlevel masks, or in case you need
+an entry with default settings in inittab. Implies respawning.
 .IP "\fBr\fR" 4
-Run once. Do not restart the process.
+Run once. Do not restart the process. Use this flag for independent system
+initialization entries, like sysctl or non-root mounts or early network setup.
 .IP "\fBw\fR" 4
-Run once and wait for this process.
-Do not restart it, and do not proceed further until it dies.
+Run once and wait for this process. Do not restart it, and do not proceed
+further until it dies. Use this for critical initialization entries, like
+mounting root. \fBw\fR-process will wait for any running \fBr\fR-processes
+to finish, and can be used specifically for this purpose.
 .IP "\fBv\fR" 4
 When stopping this process, wait until other processes die before
-sending signal to this one.
+sending signal to this one. This is primarily meant for syslogd and/or klogd.
 .P
 Exactly one of \fBrwv\fR characters should be used for any entry.
 .IP "\fB0\fR...\fB9\fR" 4
@@ -83,40 +86,51 @@ Run this entry only if specified sublevel(s) are active.
 .P
 Note runlevels are ORed while sublevels are ANDed, so "123ab" means
 the entry should be run on levels 1 or 2 or 3, but only with both
-sublevels a and b active.
+sublevels a and b active. See below for common runlevel designation.
+.IP "\fBn\fR" 4
+Shorthand for runlevels 3456; spawn the service on all regular runlevels,
+but restart it when waking up from levels 789. This is meant for daemons
+dealing with real world connections, like connection managers or such.
+General networking daemons do not need this even if they server the external
+world.
+.IP "\fB*\fR" 4
+Shorthand for runlevels 123456789. Entries marked this way will be spawned
+on boot, even if the system is booting into runlevels 1 or 2. Useful for
+a getty service debug console on a serial port.
 .IP "\fB~\fR" 4
 Invert runlevels mask, run this entry on all runlevels except those
-specified with 0...9. Sublevels are not inverted.
+specified with 0...9. Sublevels are not inverted. Typical usage: \fBr8\fR entry
+is run when the system is going to sleep, and \fBr8~\fR entry is run on wakeup.
 .IP "\fBx\fR" 4
-Do not spawn this entry until either \fBunstop\fR \fIname\fR
-or \fBstart\fR \fIname\fR telinit command is issued.
+Manual-start entry. Do not spawn this entry until either
+\fBunstop\fR \fIname\fR or \fBstart\fR \fIname\fR telinit command is issued.
 .IP "\fBk\fR" 4
 Kill the process with SIGABRT instead of SIGTERM. Use if the process
 in question fails to die on SIGTERM.
-.IP "\fBn\fR" 4
-Shorthand for runlevels 3456; spawn the service on all regular runlevels,
-but restart it when waking up from levels 789.
-.IP "\fB*\fR" 4
-Shorthand for runlevels 123456789. Entries marked this way will be spawned
-on boot, even if this system is booting into runlevels 1 or 2.
 .P
 The following flags determine how entry failure (non-zero exit status)
-is handled.
+is handled. Unless any of them is specified, failing entries are reported
+to syslog and respawning entries that fail twice fast enough are disabled.
 .IP "\fBq\fR" 4
-Disable this entry on failure.
+Disable this entry on the first failure, without a restart attempt.
 .IP "\fBi\fR" 4
-Switch to runlevel 1 on failure.
+Switch to runlevel 1 on failure. Mounting root rw will likely need this.
 .IP "\fBj\fR" 4
 Switch to runlevel 2 on failure.
 .IP "\fBu\fR" 4
-Switch to runlevel 4 on failure.
+Switch to runlevel 4 on failure. May be used to set up a switch to text
+mode runlevel 4 in case GUI entry (xdm) fails.
 .IP "\fBh\fR" 4
 Do not disable this entry if it respawns too fast, and do not report
-failures to syslog.
+failures to syslog. This will be an un-checked entry, free to restart
+as fast as throttling allows (about once every 2s).
+.IP "\fBt\fR" 4
+Disable entry if it respawns too fast, regardless of exit status.
+Use for daemons that exit with zero status no matter what.
 .IP "\fBs\fR" 4
-Fast entry. This entry is considered too fast only if it respawns faster
-than once every 2s. Slow entries, the ones without this flag, must be
-running for 20s at least.
+Fast entry. Any run longer than 2s is considered successful.
+Use for entries that do respawn during normal operation (getty), as opposed
+to common daemons that only exit on error.
 .P
 Examples: \fBw12-4\fR start on runlevels 1, 2 or 4, wait;
 \fB01~\fR (re)start on all runlevels except 0 and 1; \fB--2-4k\fR (re)start
