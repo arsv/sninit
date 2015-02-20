@@ -20,6 +20,12 @@
 /* Timezone data, only used by sys_time_tz.c */
 #define LOCALTIME "/etc/localtime"
 
+/* initrec name length (SysVinit standard value is 8+1) */
+/* makes sense to keep it a multiple of 4 */
+#define NAMELEN 16
+
+/* If you change the runlevels below, be ready to rewrite manual pages! */
+
 /* Default runlevel. May include sublevels. */
 #define INITDEFAULT (1 << 3)
 
@@ -34,12 +40,12 @@
 #define FALLBACK2 2
 #define FALLBACK3 3
 
+/* Do not change the following values unless you know what you are doing. */
+/* Wide range of values will work without affecting anything visible to the user. */
+
 /* telinit command buffer size, also the maximum allowed command size. */
 /* init will reject commands longer than this. */
 #define CMDBUF 100
-
-/* initrec name length (SysVinit standard value is 4+1) */
-#define NAMELEN 16
 
 /* Memory allocation granularity, for mmap(2). Should be something close to OS page size */
 #define IRALLOC 4096
