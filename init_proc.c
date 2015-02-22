@@ -39,7 +39,11 @@ void spawn(struct initrec* p)
 		return;
 	} else {
 		/* ok, we're in the child process */
-		setsid();
+
+		setsid();	/* become session *and* pgroup leader */
+		/* pgroup is needed to kill(-pid), and session is important
+		   for spawned shells and gettys (busybox ones at least) */
+
 		execve(p->argv[0], p->argv, cfg->env);
 		warn("%s[%i] exec(%s) failed: %m", p->name, getpid(), p->argv[0]);
 		_exit(-1);
