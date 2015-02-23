@@ -15,7 +15,7 @@ int setenv(const char *name, const char *value, int overwrite);
 #ifdef __GNUC__
 #define alloca(x) __builtin_alloca(x)
 #else
-void *alloca(size_t size) __THROW;
+void *alloca(size_t size);
 #endif
 
 #endif
