@@ -40,11 +40,16 @@ void parsecmd(char* cmd)
 	char* arg = cmd + 1;
 	struct initrec* p = NULL;
 
-	/* Runlevel switching commands handle argument differently */
-	if((*cmd >= '0' && *cmd <= '9') || *cmd == '+' || *cmd == '-')
-		return setrunlevel(cmd);
-
+	/* Check whether this command needs arguments */
 	switch(*cmd) {
+		/* Runlevel switching commands handle argument differently */
+		case '0' ... '9':
+		case '+':
+		case '-':
+			setrunlevel(cmd);
+			return;
+
+		/* Mandatory argument */
 		case 'r':		/* restart */
 		case 's': case 't':	/* start, stop */
 		case 'u':		/* unstop */
@@ -53,6 +58,9 @@ void parsecmd(char* cmd)
 			if(!(p = findentry(arg)))
 				retwarn_("can't find %s in inittab", arg);
 			break;
+
+		/* There are no commands with optional arguments atm */
+		/* There are few that take no argument at all however */
 		default:
 			if(*arg)
 				retwarn_("no argument allowed for %c", *cmd);
