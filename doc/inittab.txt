@@ -87,3 +87,33 @@ flags=0 rlvls=0) is having flag-less service files in initdir.
 Flag specification there remains ugly, and I see no way to improve
 the situation, but with sane defaults there is (almost) no need to do that.
 Incidentally, the choices made for initdir actually fit quite well in inittab.
+
+
+List of flags
+~~~~~~~~~~~~~
+a	sub A
+b	sub B
+c	sub C
+d	sub D
+e	sub E
+f	sub F
+g
+h	C_HUSH
+i	C_ROFa
+j	C_ROFa | C_ROFb
+k	C_USEABRT
+l
+m	PRIMASK & ~SLIPPERY & ~SPECIAL
+n	
+o	
+p	
+q	C_DOF
+r	C_ONCE
+s	C_FAST	
+t	C_DTF
+u	C_ROFa
+v	C_WAIT
+w	C_WAIT | C_ONCE
+x	P_MANUAL
+y	
+z	PRIMASK &  SLIPPERY & ~SPECIAL
