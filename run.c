@@ -37,6 +37,7 @@
 #define SETSID   (1<<0)
 #define SETCTTY  (1<<1)
 #define NULLOUT  (1<<2)
+#define RUNSH    (1<<3)
 
 /* Stored process attributes: uid/gids, fds, and session stuff */
 /* Cgroups and ulimits are applied immediately, no need to store those */
@@ -115,6 +116,14 @@ int main(int argc, char** argv)
 		die("Usage: run [options] command arg arg ...", NULL, NULL);
 	
 	apply(*argv);
+
+	if(bits & RUNSH) {
+		/* There are at least 2 slots to use in argv: "-c"
+		   and the initial argv[0] = "...run" */
+		*(--argv) = "-c";
+		*(--argv) = "/bin/sh";
+	}
+
 	execvp(*argv, argv);
 	die("Can't exec ", *argv, ERRNO);
 }
@@ -140,6 +149,7 @@ again:	switch(c = *(opt++)) {
 		case 'm': setmask(opt); break;
 
 		case 'n': bits |= NULLOUT; goto again;
+		case 'c': bits |= RUNSH; goto again;
 		case 's': setsess(); goto again;
 		case 'y': setctty(); goto again;
 

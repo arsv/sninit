@@ -41,6 +41,8 @@ highest priority 1.
 Set \fBumask\fR(2) for the spawned process.
 .IP "\fB-y\fR" 4
 Set stdout as the controlling TTY; see TIOCSCTTY in \fBtty_ioctl\fR(4).
+.IP "\fB-c\fR" 4
+Exec \fBsh -c \fIcommand args\fR instead of just \fIcommand args\fR.
 .IP "\fB+\fIc\fIN\fR[\fB/\fIM\fR]" 4
 Set process ulimits. \fIN\fR is the soft limit, \fIM\fR is hard limit;
 in case only one number is specified, equal hard and soft limits are set.
