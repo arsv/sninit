@@ -15,7 +15,7 @@ The following options are accepted:
 .IP "\fB-u\fR\fIuser\fR" 4
 Set user, see \fBsetuid\fR(2).
 .IP "\fB-g\fR\fIgroup\fR" 4
-Set group, see \fBsetgid\fR(2).
+Set group, see \fBsetgid\fR(2). Multiple \fB-g\fR also set supplementary groups, see \fBsetgroups\fR(2)
 .IP "\fB-X\fR\fIcgroup\fR" 4
 Add process to specified cgroup.
 .IP "\fB-C\fR\fIdir\fR" 4
