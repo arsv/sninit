@@ -44,7 +44,7 @@ Set stdout as the controlling TTY; see TIOCSCTTY in \fBtty_ioctl\fR(4).
 .IP "\fB-c\fR" 4
 Exec \fBsh -c \fIcommand args\fR instead of just \fIcommand args\fR.
 .IP "\fB+\fIc\fIN\fR[\fB/\fIM\fR]" 4
-Set process ulimits. \fIN\fR is the soft limit, \fIM\fR is hard limit;
+Set process ulimits. \fIN\fR is soft limit, \fIM\fR is hard limit;
 in case only one number is specified, equal hard and soft limits are set.
 Possible limits with respective C constants (see \fBsetrlimits\fR(2)):
 .PD 0
@@ -103,7 +103,7 @@ see \fBrun\fR(1).
 .SH SEE ALSO
 Similar utilities: \fBsu\fR(1), \fBsudo\fR(1), \fBrunuser\fR(1),
 \fBulimit\fR in \fBbash\fR(1),
-\fBnice\fR(1), \fBcgexec\fR(1), \fBcapsh\fR(1), \fBsetsid\fR(1).
+\fBnice\fR(1), \fBcgexec\fR(1), \fBsetsid\fR(1).
 .P
 Syscalls: \fBsetresuid\fR(2), \fBsetresgid\fR(2), \fBsetrlimit\fR(2),
 \fBsetpriority\fR(2), \fBexecve\fR(2), \fBsetsid\fR(2).
