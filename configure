@@ -418,6 +418,7 @@ CC=${CC:-$cc}
 AS=${AS:-$as}
 AR=${AR:-$ar}
 CFLAGS=${CFLAGS:-$cflags}
+ASFLAGS=${ASFLAGS:-$asflags}
 LDFLAGS=${LDFLAGS:-$ldflags}
 LIBS=${LIBS:-$libs}
 HOSTCC=${HOSTCC:-$hostcc}
@@ -475,6 +476,8 @@ echo "	CC=$CC"
 test -n "$arch" -a "$AS" != "\$(CC) -c" && \
  echo "	AS=$AS"
 echo "	CFLAGS=$CFLAGS"
+test -n "$arch" -a "$AS" != "\$(CC) -c" && \
+ echo "	ASFLAGS=$ASFLAGS"
 echo "	LDFLAGS=$LDFLAGS"
 echo "	LIBS=$LIBS"
 test -n "$RUN" && \
