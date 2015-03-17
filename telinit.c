@@ -36,12 +36,10 @@ static struct cmdrec {
 	{  0  }
 };
 
-// .bss is zero-initialized, so no need to call memset() later
-static char buf[NAMELEN+2];
-
 int main(int argc, char** argv)
 {
 	struct cmdrec* cr = NULL;
+	char buf[NAMELEN+2];
 
 	int hasarg = 0;
 	char* ptr = buf;
@@ -64,12 +62,14 @@ int main(int argc, char** argv)
 			die("Unknown command ", cmd);
 
 		buf[0] = cr->cc;
+		buf[1] = '\0';
 		hasarg = cr->arg;
 	}
 
 	if(!hasarg)
 		runcmd(ptr);
 	else for(i = 2; i < argc; i++) {
+		memset(buf + 1, 0, sizeof(buf)-1);
 		strncpy(buf + 1, argv[i], sizeof(buf)-2);
 		runcmd(buf);
 	}
