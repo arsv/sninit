@@ -35,6 +35,6 @@
 
 /* This is only used from drop-in initial configuration override.
    Default value is hard-coded into init.c, but adding builtin.c
-   replaces that with a pre-compiled configuration. */
+   replaces that with a pre-compiled struct config. */
 
 #define weak __attribute__((weak))
