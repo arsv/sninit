@@ -22,20 +22,21 @@
 #include "init.h"
 #include "config.h"
 
-/* To redefine it for testing */
-static const char* tzfile = LOCALTIME;
+export int timestamp(char* buf, int len);
+extern int mktimestamp(char* p, int l, time_t ts);
 
-struct {
+/* To redefine it for testing */
+local const char* tzfile = LOCALTIME;
+
+local struct {
 	int ts;
 	int te;
 	int dt;
 	char set;
 } tzinfo; /* assumed to be zero-initialized */
 
-extern int mktimestamp(char* p, int l, time_t ts);
-
-static void tzinit(time_t base);
-static void tzparse(unsigned char* buf, int len, time_t t0);
+local void tzinit(time_t base);
+local void tzparse(unsigned char* buf, int len, time_t t0);
 
 /* This is somewhat illogical to do heavy file operations
    within a call that is supposed to make a simple timestamp.
@@ -62,7 +63,7 @@ int timestamp(char* buf, int len)
 /* Load /etc/localtime, initializing tzinfo structure above */
 /* Should have been (strong) void tzset(), but alas, tzset happens
    to be a strong symbol in dietlibc. */
-static void tzinit(time_t base)
+void tzinit(time_t base)
 {
 	int fd;
 	struct stat st;
@@ -85,7 +86,7 @@ out:	close(fd);
 }
 
 /* big endian 4-byte int at */
-static inline int beint32(unsigned char* p)
+int beint32(unsigned char* p)
 {
 	return (p[0] << 3*8) | (p[1] << 2*8) | (p[2] << 1*8) | p[3];
 };
@@ -128,7 +129,7 @@ struct tzfile
 
 /* tzfile is mmaped /etc/localtime; t is current/reference time */
 /* Warning: called from warn()! No error reporting here. */
-static void tzparse(unsigned char* buf, int len, time_t t)
+void tzparse(unsigned char* buf, int len, time_t t)
 {
 	int i;
 

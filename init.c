@@ -15,9 +15,11 @@
 
 /* status */
 int currlevel;		// currently occupied runlevel bitmask
-int nextlevel;		// the one we're switching to; =curlevel when we're done switching
+int nextlevel;		// the one we're switching to;
+ 			//   == curlevel when we're done switching
 int state;		// S_* flags
-int timetowait;		// poll timeout, ms. Cleared in main(), set by waitneeded(), checked by pollfds()
+int timetowait;		// poll timeout, ms. Cleared in main(),
+ 			//   set by waitneeded(), checked by pollfds()
 time_t passtime;	// time at the start of current initpass
 
 int warnfd;		// primary log fd (see init_warn.c)
@@ -33,11 +35,13 @@ int initctlfd;		// listening socket
 sigset_t defsigset;	// default sigset, to supply to spawned processes,
 			// and also to use outside of ppoll in init itself
 
-static int setup(int argc, char** argv);
-static int setinitctl(void);
-static void setsignals(void);
-static void setargs(int argc, char** argv);
-static int setpasstime(void);
+export int main(int argc, char** argv);
+
+local int setup(int argc, char** argv);
+local int setinitctl(void);
+local void setsignals(void);
+local void setargs(int argc, char** argv);
+local int setpasstime(void);
 
 extern int configure(int);
 extern void setnewconf(void);
@@ -47,7 +51,7 @@ extern void pollctl(void);
 extern void acceptctl(void);
 extern void waitpids(void);
 
-static void sighandler(int sig);
+local void sighandler(int sig);
 
 /* Overall logic in main: interate over inittab records (that's initpass()),
    go sleep in ppoll(), iterate, sleep in ppoll, iterate, sleep in ppoll, ...
@@ -66,7 +70,8 @@ int main(int argc, char** argv)
 	if(setup(argc, argv))
 		goto reboot;	/* Initial setup failed badly */
 	if(setpasstime())
-		passtime = BOOTCLOCKOFFSET;	/* see setpasstime comments below */
+		passtime = BOOTCLOCKOFFSET;
+		/* see setpasstime comments below */
 
 	while(1)
 	{
@@ -76,8 +81,9 @@ int main(int argc, char** argv)
 		/* (Re)spawn processes that need (re)spawning */
 		initpass();
 
-		/* "No runlevel at all". This is the state after reaching runlevel 0
-		   which is (1<<0). See initpass for explaination. */
+		/* "No runlevel at all".
+		   This is the state after reaching runlevel 0 which is (1<<0).
+		   See initpass for explaination. */
 		if(!currlevel)
 			goto reboot;
 
@@ -91,9 +97,10 @@ int main(int argc, char** argv)
 		   Only set state flags here, do not do any processing. */
 		pollctl();
 
-		/* Update monotime after ppoll for a new cycle. The assumption
-		   here is that acceptctl typically takes less time than pollctl. */
-		/* See comments in setpasstime() on error recovery */
+		/* Update monotime after ppoll for a new cycle.
+		   The assumption here is that acceptctl typically takes less
+		   time than pollctl.
+		   See comments in setpasstime() on error recovery */
 		if(setpasstime() && timetowait > 0)
 			passtime += timetowait;
 
@@ -108,7 +115,7 @@ int main(int argc, char** argv)
 
 reboot:
 	warnfd = 0;		/* stderr only, do not try syslog */
-	if(!(state & S_PID1))	/* we're not running as *the* init, just exit quietly */
+	if(!(state & S_PID1))	/* we're not running as *the* init */
 		return 0;
 
 	reboot(rbcode);
@@ -117,7 +124,7 @@ reboot:
 	return 0xFE; /* feh */
 };
 
-static int setup(int argc, char** argv)
+int setup(int argc, char** argv)
 {
 	/* Runlevel 0. This is necessary to make sure W0~ type entries
 	   get marked as "has been run" upon initialization. */
@@ -127,13 +134,14 @@ static int setup(int argc, char** argv)
 	syslogfd = -1;
 
 	/* To avoid calling getpid every time. And since this happens to be
-	   the first syscall init makes, it is also used to check whether runtime
-	   situation is bearable. */
+	   the first syscall init makes, it is also used to check whether
+	   runtime situation is bearable. */
 	if(getpid() == 1)
 		state |= S_PID1;
-	/* Failing getpid() is a sign of big big trouble, like running x86 or x32
-	   on a x64 kernel without relevant parts built in. If it is the case,
-	   error reporting is pointless and all init can do is bail out asap. */
+	/* Failing getpid() is a sign of big big trouble, like running x86
+	   or x32 on a x64 kernel without relevant parts built in.
+	   If it is the case, error reporting is pointless and all init can do
+	   is bail out asap. */
 	else if(errno)
 		_exit(errno);
 
@@ -157,7 +165,7 @@ static int setup(int argc, char** argv)
    Among those, the only thing that concerns init is possible initial runlevel
    indication, either a (single-digit) number or a word "single".
    init does not pass its argv to any of the children. */
-static void setargs(int argc, char** argv)
+void setargs(int argc, char** argv)
 {
 	char** argi;
 
@@ -168,13 +176,14 @@ static void setargs(int argc, char** argv)
 			nextlevel = (1 << (**argi - '0'));
 }
 
-/* Outside of ppoll, we only block SIGCHLD; inside ppoll, default sigmask is used.
-   This should be ok since linux blocks signals to init from other processes, and
-   blocking kernel-generated signals rarely makes sense. Normally init shouldn't be
-   getting them, aside from SIGCHLD and maybe SIGPIPE/SIGALARM during telinit
-   communication. If anything else is sent (SIGSEGV?), then we're already well out
-   of normal operation range and should accept whatever the default action is. */
-static void setsignals(void)
+/* Outside of ppoll, we only block SIGCHLD; inside ppoll, default sigmask
+   is used. This should be ok since linux blocks signals to init from other
+   processes, and blocking kernel-generated signals rarely makes sense.
+   Normally init shouldn't be getting them, aside from SIGCHLD and maybe
+   SIGPIPE/SIGALARM during telinit communication. If anything else is sent
+   (SIGSEGV?), then we're already well out of normal operation range
+   and should accept whatever the default action is. */
+void setsignals(void)
 {
 	/* Restarting read() etc is ok, the calls init needs interrupted
 	   will be interrupted anyway.
@@ -202,8 +211,8 @@ static void setsignals(void)
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGHUP,  &sa, NULL);
 
-	sa.sa_flags = SA_NOCLDSTOP; 	/* init does not care about children being stopped */
-	sigaction(SIGCHLD, &sa, NULL);
+	sa.sa_flags = SA_NOCLDSTOP; 	/* init does not care about children */
+	sigaction(SIGCHLD, &sa, NULL);	/*   being stopped */
 	
 	/* These should interrupt write() calls, and that's enough */
 	sa.sa_flags = 0;
@@ -212,7 +221,7 @@ static void setsignals(void)
 	sigaction(SIGALRM, &sa, NULL);
 }
 
-static int setinitctl(void)
+int setinitctl(void)
 {
 	struct sockaddr_un addr = {
 		.sun_family = AF_UNIX,
@@ -241,7 +250,7 @@ close:
 }
 
 /* A single handler for all four signals we care about. */
-static void sighandler(int sig)
+void sighandler(int sig)
 {
 	switch(sig)
 	{

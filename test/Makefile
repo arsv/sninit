@@ -5,8 +5,8 @@ include ../config.mk
 
 # Allow overriding functions with test stubs
 override LDFLAGS += -Wl,-z,muldefs
-# Disregard "static" and "inline", do not need them while testing
-override CFLAGS += -Dstatic= -Dinline=
+# Export "local" symbols
+override CFLAGS += -Dexportall
 # Prevent clang for doing early linking within modules
 override CFLAGS += -ffunction-sections
 

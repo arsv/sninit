@@ -4,7 +4,7 @@
 #include "init.h"
 #include "init_conf.h"
 
-extern struct memblock newblock;
+export int readinittab(const char* file, int strict);
 
 extern int addinitrec(struct fileblock* fb, char* code, char* name, char* cmd, int exe);
 extern int addenviron(const char* string);
@@ -13,7 +13,8 @@ extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
-static int parseinitline(struct fileblock* fb, int strict);
+local int parseinitline(struct fileblock* fb, int strict);
+local char* strssep(char** str);
 
 /* Strict means bail out on errors immediately; with strict=0, it should continue
    as far as possible, assuming it's initial configuration with no fallback. */
@@ -37,24 +38,8 @@ int readinittab(const char* file, int strict)
 	return strict ? ret : 0;
 }
 
-/* Like strsep(), but using /\s+/ for delimiter */
-static char* strssep(char** str)
-{
-	char* ret = *str;
-	char* ptr = ret;
-
-	for(ptr = ret; *ptr; ptr++)
-		if(*ptr == ' ' || *ptr == '\t')
-			break;
-	while(*ptr == ' ' || *ptr == '\t')
-		*(ptr++) = '\0';
-
-	*str = ptr;
-	return ret;
-}
-
 /* Parse current line from fb, the one marked by fb->ls and fb->le. */
-static int parseinitline(struct fileblock* fb, int strict)
+int parseinitline(struct fileblock* fb, int strict)
 {
 	char* p;
 	char* l = fb->ls;
@@ -78,4 +63,20 @@ static int parseinitline(struct fileblock* fb, int strict)
 		return addinitrec(fb, name, rlvl, l, 0);
 
 bad:	retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
+}
+
+/* Like strsep(), but using /\s+/ for delimiter */
+char* strssep(char** str)
+{
+	char* ret = *str;
+	char* ptr = ret;
+
+	for(ptr = ret; *ptr; ptr++)
+		if(*ptr == ' ' || *ptr == '\t')
+			break;
+	while(*ptr == ' ' || *ptr == '\t')
+		*(ptr++) = '\0';
+
+	*str = ptr;
+	return ret;
 }

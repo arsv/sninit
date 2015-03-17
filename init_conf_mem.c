@@ -14,7 +14,15 @@
    used anywhere. */
 
 extern struct memblock newblock;
+
+export offset addstruct(int size, int extra);
+export int addstrargarray(const char* args[]);
+export int addstringarray(int n, const char* str, const char* end);
+export int addptrsarray(offset listoff, int terminate);
+export int checkdupname(const char* name);
+
 extern int mextendblock(struct memblock* m, int size);
+
 
 offset addstruct(int size, int extra)
 {
@@ -28,7 +36,7 @@ offset addstruct(int size, int extra)
 }
 
 /* string is len-long, and may not be 0-terminated */
-static int addstring(const char* string, int len)
+local int addstring(const char* string, int len)
 {
 	int ptr = newblock.ptr;
 	memcpy(newblock.addr + ptr, string, len);
@@ -66,7 +74,7 @@ int addstrargarray(const char* args[])
 	return 0;
 }
 
-static inline int strlenupto(const char* str, const char* end)
+local int strlenupto(const char* str, const char* end)
 {
 	const char* p;
 	for(p = str; *p && p < end; p++);

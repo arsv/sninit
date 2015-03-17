@@ -7,11 +7,13 @@ extern int nextlevel;
 extern struct config* cfg;
 extern time_t passtime;
 
-#define hush(p) (p->flags & C_HUSH)
+export void waitpids(void);
 
-static void checkfailure(struct initrec* p, int status);
-static void faildisable(struct initrec* p);
-static void failswitch(struct initrec* p);
+local void checkfailure(struct initrec* p, int status);
+local void faildisable(struct initrec* p);
+local void failswitch(struct initrec* p);
+
+#define hush(p) (p->flags & C_HUSH)
 
 /* we were signalled SIGCHLD, got to mark died processes as such */
 void waitpids(void)
@@ -52,7 +54,7 @@ void waitpids(void)
 	state &= ~S_SIGCHLD;
 }
 
-static void checkfailure(struct initrec* p, int status)
+void checkfailure(struct initrec* p, int status)
 {
 	int failed = (!WIFEXITED(status) || WEXITSTATUS(status));
 
@@ -91,13 +93,13 @@ static void checkfailure(struct initrec* p, int status)
 			failswitch(p);
 }
 
-static void faildisable(struct initrec* p)
+void faildisable(struct initrec* p)
 {
 	warn("%s[%i] failed, disabling", p->name, p->pid);
 	p->flags |= P_FAILED;
 }
 
-static void failswitch(struct initrec* p)
+void failswitch(struct initrec* p)
 {
 	int lvl = 0;
 	switch(p->flags & (C_ROFa | C_ROFb)) {

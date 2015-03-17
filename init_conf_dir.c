@@ -9,14 +9,18 @@
 #include "init_conf.h"
 #include "sys.h"
 
+export int readinitdir(const char* dir, int strict);
+
 extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe);
 
 extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
-static inline int skipdirent(struct dirent64* de);
-static int parsesrvfile(struct fileblock* fb, char* basename);
+local int skipdirent(struct dirent64* de);
+local int parsesrvfile(struct fileblock* fb, char* basename);
+local int comment(const char* s);
+
 
 int readinitdir(const char* dir, int strict)
 {
@@ -25,8 +29,8 @@ int readinitdir(const char* dir, int strict)
 	int nr, ni;		/* getdents ret and index */
 	int ret = -1;
 
-	char debuf[DENTBUFSIZE];
-	char fname[FULLNAMEMAX];
+	bss char debuf[DENTBUFSIZE];
+	bss char fname[FULLNAMEMAX];
 	const int delen = sizeof(debuf);
 	const int fnlen = sizeof(fname);
 	int bnoff;		/* basename offset in fname */
@@ -73,7 +77,7 @@ out:	close(dirfd);
 }
 
 /* Some direntries in initdir should be silently ignored */
-static inline int skipdirent(struct dirent64* de)
+int skipdirent(struct dirent64* de)
 {
 	char dt;
 	int len = strlen(de->d_name);
@@ -97,12 +101,12 @@ static inline int skipdirent(struct dirent64* de)
 	return 0;
 }
 
-static int comment(const char* s)
+int comment(const char* s)
 {
 	while(*s == ' ' || *s == '\t') s++; return !*s || *s == '#';
 }
 
-static int parsesrvfile(struct fileblock* fb, char* basename)
+int parsesrvfile(struct fileblock* fb, char* basename)
 {
 	int shebang = 0;
 	char* rlvl;

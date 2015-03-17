@@ -28,12 +28,12 @@ extern int timetowait;
 extern sigset_t defsigset;
 extern int warnfd;
 
-global void pollfds(void);
-global void acceptctl(void);
+export void pollfds(void);
+export void acceptctl(void);
 
 extern void parsecmd(char* cmd);
-static inline int setsockopti(int fd, int opt, int val);
-static void readcmd(int fd);
+local int setsockopti(int fd, int opt, int val);
+local void readcmd(int fd);
 
 
 /* called from the main loop */
@@ -120,15 +120,15 @@ void acceptctl(void)
 /* telinit must provide user's credentials in ancillary data,
    as init should only accept commands from root when running with S_PID1.
    See unix(7). */
-static void readcmd(int fd)
+void readcmd(int fd)
 {
-	char cbuf[CMDBUF];
-	char mbuf[CMSG_SPACE(sizeof(struct ucred))];
-	struct iovec iov[1] = { {
+	bss char cbuf[CMDBUF];
+	bss char mbuf[CMSG_SPACE(sizeof(struct ucred))];
+	bss struct iovec iov[1] = { {
 		.iov_base = cbuf,
 		.iov_len = CMDBUF + 1
 	} };
-	struct msghdr mhdr = {
+	bss struct msghdr mhdr = {
 		.msg_name = NULL,
 		.msg_namelen = 0,
 		.msg_iov = iov,
@@ -169,7 +169,7 @@ static void readcmd(int fd)
 	warnfd = 2;
 }
 
-static inline int setsockopti(int fd, int opt, int val)
+int setsockopti(int fd, int opt, int val)
 {
 	return setsockopt(fd, SOL_SOCKET, opt, &val, sizeof(val));
 }

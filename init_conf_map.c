@@ -7,13 +7,21 @@
 #include "init.h"
 #include "init_conf.h"
 
+/* anonymous blocks */
+export int mmapblock(struct memblock* m, int size);
+export int mextendblock(struct memblock* m, int size);
+export void munmapblock(struct memblock* m);
+
+/* file blocks */
+export int mmapfile(struct fileblock* f, int maxlen);
+export int munmapfile(struct fileblock* f);
+export int nextline(struct fileblock* f);
+
 /* Whenever possible, memory is mmaped in memblockalign increments
    to reduce the number of calls. To make the whole thing testable,
    int is used instead of placing IRALLOC in all relevant calls. */
-int memblockalign = IRALLOC;
+local int memblockalign = IRALLOC;
 
-/* m*block routines work with anonymous mmaped areas defined by struct memblock.
-   m*file routines are for mmaped files, struct fileblock. */
 
 int mmapblock(struct memblock* m, int size)
 {

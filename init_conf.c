@@ -37,15 +37,17 @@ const char* initdir = INITDIR;
 struct memblock cfgblock = { NULL };
 struct memblock newblock = { NULL };
 
-/* top-level functions handling configuration */
-int readinittab(const char* file, int strict);		/* /etc/inittab */
-int readinitdir(const char* dir, int strict);		/* /etc/rc */
+export int configure(int strict);
 
-static void initcfgblocks(void);	/* set initial values for struct config */
-static int finishinittab(void);		/* copy the contents of newenviron to newblock */
-static void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
+/* top-level functions handling configuration */
+extern int readinittab(const char* file, int strict);
+extern int readinitdir(const char* dir, int strict);
+
+local void initcfgblocks(void);	/* set initial values for struct config */
+local int finishinittab(void);		/* copy the contents of newenviron to newblock */
+local void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
 					   assuming it won't be mremapped anymore */
-static void transferpids(void);
+local void transferpids(void);
 extern struct initrec* findentry(const char* name);
 
 extern int mmapblock(struct memblock* m, int size);
@@ -86,7 +88,7 @@ unmap:	munmapblock(&newblock);
 void setnewconf(void)
 {
 	transferpids();
-	munmapblock(&cfgblock);		/* munmapblock can handle empty blocks */
+	munmapblock(&cfgblock);	 /* munmapblock can handle empty blocks */
 
 	cfgblock = newblock;
 	cfg = (struct config*) cfgblock.addr;
@@ -94,7 +96,7 @@ void setnewconf(void)
 	newblock.addr = NULL;
 }
 
-static void initcfgblocks(void)
+void initcfgblocks(void)
 {
 	struct config* cfg = newblockptr(0, struct config*);
 
@@ -113,7 +115,7 @@ static void initcfgblocks(void)
 	cfg->slippery = SLIPPERY;
 }
 
-static int finishinittab(void)
+int finishinittab(void)
 {
 	offset off;
 
@@ -135,7 +137,7 @@ static int finishinittab(void)
 /* parseinittab() fills all pointers in initrecs with offsets from newblock
    to allow using MREMAP_MAYMOVE. Once newblock and newenviron are all
    set up, we need to make those offsets into real pointers */
-static inline void* repoint(void* p)
+void* repoint(void* p)
 {
 	if(p - NULL > newblock.ptr)
 		return NULL;	// XXX: should never happen
@@ -145,15 +147,16 @@ static inline void* repoint(void* p)
 #define REPOINT(a) a = repoint(a)
 
 /* Warning: while NCF->inittab, NCF->env and initrec.argv-s within inittab
-   are arrays of pointers, the fields of NCF are pointers themselves but initrec.argv is not.
+   are arrays of pointers, the fields of NCF are pointers themselves
+   but initrec.argv is not.
 
    Thus, the contents of all three must be repointed (that's rewireptrsarray)
    but initrec.argv must not be touched, unlike NCF->inittab and NCF->env.
 
-   Since char** or initrec** are not cast silently to void**, there are explicit casts here
-   which may mask compiler warnings. */
+   Since char** or initrec** are not cast silently to void**, there are
+   explicit casts here which may mask compiler warnings. */
 
-static void rewireptrsarray(void** a)
+void rewireptrsarray(void** a)
 {
 	void** p;
 
@@ -162,7 +165,7 @@ static void rewireptrsarray(void** a)
 }
 
 /* Run repoint() on all relevant pointers within newblock */
-static void rewirepointers()
+void rewirepointers()
 {
 	struct initrec** pp;
 
@@ -179,7 +182,7 @@ static void rewirepointers()
 /* move child state info from cfgblock to newblock */
 /* old inittab is cfg->inittab (which may or may not be CFG->inittab) */
 /* new inittab is NCF->inittab */
-static void transferpids(void)
+void transferpids(void)
 {
 	struct initrec* p;
 	struct initrec* q;
@@ -187,18 +190,20 @@ static void transferpids(void)
 
 	for(qq = NCF->inittab; (q = *qq); qq++) {
 		/* Prevent w-type entries from being spawned during
-		   the next initpass() just because they are new */
-		/* This requires (currlevel == nextlevel) which is enforced with S_RECONF. */
+		   the next initpass() just because they are new.
+		   This requires (currlevel == nextlevel) which is enforced
+		   with S_RECONF. */
 		if((q->flags & C_WAIT) && (q->rlvl & currlevel))
 			q->pid = -1;
 
-		if(!cfg) /* boot-time configure, no inittab to transfer pids from */
+		if(!cfg) /* first call, no inittab to transfer pids from */
 			continue;
 
 		if(!q->name) /* can't transfer unnamed entries */
 			continue;
 
-		if(!(p = findentry(q->name))) /* the entry is new, nothing to transfer here */
+		if(!(p = findentry(q->name)))
+			/* the entry is new, nothing to transfer here */
 			continue;
 
 		q->pid = p->pid;

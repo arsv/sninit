@@ -32,10 +32,10 @@ foreach $ARGV (@ARGV)
 			push @struct,	[ $ARGV, $line, $_ ];
 		} elsif(/^extern/) {
 			push @extern,	[ $ARGV, $line, $_ ];
-		} elsif(/^(int|void).*\(/) {
+		} elsif(/^(int|void|local|export).*\(/) {
 			s/$/;/ unless /;$/;
 			push @funcs,	[ $ARGV, $line, $_ ];
-		} elsif(/^(int|struct|const|weak).*;$/) {
+		} elsif(/^(int|struct|const|weak|global).*;$/) {
 			s/=.*;?$/;/;
 			s/^weak/extern/;
 			push @vars,	[ $ARGV, $line, $_ ];
@@ -44,6 +44,11 @@ foreach $ARGV (@ARGV)
 }
 
 print "#include <signal.h>\n";
+print "#define global\n";
+print "#define export\n";
+print "#define weak\n";
+print "#define local static\n";
+print "\n";
 foreach(@struct, @vars, @funcs, @extern) {
 	($file, $line, $decl) = @$_;
 	print "#line $line \"$file\"\n" unless $lfile eq $file and $lline+1 == $line;

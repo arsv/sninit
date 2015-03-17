@@ -37,9 +37,6 @@
 #define retwarn_(...) { warn(__VA_ARGS__); return; }
 #define gotowarn(r, ...) { warn(__VA_ARGS__); goto r; }
 
-#define weak __attribute__((weak))
-#define global
-
 /* Each initrec represents a single process to be spawned.
    Initrecs are kept in an argv-style structure in struct config.inittab */
 struct initrec {
@@ -77,3 +74,6 @@ struct config {
 
 /* Diagnostics; note this may go to syslog. */
 int warn(const char* fmt, ...);
+
+/* Should have been in this file but it's used by sys_printf.c */
+#include "scope.h"

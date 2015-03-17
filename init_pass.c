@@ -11,11 +11,13 @@ extern int nextlevel;
 extern int timetowait;
 extern struct config* cfg;
 
+export void initpass(void);
+
 extern void spawn(struct initrec* p);
 extern void stop(struct initrec* p);
 
-static inline void swapi(int* a, int* b);
-static int shouldberunning(struct initrec* p);
+local void swapi(int* a, int* b);
+local int shouldberunning(struct initrec* p);
 
 /* Initpass: go through inittab, (re)starting entries
    that need to be (re)started and killing entries that should be killed.
@@ -142,7 +144,7 @@ void initpass(void)
    but (p->rlvl & SUBMASK == SUBMASK) means "run in *any* sublevel" and excludes
    no-active-sublevels case. */
 
-static int shouldberunning(struct initrec* p)
+int shouldberunning(struct initrec* p)
 {
 	if(p->flags & (P_MANUAL | P_FAILED))
 		/* disabled, either manually or via C_DOF */
@@ -159,7 +161,7 @@ static int shouldberunning(struct initrec* p)
 	return 1;
 }
 
-static inline void swapi(int* a, int* b)
+void swapi(int* a, int* b)
 {
 	int t = *b; *b = *a; *a = t;
 }

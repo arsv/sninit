@@ -29,20 +29,22 @@
 
 extern int warnfd;
 extern int syslogfd;
-int syslogtype;
-struct sockaddr syslogaddr = {
-	.sa_family = AF_UNIX,
-	.sa_data = SYSLOG
-};
 
-static int writefullnl(int fd, char *buf, size_t count);
-static int writesyslog(const char* buf, int count);
-
+export int warn(const char* fmt, ...);
 extern int timestamp(char* buf, int len);
 
 /* Note: warn() essentially includes a simple syslog() implementation.
    Full syslog() is not needed here, and neither are redundant sigprocmask() calls.
    Also, using library syslog(3) with sys_printf.c is a bad idea. */
+
+local int syslogtype;
+local struct sockaddr syslogaddr = {
+	.sa_family = AF_UNIX,
+	.sa_data = SYSLOG
+};
+
+local int writefullnl(int fd, char *buf, size_t count);
+local int writesyslog(const char* buf, int count);
 
 #define W_WARNFD	1<<0
 #define W_SYSLOG	1<<1
@@ -56,7 +58,7 @@ extern int timestamp(char* buf, int len);
 int warn(const char* fmt, ...)
 {
 	va_list ap;
-	char buf[HDRBUF+MSGBUF+2];
+	bss char buf[HDRBUF+MSGBUF+2];
 	int hdrlen;
 	int msglen;
 	int taglen;
@@ -116,7 +118,7 @@ int warn(const char* fmt, ...)
 	return 0;
 }
 
-static int writefullnl(int fd, char *buf, size_t count)
+int writefullnl(int fd, char *buf, size_t count)
 {
 	int r = 0;
 
@@ -131,7 +133,7 @@ static int writefullnl(int fd, char *buf, size_t count)
 	return 0;
 }
 
-static int tryconnectsyslog(type)
+int tryconnectsyslog(int type)
 {
 	syslogtype = type;
 	if((syslogfd = socket(AF_UNIX, type, 0)) < 0)
@@ -139,7 +141,7 @@ static int tryconnectsyslog(type)
 	return connect(syslogfd, &syslogaddr, sizeof(syslogaddr));
 }
 
-static int writesyslog(const char* buf, int count)
+int writesyslog(const char* buf, int count)
 {
 	if(syslogfd >= 0)
 		goto send;

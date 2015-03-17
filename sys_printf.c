@@ -14,22 +14,26 @@
 #include <sys/types.h>
 #include <stdarg.h>
 #include <errno.h>
+#include "scope.h"
 
-static inline int skiptofmt(const char* s)
+export int snprintf(char* buf, size_t len, const char* fmt, ...);
+export int vsnprintf(char* buf, size_t len, const char* fmt, va_list ap);
+
+local int skiptofmt(const char* s)
 {
 	const char* p;
 	for(p = s; *p && *p != '%'; p++);
 	return p - s;
 }
 
-static int strlncpy(char* dst, size_t dstspace, const char* src, size_t srclen)
+local int strlncpy(char* dst, size_t dstspace, const char* src, size_t srclen)
 {
 	int cpn = srclen < dstspace ? srclen : dstspace;
 	memcpy(dst, src, cpn);
 	return cpn;
 }
 
-static int itostr(char* buf, size_t len, int n)
+local int itostr(char* buf, size_t len, int n)
 {
 	short i;
 	short w = 0;

@@ -9,7 +9,10 @@ extern int initctlfd;
 extern int timetowait;
 extern time_t passtime;
 
-static int waitneeded(struct initrec* p, time_t* last, time_t wait);
+export void spawn(struct initrec* p);
+export void stop(struct initrec* p);
+
+local int waitneeded(struct initrec* p, time_t* last, time_t wait);
 
 /* both spawn() and stop() should check relevant timeouts, do their resp.
    actions if that's ok to do, or update timetowait via waitneeded call
@@ -98,7 +101,7 @@ void stop(struct initrec* p)
    for unrelated reasons. So the idea is to take a look at passtime, and
    only act if the time is up, otherwise just set ppoll timer so that
    another initpass would be triggered when necessary. */
-static int waitneeded(struct initrec* p, time_t* last, time_t wait)
+int waitneeded(struct initrec* p, time_t* last, time_t wait)
 {
 	time_t curtime = passtime;	/* start of current initpass, see main() */
 	time_t endtime = *last + wait;

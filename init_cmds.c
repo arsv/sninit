@@ -10,21 +10,21 @@ extern int rbcode;
 
 extern struct config* cfg;
 
-extern struct initrec* findentry(const char* name);
-extern void stop(struct initrec* p);
+export void parsecmd(char* cmd);
+
 extern int configure(int strict);
+extern void stop(struct initrec* p);
+extern struct initrec* findentry(const char* name);
 
-global void parsecmd(char* cmd);
+local void setrunlevel(const char* cmd);
+local void dumpstate(void);
+local void dumpidof(struct initrec* p);
 
-static void setrunlevel(const char* cmd);
-static void dumpstate(void);
-static void dumpidof(struct initrec* p);
-
-static void dorestart(struct initrec* p);
-static void dodisable(struct initrec* p, int v);
-static void dostart(struct initrec* p);
-static void dopause(struct initrec* p, int v);
-static void dohup(struct initrec* p);
+local void dorestart(struct initrec* p);
+local void dodisable(struct initrec* p, int v);
+local void dostart(struct initrec* p);
+local void dopause(struct initrec* p, int v);
+local void dohup(struct initrec* p);
 
 /* cmd here is what telinit sent to initctl.
    The actual command is always cmd[0], while cmd[1:] is (optional) argument.
@@ -104,7 +104,7 @@ void parsecmd(char* cmd)
 	4ab	switch to runlevel 4, clear sublevels, activate a and b
 	+ab	activate sublevels a and b
 	-ac	deactivate sublevels a and c */
-static void setrunlevel(const char* p)
+void setrunlevel(const char* p)
 {
 	int next = nextlevel;
 	int mask = 0;
@@ -136,7 +136,7 @@ static void setrunlevel(const char* p)
 }
 
 /* Convert runlevel bitmask to readable string */
-static void rlstr(char* str, int len, int mask)
+local void rlstr(char* str, int len, int mask)
 {
 	char* p = str;	
 	char* end = str + len - 1;
@@ -154,7 +154,7 @@ static void rlstr(char* str, int len, int mask)
 
 #define MAXREPORTCMD 50
 /* join argv into a single string to be reported by "telinit ?" */
-static char* joincmd(char* buf, int len, char** argv)
+char* joincmd(char* buf, int len, char** argv)
 {
 	char** arg;
 	int arglen;
@@ -193,19 +193,19 @@ out:	*buf = '\0';
    warnfd is the telinit connection whenever command is being
    processed. */
 
-static void dumpidof(struct initrec* p)
+void dumpidof(struct initrec* p)
 {
 	if(p->pid > 0)
 		warn("%i", p->pid);
 }
 
 /* "telinit ?" output, the list of services and their current state */
-static void dumpstate(void)
+void dumpstate(void)
 {
 	struct initrec *p, **pp;
-	char currstr[16];
-	char nextstr[16];
-	char cmdbuf[MAXREPORTCMD];		// " ...\0"
+	bss char currstr[16];
+	bss char nextstr[16];
+	bss char cmdbuf[MAXREPORTCMD];		// " ...\0"
 	char* reportcmd;
 	
 	rlstr(currstr, 16, currlevel);
@@ -228,7 +228,7 @@ static void dumpstate(void)
 }
 
 /* Set or clear flags */
-static void scflags(unsigned short* dst, unsigned short flags, int setclear)
+void scflags(unsigned short* dst, unsigned short flags, int setclear)
 {
 	if(setclear)
 		*dst |= flags;
@@ -238,7 +238,7 @@ static void scflags(unsigned short* dst, unsigned short flags, int setclear)
 
 /* User commands like start or stop should prompt immediate action,
    disregarding possible time_to_* timeouts. */
-static void clearts(struct initrec* p)
+void clearts(struct initrec* p)
 {
 	p->lastrun = 0;
 	p->lastsig = 0;
@@ -256,7 +256,7 @@ static void clearts(struct initrec* p)
  
    There is no dostop because P_MANUAL is enough to
    force-stop a process regardless of its configured runlevels */
-static void dostart(struct initrec* p)
+void dostart(struct initrec* p)
 {
 	clearts(p);
 	p->rlvl |= (nextlevel & PRIMASK);
@@ -266,20 +266,20 @@ static void dostart(struct initrec* p)
 
 /* Without any other changes (runlevels or whatever),
    the entry will be restarted during the first initpass after its death. */
-static void dorestart(struct initrec* p)
+void dorestart(struct initrec* p)
 {
 	clearts(p);
 	stop(p);
 }
 
-static void dodisable(struct initrec* p, int v)
+void dodisable(struct initrec* p, int v)
 {
 	clearts(p);
 	scflags(&(p->flags), P_MANUAL, v);
 	p->flags &= ~P_FAILED;
 }
 
-static void dopause(struct initrec* p, int v)
+void dopause(struct initrec* p, int v)
 {
 	if(p->pid <= 0)
 		retwarn_("%s is not running", p->name);
@@ -289,7 +289,7 @@ static void dopause(struct initrec* p, int v)
 	scflags(&(p->flags), P_SIGSTOP, v);
 }
 
-static void dohup(struct initrec* p)
+void dohup(struct initrec* p)
 {
 	if(p->pid <= 0)
 		warn("%s is not running", p->name);

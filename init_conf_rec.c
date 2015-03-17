@@ -8,19 +8,20 @@
 
 extern struct memblock newblock;
 
-global int addenviron(const char* def);
-global int addinitrec(struct fileblock* fb, char* name, char* flags, char* cmd, int exe);
+export int addenviron(const char* def);
+export int addinitrec(struct fileblock* fb, char* name, char* flags, char* cmd, int exe);
 
-static int prepargv(char* str, char** end);
-static int addrecargv(char* cmd, int exe);
-static int setrunflags(struct fileblock* fb, struct initrec* entry, char* flags);
+local int prepargv(char* str, char** end);
+local int addrecargv(char* cmd, int exe);
+local int setrunflags(struct fileblock* fb, struct initrec* entry, char* flags);
 
 extern int addstruct(int size, int extra);
 extern int addstringarray(int n, const char* str, const char* end);
 extern int addstrargarray(const char* args[]);
 
-static int linknode(offset listptr, offset nodeptr);
+local int linknode(offset listptr, offset nodeptr);
 extern int checkdupname(const char* name);
+
 
 /* Arguments: mode="S234", name="httpd". See addrecargv for cmd and exe handling.
    fb is the block we're parsing currently, used solely for error reporting. */
@@ -104,7 +105,7 @@ int addenviron(const char* def)
    the file itself is executable and no arguments should be passed.
    This all affects only the way initrec.argv is built. */
 
-static int addrecargv(char* cmd, int exe)
+int addrecargv(char* cmd, int exe)
 {
 	if(exe) {
 		const char* argv[] = { cmd, NULL };
@@ -119,7 +120,7 @@ static int addrecargv(char* cmd, int exe)
 	}
 }
 
-static int linknode(offset listptr, offset nodeptr)
+int linknode(offset listptr, offset nodeptr)
 {
 	struct ptrnode* node = newblockptr(nodeptr, struct ptrnode*);
 	struct ptrlist* list = newblockptr(listptr, struct ptrlist*);
@@ -149,7 +150,7 @@ static int linknode(offset listptr, offset nodeptr)
 
    See doc/sublevels.txt for considerations re. sublevels handling. */
 
-static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
+int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
 {
 	char* p;
 	int rlvl = 0;
@@ -206,11 +207,11 @@ static int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
    marking them by placing \0 in appropriate places. */
 /* Note: str is always 0-terminated, see parseinitline */
 /* Note: this changes *str */
-static void strpull(char* p) { for(;*p;p++) *p = *(p+1); }
+local void strpull(char* p) { for(;*p;p++) *p = *(p+1); }
 /* Input:  |/sbin/foo -a 30 -b "foo bar" -c some\ thing₀| */
 /* Output: |/sbin/foo₀-a₀30₀-b₀foo bar₀-c₀some thing₀₀₀₀| */
 /* Return: 7 */
-static int prepargv(char* str, char** end)
+int prepargv(char* str, char** end)
 {
 	char* p;
 	int argc = 0;
