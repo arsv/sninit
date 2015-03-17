@@ -7,7 +7,7 @@ include ../config.mk
 override LDFLAGS += -Wl,-z,muldefs
 # Export "local" symbols
 override CFLAGS += -Dexportall
-# Prevent clang for doing early linking within modules
+# Prevent clang from doing early linking within modules
 override CFLAGS += -ffunction-sections
 
 # Using $(RUN) directly before commands would result in " cmd"
@@ -43,11 +43,8 @@ $(OUTS): %.out: % | test.sh
 # Recompile init files in test/
 # This may look redundant, but this way "make clean" in test can work
 # properly without affecting the top directory, and atop of that
-# is it possible to have a different compiler and/or different options
-# here.
-#
-# Including -DDEBUG and resp. conditionals in init_*.c,
-# though this possibility is not used (yet?).
+# is it possible to have a different compiler and/or different
+# options here.
 
 init_%.o: ../init_%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
