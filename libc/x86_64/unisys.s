@@ -9,6 +9,7 @@ errno:	.int	0
 
 .text
 .global unisys
+.global uniret
 .global unisysx
 
 unisys:
@@ -16,7 +17,9 @@ unisys:
 unisysx:
 	movzwl	%ax, %eax
 	mov	%rcx, %r10
+
 	syscall
+uniret:				/* vfork jumps here */
 	cmpq	$-132, %rax
 	jbe	ok
 	negl	%eax
@@ -24,8 +27,11 @@ unisysx:
 	orq	$-1, %rax
 ok:	ret
 
-.type unisysx,@function
-.size unisysx,.-unisysx
-
 .type unisys,@function
-.size unisys,unisysx-unisys
+.size unisys,.-unisys
+
+.type unisysx,@function
+.size unisysx,0
+
+.type uniret,@function
+.size uniret,0

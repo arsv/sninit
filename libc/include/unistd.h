@@ -27,6 +27,7 @@ ssize_t read(int fd,void* buf,size_t len);
 int close(int fd);
 
 pid_t fork(void);
+pid_t vfork(void);
 int execve(const char *filename, char *const argv [], char *const envp[]);
 int execvp(const char *file, char *const argv[]);
 
