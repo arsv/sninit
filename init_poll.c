@@ -126,7 +126,7 @@ void readcmd(int fd)
 	bss char mbuf[CMSG_SPACE(sizeof(struct ucred))];
 	bss struct iovec iov[1] = { {
 		.iov_base = cbuf,
-		.iov_len = CMDBUF + 1
+		.iov_len = CMDBUF
 	} };
 	bss struct msghdr mhdr = {
 		.msg_name = NULL,
