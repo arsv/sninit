@@ -51,6 +51,29 @@ int mmapblock(struct memblock* m, int size)
 	return 0;
 }
 
+#ifdef NOMMU
+/* On non-MMU targets, MREMAP_MAYMOVE does not really work,
+   so we've got to emulate it explicitly. */
+local int remmapblock(struct memblock* m, int newsize)
+{
+	void* newaddr = mmap(NULL, newsize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+	if(newaddr == MAP_FAILED)
+		return -1;
+
+	memcpy(newaddr, m->addr, m->len);
+	munmap(m->addr, m->len);
+	m->addr = newaddr;
+	m->len = newsize;
+
+	return 0;
+}
+#define maybetrytoremap(m, size) remmapblock(m, size)
+#else
+/* On MMU targets, failed mremap is not likely to be recoverable */
+#define maybetrytoremap(m, size) -1
+#endif
+
 int mextendblock(struct memblock* m, int size)
 {
 	if(m->len - m->ptr > size)
@@ -65,7 +88,7 @@ int mextendblock(struct memblock* m, int size)
 
 	void* np = mremap(m->addr, m->len, m->len + size, MREMAP_MAYMOVE);
 	if(np == MAP_FAILED)
-		return -1;
+		return maybetrytoremap(m, m->len + size);
 
 	m->addr = np;
 	m->len += size;

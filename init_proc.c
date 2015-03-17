@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <time.h>
 #include "init.h"
+#include "config.h"
 
 extern struct config* cfg;
 extern int initctlfd;
@@ -13,6 +14,13 @@ export void spawn(struct initrec* p);
 export void stop(struct initrec* p);
 
 local int waitneeded(struct initrec* p, time_t* last, time_t wait);
+
+/* The code below works well with either fork or vfork.
+   For MMU targets, fork is preferable since it's easier to implement in libc.
+   For non-MMU targets, vfork is the only way. */
+#ifdef NOMMU
+#define fork vfork
+#endif
 
 /* both spawn() and stop() should check relevant timeouts, do their resp.
    actions if that's ok to do, or update timetowait via waitneeded call

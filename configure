@@ -20,7 +20,7 @@ unset libs libs_syscall
 unset tstype null
 
 optimize=auto
-unset lto debug depend builtin 
+unset nommu lto debug depend builtin
 unset initctl inittab run s cgbase logdir blocks run
 
 warn() { echo "$@" >&2; }
@@ -57,6 +57,8 @@ Target configuration:
 	AS=		assembler [gcc -c]
 	AR=		archiver [ar]
 			(as and ar are only used for bundled libc)
+
+	nommu		enable tweaks for non-MMU targets (uClinux)
 
 	lto		use link-time optimization (GCC only)
 	debug		generate debug symbols
@@ -220,6 +222,12 @@ while [ $# -gt 0 ]; do
 			;;
 		with-optimization|O|optimize)
 			optimize=${val:-$optimize}
+			;;
+		with-mmu|mmu)
+			nommu=
+			;;
+		without-mmu|nommu)
+			nommu=1
 			;;
 		depend)
 			depend=${val:--MD}
@@ -457,10 +465,12 @@ sed -i \
 
 unset nt; test -z "$inittab" && nt="//"
 unset nd; test -z "$initdir" && nd="//"
+unset mm; test -z "$nommu" && mm="//"
 sed -i \
 	-e "/^.*#define INITTAB/s@.*@$nt#define INITTAB \"$inittab\"@" \
 	-e "/^.*#define INITDIR/s@.*@$nd#define INITDIR \"$initdir\"@" \
 	-e "/#define INITCTL/s#\".*#\"$initctl\"#" \
+	-e "/^.*#define NOMMU/s@.*#define@$mm#define@" \
 	config.h
 
 sed -i \

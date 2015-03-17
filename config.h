@@ -24,6 +24,11 @@
 /* makes sense to keep it a multiple of 4 */
 #define NAMELEN 16
 
+/* Include some tweaks for non-MMU systems.
+   Beware: enabling this may work on MMU systems, not enabling this
+   on non-MMU systems may build well and fail at runtime. */
+//#define NOMMU
+
 /* If you change the runlevels below, be ready to rewrite manual pages! */
 
 /* Default runlevel. May include sublevels. */
