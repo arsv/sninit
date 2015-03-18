@@ -5,8 +5,8 @@ in dietfeatures.h. Most have little effect on sninit, but some
 can be used to reduce its size slightly.
 
 Use "readelf -s init | sort -k3" to check for bloat.
-Common culprit is stackgap(), which is a generic initialization
-routine in dietlibc. 
+Common culprit is stackgap(), which is a part of generic
+initialization routine in dietlibc. 
 
 
 #undef WANT_VALGRIND_SUPPORT

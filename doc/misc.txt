@@ -1,12 +1,10 @@
-Notes on sninit design
-~~~~~~~~~~~~~~~~~~~~~
+Misc notes on sninit design
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This file lists some design considerations that were put into sninit,
 and some choices made when there were several alternatives.
 
 It is not intended for general users, but it may be helpful
 for those trying to extend sninit, or perhaps just to read the source.
-
-
 
 
 telinit communication
@@ -60,33 +58,12 @@ systemd-style dependencies
 Abandoned completely. See dependencies.txt.
 
 
-(...) respawns too fast, disabled for 5 minutes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-sninit either disables the entry immediately, or continues
-to respawn it with uniform, reasonably low timeouts (1-2s).
-The latter case also implies suppressing syslog output.
-
-It is hard for me to imagine a situation when resuming
-respawning attempts after 5 minutes without an explicit
-command would make sense. If the problem is still there,
-it is not likely to go away on its own. And if the operator
-is there to fix the problem, he can also command init
-to unblock the entry.
-
-I'm still not sure what is the best way to handle a failing
-process. Practice shows that having a timed response is generally
-a good idea, and that when process fails it fails fast.
-Still a timed condition in a non-realtime OS is an incorrect one,
-and it is easy to see how it can be broken. So there is a second
-safeguard, a timeout between respawns, that prevents a non-paused
-fork loop.
-
-
 Services are s-type only
 ~~~~~~~~~~~~~~~~~~~~~~~~
 Entries read from service files are assumed to be s-type only.
-This is mostly because I can't think of any good scenario
-involving non-s-type service files.
+This is because directory contents is inherently unordered, and
+I can't think of any good scenario involving non-s-type service
+files anyway.
 
 Service files are needed to simplify daemon installation.
 I.e. a package puts its file to /etc/rc and that's it.
@@ -140,7 +117,7 @@ Builtins
 That is, bundling some commands with init, busybox-style. Or perhaps sh style.
 Actually, there are two points here:
 	1. telinit as a link to init, and
-	2. "R123 - run -u nobody daemon" with "run" being a part of init
+	2. " 123 run -u nobody daemon" with "run" being a part of init
 Both were abandoned, for now at least.
 
 #1, telinit is much more independent from init than it is in sysvinit, due to
