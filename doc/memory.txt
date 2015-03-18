@@ -1,0 +1,84 @@
+Memory usage in sinit
+~~~~~~~~~~~~~~~~~~~~~
+At a glance, memory map looks like this:
+
+	* .text 4+ pages
+		code and some strings
+	* .data/.bss 1 page
+		global state variables
+		struct memblocks and config pointers
+		(possibly built-in config)
+		large buffers for warn(), readinitdir(), readcmd()
+	* cfgblock area, mmaped, 1+ page
+		compiled configuration currently in use
+	* newblock area, mmaped, 1+ page
+		newly compiled replacement for cfgblock
+	* stack, 1 page
+		call frames and small local variables
+
+Reconfiguration involves mmaping newblock, setting up data there,
+exchanging newblock with cfgblock and unmapping the (old) cfgblock.
+Other than than, the map is static; the only thing that ever grows
+is newblock. Stack is not expected to grow beyond a single page,
+due to small call depth.
+
+See init_conf.h for config block layout.
+
+
+Offsets, pointers and MAP_MAYMOVE
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Reconfiguration code assumes newblock area address may change whenever
+its size is increased. Or in other words, mremap(..., MAP_MAYMOVE).
+Which means offsets from the start of the block are used instead of
+proper pointers throughout the configuration.
+
+Assuming a conventional Linux systems, this is not necessary, almost,
+since a pair of (presumably free) fixed locations may be chosen and
+cfgblock/newblock may be always mmaped at those locations. There is
+more than enough address space, so it is not going to bump into .text,
+or .data or stack, assuming we know at least roughly where those are
+and there is not libc parts in the typical mmaped address range.
+
+That's a lot of assumptions actually, and things get much worse once
+non-MMU targets are considered. On the flip side, rewritepointers
+and relevant offset work in checkdupname is not that much of a hassle, 
+code size increase is negligible, so why bother.
+
+Why convert offsets to pointers in the end, as opposed to using offsets
+throughout? Well, syscalls need proper pointers either way, and the idea
+was to keeping all dirty pointer work within configure().
+
+
+Pages and bss buffers
+~~~~~~~~~~~~~~~~~~~~~
+Everything writable outside of the config blocks could very well fit
+within a single memory page. That includes the stack.
+
+However, getting rid of .bss is extremely difficult (consider errno),
+and once .bss is there, it's at least one page. Getting rid of stack
+is not possible either.
+
+With both .bss and stack available, .bss is clearly preferable for anything
+that can possibly overflow and/or does not fit in registers.
+Since there are no re-enterable functions in sninit, this means any local
+buffers should better go to .bss.
+
+
+Heap and brk
+~~~~~~~~~~~~
+On MMU systems, it is possible (and to some degree natural) to store cfgblock
+and newblock in the heap:
+
+	brk -> cfgblock
+	       newblock
+	       (space for newblock to grow)
+	       ...
+
+The downside is that this does not simplify the code at all and requires
+extensive workarounds for non-MMU cases.
+
+Tradeoff between sbrk and mmap/mremap/munmap is negligible, considering brk
+syscall vs libc brk/sbrk semantics and the ugliness of coding around that.
+Moving newblock over cfgblock once configuration is done requires repointing
+everything just like in MAP_MAYMOVE case. Implementing (or using) some kind
+of malloc means unnecessary code complication and memory losses all around.

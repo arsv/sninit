@@ -11,6 +11,7 @@ inittab.txt	  Why a new inittab format
 initrec.txt	  Internal data structure
 limits.txt	  Setting limits for child processes (runcap)
 misc.txt	  Various notes on sninit design
+memory.txt	  Memory layout issues
 sublevels.txt	  Runlevels abcdef
 slippery.txt	  Slippery runlevels (sleep, suspend)
 
