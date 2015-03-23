@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/reboot.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <sys/un.h>
 #include <time.h>
 #include <errno.h>
@@ -52,6 +53,7 @@ extern void acceptctl(void);
 extern void waitpids(void);
 
 local void sighandler(int sig);
+local void forkreboot(void);
 
 /* Overall logic in main: interate over inittab records (that's initpass()),
    go sleep in ppoll(), iterate, sleep in ppoll, iterate, sleep in ppoll, ...
@@ -118,9 +120,7 @@ reboot:
 	if(!(state & S_PID1))	/* we're not running as *the* init */
 		return 0;
 
-	reboot(rbcode);
-	warn("still here, reboot(%i) failed: %m", rbcode);
-
+	forkreboot();
 	return 0xFE; /* feh */
 };
 
@@ -299,4 +299,25 @@ int setpasstime(void)
 	passtime = tp.tv_sec + BOOTCLOCKOFFSET;
 
 	return 0;
+}
+
+/* Linux kernel treats reboot() a lot like _exit(), including, quite
+   surprisingly, panic when it's init who calls it. So we've got to fork
+   here and call reboot for the child process. Now because of vfork may
+   in fact be fork, and scheduler may still be doing tricks, it's better
+   to wait for the child before returning, because return here means
+   _exit from init and immediate panic. */
+void forkreboot(void)
+{
+	int pid;
+	int status;
+
+	if((pid = vfork()) == 0)
+		_exit(reboot(rbcode));
+	else if(pid < 0)
+		return;
+	if(waitpid(pid, &status, 0) < 0)
+		return;
+	if(!WIFEXITED(status) || WEXITSTATUS(status))
+		warn("still here, reboot failed, time to panic");
 }
