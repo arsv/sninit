@@ -304,7 +304,7 @@ int setpasstime(void)
 
 /* Linux kernel treats reboot() a lot like _exit(), including, quite
    surprisingly, panic when it's init who calls it. So we've got to fork
-   here and call reboot for the child process. Now because of vfork may
+   here and call reboot for the child process. Now because vfork may
    in fact be fork, and scheduler may still be doing tricks, it's better
    to wait for the child before returning, because return here means
    _exit from init and immediate panic. */
