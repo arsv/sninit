@@ -15,13 +15,6 @@ export void stop(struct initrec* p);
 
 local int waitneeded(struct initrec* p, time_t* last, time_t wait);
 
-/* The code below works well with either fork or vfork.
-   For MMU targets, fork is preferable since it's easier to implement in libc.
-   For non-MMU targets, vfork is the only way. */
-#ifdef NOMMU
-#define fork vfork
-#endif
-
 /* both spawn() and stop() should check relevant timeouts, do their resp.
    actions if that's ok to do, or update timetowait via waitneeded call
    to ensure initpass() will be performed once the timeout expires */
@@ -38,7 +31,12 @@ void spawn(struct initrec* p)
 	if(waitneeded(p, &p->lastrun, cfg->time_to_restart))
 		return;
 
-	pid = fork();
+	/* The code below is valid with either fork or vfork.
+	   There is almost no difference for MMU targets, but
+	   non-MMU targets only provide vfork, so let's use
+	   vfork and save ourselves a nasty ifdef. */
+
+	pid = vfork();
 	if(pid < 0) {
 		p->lastrun = passtime;
 		retwarn_("%s[*] can't fork: %m", p->name);
