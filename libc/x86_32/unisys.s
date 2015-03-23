@@ -10,6 +10,7 @@ errno:	.int	0
 .text
 .global unisys
 .global unisysx
+.global uniret
 
 unisys:
 	mov	$0, %ah
@@ -18,6 +19,7 @@ unisysx:
 	orl	$0x40000000, %eax
 	mov	%rcx, %r10
 	syscall
+uniret:
 	cmpq	$-132, %rax
 	jbe	ok
 	negl	%eax

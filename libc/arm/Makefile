@@ -5,7 +5,7 @@
 # Args 5 and 6 are register for syscalls but stacked for functions
 # To avoid doing extra work, only include relevant code for calls
 # which actually use those args.
-direct4 = fork execve kill getpid chroot chdir
+direct4 = fork vfork execve kill getpid chroot chdir
 direct4 += open close read write dup2 fstat ioctl getdents64 openat stat
 direct4 += munmap clock_gettime nanosleep setfsuid setfsgid umask
 direct4 += socket bind connect listen accept sendmsg recvmsg shutdown
@@ -22,7 +22,7 @@ directr = $(patsubst %,x-%,$(direct))
 custom = mmap waitpid reboot ppoll
 
 # for quick syntax check
-AS = arm-none-eabi-gcc -c
+AS = arm-linux-gnueabi-gcc -c
 
 directs: $(directs)
 $(patsubst %,%.s,$(direct4)): %.s:
