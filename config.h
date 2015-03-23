@@ -34,7 +34,7 @@
 /* Default runlevel. May include sublevels. */
 #define INITDEFAULT (1 << 3)
 
-/* Slippery runlevels */
+/* Slippery runlevels. See doc/slippery.txt for explanation. */
 #define SLIPPERY ((1 << 7) | (1 << 8) | (1 << 9))
 
 /* Special (recovery) levels, excluded from the default entry mask */
