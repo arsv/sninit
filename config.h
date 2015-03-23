@@ -29,6 +29,18 @@
    on non-MMU systems may build well and fail at runtime. */
 //#define NOMMU
 
+/* Timing constants, in seconds */
+
+/* minimum time between successive attempts to spawn the same entry */
+#define TIME_TO_RESTART  2
+/* entries are allowed to do post-SIGTERM cleanup for this long */
+#define TIME_TO_SIGKILL 15
+/* an entry that fails to die for this long after SIGKILL is skipped */
+#define TIME_TO_SKIP     2
+/* regular daemons must run for at least this long
+ * to be considered non-failing */
+#define MINIMUM_RUNTIME 30
+
 /* If you change the runlevels below, be ready to rewrite manual pages! */
 
 /* Default runlevel. May include sublevels. */

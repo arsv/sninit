@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <time.h>
 #include "init.h"
+#include "config.h"
 #include "scope.h"
 
 extern struct config* cfg;
@@ -28,7 +29,7 @@ void spawn(struct initrec* p)
 		   for entries that require starting */
 		retwarn_("%s[%i] can't spawn, already running", p->name, p->pid);
 
-	if(waitneeded(p, &p->lastrun, cfg->time_to_restart))
+	if(waitneeded(p, &p->lastrun, TIME_TO_RESTART))
 		return;
 
 	/* The code below is valid with either fork or vfork.
@@ -73,13 +74,13 @@ void stop(struct initrec* p)
 		/* The process has been sent SIGKILL, still refuses to kick the bucket.
 		   Just forget about it then, reset p->pid and let the next initpass
 		   restart the entry. */
-		if(waitneeded(p, &p->lastsig, cfg->time_to_skip))
+		if(waitneeded(p, &p->lastsig, TIME_TO_SKIP))
 			return;
 		warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
 		p->pid = 0;
 	} else if(p->flags & P_SIGTERM) {
 		/* The process has been signalled, but has not died yet */
-		if(waitneeded(p, &p->lastsig, cfg->time_to_SIGKILL))
+		if(waitneeded(p, &p->lastsig, TIME_TO_SIGKILL))
 			return;
 		warn("#%s[%i] process refuses to die, sending SIGKILL", p->name, p->pid);
 		kill(-p->pid, SIGKILL);
@@ -97,8 +98,8 @@ void stop(struct initrec* p)
 			kill(-p->pid, SIGCONT);
 
 		/* make sure we'll get initpass to send SIGKILL if necessary */
-		if(timetowait < 0 || timetowait > cfg->time_to_SIGKILL)
-			timetowait = cfg->time_to_SIGKILL;
+		if(timetowait < 0 || timetowait > TIME_TO_SIGKILL)
+			timetowait = TIME_TO_SIGKILL;
 	}
 }
 

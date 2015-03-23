@@ -61,12 +61,6 @@ struct config {
 	int initnum;			/* inittab element count */
 	struct initrec** inittab;	/* array of pointers, like env */
 	char** env;			/* to be passed to execve in children */
-
-	/* time_* values are in seconds */
-	unsigned short time_to_restart;
-	unsigned short time_to_SIGKILL;	/* after sending SIGTERM, for processes refusing to die */
-	unsigned short time_to_skip;	/* after sending SIGKILL */
-	unsigned short minimum_runtime;
 };
 
 /* Diagnostics; note this may go to syslog. */
