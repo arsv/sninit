@@ -55,10 +55,6 @@ void dump(struct memblock* block)
 	A(checkptr(block, cfg));
 	//printf("initdefault = %i\n", cfg->initdefault);
 
-	printf("time_to_restart = %i\n", cfg->time_to_restart);
-	printf("time_to_SIGKILL = %i\n", cfg->time_to_SIGKILL);
-	printf("time_to_skip = %i\n", cfg->time_to_skip);
-
 	dump_env(block);
 	dump_inittab(block);
 }
