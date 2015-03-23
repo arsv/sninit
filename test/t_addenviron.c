@@ -12,7 +12,7 @@ extern struct memblock newblock;
 extern int mmapblock(struct memblock* b, int len);
 extern void initcfgblocks(void);
 extern int finishinittab(void);
-static void rewirepointers();
+extern void rewirepointers();
 
 extern int addenviron(const char* def);
 
