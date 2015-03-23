@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "init.h"
+#include "config.h"
 #include "scope.h"
 
 /* bits for waitfor */
@@ -43,7 +44,8 @@ local int shouldberunning(struct initrec* p);
 #define htype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
 #define ewtype(p)  ((p->flags & C_ONCE))
 #define hstype(p) (!(p->flags & C_ONCE))
-#define slippery(rlvl) (cfg->slippery & rlvl)
+
+#define slippery(rlvl) (SLIPPERY & rlvl)
 
 void initpass(void)
 {

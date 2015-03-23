@@ -58,9 +58,6 @@ struct initrec {
    Typically found at the start of cfgblock, but the one produced by statictab
    has no corresponding memblock and resides in .data instead. */
 struct config {
-	int slippery;		/* runlevel bitmask; do not remain in runlevel,
-				   revert immediately */
-
 	int initnum;			/* inittab element count */
 	struct initrec** inittab;	/* array of pointers, like env */
 	char** env;			/* to be passed to execve in children */

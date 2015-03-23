@@ -54,7 +54,6 @@ void dump(struct memblock* block)
 
 	A(checkptr(block, cfg));
 	//printf("initdefault = %i\n", cfg->initdefault);
-	printf("slippery = 0x%04X\n", cfg->slippery);
 
 	printf("time_to_restart = %i\n", cfg->time_to_restart);
 	printf("time_to_SIGKILL = %i\n", cfg->time_to_SIGKILL);

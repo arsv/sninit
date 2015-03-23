@@ -113,7 +113,6 @@ void initcfgblocks(void)
 	cfg->time_to_SIGKILL = 2;
 	cfg->time_to_skip = 5;
 	cfg->minimum_runtime = 20;
-	cfg->slippery = SLIPPERY;
 }
 
 int finishinittab(void)
