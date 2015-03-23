@@ -3,7 +3,7 @@
 #include <signal.h>
 #include <time.h>
 #include "init.h"
-#include "config.h"
+#include "scope.h"
 
 extern struct config* cfg;
 extern int initctlfd;

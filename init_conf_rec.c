@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include "init.h"
 #include "init_conf.h"
+#include "scope.h"
 
 /* addinitrec() and addenviron() are called for each parsed inittab line
    and their task is to copy stuff to newblock */

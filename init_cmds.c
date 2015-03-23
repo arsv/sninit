@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <sys/reboot.h>
 #include "init.h"
+#include "scope.h"
 
 extern int state;
 extern int currlevel;

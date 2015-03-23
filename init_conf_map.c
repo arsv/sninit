@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include "init.h"
 #include "init_conf.h"
+#include "scope.h"
 
 /* anonymous blocks */
 export int mmapblock(struct memblock* m, int size);

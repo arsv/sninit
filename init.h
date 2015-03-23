@@ -1,8 +1,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include "config.h"
-/* Should have been in this file but it's used by sys_printf.c */
-#include "scope.h"
 
 /* Global state (int state) */
 #define S_PID1		(1<<0)		/* running a process #1 */

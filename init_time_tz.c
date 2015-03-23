@@ -21,6 +21,7 @@
 #include <sys/mman.h>
 #include "init.h"
 #include "config.h"
+#include "scope.h"
 
 export int timestamp(char* buf, int len);
 extern int mktimestamp(char* p, int l, time_t ts);

@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "init.h"
+#include "scope.h"
 
 extern int state;
 extern int nextlevel;

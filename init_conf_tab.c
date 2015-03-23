@@ -3,6 +3,7 @@
 #include <string.h>
 #include "init.h"
 #include "init_conf.h"
+#include "scope.h"
 
 export int readinittab(const char* file, int strict);
 

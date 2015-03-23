@@ -19,9 +19,9 @@
    Why would one want to move variables out of the stack?
    Well, overrunning an in-stack buffer means trouble, overrunning
    something in .bss, not so much. Due to its design, sninit invariably
-   has a lot of free space in bss and an lot of free space in stack,
-   so it's more about preferring bss free space over stack free space
-   actually. Note "a lot" here means a bit less than a full 4KB page. */
+   has a lot of free space both in .bss and in the stack, so it's about
+   preferring bss free space over stack free space actually.
+   Note "a lot" here stands for less than a full 4KB page. */
 
 #define bss static
 

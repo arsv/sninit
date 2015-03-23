@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "init.h"
+#include "scope.h"
 
 /* FD polling and telinit communication.
 

@@ -1,6 +1,7 @@
 #include <string.h>
 #include "init.h"
 #include "init_conf.h"
+#include "scope.h"
 
 /* All add* functions copy relevant data to newblock,
    possibly extending it, and adjust newblock.ptr accordingly.

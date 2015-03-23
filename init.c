@@ -13,6 +13,7 @@
 #include "config.h"
 #include "sys.h"
 #include "init.h"
+#include "scope.h"
 
 /* status */
 int currlevel;		// currently occupied runlevel bitmask

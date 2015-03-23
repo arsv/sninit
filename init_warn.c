@@ -5,6 +5,7 @@
 #include <errno.h>
 #include "config.h"
 #include "init.h"
+#include "scope.h"
 
 #define MSGBUF 120
 #define HDRBUF 50

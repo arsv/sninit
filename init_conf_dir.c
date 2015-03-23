@@ -7,6 +7,7 @@
 #include "config.h"
 #include "init.h"
 #include "init_conf.h"
+#include "scope.h"
 #include "sys.h"
 
 export int readinitdir(const char* dir, int strict);
