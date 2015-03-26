@@ -40,6 +40,8 @@
 /* regular daemons must run for at least this long
  * to be considered non-failing */
 #define MINIMUM_RUNTIME 30
+/* maximum time single telinit session may take */
+#define INITCTL_TIMEOUT 5
 
 /* If you change the runlevels below, be ready to rewrite manual pages! */
 

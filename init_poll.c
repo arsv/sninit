@@ -2,6 +2,7 @@
 #include <poll.h>
 #include <time.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
@@ -94,21 +95,24 @@ void pollctl(void)
    Commands are always supplemented with credentials passed as ancilliary
    data. See unix(7) for explaination. */
 
-/* It would make sense to put alarm() here to guard against irresponsible
-   telinits, providing a kind of auto-reset capability... well not.
-
-   Using alarm means introducing temporal restrictions in a non-rt system,
-   not a good idea by itself. And the only user who could benefit from that,
-   root, can just as well use kill -HUP 1 to reset the socket. */
+/* The use of alarm (setitimer) is tricky here: it is pointless for the root
+   user, however it is possible for a non-root user to make a connection and
+   let it hang without sending anything, blocking init operation.
+   To counteract that, telinit connection time is limited. */
 
 void acceptctl(void)
 {
 	int fd;
 	struct sockaddr addr;
 	socklen_t addr_len = sizeof(addr);
+	struct itimerval it = {
+		.it_interval = { 0, 0 },
+		.it_value = { INITCTL_TIMEOUT, 0 }
+	};
 	
 	/* initctlfd is SOCK_NONBLOCK */
 	while((fd = accept(initctlfd, (struct sockaddr*)&addr, &addr_len)) > 0) {
+		setitimer(ITIMER_REAL, &it, NULL);
 		setsockopti(fd, SO_PASSCRED, 1);
 		readcmd(fd);
 		shutdown(fd, SHUT_WR);
