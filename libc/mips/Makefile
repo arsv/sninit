@@ -2,7 +2,7 @@
 # The library is built using top-level Makefile
 # This one is only for re-generating arch-specific syscall files.
 
-direct = fork vfork execve kill getpid chroot chdir
+direct = fork execve kill getpid chroot chdir setitimer
 direct += open close read write dup2 fstat ioctl getdents64 openat stat
 direct += mmap mremap munmap clock_gettime nanosleep setpriority getpriority
 direct += socket bind connect listen accept sendto sendmsg recvmsg shutdown
