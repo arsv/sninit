@@ -27,12 +27,12 @@ local void dostart(struct initrec* p);
 local void dopause(struct initrec* p, int v);
 local void dohup(struct initrec* p);
 
-/* cmd here is what telinit sent to initctl.
-   The actual command is always cmd[0], while cmd[1:] is (optional) argument.
+/* cmd is what telinit sent to initctl.
+   The actual command is always cmd[0], while cmd[1:] is the (optional) argument.
    Examples:
-	"q"		reconfigure
+	"c"		reconfigure
 	"9"		switch to runlevel 9
-	"dhttpd"	disable (stop) service named "httpd"
+	"shttpd"	start httpd
 
    warn() sends messages back to telinit */
 

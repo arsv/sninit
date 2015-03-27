@@ -84,7 +84,7 @@ void pollctl(void)
 	}
 }
 
-/* We've got a pending connection on initctlfd.
+/* We've got a pending connection on initctlfd, ppoll tells us.
    Accept it, and handle whatever command is there.
 
    Only one command is accepted for each connection. To send more, telinit
@@ -93,9 +93,9 @@ void pollctl(void)
    data direction.
 
    Commands are always supplemented with credentials passed as ancilliary
-   data. See unix(7) for explaination. */
+   data. See unix(7) for explaination.
 
-/* The use of alarm (setitimer) is tricky here: it is pointless for the root
+   The use of alarm (setitimer) is tricky here: it is pointless for the root
    user, however it is possible for a non-root user to make a connection and
    let it hang without sending anything, blocking init operation.
    To counteract that, telinit connection time is limited. */
