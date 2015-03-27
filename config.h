@@ -83,3 +83,6 @@
 /* Clock offset to make sure boot happens at some point T > 0 */
 /* See comments around setpasstime for why this is necessary. */
 #define BOOTCLOCKOFFSET 0xFFFF
+
+/* Maximum command length in telinit ? output */
+#define MAXREPORTCMD 50

@@ -153,7 +153,6 @@ local void rlstr(char* str, int len, int mask)
 	*p = '\0';
 }
 
-#define MAXREPORTCMD 50
 /* join argv into a single string to be reported by "telinit ?" */
 char* joincmd(char* buf, int len, char** argv)
 {
