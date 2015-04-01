@@ -72,12 +72,13 @@ executables in your rootfs image:
 
 (a) Building sninit as a buildroot package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-TODO: this requires package directory and patches, not uploaded anywhere yet.
+TODO: this requires package directory and patches,
+not uploaded anywhere yet.
 
 
 (b) Building sninit using buildroot toolchain
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Set CC and AR in config.mk, or run configure with the same values:
+Set CC and AR in config.mk, or supply them to configure:
 	CC=BUILDROOT/output/host/usr/bin/TARGET-gcc
 	AR=BUILDROOT/output/host/usr/bin/TARGET-ar
 Substitute BUILDROOT and TARGET to match your particular
@@ -102,8 +103,7 @@ as usual.
 Debugging init in a complete emulated system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 You will need a kernel and bootable rootfs image containing
-busybox, gdbserver and sninit. Refer to buildroot docs for building
-instructions.
+busybox, gdbserver and sninit. Refer to buildroot docs for instructions.
 
 Build a target gdb for your host system too (BR2_PACKAGE_HOST_GDB=y)
 
@@ -121,7 +121,7 @@ Boot the target system and run
 
     gdbserver /dev/ttyAMA0 /sbin/init
 
-in sh prompt. Use the right TTY name: most system provide ttyS0 or ttyS1
+in sh prompt. Use the right TTY name: most systems provide ttyS0 or ttyS1
 but for ARMs it's ttyAMA0.
 
 Start gdb on the host system:
@@ -162,7 +162,7 @@ Caveats
 Qemu in linux-user mode (qemu-arm, as opposed to qemu-system-arm) does not
 check or translate hidden syscall arguments (e.g. sizeof(sigset_t) as
 5th ppoll(2) argument), and supplies the right values to the host kernel
-even if target gets them wrong.
+even if the target executable gets them wrong.
 
 Typical presentation: executable works well on qemu-arm but fails
 with EINVAL from ppoll on qemu-system-arm.
