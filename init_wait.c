@@ -10,11 +10,10 @@ extern time_t passtime;
 
 export void waitpids(void);
 
-local void checkfailure(struct initrec* p, int status);
+local void markdead(struct initrec* p, int status);
+local void checkfailacts(struct initrec* p, int failed);
 local void faildisable(struct initrec* p);
 local void failswitch(struct initrec* p);
-
-#define hush(p) (p->flags & C_HUSH)
 
 /* we were signalled SIGCHLD, got to mark died processes as such */
 void waitpids(void)
@@ -22,55 +21,49 @@ void waitpids(void)
 	pid_t pid;
 	int status;
 	struct initrec *p, **pp;
-	int v;
 
-	while((pid = waitpid(-1, &status, WNOHANG)) > 0) {
-		for(pp = cfg->inittab; (p = *pp); pp++) {
-			if(p->pid != pid)
-				continue;
-
-			/* report failure if necessary */
-			if(WIFSTOPPED(status)) {
-				/* XXX: maybe set P_SIGSTOP here?.. */
-				continue;
-			} else if(WIFEXITED(status)) {
-				if((v = WEXITSTATUS(status)) && !hush(p))
-					warn("%s[%i] abnormal exit (%i)", p->name, p->pid, v);
-			} else if(WIFSIGNALED(status)) {
-				if((v = WTERMSIG(status)) && !(p->flags & P_SIGTERM) && !hush(p))
-					warn("%s[%i] killed by signal %i", p->name, p->pid, WTERMSIG(status));
-				/* well, it could have been some other signal, but hey,
-				   if init was trying to kill it anyway, who cares why it died */
-			}
-
-			if(p->flags & (C_DOF | C_DTF | C_ROFa | C_ROFb))
-				checkfailure(p, status);
-
-			/* mark the entry as safely dead */
-			p->pid = -1;
-			p->flags &= ~(P_SIGTERM | P_SIGKILL);
-		}
-	}
+	while((pid = waitpid(-1, &status, WNOHANG)) > 0)
+		for(pp = cfg->inittab; (p = *pp); pp++)
+			if(p->pid == pid)
+				markdead(p, status);
 
 	state &= ~S_SIGCHLD;
 }
 
-void checkfailure(struct initrec* p, int status)
+void markdead(struct initrec* p, int status)
 {
-	int failed = (!WIFEXITED(status) || WEXITSTATUS(status));
+	int failed;
+
+	if(WIFSTOPPED(status))
+		return; /* XXX: maybe set P_SIGSTOP here?.. */
 
 	if(p->flags & (P_SIGTERM | P_SIGKILL))
-		/* requested exit is always correct */
-		failed = 0;
+		failed = 0; /* requested exit is always correct */
+	else
+		failed = (!WIFEXITED(status) || WEXITSTATUS(status));
 
+	if(failed && !(p->flags & C_HUSH))
+		warn("%s[%i] abnormal exit %i", p->name, p->pid,
+			WIFEXITED(status) ? WEXITSTATUS(status) : -WTERMSIG(status));
+
+	if(p->flags & (C_DOF | C_DTF | C_ROFa | C_ROFb))
+		checkfailacts(p, failed);
+
+	/* mark the entry as safely dead */
+	p->pid = -1;
+	p->flags &= ~(P_SIGTERM | P_SIGKILL);
+}
+
+void checkfailacts(struct initrec* p, int failed)
+{
 	if(p->flags & C_DTF) {
 
 		int mintime = (p->flags & C_FAST ? TIME_TO_RESTART : MINIMUM_RUNTIME);
 		int toofast = (passtime - p->lastrun <= mintime);
 
+		/* fast respawning only counts when exit status is nonzero
+		   if C_DOF is set; without C_DOF, all exits are counted. */
 		if(p->flags & C_DOF)
-			/* fast respawning only counts when exit status is nonzero
-			   if C_DOF is set; without C_DOF, all exits are counted. */
 			failed = toofast && failed;
 		else
 			failed = toofast;
@@ -82,16 +75,13 @@ void checkfailure(struct initrec* p, int status)
 		else
 			p->flags |= P_WAS_OK;
 
-	} else if(p->flags & C_DOF) {
-		if(failed)
-			faildisable(p);
-	}
+	} else if(failed && p->flags & C_DOF)
+		faildisable(p);
 
 	/* Use non-zero exit status *unless* DTF is given, in which case
 	   follow DTF logic (i.e. runlevel switch only if failed too fast) */
-	if(p->flags & (C_ROFa | C_ROFb))
-		if(failed)
-			failswitch(p);
+	if(failed && (p->flags & (C_ROFa | C_ROFb)))
+		failswitch(p);
 }
 
 void faildisable(struct initrec* p)
