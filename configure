@@ -20,7 +20,7 @@ unset libs libs_syscall
 unset tstype null
 
 optimize=auto
-unset nommu lto debug depend builtin
+unset nommu lto debug depend builtin quiet
 unset initctl inittab run s cgbase logdir blocks run
 
 warn() { echo "$@" >&2; }
@@ -69,6 +69,8 @@ Target configuration:
 			for testing and/or development
 
 	qemu=A		use qemu-A to run tests
+
+	quiet		do not print config summary to stdout
 
 Libc selection (see INSTALL for explaination):
 	arch=L		use bundled libc for target arch \$L
@@ -240,6 +242,9 @@ while [ $# -gt 0 ]; do
 			optimize=
 			debug="-Wall -g"
 			depend="-MD"
+			;;
+		quiet)
+			quiet=1
 			;;
 		run) argreq
 			run="$val"
@@ -477,6 +482,8 @@ sed -i \
 	-e "/#define CGBASE/s#\".*#\"$cgbase\"#" \
 	-e "/#define LOGDIR/s#\".*#\"$logdir\"#" \
 	run.h
+
+test -n "$quiet" && exit
 
 echo "Configuration updated. Check the values below, then run make."
 echo
