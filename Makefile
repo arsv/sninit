@@ -106,17 +106,17 @@ endif
 
 # --- Bundled libc -------------------------------------------------------------
 #
-# This section is even more ugly. Here we build libc.a from files in libc/,
+# This section is even more ugly. Here we build libc.a from the files in libc/,
 # among which there may be alternatives like libc/(ARCH)/foo.s and libc/foo.c
 #
 # The natural way to resolve alternatives in make is to provide alternative rules
 # for the same target. This fails badly for archives however; ar does not lock
 # files, does not tolerate flock $@ ar c $@ ... approach, and make provides
 # no way for breadth-first building (i.e. all objects, then single ar cru $@).
-# https://www.gnu.org/software/make/manual/html_node/Archive-Pitfalls.html#Archive-Pitfalls
+# https://www.gnu.org/software/make/manual/html_node/Archive-Pitfalls.html
 #
 # So instead the idea is to form an explicit list of objects to build,
-# resolving alternatives entirely using make functions.
+# and use make functions to resolve alternatives.
 
 libc: libc.a
 
