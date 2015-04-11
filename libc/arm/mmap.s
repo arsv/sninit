@@ -1,11 +1,11 @@
-@
-@ mmap takes 6 parameters - ie more than can be passed in registers via the
-@ regular syscall interface. Instead, parameters are passed on the stack.
-@
-@ On entry, the compiler will have already placed the fifth and sixth
-@ parameters on the stack - all we need do here is push the first four and
-@ call the syscall.
-@
+#
+# mmap takes 6 parameters - ie more than can be passed in registers via the
+# regular syscall interface. Instead, parameters are passed on the stack.
+#
+# On entry, the compiler will have already placed the fifth and sixth
+# parameters on the stack - all we need do here is push the first four and
+# call the syscall.
+#
 
 .equ NR_mmap2, 192
 
@@ -24,7 +24,7 @@ mmap:
 	ldr     r4, [sp], #4
 	ldr     r5, [sp], #4
 	cmn	r0, #4096
-	mov	pc, lr			@ return
+	mov	pc, lr			/* return */
 
 .type mmap,function
 .size mmap,.-mmap

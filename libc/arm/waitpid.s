@@ -11,7 +11,7 @@
 
 waitpid:
 	mov	r3, #0
-@wait4:
+#wait4:
         stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r4, [sp,#16]
 	ldr	r5, [sp,#20]

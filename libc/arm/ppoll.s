@@ -5,8 +5,8 @@
 .align 4
 .global ppoll
 
-@ ppoll has 5th argument not listed in the prototype sizeof(sigset_t).
-@ An extra .c file would have solved the problem of course, but why bother?
+# ppoll has 5th argument not listed in the prototype sizeof(sigset_t).
+# An extra .c file would have solved the problem of course, but why bother?
 
 ppoll:
 	stmfd	sp!,{r4,r5,r7,lr}

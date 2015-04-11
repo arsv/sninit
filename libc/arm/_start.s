@@ -17,18 +17,18 @@ environ: .word 0
 
 _start:
 
-	mov	fp, #0			@ clear the frame pointer
-	ldr	a1, [sp]		@ argc
-	add	a2, sp, #4		@ argv
+	mov	fp, #0			/* clear the frame pointer */
+	ldr	a1, [sp]		/* argc */
+	add	a2, sp, #4		/* argv */
 	ldr	ip, =environ
-	add	a3, a2, a1, lsl #2	@ &argv[argc]
-	add	a3, a3, #4		@ envp	
-	str	a3, [ip, #0]		@ environ = envp
+	add	a3, a2, a1, lsl #2	/* &argv[argc] */
+	add	a3, a3, #4		/* envp	*/
+	str	a3, [ip, #0]		/* environ = envp */
 	bl	main
 
 _exit:
-	mov	r7, #NR_exit		@
-	swi	0			@ never returns
+	mov	r7, #NR_exit
+	swi	0			/* never returns */
 
 .type _start,function
 .size _start,_exit-_start
