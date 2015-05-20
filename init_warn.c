@@ -65,7 +65,7 @@ int warn(const char* fmt, ...)
 	int taglen;
 	char over = ' ';
 	short mode;
-	int origerrno = errno;	/* timestamp() for instance may overwrite it */
+	int origerrno = errno;	/* timestamp() may overwrite it */
 
 	/* Ok, got to decide where warn() should put the message */
 	switch(*fmt) {
