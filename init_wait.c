@@ -34,8 +34,14 @@ void markdead(struct initrec* p, int status)
 {
 	int failed;
 
-	if(WIFSTOPPED(status))
-		return; /* XXX: maybe set P_SIGSTOP here?.. */
+	if(WIFSTOPPED(status)) {
+		/* It is quite possible SIGSTOP was not sent by init,
+		   which would mean P_SIGSTOP is not in flags even though
+		   the process is stopped and must be woken up in stop() */
+		p->flags |= P_SIGSTOP;
+		/* Other than that, we are no interested in stopped processes */
+		return;
+	}
 
 	if(p->flags & (P_SIGTERM | P_SIGKILL))
 		failed = 0; /* requested exit is always correct */
