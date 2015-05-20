@@ -98,11 +98,11 @@ int mextendblock(struct memblock* m, int size)
 
 void munmapblock(struct memblock* m)
 {
-	if(m->addr) {
-		munmap(m->addr, m->len);
-		m->addr = 0;
-		m->len = 0;
-	}
+	if(!m->addr) return;
+
+	munmap(m->addr, m->len);
+	m->addr = 0;
+	m->len = 0;
 };
 
 /* Due to average inittab being about 1-2k, it is always read whole;
