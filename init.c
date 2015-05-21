@@ -285,8 +285,7 @@ int setpasstime(void)
 {
 	struct timespec tp;
 
-	/* There are very few good ways to handle failing clock.
-	   In case clock fails, init will always assume ppoll gets
+	/* In case clock fails, init will always assume ppoll gets
 	   no interrupts, slowly accumulating error if it does
 	   but still keeping the system afloat.
 
