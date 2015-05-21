@@ -29,6 +29,8 @@ local void dohup(struct initrec* p);
 
 local char* joincmd(char* buf, int len, char** argv);
 local void rlstr(char* str, int len, int mask);
+local void scflags(unsigned short* dst, unsigned short flags, int setclear);
+local void clearts(struct initrec* p);
 
 /* cmd is what telinit sent to initctl.
    The actual command is always cmd[0], while cmd[1:] is the (optional) argument.
