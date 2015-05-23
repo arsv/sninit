@@ -60,13 +60,20 @@ local void forkreboot(void);
    go sleep in ppoll(), iterate, sleep in ppoll, iterate, sleep in ppoll, ...
 
    Within this cycle, ppoll is the only place where blocking occurs.
-   Even when running :wait: line, init does not use blocking waitpid().
+   Even when running a wait entry, init does not use blocking waitpid().
    Instead, it spawns the process and goes to sleep in ppoll until
    the process dies.
 
    Whenever there's a need to disturb the cycle, flags are raised in $state.
    Any branching to handle particular situation, like child dying or telinit
-   knocking on the socket, occurs here in main.  */
+   knocking on the socket, occurs here in main.
+
+   For time-tracking code, see longish comment near setpasstime() below.
+   Time is only checked once for each initpass (that's why "passtime").
+
+   Barring early hard errors, the only way to exit the main loop is switching
+   to "no-runlevel" state, which is (currlevel == 0). Note this is different
+   from runlevel 0 which is (1<<0). See the block at the end of initpass. */
 
 int main(int argc, char** argv)
 {
@@ -74,46 +81,30 @@ int main(int argc, char** argv)
 		goto reboot;	/* Initial setup failed badly */
 	if(setpasstime())
 		passtime = BOOTCLOCKOFFSET;
-		/* see setpasstime comments below */
 
 	while(1)
 	{
 		warnfd = 2;
 		timetowait = -1;
 
-		/* (Re)spawn processes that need (re)spawning */
-		initpass();
+		initpass();		/* spawn/kill processes */
 
-		/* "No runlevel at all".
-		   This is the state after reaching runlevel 0 which is (1<<0).
-		   See initpass for explaination. */
 		if(!currlevel)
 			goto reboot;
 
-		/* initpass finished without any pending w/o-type processes,
-		   so it's ok to change configuration */
 		if(!(state & S_WAITING) && (state & S_RECONFIG))
 			setnewconf();
 
-		/* Block for at most $waitneeded, waiting for signals
-		   or (if the socket is open) telinit commands.
-		   Only set state flags here, do not do any processing. */
-		pollctl();
+		pollctl();		/* waiting happens here */
 
-		/* Update monotime after ppoll for a new cycle.
-		   The assumption here is that acceptctl typically takes less
-		   time than pollctl.
-		   See comments in setpasstime() on error recovery */
 		if(setpasstime() && timetowait > 0)
 			passtime += timetowait;
 
-		/* reap dead children */
 		if(state & S_SIGCHLD)
-			waitpids();
+			waitpids();	/* reap dead children */
 
-		/* check for telinit commands, if any */
 		if(state & S_INITCTL)
-			acceptctl();
+			acceptctl();	/* telinit communication */
 	}
 
 reboot:
@@ -229,6 +220,8 @@ int setinitctl(void)
 		.sun_path = INITCTL
 	};
 
+	/* This way readable "@initctl" can be used for reporting below,
+	   and config.h looks better too. */
 	if(addr.sun_path[0] == '@')
 		addr.sun_path[0] = '\0';
 
@@ -273,25 +266,47 @@ void sighandler(int sig)
 	}
 }
 
-/* At bootup, the system starts with all lastrun=0 and possibly also
+/* Throughout the loop(), main keeps track of current time which initpass()
+   then uses for things like timed SIGTERM/SIGKILL, fast respawns and so on.
+   Via timetowait, the above affects ppoll timeout in pollfds(),
+   making the main loop run a bit faster than it would with only SIGCHLDs
+   and telinit socket noise.
+
+   Precision is not important here, it is ok to wait for a few seconds more,
+   but keeping sane timeouts is crucial; setting poll timeout to 0 by mistake
+   would result in the loop spinning out of control. This is done by tracking
+   non-zero setpasstime returns and "pushing" passtime forward, pretending
+   that any timed ppoll did not return early.
+
+   Note clock errors are not something that happens daily, and usually
+   is's a sign of deep troubles, like running on an incompatible architecture.
+   Actually rebooting on clock_gettime failure does not sound like a bad
+   idea at all, and that's exactly what main() does when the very first
+   clock_gettime call fails.
+
+   Still, once we have the system running, it makes sense to try handling
+   the situation gracefully. After all, timing stuff is somewhat auxillilary
+   in a non-realtime unix, a matter of convenience, not correctness, and
+   init could (should?) have been written with no reliance on time. */
+
+/* The value used for passtime is kernel monotonic clock shifted
+   by a constant. Monotonic clock works well, since the code only uses
+   passtime differences, not the value itself. Constant shift is necessary
+   to make sure the difference is not zero at the first initpass.
+
+   At bootup, the system starts with all lastrun=0 and possibly also
    with the clock near 0, activating time_to_* timers even though
    no processes have been started at time 0. To avoid delays, monotonic
-   clocks are shifted forward so that boot occurs at some time past 0 */
-/* The offset may be as low as the actual value of time_to_restart,
+   clocks are shifted forward so that boot occurs at some time past 0.
+
+   The offset may be as low as the actual value of time_to_restart,
    but since time_to_restart is a short using 0xFFFF is a viable option.
    After all, even with offset that large monotonic clock values are much
    much lower than those routinely returned by CLOCK_REALTIME. */
+
 int setpasstime(void)
 {
 	struct timespec tp;
-
-	/* In case clock fails, init will always assume ppoll gets
-	   no interrupts, slowly accumulating error if it does
-	   but still keeping the system afloat.
-
-	   Like with ppoll failures, ignoring these is a bad bad idea,
-	   no matter how unlikely they are, because of possible disruption
-	   of the main loop. */
 
 	if(clock_gettime(CLOCK_MONOTONIC, &tp))
 		retwarn(-1, "clock failed: %m");
