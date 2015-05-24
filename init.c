@@ -15,48 +15,105 @@
 #include "init.h"
 #include "scope.h"
 
-/* status */
-int currlevel;		// currently occupied runlevel bitmask
-int nextlevel;		// the one we're switching to;
- 			//   == curlevel when we're done switching
-int state;		// S_* flags
-int timetowait;		// poll timeout, ms. Cleared in main(),
- 			//   set by waitneeded(), checked by pollfds()
-time_t passtime;	// time at the start of current initpass
+/* What init does is essentially running a set of processes.
+   The set currently configured is stored in cfg.
+   Putting it another way, cfg is inittab and/or initdir data compiled
+   into init's internal format.
+   Volatile per-process data (pids, timestamps) is also here.
 
-int warnfd;		// primary log fd (see init_warn.c)
-int rbcode;		// reboot code, for reboot(2)
+   The struct is declared weak to allow linking build-in inittab over. */
 
-int syslogfd;		// syslog; see init_warn.c
-
-/* configuration */
 weak struct config* cfg;
 
-/* misc */
-int initctlfd;		// listening socket
-sigset_t defsigset;	// default sigset, to supply to spawned processes,
-			// and also to use outside of ppoll in init itself
+/* Sninit uses the notion of runlevels to tell which entries from inittab
+   should be running at any given moment and which should not.
 
-export int main(int argc, char** argv);
+   At any given time, init "is in" a single primary runlevel, possibly
+   augmented with any number of sublevels. The whole thing is stored as
+   a bitmask: runlevel 3ab is (1<<3) | (1<<a) | (1<<b).
 
-local int setup(int argc, char** argv);
+   Switching between runlevels is initiated by setting nextlevel to something
+   other than currlevel. The switch is completed once currlevel = nextlevel.
+
+   Check shouldberunning() on how entries are matched against current runlevel,
+   and initpass() for level-switching code.
+
+   Init starts at runlevel 0, so 0~ entries are not spawned during boot.
+   When shutting down, we first switch back to level 0 = (1<<0) and then
+   to "no-level" which is value 0, making sure all entries get killed. */
+
+int currlevel = (1 << 0);
+int nextlevel = INITDEFAULT;
+
+/* Normally init sleeps in ppoll until dusturbed by a signal or a socket
+   activity. However, initpass may want to set an alarm, so that it would
+   send SIGKILL 5 seconds after SIGTERM if the process refuses to die.
+   This is done by setting timetowait, which is later used for ppoll timeout.
+
+   Default value here is -1, which means "sleep indefinitely".
+   main sets that before each initpass() */
+
+int timetowait;
+
+/* To set timestamps on initrecs (lastrun, lastsig), initpass must have
+   some kind of current time value available. Instead of making a syscall
+   for every initrec that needs it, the call is only made before initpass
+   and the same value is then used during the pass. See also setpasstime() */
+
+time_t passtime;
+
+/* sninit shuts down the system by calling reboot(rbcode) after exiting
+   the main loop. In other words, reboot command internally is just
+       nextlevel = (1<<0);
+       rbcode = RB_AUTOBOOT;
+   The values are described in <sys/reboot.h> (or check reboot(2)) */
+
+int rbcode = RB_HALT_SYSTEM;
+
+/* These fds are kept open more or less all the time.
+   initctl is the listening socket, syslogfd is /dev/log, warnfd is
+   where warn() will put its messages. */
+
+int initctlfd;
+int warnfd = 0;		/* stderr only, see warn() */
+int syslogfd = -1;	/* not yet opened */
+
+/* Init blocks all most signals when not in ppoll. This is the orignal
+   pre-block signal mask, used for ppoll and passed to spawned children. */
+
+sigset_t defsigset;
+
+/* S_* flags to signal we have a pending telinit connection or
+   a reconfiguration request */
+
+int state = 0;
+
+/* Short outline of the code: */
+
+export int main(int argc, char** argv);		/* main loop */
+
+local int setup(int argc, char** argv);		/* initialization */
 local int setinitctl(void);
 local void setsignals(void);
 local void setargs(int argc, char** argv);
 local int setpasstime(void);
 
-extern int configure(int);
+extern int configure(int);		/* inittab parsing */
 extern void setnewconf(void);
 
-extern void initpass(void);
-extern void pollctl(void);
-extern void acceptctl(void);
+extern void initpass(void);		/* the core: process (re)spawning */
 extern void waitpids(void);
 
-local void sighandler(int sig);
-local void forkreboot(void);
+extern void pollctl(void);		/* telinit communication */
+extern void acceptctl(void);
 
-/* Overall logic in main: interate over inittab records (that's initpass()),
+local void sighandler(int sig);		/* global singnal handler */
+local void forkreboot(void);		/* reboot(rbcode) */
+
+
+/* main(), the entry point also the main loop.
+
+   Overall logic here: interate over inittab records (that's initpass()),
    go sleep in ppoll(), iterate, sleep in ppoll, iterate, sleep in ppoll, ...
 
    Within this cycle, ppoll is the only place where blocking occurs.
@@ -118,13 +175,6 @@ reboot:
 
 int setup(int argc, char** argv)
 {
-	/* Runlevel 0. This is necessary to make sure W0~ type entries
-	   get marked as "has been run" upon initialization. */
-	currlevel = 1 << 0;
-	nextlevel = INITDEFAULT;
-	rbcode = RB_HALT_SYSTEM;
-	syslogfd = -1;
-
 	/* To avoid calling getpid every time. And since this happens to be
 	   the first syscall init makes, it is also used to check whether
 	   runtime situation is bearable. */
