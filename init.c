@@ -316,7 +316,7 @@ void sighandler(int sig)
 	}
 }
 
-/* Throughout the loop(), main keeps track of current time which initpass()
+/* Throughout the loop, main() keeps track of current time which initpass()
    then uses for things like timed SIGTERM/SIGKILL, fast respawns and so on.
    Via timetowait, the above affects ppoll timeout in pollfds(),
    making the main loop run a bit faster than it would with only SIGCHLDs
