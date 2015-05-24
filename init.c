@@ -195,7 +195,7 @@ int setup(int argc, char** argv)
 	setsignals();
 	setargs(argc, argv);
 
-	if(!configure(0))
+	if(!configure(NONSTRICT))
 		setnewconf();
 	else if(!cfg)
 		retwarn(-1, "initial configuration error");

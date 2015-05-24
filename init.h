@@ -32,6 +32,10 @@
 #define PRIMASK		0x03FF		/* ------9876543210 */
 #define SUBMASK		0xFC00		/* FEDCBA---------- */
 
+/* configure() arguments */
+#define NONSTRICT	0
+#define STRICT		1
+
 /* some handy abbreviations */
 #define retwarn(r, ...) return (warn(__VA_ARGS__), r)
 #define retwarn_(...) { warn(__VA_ARGS__); return; }

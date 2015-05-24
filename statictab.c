@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 		die("Bad call\n");
 
 	inittab = argv[1];
-	if(configure(1))
+	if(configure(STRICT))
 		die("Failed to compile inittab\n");
 
 	dump_config((struct config*)newblock.addr);

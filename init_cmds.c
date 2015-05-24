@@ -94,7 +94,7 @@ void parsecmd(char* cmd)
 		case 'i': dumpidof(p); break;
 		/* reconfigure */
 		case 'c':
-			if(configure(1))
+			if(configure(STRICT))
 				warn("Reconfiguration failed");
 			else
 				state |= S_RECONFIG;
