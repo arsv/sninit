@@ -46,8 +46,8 @@ void waitpids(void)
 	state &= ~S_SIGCHLD;
 }
 
-/* For stopped childred, just note their status; stop() will
-   care about sending stopped ones SIGCONT together with SIGTERM. */
+/* For stopped childred, just note their status;
+   stop() will send the stopped ones SIGCONT together with SIGTERM. */
 
 void markstopped(struct initrec* p, int status)
 {
