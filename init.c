@@ -15,11 +15,9 @@
 #include "init.h"
 #include "scope.h"
 
-/* What init does is essentially running a set of processes.
-   The set currently configured is stored in cfg.
-   Putting it another way, cfg is inittab and/or initdir data compiled
-   into init's internal format.
-   Volatile per-process data (pids, timestamps) is also here.
+/* Init compiles inittab (and/or initdir) into struct config and uses
+   it to keep all per-process data. The struct is essentially static,
+   in that its size does not change once it has been compiled.
 
    The struct is declared weak to allow linking build-in inittab over. */
 
@@ -75,8 +73,8 @@ int rbcode = RB_HALT_SYSTEM;
    where warn() will put its messages. */
 
 int initctlfd;
-int warnfd = 0;		/* stderr only, see warn() */
 int syslogfd = -1;	/* not yet opened */
+int warnfd = 0;		/* stderr only, see warn() */
 
 /* Init blocks all most signals when not in ppoll. This is the orignal
    pre-block signal mask, used for ppoll and passed to spawned children. */
