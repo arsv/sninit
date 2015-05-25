@@ -29,7 +29,6 @@ local void dohup(struct initrec* p);
 
 local char* joincmd(char* buf, int len, char** argv);
 local void rlstr(char* str, int len, int mask);
-local void scflags(unsigned short* dst, unsigned short flags, int setclear);
 local void clearts(struct initrec* p);
 
 /* cmd is what telinit sent to initctl.
@@ -232,15 +231,6 @@ void dumpstate(void)
 	}
 }
 
-/* Set or clear flags */
-void scflags(unsigned short* dst, unsigned short flags, int setclear)
-{
-	if(setclear)
-		*dst |= flags;
-	else
-		*dst &= ~flags;
-}
-
 /* User commands like start or stop should prompt immediate action,
    disregarding possible time_to_* timeouts. */
 void clearts(struct initrec* p)
@@ -280,8 +270,11 @@ void dorestart(struct initrec* p)
 void dodisable(struct initrec* p, int v)
 {
 	clearts(p);
-	scflags(&(p->flags), P_MANUAL, v);
 	p->flags &= ~P_FAILED;
+	if(v)
+		p->flags |= P_MANUAL;
+	else
+		p->flags &= ~P_MANUAL;
 }
 
 void dopause(struct initrec* p, int v)
@@ -290,8 +283,8 @@ void dopause(struct initrec* p, int v)
 		retwarn_("%s is not running", p->name);
 	if(kill(-p->pid, v ? SIGSTOP : SIGCONT))
 		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
-
-	scflags(&(p->flags), P_SIGSTOP, v);
+	/* once the child is stopped, we'll get SIGCHLD and waitpids()
+	   will set P_SIGSTOP */
 }
 
 void dohup(struct initrec* p)

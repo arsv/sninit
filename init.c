@@ -235,14 +235,16 @@ void setargs(int argc, char** argv)
    Normally init shouldn't be getting them, aside from SIGCHLD and maybe
    SIGPIPE/SIGALARM during telinit communication. If anything else is sent
    (SIGSEGV?), then we're already well out of normal operation range
-   and should accept whatever the default action is. */
+   and should accept whatever the default action is.
+
+   SIGPIPE and SIGALRM do not need handlers, as their only job is to make
+   blocking read(telinitfd) return with EINTR, which telinit code interprets
+   as end-of-communication.
+   SIGCHLD must interrupt the only syscall it may delivered in, ppoll.
+   All the other signals need SA_RESTART. */
 
 void setsignals(void)
 {
-	/* Restarting read() etc is ok, the calls init needs interrupted
-	   will be interrupted anyway.
-	   Exception: SIGALRM must be able to interrput write(), telinit
-	   timeout handling is built around this fact. */
 	struct sigaction sa = {
 		.sa_handler = sighandler,
 		.sa_flags = SA_RESTART,
@@ -252,11 +254,6 @@ void setsignals(void)
 	sigaddset(&sa.sa_mask, SIGCHLD);
 	sigprocmask(SIG_BLOCK, &sa.sa_mask, &defsigset);
 
-	/* These should have been signal(2) calls, but since signal(2) tells us
-	   to "avoid its use", we'll call sigaction instead.
-	   After all, BSD-compatible signal() implementations (which is to say,
-	   pretty much all of them) are just wrappers around sigaction(2). */
-
 	sigaddset(&sa.sa_mask, SIGINT);
 	sigaddset(&sa.sa_mask, SIGTERM);
 	sigaddset(&sa.sa_mask, SIGHUP);
@@ -265,11 +262,13 @@ void setsignals(void)
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGHUP,  &sa, NULL);
 
-	sa.sa_flags = SA_NOCLDSTOP; 	/* init does not care about children */
-	sigaction(SIGCHLD, &sa, NULL);	/*   being stopped */
-	
-	/* These should interrupt write() calls, and that's enough */
+	/* SIGCHLD is only allowed to arrive in ppoll,
+	   so SA_RESTART just does not make sense. */
 	sa.sa_flags = 0;
+	sigaction(SIGCHLD, &sa, NULL);
+
+	/* These *should* interrupt write() calls,
+	   which is the opposite of SA_RESTART. */
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGPIPE, &sa, NULL);
 	sigaction(SIGALRM, &sa, NULL);

@@ -11,37 +11,62 @@ extern time_t passtime;
 export void waitpids(void);
 
 local void markdead(struct initrec* p, int status);
+local void markstopped(struct initrec* p, int status);
+
 local void checkfailacts(struct initrec* p, int failed);
 local void faildisable(struct initrec* p);
 local void failswitch(struct initrec* p);
 
-/* we were signalled SIGCHLD, got to mark died processes as such */
+/* So we were signalled SIGCHLD and got to check what's up with
+   the children. And because we care about killing paused (as in SIGSTOP)
+   children gracefully, we want to track running/stopped status as well.
+   Linux allows this with WUNTRACED and WCONTINUED. */
+
 void waitpids(void)
 {
 	pid_t pid;
 	int status;
 	struct initrec *p, **pp;
+	const int flags = WNOHANG | WUNTRACED | WCONTINUED;
 
-	while((pid = waitpid(-1, &status, WNOHANG)) > 0)
+	while((pid = waitpid(-1, &status, flags)) > 0)
+	{
 		for(pp = cfg->inittab; (p = *pp); pp++)
 			if(p->pid == pid)
-				markdead(p, status);
+				break;
+		if(!p)	/* Some stray child died. Like we care. */
+			continue;
+
+		if(WIFSTOPPED(status))
+			markstopped(p, status);
+		else
+			markdead(p, status);
+	}
 
 	state &= ~S_SIGCHLD;
 }
 
+/* For stopped childred, just note their status; stop() will
+   care about sending stopped ones SIGCONT together with SIGTERM. */
+
+void markstopped(struct initrec* p, int status)
+{
+	if(WIFCONTINUED(status))
+		p->flags &= ~P_SIGSTOP;
+	else
+		p->flags |= P_SIGSTOP;
+}
+
+/* For dead children, there's a difference between "exited normally"
+   and "exited abnormally", so we've got to decide that and, if configured,
+   take action upon abnormal exit.
+
+   The actual criteria depend on DOF/DTF flags, and may be non-zero
+   return code, or too short lifetime, or both. */
+
 void markdead(struct initrec* p, int status)
 {
 	int failed;
-
-	if(WIFSTOPPED(status)) {
-		/* It is quite possible SIGSTOP was not sent by init,
-		   which would mean P_SIGSTOP is not in flags even though
-		   the process is stopped and must be woken up in stop() */
-		p->flags |= P_SIGSTOP;
-		/* Other than that, we are no interested in stopped processes */
-		return;
-	}
 
 	if(p->flags & (P_SIGTERM | P_SIGKILL))
 		failed = 0; /* requested exit is always correct */
