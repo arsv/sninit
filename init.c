@@ -19,6 +19,9 @@
    it to keep all per-process data. The struct is essentially static,
    in that its size does not change once it has been compiled.
 
+   When reconfiguring, a new struct is allocated, relevant data is copied
+   there, then this pointer gets switched to the new struct.
+
    The struct is declared weak to allow linking build-in inittab over. */
 
 weak struct config* cfg;
