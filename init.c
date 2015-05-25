@@ -292,7 +292,7 @@ int setinitctl(void)
 	if((initctlfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0)) < 0)
 		retwarn(-1, "Can't create control socket: %m");
 
-	if(bind(initctlfd, (struct sockaddr*)&addr, sizeof(addr))) 
+	if(bind(initctlfd, (struct sockaddr*)&addr, sizeof(addr)))
 		gotowarn(close, "Can't bind %s: %m", INITCTL)
 	else if(listen(initctlfd, 1))
 		gotowarn(close, "listen() failed: %m");
@@ -316,7 +316,7 @@ void sighandler(int sig)
 		case SIGCHLD:
 			state |= S_SIGCHLD;
 			break;
-			
+
 		case SIGTERM:	/* C-c when testing */
 		case SIGINT:	/* C-A-Del with S_PID1 */
 			rbcode = RB_AUTOBOOT;
