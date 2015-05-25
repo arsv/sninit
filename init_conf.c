@@ -131,7 +131,12 @@ int finishinittab(void)
 
 /* parseinittab() fills all pointers in initrecs with offsets from newblock
    to allow using MREMAP_MAYMOVE. Once newblock and newenviron are all
-   set up, we need to make those offsets into real pointers */
+   set up, we need to make those offsets into real pointers ("repoint" them)
+   by adding the base address of newblock.
+
+   Now because our offsets are pointer-typed and (pointer + pointer) operation
+   is illegal, we turn them into integers by subtracting NULL. */
+
 void* repoint(void* p)
 {
 	if(p - NULL > newblock.ptr)
