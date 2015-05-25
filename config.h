@@ -13,8 +13,7 @@
    value hard-coded in several syslog(3) implementations. */
 #define SYSLOG "/dev/log"
 
-/* Directory to put process logs to, for processes with "log" flag.
-   See man/inittab.5 */
+/* Directory to put process logs to. This is for run, not for init. */
 #define LOGDIR "/var/log"
 
 /* Timezone data, only used by sys_time_tz.c */
