@@ -7,8 +7,9 @@
    init_conf uses it when transferring pids
    init_cmds uses it to start/stop entries
 
-   Note: find an entry from the primary inittab, cfg->inittab, the one that
-   initpass uses. Which may or may not be located in cfgblock. */
+   This function looks for an entry from the primary inittab, cfg->inittab,
+   the one that initpass() uses.
+   Not for the inittab being assembled in newblock. */
 
 extern struct config* cfg;
 

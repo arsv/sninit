@@ -36,8 +36,8 @@ weak struct config* cfg;
    Switching between runlevels is initiated by setting nextlevel to something
    other than currlevel. The switch is completed once currlevel = nextlevel.
 
-   Check shouldberunning() on how entries are matched against current runlevel,
-   and initpass() for level-switching code.
+   Check shouldberunning() on how entries are matched against current
+   runlevel, and initpass() for level-switching code.
 
    Init starts at runlevel 0, so 0~ entries are not spawned during boot.
    When shutting down, we first switch back to level 0 = (1<<0) and then
@@ -174,17 +174,25 @@ reboot:
 	return 0xFE; /* feh */
 };
 
+/* During startup no user interaction is possible, so init must somehow
+   cope with what it has got, or just bail out.
+
+   When inittab is read for the first time, most errors are ignored,
+   and incorrect entries are dropped. The idea is that incomplete
+   configuration may still be enough for basic ui to come up, allowing
+   the user to fix whatever is wrong.
+
+   In case inittab file is missing, we try to fall back to built-in config.
+
+   Init starts by calling getpid(), partially to know whether it is ok to
+   call reboot() later, and partially to test environment sanity.
+   getpid() can not fail, that is, unless it fails with ENOSYS, in which case
+   we are probably running x86{,_32,_64} with an incompatible kernel. */
+
 int setup(int argc, char** argv)
 {
-	/* To avoid calling getpid every time. And since this happens to be
-	   the first syscall init makes, it is also used to check whether
-	   runtime situation is bearable. */
 	if(getpid() == 1)
 		state |= S_PID1;
-	/* Failing getpid() is a sign of big big trouble, like running x86
-	   or x32 on a x64 kernel without relevant parts built in.
-	   If it is the case, error reporting is pointless and all init can do
-	   is bail out asap. */
 	else if(errno)
 		_exit(errno);
 
@@ -204,10 +212,12 @@ int setup(int argc, char** argv)
 	return 0;
 }
 
-/* init gets any part of kernel command line the kernel itself could not parse.
-   Among those, the only thing that concerns init is possible initial runlevel
-   indication, either a (single-digit) number or a word "single".
-   init does not pass its argv to any of the children. */
+/* Init gets any part of kernel command line the kernel itself could not
+   parse. Among those, the only thing that concerns init is possible initial
+   runlevel indication, either a (single-digit) number or a word "single".
+
+   Init does not pass its argv to any of the children. */
+
 void setargs(int argc, char** argv)
 {
 	char** argi;
@@ -226,6 +236,7 @@ void setargs(int argc, char** argv)
    SIGPIPE/SIGALARM during telinit communication. If anything else is sent
    (SIGSEGV?), then we're already well out of normal operation range
    and should accept whatever the default action is. */
+
 void setsignals(void)
 {
 	/* Restarting read() etc is ok, the calls init needs interrupted
@@ -294,7 +305,10 @@ close:
 	return -1;
 }
 
-/* A single handler for all four signals we care about. */
+/* A single handler for all four signals we care about.
+   SIGALARM is not handled, as its only function is to make
+   write() return EINTR. */
+
 void sighandler(int sig)
 {
 	switch(sig)
@@ -373,6 +387,7 @@ int setpasstime(void)
    in fact be fork, and scheduler may still be doing tricks, it's better
    to wait for the child before returning, because return here means
    _exit from init and immediate panic. */
+
 void forkreboot(void)
 {
 	int pid;
