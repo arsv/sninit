@@ -31,14 +31,21 @@ local char* joincmd(char* buf, int len, char** argv);
 local void rlstr(char* str, int len, int mask);
 local void clearts(struct initrec* p);
 
-/* cmd is what telinit sent to initctl.
+/* Here we have a single command (cmd) sent by telinit, stored in some
+   buffer in readcmd(). And we've got to parse it and take action.
    The actual command is always cmd[0], while cmd[1:] is the (optional) argument.
    Examples:
 	"c"		reconfigure
 	"9"		switch to runlevel 9
 	"shttpd"	start httpd
 
-   warn() sends messages back to telinit */
+   With exception of kill() calls, all parsecmd does is setting flags,
+   either per-process or global. The next initpass() is where the rest
+   happens. Telinit connection is closed right after parsecmd() returns;
+   this way initpass remains async and simple.
+
+   Within parsecmd, warnfd is the open telinit connection, so we sent
+   the text back to telinit using warn(). */
 
 void parsecmd(char* cmd)
 {
@@ -140,7 +147,10 @@ void setrunlevel(const char* p)
 	nextlevel = next;
 }
 
-/* Convert runlevel bitmask to readable string */
+/* Convert runlevel bitmask into a readable string:
+       (1<<2) | (1<<a) | (1<<c) -> "1ac"
+   Telinit will show this as "current runlevel" */
+
 void rlstr(char* str, int len, int mask)
 {
 	char* p = str;	
@@ -157,7 +167,10 @@ void rlstr(char* str, int len, int mask)
 	*p = '\0';
 }
 
-/* join argv into a single string to be reported by "telinit ?" */
+/* Join argv into a single string, to be reported by "telinit ?"
+   The string is cut, with ... added at the end, if it does not
+   fit in the output buffer. */
+
 char* joincmd(char* buf, int len, char** argv)
 {
 	char** arg;
@@ -193,9 +206,7 @@ out:	*buf = '\0';
 	return ret;
 }
 
-/* Both dump* functions use warn() for output. That's ok since
-   warnfd is the telinit connection whenever command is being
-   processed. */
+/* "telinit pidof (p)" output */
 
 void dumpidof(struct initrec* p)
 {
@@ -204,6 +215,7 @@ void dumpidof(struct initrec* p)
 }
 
 /* "telinit ?" output, the list of services and their current state */
+
 void dumpstate(void)
 {
 	struct initrec *p, **pp;
@@ -231,16 +243,19 @@ void dumpstate(void)
 	}
 }
 
-/* User commands like start or stop should prompt immediate action,
-   disregarding possible time_to_* timeouts. */
+/* User commands like start or stop should prompt immediate action
+   (well, next-initpass-immediate that is), disregarding any possible
+   time_to_* timeouts. To achieve that, entry timestamps are reset. */
+
 void clearts(struct initrec* p)
 {
 	p->lastrun = 0;
 	p->lastsig = 0;
 }
 
-/* Now what this does is a forced start of a service
-   (unlike enable which is more like "release brakes")
+/* Now what this does is a forced start of a service,
+   unlike enable which is more like "un-stop" and may leave
+   the service stopped if it is not in current runlevel.
 
    The idea is to change runlevel mask so that the entry
    would be started in current runlevel, *and* let the
@@ -251,6 +266,7 @@ void clearts(struct initrec* p)
  
    There is no dostop because P_MANUAL is enough to
    force-stop a process regardless of its configured runlevels */
+
 void dostart(struct initrec* p)
 {
 	clearts(p);
@@ -259,13 +275,22 @@ void dostart(struct initrec* p)
 	p->flags &= ~(P_MANUAL | P_FAILED);
 }
 
-/* Without any other changes (runlevels or whatever),
-   the entry will be restarted during the first initpass after its death. */
+/* To restart a process, it's enough to kill it without touching
+   the flags. On the next initpass, the process will be re-spawned.
+
+   This won't work with non-respawning entries of cource, but it does
+   not make much sense to restart those anyway. */
+
 void dorestart(struct initrec* p)
 {
 	clearts(p);
 	stop(p);
 }
+
+/* Enabling/disabling p may prompt some action on the next initpass,
+   either spawn() or stop(), and we'd like to have that done immediately
+   regardless of the timestamps. The action itself will happen more
+   or less naturally once shouldberunning() flips over P_MANUAL. */
 
 void dodisable(struct initrec* p, int v)
 {
@@ -277,14 +302,15 @@ void dodisable(struct initrec* p, int v)
 		p->flags &= ~P_MANUAL;
 }
 
+/* Pause is just kill(SIGSTOP) or kill(SIGCONT); the state of the process
+   will be tracked in waitpids(). */
+
 void dopause(struct initrec* p, int v)
 {
 	if(p->pid <= 0)
 		retwarn_("%s is not running", p->name);
 	if(kill(-p->pid, v ? SIGSTOP : SIGCONT))
 		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
-	/* once the child is stopped, we'll get SIGCHLD and waitpids()
-	   will set P_SIGSTOP */
 }
 
 void dohup(struct initrec* p)
