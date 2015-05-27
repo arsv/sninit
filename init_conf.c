@@ -7,17 +7,18 @@
 #include "sys.h"
 
 /* How reconfiguring works:
+
    	0. newblock is mmapped
 	1. new config is compiled into newblock
 	2. processes not in the new inittab are stopped
 	3. remaining pids are transferred from inittab to newblock
 	4. newblock replaces inittab, cfgblock is munmapped
-   Note that up until step 4 init uses the old inittab structure, because
-   step 2 implies waiting for pids that have no place for them in newtab.
 
-   This file only handles step 1.
-   configure() is the entry point. It sets up newblock memory block and
-   returns 0 on success.
+   Up until step 4 init uses the old inittab structure, because step 2
+   implies waiting for pids that have no place for them in newtab.
+
+   This file only handles step 1. configure() is the entry point.
+   It sets up newblock memory block and returns 0 on success.
 
    In case init gets another reconfigure request while in the main
    loop during step 2, compiled newtab is discarded and we're back to step 1. */
@@ -39,12 +40,13 @@ struct memblock cfgblock = { NULL };
 struct memblock newblock = { NULL };
 
 export int configure(int strict);
+export void setnewconf(void);
 
 /* top-level functions handling configuration */
 extern int readinittab(const char* file, int strict);
 extern int readinitdir(const char* dir, int strict);
 
-local void initcfgblocks(void);	/* set initial values for struct config */
+local void initcfgblocks(void);		/* set initial values for struct config */
 local int finishinittab(void);		/* copy the contents of newenviron to newblock */
 local void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
 					   assuming it won't be mremapped anymore */
@@ -55,6 +57,17 @@ extern int mmapblock(struct memblock* m, int size);
 extern void munmapblock(struct memblock* m);
 extern int addptrsarray(offset listoff, int terminate);
 
+/* If successful, configure() leaves a valid struct config in newblock.
+   Otherwise, it should clean up after itself.
+
+   S_RECONFIG must be set in state to let main() know it's got to
+   pick up the new configuration, but that is done outside of configure
+   because the two places that call configure() handle failure a bit
+   differently.
+
+   configure() itself does not replace cfg.
+   That is done later by setnewconf(), called later from main(). */
+
 int configure(int strict)
 {
 	if(mmapblock(&newblock, IRALLOC + sizeof(struct config) + sizeof(struct scratch)))
@@ -63,7 +76,6 @@ int configure(int strict)
 	initcfgblocks();
 
 	if(readinittab(inittab, strict))
-		/* readinittab does warn() about the reasons, so no need to do it here */
 		goto unmap;
 #ifdef INITDIR
 	if(readinitdir(initdir, strict))
@@ -81,21 +93,20 @@ unmap:	munmapblock(&newblock);
 	return -1;
 }
 
-/* newconfig contains complied config block. Set it as mainconfig,
-   freeing the old one if necessary.
-   PID data transfer also occurs here; the reason is that it must
-   be done as close to exchanging pointers as possible, to avoid
-   losing dead children in process */
-void setnewconf(void)
-{
-	transferpids();
-	munmapblock(&cfgblock);	 /* munmapblock can handle empty blocks */
+/* We start by creating the header of the struct in the newly-allocated
+   block, then let addinitrec() fill the space with the compiled process
+   entries as well as scattered environment, and once everthing is in place,
+   finishinittab() appends the arrays for initpass will use.
 
-	cfgblock = newblock;
-	cfg = (struct config*) cfgblock.addr;
-	state &= ~S_RECONFIG;
-	newblock.addr = NULL;
-}
+   Both initrecs and environment lines are initially placed in their
+   respective linked lists (struct scratch), which are only used to
+   create inittab[] and env[] in struct config. The lists are left
+   in place however, since recovering the space is more trouble than
+   it's worth.
+
+   Why not use lists? Well execve(2) takes envp[], and initpass iterates
+   over initrecs in both directions, which turns out to be easier
+   with inittab[] vs some kind of doubly-linked list. */
 
 void initcfgblocks(void)
 {
@@ -129,12 +140,12 @@ int finishinittab(void)
 	return 0;
 }
 
-/* parseinittab() fills all pointers in initrecs with offsets from newblock
+/* addinitrec() fills all pointers in initrecs with offsets from newblock
    to allow using MREMAP_MAYMOVE. Once newblock and newenviron are all
    set up, we need to make those offsets into real pointers ("repoint" them)
    by adding the base address of newblock.
 
-   Now because our offsets are pointer-typed and (pointer + pointer) operation
+   Now because the offsets are pointer-typed and (pointer + pointer) operation
    is illegal, we turn them into integers by subtracting NULL. */
 
 void* repoint(void* p)
@@ -164,7 +175,6 @@ void rewireptrsarray(void** a)
 		REPOINT(*p);
 }
 
-/* Run repoint() on all relevant pointers within newblock */
 void rewirepointers()
 {
 	struct initrec** pp;
@@ -179,7 +189,25 @@ void rewirepointers()
 		rewireptrsarray((void**) (*pp)->argv);
 }
 
-/* move child state info from cfgblock to newblock */
+/* Once initpass reports it's ok to switch configurations,
+   main calls setnewconf. By this point, all live pids and process
+   flags are still in the (old) cfg, so setnewconf starts by copying
+   anything relevant over to newblock.
+   After that, the blocks are exchanged and we're done.
+
+   This is the second entry point in this file. */
+
+void setnewconf(void)
+{
+	transferpids();
+	munmapblock(&cfgblock);	 /* munmapblock can handle empty blocks */
+
+	cfgblock = newblock;
+	cfg = (struct config*) cfgblock.addr;
+	state &= ~S_RECONFIG;
+	newblock.addr = NULL;
+}
+
 /* old inittab is cfg->inittab (which may or may not be CFG->inittab) */
 /* new inittab is NCF->inittab */
 void transferpids(void)
