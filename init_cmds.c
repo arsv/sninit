@@ -44,7 +44,7 @@ local void clearts(struct initrec* p);
    happens. Telinit connection is closed right after parsecmd() returns;
    this way initpass remains async and simple.
 
-   Within parsecmd, warnfd is the open telinit connection, so we sent
+   Within parsecmd, warnfd is the open telinit connection, so we send
    the text back to telinit using warn(). */
 
 void parsecmd(char* cmd)
@@ -78,6 +78,7 @@ void parsecmd(char* cmd)
 				retwarn_("no argument allowed for %c", *cmd);
 	}
 
+	/* Now the command itself */
 	switch(*cmd) {
 		/* sleep levels */
 		case 'Y': nextlevel = (nextlevel & SUBMASK) | (1 << 7); break;
@@ -116,6 +117,7 @@ void parsecmd(char* cmd)
 	4ab	switch to runlevel 4, clear sublevels, activate a and b
 	+ab	activate sublevels a and b
 	-ac	deactivate sublevels a and c */
+
 void setrunlevel(const char* p)
 {
 	int next = nextlevel;
@@ -253,7 +255,7 @@ void clearts(struct initrec* p)
 	p->lastsig = 0;
 }
 
-/* Now what this does is a forced start of a service,
+/* What this does is a forced start of a service,
    unlike enable which is more like "un-stop" and may leave
    the service stopped if it is not in current runlevel.
 
