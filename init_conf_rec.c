@@ -5,7 +5,8 @@
 #include "scope.h"
 
 /* addinitrec() and addenviron() are called for each parsed inittab line
-   and their task is to copy stuff to newblock */
+   and their task is to copy stuff from the fileblock being parsed
+   over to newblock. */
 
 extern struct memblock newblock;
 
@@ -23,10 +24,7 @@ extern int addstrargarray(const char* args[]);
 local int linknode(offset listptr, offset nodeptr);
 extern int checkdupname(const char* name);
 
-
-/* Arguments: mode="S234", name="httpd". See addrecargv for cmd and exe handling.
-   fb is the block we're parsing currently, used solely for error reporting. */
-
+/* Arguments: name="httpd", rlvl="S234" */
 int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 {
 	offset nodeoff;

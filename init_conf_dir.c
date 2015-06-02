@@ -22,6 +22,20 @@ local int skipdirent(struct dirent64* de);
 local int parsesrvfile(struct fileblock* fb, char* basename);
 local int comment(const char* s);
 
+/* Initdir is one-file-per-entry structure, while inittab is
+   one-line-per-entry. Other than that, they are very similar.
+   Both call addinitrec() the same way.
+   File basename is used as the entry name.
+
+   Only the proper contents of INITDIR is checked, with no recursion.
+   This simplifies the code *and* allows storing auxilliary scripts
+   in a directory under INITDIR without init trying to pick them up.
+
+   Just like with readinitdir, the files are mmaped whole.
+   Here however init may come across a large script of which only
+   the two initial lines are needed to make an initrec, so there is
+   a limit on the mmaped block size.
+   The assumption is that raw entries (non-scripts) must be short. */
 
 int readinitdir(const char* dir, int strict)
 {
@@ -101,6 +115,24 @@ int skipdirent(struct dirent64* de)
 
 	return 0;
 }
+
+/* The default values for flags and runlevels are chosen so that
+   the most typical respawning entries would not need to specify
+   either explicitly. For initdir entries, flags are optional.
+
+   With initdir entries, there is also the special case of executable
+   scripts. Regular entries are compiled like this:
+        cmd = `cat INITDIR/somefile`
+   but with executable scripts, we do
+        cmd = INITDIR/somescript
+   instead, leaving the parsing job mostly to the shebang interpreter.
+
+   This makes it possible to use regular shell scripts as init entries
+   directly, without the need for extra shims to call them.
+
+   Whenever explicit flags are needed, the go in a #-comment line,
+   which must be line 1 for raw entries and line 2 for script
+   (scripts have shebang for line 1). */
 
 int comment(const char* s)
 {

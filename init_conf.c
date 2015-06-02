@@ -95,18 +95,19 @@ unmap:	munmapblock(&newblock);
 
 /* We start by creating the header of the struct in the newly-allocated
    block, then let addinitrec() fill the space with the compiled process
-   entries as well as scattered environment, and once everthing is in place,
+   entries and environment variables, and once everthing is in place,
    finishinittab() appends the arrays for initpass will use.
 
    Both initrecs and environment lines are initially placed in their
-   respective linked lists (struct scratch), which are only used to
-   create inittab[] and env[] in struct config. The lists are left
-   in place however, since recovering the space is more trouble than
-   it's worth.
+   respective linked lists (struct scratch), with the list nodes scattered
+   between initrecs. The lists are only used to create inittab[] and env[]
+   in struct config, but they are left in place anyway, since recovering
+   the space is more trouble than it's worth.
 
-   Why not use lists? Well execve(2) takes envp[], and initpass iterates
-   over initrecs in both directions, which turns out to be easier
-   with inittab[] vs some kind of doubly-linked list. */
+   Why not use the lists directly?
+   Well execve(2) takes envp[], and initpass iterates over initrecs in both
+   directions, which turns out to be easier with inittab[] vs some kind
+   of doubly-linked list. */
 
 void initcfgblocks(void)
 {

@@ -8,12 +8,16 @@
 #include "init_conf.h"
 #include "scope.h"
 
-/* anonymous blocks */
+/* Init uses mmap to allocate memory *and* to read files.
+
+   memblocks are used for building (incrementally) struct config.
+
+   fileblocks are used to read text files linewise.  */
+
 export int mmapblock(struct memblock* m, int size);
 export int mextendblock(struct memblock* m, int size);
 export void munmapblock(struct memblock* m);
 
-/* file blocks */
 export int mmapfile(struct fileblock* f, int maxlen);
 export int munmapfile(struct fileblock* f);
 export int nextline(struct fileblock* f);
@@ -23,6 +27,11 @@ export int nextline(struct fileblock* f);
    int is used instead of placing IRALLOC in all relevant calls. */
 local int memblockalign = IRALLOC;
 
+/* There is actually only one memblock to allocate, newblock,
+   and only one to deallocate, cfgblock.
+   However, to keep things somewhat decoupled, all m*block functions
+   get them as arguments.
+   This also made sense when there was a separate scratchblock. */
 
 int mmapblock(struct memblock* m, int size)
 {
@@ -107,10 +116,14 @@ void munmapblock(struct memblock* m)
 
 /* Due to average inittab being about 1-2k, it is always read whole;
    for service files, only the head is mmaped.
-   Also, init makes no distinction between mmap failure and open failure,
-   both mean the new inittab won't be used */
-/* maxlen > 0: maximum size to map; maxlen < 0: maximum file size to mmap whole */
-/* the result is always 0-terminated */
+   Init makes no distinction between mmap failure and open failure,
+   both mean the new inittab won't be used.
+
+	maxlen > 0: error if the file is larger (inittab)
+	maxlen < 0: map at most -maxlen first bytes (initdir)
+
+   The result is always 0-terminated. */
+
 int mmapfile(struct fileblock* f, int maxlen)
 {
 	struct stat st;
@@ -155,6 +168,9 @@ int munmapfile(struct fileblock* f)
 {
 	return munmap(f->buf, f->len);
 }
+
+/* The file is mmaped rw and private, so we place the pointers
+   and terminate the line with \0, overwriting \n. */
 
 int nextline(struct fileblock* f)
 {
