@@ -24,8 +24,7 @@ local void dumpidof(struct initrec* p);
 local void dorestart(struct initrec* p);
 local void dodisable(struct initrec* p, int v);
 local void dostart(struct initrec* p);
-local void dopause(struct initrec* p, int v);
-local void dohup(struct initrec* p);
+local void killrec(struct initrec* p, int sig);
 
 local char* joincmd(char* buf, int len, char** argv);
 local void rlstr(char* str, int len, int mask);
@@ -89,13 +88,13 @@ void parsecmd(char* cmd)
 		case 'P': nextlevel = 1; rbcode = RB_POWER_OFF;   break;
 		case 'R': nextlevel = 1; rbcode = RB_AUTOBOOT;    break;
 		/* process ops */
-		case 'r': dorestart(p); break;
-		case 'p': dopause(p, 1); break;
-		case 'w': dopause(p, 0); break;
+		case 'p': killrec(p, -SIGSTOP); break;
+		case 'w': killrec(p, -SIGCONT); break;
+		case 'h': killrec(p, SIGHUP); break;
 		case 's': dostart(p); break;
+		case 'r': dorestart(p); break;
 		case 't': dodisable(p, 1); break;
 		case 'u': dodisable(p, 0); break;
-		case 'h': dohup(p); break;
 		/* state query */
 		case '?': dumpstate(); break;
 		case 'i': dumpidof(p); break;
@@ -304,21 +303,24 @@ void dodisable(struct initrec* p, int v)
 		p->flags &= ~P_MANUAL;
 }
 
-/* Pause is just kill(SIGSTOP) or kill(SIGCONT); the state of the process
-   will be tracked in waitpids(). */
+/* When signalling HUP, we only want to target the immediate init child.
+   With SIGSTOP/SIGCONT however, targeting the whole group makes more sense
+   (but may break programs that use SIGSTOP internally, hm)
 
-void dopause(struct initrec* p, int v)
+   The state of the process after SIGSTOP/SIGCONT will be tracked in waitpids(). */
+
+void killrec(struct initrec* p, int sig)
 {
-	if(p->pid <= 0)
+	pid_t pid = p->pid;
+
+	if(pid <= 0)
 		retwarn_("%s is not running", p->name);
-	if(kill(-p->pid, v ? SIGSTOP : SIGCONT))
-		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
-}
 
-void dohup(struct initrec* p)
-{
-	if(p->pid <= 0)
-		warn("%s is not running", p->name);
-	else
-		kill(SIGHUP, p->pid);
+	if(sig < 0) {
+		pid = -pid;
+		sig = -sig;
+	}
+
+	if(kill(pid, sig))
+		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
 }
