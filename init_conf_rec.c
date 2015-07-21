@@ -24,7 +24,19 @@ extern int addstrargarray(const char* args[]);
 local int linknode(offset listptr, offset nodeptr);
 extern int checkdupname(const char* name);
 
-/* Arguments: name="httpd", rlvl="S234" */
+/* Context:
+
+	fileblock=(mmaped /etc/inittab) name="tty" rlvl="fast"
+		cmd=[/sbin/getty, 115200, /dev/ttyS0] exe=0
+	fileblock=(mmaped /etc/rc/httpd) name="httpd" rlvl=""
+		cmd=[/sbin/httpd] exe=0
+	fileblock=(mmaped /etc/rc/squid) name="squid" rlvl=":a"
+		cmd=[/etc/rc/squid] exe=1
+
+   Non-zero exe means cmd is the name of the script to run, and need
+   not be parsed. See addrecargv() below.
+*/
+
 int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 {
 	offset nodeoff;
@@ -77,7 +89,9 @@ out:	/* Cancel the entry, resetting newblock.ptr
 	return -1;
 }
 
-/* def is something like "PATH=/bin/sh" somewhere inside fb */
+/* The second entry point here, used for environment lines in inittab.
+   def is something like "PATH=/bin/sh" somewhere inside fb */
+
 int addenviron(const char* def)
 {
 	int len = strlen(def);
