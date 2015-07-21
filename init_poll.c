@@ -12,17 +12,18 @@
 
 /* FD polling and telinit communication.
 
-Call order:
-   main() calls pollfds()
-   pollfds sets state |= S_INITCTL
-   main checks for state & S_INITCTL and calls acceptctl()
+   Call order:
 
-The separation of pollfds and acceptctl is necessary to reap deceased
-children before interpreting commands. That, in turn, is not really
-necessary but makes the output clear, both for ? and for child control.
+       main() calls pollfds()
+       pollfds sets state |= S_INITCTL
+       main checks for state & S_INITCTL and calls acceptctl()
 
-The actual command processing happens in init_cmds.c, these routines
-only receive them. */
+   The separation of pollfds and acceptctl is necessary to reap deceased
+   children before interpreting commands. That, in turn, is not really
+   necessary but makes the output clear, both for ? and for child control.
+
+   The actual command processing happens in init_cmds.c, these routines
+   only receive them. */
 
 extern int state;
 extern int initctlfd;
@@ -125,6 +126,7 @@ void acceptctl(void)
 /* telinit must provide user's credentials in ancillary data,
    as init should only accept commands from root when running with S_PID1.
    See unix(7). */
+
 void readcmd(int fd)
 {
 	bss char cbuf[CMDBUF];
