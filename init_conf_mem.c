@@ -6,13 +6,13 @@
 /* All add* functions copy relevant data to newblock,
    possibly extending it, and adjust newblock.ptr accordingly.
 
-   addstruct, addstruct and addptrsarray return the offset
+   addstruct and addptrsarray return the offset
    the data was placed at, or -1 in case of error.
 
    addstrargarray and addstringarray only distingluish between
    error and non-error, they are used for argv[] which is always
-   laid out after respective initrec and the actual offset is not
-   used anywhere. */
+   laid out after respective initrec, so the actual offset is
+   not really relevant. */
 
 extern struct memblock newblock;
 
@@ -160,8 +160,8 @@ int addptrsarray(offset listoff, int terminate)
 	return ptrsoff;
 }
 
-/* This is called during initrec parsing, way before NCF->inittab array
-   is formed. So it can't use NCF->inittab. Instead, it should use
+/* This is called during initrec parsing, way before SCR->inittab array
+   is formed. So it can't use SCR->inittab. Instead, it should use
    SCR->inittab (which is offset list) to find location of entries added
    so far. */
 int checkdupname(const char* name)
