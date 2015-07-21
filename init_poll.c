@@ -19,7 +19,7 @@ Call order:
 
 The separation of pollfds and acceptctl is necessary to reap deceased
 children before interpreting commands. That, in turn, is not really
-necessary but makes the output clear, both for ? and child control.
+necessary but makes the output clear, both for ? and for child control.
 
 The actual command processing happens in init_cmds.c, these routines
 only receive them. */
