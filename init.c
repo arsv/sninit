@@ -336,11 +336,10 @@ void sighandler(int sig)
    making the main loop run a bit faster than it would with only SIGCHLDs
    and telinit socket noise.
 
-   Precision is not important here, it is ok to wait for a few seconds more,
-   but keeping sane timeouts is crucial; setting poll timeout to 0 by mistake
-   would result in the loop spinning out of control. This is done by tracking
-   non-zero setpasstime returns and "pushing" passtime forward, pretending
-   that any timed ppoll did not return early.
+   Precision is not important here, but keeping sane timeouts is crucial;
+   setting poll timeout to 0 consistently by mistake would result in the loop
+   spinning out of control. To counteract this, setpasstime errors are handled
+   by pushing passtime forward, pretending ppoll call never returns early.
 
    Note clock errors are not something that happens daily, and usually
    is's a sign of deep troubles, like running on an incompatible architecture.
@@ -354,14 +353,9 @@ void sighandler(int sig)
    init could (should?) have been written with no reliance on time. */
 
 /* The value used for passtime is kernel monotonic clock shifted
-   by a constant. Monotonic clock works well, since the code only uses
-   passtime differences, not the value itself. Constant shift is necessary
-   to make sure the difference is not zero at the first initpass.
-
-   At bootup, the system starts with all lastrun=0 and possibly also
-   with the clock near 0, activating time_to_* timers even though
-   no processes have been started at time 0. To avoid delays, monotonic
-   clocks are shifted forward so that boot occurs at some time past 0.
+   by a constant. The code only uses passtime differences, not the value itself.
+   Constant shift is necessary to make sure the difference is not zero
+   at the first initpass, to avoid triggering time_to_* stuff.
 
    The offset may be as low as the actual value of time_to_restart,
    but since time_to_restart is a short using 0xFFFF is a viable option.
