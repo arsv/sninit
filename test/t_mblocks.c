@@ -22,7 +22,7 @@ extern void munmapblock(struct memblock* m);
 
 off_t BASE = 0x00;
 
-unsigned char bytesign(off)
+unsigned char bytesign(int off)
 {
 	return off & 0xFF;
 }
