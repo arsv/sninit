@@ -25,7 +25,7 @@ int main(void)
 	int dynhead = sizeof(struct config) + sizeof(struct scratch);
 	T(mmapblock(&newblock, dynhead + 17));
 	newblock.ptr = dynhead + 10;
-	memset(newblock.addr, newblock.len, 0x00);
+	memset(newblock.addr, 0x00, newblock.len);
 
 	T(addinitrec(&fb, "foo", heapdup(":12"), heapdup("/bin/sh -c true"), 0));
 

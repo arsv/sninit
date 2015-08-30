@@ -19,7 +19,7 @@ time_t tztime;
 
 int main(void)
 {
-	memset(&tzinfo, sizeof(tzinfo), 0);
+	memset(&tzinfo, 0, sizeof(tzinfo));
 
 	/* Regular entry */
 	tzfile = "t_tzinit_1.bin";

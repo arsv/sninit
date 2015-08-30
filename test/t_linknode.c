@@ -21,7 +21,7 @@ int main(void)
 	   and move block pointer over */
 	int listlen = sizeof(struct config) + sizeof(struct ptrlist);
 	mmapblock(&newblock, listlen + 100);
-	memset(newblock.addr, listlen + 100, 0);
+	memset(newblock.addr, 0, listlen + 100);
 	newblock.ptr = listoff + listlen;
 
 	/* Sanity check, the list should be empty */
