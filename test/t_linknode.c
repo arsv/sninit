@@ -9,6 +9,8 @@ extern offset addstruct(int size, int extra);
 extern int mmapblock(struct memblock* m, int size);
 extern int linknode(offset listptr, offset ptr);
 
+NOCALL(setrunflags);
+
 int main(void)
 {
 	int listoff = 17;

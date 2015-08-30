@@ -15,7 +15,8 @@ ifneq ($(ARCH),)
 init telinit run: libc.a
 endif
 
-init_conf = init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o init_conf_dir.o init_conf_rec.o
+init_conf = init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o \
+	init_conf_dir.o init_conf_rec.o init_conf_key.o
 init_null = init_null.o
 init_tz = init_time_tz.o init_time_stamp.o
 init_notz = init_time_notz.o init_time_stamp.o

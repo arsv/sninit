@@ -3,17 +3,14 @@ The new inittab format
 Up to some point during development, sninit used sysvinit-style
 inittab format ("sysvtab" for short):
 
-	name:rlvls:flags:command
+	name:rlvls:action:command
 
 Later on, the format has been changed to crontab-style "newtab":
 
 	name	runflags    command
 
-Note whitespace-separated fields, and flags merged with runlevels.
-
-In current implementation, the formats are essentially equivalent. 
-SysV-style "wait" and "once" are replaced with "w" and "r" respectively,
-rlvls field is used with no changes.
+Note whitespace-separated fields, and runflags in place of rlvls
+and action.
 
 
 Why a new format?
@@ -26,25 +23,29 @@ and another one for comma-separated list of value kinda made sense.
 
 	httpd:2345:respawn,uid=apache,gid=apache:/sbin/httpd
 
-As development progressed, this evolved into
+As development progressed, some things became silent defaults and
+other have been moved out of init (into run(8)), so a typical
+respawning entry became
 	
 	httpd:::/sbin/runcap apache@apache /sbin/httpd
 
-while w-type entries started to look like
+and one-time entries started to look like
 
 	::wait:/sbin/whatever
 
-and it made less and less sense to shoehorn it into sysvinit format,
+so it made less and less sense to shoehorn it into sysvinit format,
 pretty ugly to begin with.
 
 Wherever things may be aligned, it's better to keep them aligned, so : were
 replaced with whitespace separators. And since sninit had already crontab-style
 environment variables, the whole thing started to look more like crontab.
 
-Atop of that, sninit was never a drop-in replacement for sysvinit,
-and was not meant to be. So instead of somehow accepting somewhat compatible
-configuration with a different semantics (that is, a sysv-style inittab),
-the choice was made to reject it loudly.
+
+Compatibility
+~~~~~~~~~~~~~
+sninit is not a drop-in replacement for sysvinit, and was not meant to be.
+Switching from sysvinit to sninit requires rewriting inittab in any case,
+so the idea of maintaining sysv-inittab compatibility has been rejected.
 
 
 Field order
@@ -62,58 +63,54 @@ Matching the 2nd field would require explicit pattern for the flags.
 Entry flags
 ~~~~~~~~~~~
 Sysvinit uses self-descriptive keywords for its action field,
-and a separate field for runlevels.
+and a separate mandatory field for runlevels:
 
 	mount:12345:wait:/bin/mount -a
 
-In contrast, sninit has single-character flags mixed with
-runlevel specification:
-
-	mount	w*   /bin/mount -a
-
-Experiments at writing inittabs for bootable systems have shown that
-most of the time properly choosen defaults result in per-entry description
-only one or two characters long (in newtab format), and among those actual
-flags like r or w and runlevels like 0 or * take more or less equal roles.
-
-To some extent, this is already showing in sysvinit format, with only 3 actions
-out of 14 actually making use of runlevels field. Sysvinit has justification
-for that, with its fixed-four-fields format. With sninit, it is not that simple
-due to different internal representation, which heavily implies usable defaults
-of some sort.
-
-Another reason for choosing non-trivial defaults (i.e. something other than
-flags=0 rlvls=0) is having flag-less service files in initdir.
-Flag specification there remains ugly, and I see no way to improve
-the situation, but with sane defaults there is (almost) no need to do that.
-Incidentally, the choices made for initdir actually fit quite well in inittab.
+In sninit however has made runlevels optional, and treats action
+a bit differently. This is because of the way sninit represents
+this data internally.
 
 
-List of flags
-~~~~~~~~~~~~~
-a	sub A
-b	sub B
-c	sub C
-d	sub D
-e	sub E
-f	sub F
-g
-h	C_HUSH
-i	C_ROFa
-j	C_ROFa | C_ROFb
-k	C_USEABRT
-l
-m	PRIMASK & ~SLIPPERY & ~SPECIAL
-n	
-o	
-p	
-q	C_DOF
-r	C_ONCE
-s	C_FAST	
-t	C_DTF
-u	C_ROFa
-v	C_WAIT
-w	C_WAIT | C_ONCE
-x	P_MANUAL
-y	
-z	PRIMASK &  SLIPPERY & ~SPECIAL
+Entry flags: actions
+~~~~~~~~~~~~~~~~~~~~
+Unlike sysvinit, action in sninit is a bitmask (flags field in struct initrec),
+with individual bits having little relation to the action keywords in inittab.
+
+The bits work well for the code, but having something close to the internal
+representation in inittab turns out to be a bad idea: outside of the code,
+the choice is non-obvious, and the need to combine bits leads either to a very
+length field ("once,excl") or something barely readable ("ox").
+
+So instead the decision was made to combine valid bit combinations into
+sysv-style actions, and use one descriptive word for each action. This way,
+it's "once" and "wait" even thought "wait" is two bits, O_ONCE | O_EXCL.
+
+
+Entry flags: runlevels
+~~~~~~~~~~~~~~~~~~~~~~
+Real life observation: sysv initlevels are rarely used, and unusual uses
+are nonexistant. Pretty much any modern system boots into runlevel 3,
+and that's about it. Few make difference between 3 (text login) and 5 (X login).
+Sometimes level 1 (single user mode) is implemented. Sometimes it's not.
+
+Even with sninit's slippery levels, the situation does not change much.
+
+In fact, the way slippery runlevels are hard-coded for sleep/suspend/hybernate
+commands extends nicely into the other runlevels. It's pretty safe to assume
+runlevel 1 is always a single-user mode, runlevel 3 is the normal system state
+and so on.
+
+
+Entry flags: actions and runlevels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+There is a strong correlation between actions and runlevels tAhe entry runs on.
+Regular deamons are typically 23456789, most wait and once commands are ~0,
+syslog is 23456789 as well, gettys are likely 345 while X/xdm is 3 only.
+
+This makes it convenient to include runlevels together with flags into the action
+keyword, at least as a default setting.
+
+
+Entry flags: initdir and services
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

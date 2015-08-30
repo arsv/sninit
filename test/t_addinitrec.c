@@ -27,7 +27,7 @@ int main(void)
 	newblock.ptr = dynhead + 10;
 	memset(newblock.addr, newblock.len, 0x00);
 
-	T(addinitrec(&fb, "foo", "12", heapdup("/bin/sh -c true"), 0));
+	T(addinitrec(&fb, "foo", heapdup(":12"), heapdup("/bin/sh -c true"), 0));
 
 	/* Sanity check for ptrlist */
 	A(SCR->inittab.head > 0);
@@ -42,14 +42,14 @@ int main(void)
 
 	/* the structure itself should be initialized */
 	S(pptr->name, "foo");
-	A(pptr->flags == (C_DOF | C_DTF));
+	A(pptr->flags == 0);
 	A(pptr->rlvl == ( (1<<1) | (1<<2) ));
 	A(pptr->pid == 0);
 	A(pptr->lastrun == 0);
 	A(pptr->lastsig == 0);
 
 	/* One more initrec */
-	T(addinitrec(&fb, "bar", "234", heapdup("/sbin/httpd"), 0));
+	T(addinitrec(&fb, "bar", heapdup(":234"), heapdup("/sbin/httpd"), 0));
 
 	/* Sanity check for ptrlist */
 	A(SCR->inittab.head < SCR->inittab.last);
@@ -63,7 +63,7 @@ int main(void)
 
 	/* the structure itself should be initialized */
 	S(pptr->name, "bar");
-	A(pptr->flags == (C_DOF | C_DTF));
+	A(pptr->flags == 0);
 	A(pptr->rlvl == ( (1<<2) | (1<<3) | (1<<4) ));
 	A(pptr->pid == 0);
 	A(pptr->lastrun == 0);

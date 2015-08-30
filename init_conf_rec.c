@@ -15,7 +15,7 @@ export int addinitrec(struct fileblock* fb, char* name, char* flags, char* cmd, 
 
 local int prepargv(char* str, char** end);
 local int addrecargv(char* cmd, int exe);
-local int setrunflags(struct fileblock* fb, struct initrec* entry, char* flags);
+extern int setrunflags(struct fileblock* fb, struct initrec* entry, char* flags);
 
 extern int addstruct(int size, int extra);
 extern int addstringarray(int n, const char* str, const char* end);
@@ -147,71 +147,6 @@ int linknode(offset listptr, offset nodeptr)
 
 	list->last = nodeptr;
 	list->count++;
-
-	return 0;
-}
-
-/* Parse runlevels and flags (1st initline field) into entry->rlvl
-   and entry->flags. Typical input: mode="S123N".
-
-   When specified, runlevels are translated as is (i.e. "12a" = R1 | R2 | Ra),
-   however there are some special cases:
-	(none)		same as "3456789" (not 012 are *not* in the mask)
-	~12		all but 12, that is, "03456789"
-	~12a		same as "03456789a;
-			pri levels are inverted, sublevels aren't
-
-   See doc/sublevels.txt for considerations re. sublevels handling. */
-
-int setrunflags(struct fileblock* fb, struct initrec* entry, char* mode)
-{
-	char* p;
-	int rlvl = 0;
-	int neg = 0;
-	int flags = 0;
-
-	for(p = mode; *p; p++)
-		switch(*p) {
-			case '-': continue;
-			/* runlevels */
-			case '~': neg = 1; break;
-			case '0' ... '9': rlvl |= (1 << (*p - '0' +  0)); break;
-			case 'a' ... 'f': rlvl |= (1 << (*p - 'a' + 10)); break;
-			/* runlevel ranges */
-			case '*': rlvl |= PRIMASK & ~1; break;
-			case 'n': rlvl |= PRIMASK & ~SLIPPERY & ~SPECIAL; break;
-			/* entry type */
-			case 'v': flags |= C_WAIT; break;
-			case 'w': flags |= C_WAIT;
-			case 'r': flags |= C_ONCE; break;
-			/* disable on failure */
-			case 's': flags |= C_FAST; break;
-			case 't': flags |= C_DTF; break;
-			case 'q': flags |= C_DOF; break;
-			/* runlevel change on failure */
-			case 'i': flags |= C_ROFa; break;
-			case 'u': flags |= C_ROFa;
-			case 'j': flags |= C_ROFb; break;
-			/* misc */
-			case 'k': flags |= C_USEABRT; break;
-			case 'h': flags |= C_HUSH; break;
-			case 'x': flags |= P_MANUAL; break;
-			default:
-				retwarn(-1, "%s:%i: unknown flag %c", fb->name, fb->line, *p);
-		}
-
-	/* Assume DOF-DTF for regular, non-hushed services */
-	if(!(flags & (C_HUSH | C_ONCE | C_DOF | C_DTF)))
-		flags |= C_DOF | C_DTF;
-
-	if(!(rlvl & PRIMASK))
-		rlvl |= (PRIMASK & ~SPECIAL);
-
-	/* Due to the way sublevels are handled, simply negating them makes no sense */
-	if(neg) rlvl = (~(rlvl & PRIMASK) & PRIMASK) | (rlvl & SUBMASK);
-
-	entry->rlvl = rlvl;
-	entry->flags = flags;
 
 	return 0;
 }

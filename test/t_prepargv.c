@@ -12,6 +12,7 @@ int checkdupname() { return -1; }
 int addstringarray() { return -1; }
 int linknode() { return -1; }
 int addstruct() { return -1; }
+int setrunflags() { return -1; }
 
 extern int prepargv(char* str, char** end);
 
