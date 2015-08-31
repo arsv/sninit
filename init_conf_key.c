@@ -14,9 +14,9 @@
 #define R8 (1<<8)
 #define R9 (1<<9)
 
-#define Rx0	~R0
+#define Rx0	(PRIMASK & ~R0)
 #define Rx012	(PRIMASK & ~(R0 | R1 | R2))
-#define R789	(R7 | R8 | R9)
+#define R789	(PRIMASK & (R7 | R8 | R9))
 #define Rx789	(PRIMASK & ~(R7 | R8 | R9))
 
 static struct entrytype {
