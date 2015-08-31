@@ -20,6 +20,7 @@ extern void stop(struct initrec* p);
 
 local void swapi(int* a, int* b);
 local int shouldberunning(struct initrec* p);
+local void switchtonextlevel(void);
 
 /* Initpass: go through inittab, (re)starting entries
    that need to be (re)started and killing entries that should be killed.
@@ -101,12 +102,23 @@ void initpass(void)
 				return;			/* off to wait for this process */
 		}
 
-	if(!waitfor)
-		state &= ~S_WAITING;
- 	if(waitfor || currlevel == nextlevel)
+	if(waitfor)
 		return;
 
-	/* Nothing more to run, we've done switching runlvls */
+	state &= ~S_WAITING;
+
+	if(nextlevel == (1<<0))
+		/* level 0 is slippery in its own particular way */
+		nextlevel = 0, timetowait = 0;
+	else if(currlevel != nextlevel)
+		switchtonextlevel();
+}
+
+local void switchtonextlevel(void)
+{
+	struct initrec** inittab = cfg->inittab;
+	struct initrec** pp;
+	struct initrec* p;
 
 	/* One we're here, reset pid for r-type entries, to run them when
 	   entering another runlevel with shouldberunning(p) true. */
@@ -121,13 +133,6 @@ void initpass(void)
 		timetowait = 0;
 	} else {
 		currlevel = nextlevel;
-	} if(currlevel == (1<<0)) {
-		/* Runlevel 0 (that's 1<<0 = 1) is "slippery" in its own particular way:
-		   once it's reached, we've got to kill all that's left and exit
-		   the main loop. Since shouldberunning always fails against all-0-bits,
-		   this is a simple way to ensure no processes are left behind. */
-		nextlevel = 0;
-		timetowait = 0;
 	}
 }
 
