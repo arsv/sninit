@@ -222,7 +222,7 @@ void transferpids(void)
 		   the next initpass() just because they are new.
 		   This requires (currlevel == nextlevel) which is enforced
 		   with S_RECONF. */
-		if((q->flags & C_WAIT) && (q->rlvl & currlevel))
+		if((q->flags & C_ONCE) && (q->rlvl & currlevel))
 			q->pid = -1;
 
 		if(!cfg) /* first call, no inittab to transfer pids from */
