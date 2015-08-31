@@ -7,11 +7,11 @@ i1	once	sbin/ini1
 i2	once	sbin/ini2
 i3	wait	sbin/ini3
 
-s1	-	sbin/srv1
-s2	-	sbin/srv2
-s3	-	sbin/srv3
+s1	fast	sbin/srv1
+s2	fast	sbin/srv2
+s3	fast	sbin/srv3
 
-ss	wait:8	!echo sleeping
-sw	wait:8~	!echo wakeup
+ss	fall	!echo sleeping
+sw	wake	!echo wakeup
 
 # vim: ft=

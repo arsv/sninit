@@ -5,25 +5,35 @@
 
 /* Entry flags */
 
-#define MAXCLS 10
+#define MAXCLS 8
 
 #define R0 (1<<0)
 #define R1 (1<<1)
 #define R2 (1<<2)
+#define R7 (1<<7)
+#define R8 (1<<8)
+#define R9 (1<<9)
 
 #define Rx0	~R0
 #define Rx012	(PRIMASK & ~(R0 | R1 | R2))
+#define R789	(R7 | R8 | R9)
+#define Rx789	(PRIMASK & ~(R7 | R8 | R9))
 
 static struct entrytype {
 	char key[MAXCLS];
 	short rlvl;
 	short flags;
 } entypes[] = {
-	{ "",		Rx012,	0 },
+	{ "",		Rx012,	C_DOF | C_DTF },
+	{ "resp",	Rx012,	C_HUSH },
+	{ "slow",	Rx012,	C_DOF | C_DTF },
+	{ "fast",	Rx012,	C_DOF },
 	{ "wait",	Rx0,	C_ONCE | C_WAIT },
 	{ "once",	Rx0,	C_ONCE },
-	{ "last",	Rx0,	C_WAIT },
-	{ "respawn",	Rx012,	0 }
+	{ "last",	Rx0,	C_WAIT | C_DOF | C_DTF },
+	{ "down",	R0,	C_ONCE | C_WAIT },
+	{ "wake",	Rx789,	C_ONCE },
+	{ "fall",	R789,	C_ONCE },
 	/* not terminated */
 };
 
