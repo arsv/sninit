@@ -9,18 +9,16 @@ PATH=/bin:/sbin:/usr/bin
 LOCALE=C
 
 # System initialization
-mount	wait	/sbin/mount -o remount,rw /
-syslog	last	/sbin/syslogd -n
-clock	once	/sbin/hwlock -s
+mount	W2+	/sbin/mount -o remount,rw /
+umount	W0	/sbin/mount -o remount,ro /
+syslog	L3+	/sbin/syslogd -n
+clock	R1+	/sbin/hwlock -s
 
 # VTs
-su	fast:1	/sbin/sulogin
-tty1	fast	/sbin/agetty --noclear -8 -s 38400 tty1 linux
-tty2	fast	/sbin/agetty -8 -s 38400 tty2 linux
-tty3	fast	/sbin/agetty -8 -s 38400 tty3 linux
-tty4	fast	/sbin/agetty -8 -s 38400 tty4 linux
-tty5	fast	/sbin/agetty -8 -s 38400 tty5 linux
-tty6	fast	/sbin/agetty -8 -s 38400 tty6 linux
-
-# Shutdown
-umount	down	/sbin/mount -o remount,ro /
+su	F1	/sbin/sulogin
+tty1	F3+	/sbin/agetty --noclear -8 -s 38400 tty1 linux
+tty2	F3+	/sbin/agetty -8 -s 38400 tty2 linux
+tty3	F3+	/sbin/agetty -8 -s 38400 tty3 linux
+tty4	F3+	/sbin/agetty -8 -s 38400 tty4 linux
+tty5	F3+	/sbin/agetty -8 -s 38400 tty5 linux
+tty6	F3+	/sbin/agetty -8 -s 38400 tty6 linux

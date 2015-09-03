@@ -3,90 +3,56 @@
 #include "init_conf.h"
 #include "scope.h"
 
-/* Entry flags */
-
-#define MAXCLS 8
-
-#define R0 (1<<0)
-#define R1 (1<<1)
-#define R2 (1<<2)
-#define R7 (1<<7)
-#define R8 (1<<8)
-#define R9 (1<<9)
-
-#define Rx0	(PRIMASK & ~R0)
-#define Rx012	(PRIMASK & ~(R0 | R1 | R2))
-#define R789	(PRIMASK & (R7 | R8 | R9))
-#define Rx789	(PRIMASK & ~(R7 | R8 | R9))
-
 static struct entrytype {
-	char key[MAXCLS];
-	short rlvl;
+	char key;
+	char inv;
 	short flags;
 } entypes[] = {
-	{ "",		Rx012,	C_DOF | C_DTF },
-	{ "resp",	Rx012,	C_HUSH },
-	{ "slow",	Rx012,	C_DOF | C_DTF },
-	{ "fast",	Rx012,	C_DOF },
-	{ "wait",	Rx0,	C_ONCE | C_WAIT },
-	{ "once",	Rx0,	C_ONCE },
-	{ "last",	Rx0,	C_WAIT | C_DOF | C_DTF },
-	{ "down",	R0,	C_ONCE | C_WAIT },
-	{ "wake",	Rx789,	C_ONCE },
-	{ "fall",	R789,	C_ONCE },
-	/* not terminated */
+	{ 'S', 0, C_DOF | C_DTF },
+	{ 'L', 0, C_DOF | C_DTF | C_WAIT },
+	{ 'F', 0, C_DOF },
+	{ 'P', 0, C_HUSH },
+	{ 'W', 0, C_ONCE | C_WAIT },
+	{ 'R', 0, C_ONCE },
+	{ 'X', 1, C_ONCE },
+	{ 0, 0, 0 }
 };
-
-local int applyentrytype(struct fileblock* fb, struct initrec* entry, const char* type)
-{
-	struct entrytype* et;
-	struct entrytype* end = entypes + sizeof(entypes)/sizeof(*entypes);
-
-	for(et = entypes; et < end; et++)
-		if(!strcmp(type, et->key))
-			break;
-	if(et >= end)
-		retwarn(-1, "%s:%i: unknown mode %s", fb->name, fb->line, type);
-
-	entry->flags = et->flags;
-	entry->rlvl = et->rlvl;
-	return 0;
-}
-
-local int applyrunlevels(struct fileblock* fb, struct initrec* entry, const char* levels)
-{
-	const char* p;
-	int rlvl = 0;
-
-	for(p = levels; *p; p++)
-		switch(*p) {
-			case '0' ... '9':
-				rlvl |= (1 << (*p - '0'));
-				break;
-			case 'a' ... 'f':
-				rlvl |= (1 << (*p - 'a' + 0x0A));
-				break;
-			default:
-				retwarn(-1, "%s:%i: bad runlevel char %c", fb->name, fb->line, *p);
-		}
-
-	if(rlvl & PRIMASK)
-		entry->rlvl = rlvl;
-	else if(rlvl & SUBMASK)
-		entry->rlvl = (entry->rlvl & PRIMASK) | rlvl;
-
-	return 0;
-}
 
 export int setrunflags(struct fileblock* fb, struct initrec* entry, char* type)
 {
-	/* split the field into type proper and optional runlevels part */
-	char* colon = strchr(type, ':');
-	if(colon) *colon = '\0';
+	char* p;
+	int rlvl = 0;
+	int last = 0;
 
-	if(applyentrytype(fb, entry, type))
-		return -1;
-	if(!colon)
-		return 0;
-	return applyrunlevels(fb, entry, colon + 1);
+	if(!*type) /* cannot risk *(type+1) below */
+		retwarn(-1, "%s:%i: empty entry key", fb->name, fb->line);
+
+	for(p = type + 1; *p; p++)
+		switch(*p) {
+			case '0' ... '9':
+				rlvl |= (1 << (last = *p - '0'));
+				break;
+			case 'a' ... 'f':
+				rlvl |= (1 << (*p - 'a' + 0xA));
+				break;
+			case '+':
+				rlvl |= (PRIMASK << last) & PRIMASK;
+				break;
+			default:
+				retwarn(-1, "%s:%i: bad runlevel specifier", fb->name, fb->line);
+		}
+	if(!(rlvl & PRIMASK))
+		rlvl = (PRIMASK & ~1);
+
+	struct entrytype* et;
+	for(et = entypes; et->key; et++)
+		if(*type == et->key)
+			break;
+	if(!et->key)
+		retwarn(-1, "%s:%i: unknown entry type %c", fb->name, fb->line, *type);
+
+	entry->flags = et->flags;
+	entry->rlvl = et->inv ? ((~rlvl & PRIMASK) | (rlvl & SUBMASK)) : rlvl;
+
+	return 0;
 }

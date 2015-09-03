@@ -3,15 +3,16 @@
 PATH=/bin
 VAR=value
 
-i1	once	sbin/ini1
-i2	once	sbin/ini2
-i3	wait	sbin/ini3
+i1	R1+	sbin/ini1
+i2	R1+	sbin/ini2
+i3	W1+	sbin/ini3
 
-s1	fast	sbin/srv1
-s2	fast	sbin/srv2
-s3	fast	sbin/srv3
+s1	F3+	sbin/srv1
+s2	F3+	sbin/srv2
+s3	F3+	sbin/srv3
 
-ss	fall	!echo sleeping
-sw	wake	!echo wakeup
+	R789	!echo going to sleep
+sleep	W7	!echo mem > /sys/power/state
+	X789	!echo wakeup
 
 # vim: ft=

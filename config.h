@@ -50,8 +50,9 @@
 /* Slippery runlevels. See doc/slippery.txt for explanation. */
 #define SLIPPERY ((1 << 7) | (1 << 8) | (1 << 9))
 
-/* Special (recovery) levels, excluded from the default entry mask */
-#define SPECIAL ((1 << 0) | (1 << 1) | (1 << 2))
+/* Default mode for initdir entries */
+/* (this is a string parsed just like the 2nd inittab field) */
+#define SRDEFAULT "S3+"
 
 /* Fallback runlevels, see C_ROFa and C_ROFb from init.h */
 #define FALLBACK1 1

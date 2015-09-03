@@ -21,7 +21,6 @@ extern int nextline(struct fileblock* f);
 local int skipdirent(struct dirent64* de);
 local int parsesrvfile(struct fileblock* fb, char* basename);
 local int comment(const char* s);
-local char* flagsline(char* line);
 
 /* Initdir is one-file-per-entry structure, while inittab is
    one-line-per-entry. Other than that, they are very similar.
@@ -140,35 +139,32 @@ int comment(const char* s)
 	while(*s == ' ' || *s == '\t') s++; return !*s || *s == '#';
 }
 
-char* flagsline(char* line)
-{
-	if(*line++ != '#')
-		return NULL;
-	if(*line == '#')
-		line++;
-	else if(*line != ':')
-		return NULL;
-	return line;
-}
-
 int parsesrvfile(struct fileblock* fb, char* basename)
 {
 	int shebang;
-	char* rlvl;
 	char* cmd;
+	char* rlvls;
+	char srdefault[] = SRDEFAULT; /* TODO: should be const */
 
 	if(!nextline(fb))
 		retwarn(-1, "%s: empty file", fb->name);
 
 	/* Check for, and skip #! line if present */
-	if((shebang = !strncmp(fb->ls, "#!", 2)))
+	if(fb->ls[0] == '#' && fb->ls[1] == '!') {
+		shebang = 1;
 		if(!nextline(fb))
 			retwarn(-1, "%s: empty script", fb->name);
+	}
 
 	/* Do we have #: line? If so, note runlevels and flags */
-	if((rlvl = flagsline(fb->ls)))
+	if(fb->ls[0] == '#' && fb->ls[1] == ':') {
+		fb->ls[1] = srdefault[0];
+		rlvls = fb->ls + 1;
 		if(!nextline(fb))
 			retwarn(-1, "%s: no command found", fb->name);
+	} else {
+		rlvls = srdefault;
+	}
 
 	if(shebang) {
 		/* No need to parse anything anymore, it's a script. */
@@ -185,6 +181,5 @@ int parsesrvfile(struct fileblock* fb, char* basename)
 		cmd = fb->ls;
 	}
 
-	char nothing[] = "";
-	return addinitrec(fb, basename, rlvl ?: nothing, cmd, shebang);
+	return addinitrec(fb, basename, rlvls, cmd, shebang);
 }

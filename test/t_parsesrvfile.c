@@ -62,15 +62,17 @@ void test(input, rlvl, cmd, exe)
 
 int main(void)
 {
+	/* The following assumes SRDEFAULT is "S3+"! */
+
 	L("non-shebang, runlevels, no flags");
 	test(	"#:123\n"
 		"/bin/echo -n foo\n",
-		":123", "/bin/echo -n foo", 0);
+		"S123", "/bin/echo -n foo", 0);
 
 	L("non-shebang, shell, with flags");
-	test(	"#:123l\n"
+	test(	"#:123a\n"
 		"! echo -n foo\n",
-		":123l", "! echo -n foo", 0);
+		"S123a", "! echo -n foo", 0);
 
 	L("non-shebang, runlevels followed by comments");
 	test(	"#:123\n"
@@ -80,24 +82,24 @@ int main(void)
 		"\n"
 		"/bin/echo -n foo\n",
 
-		":123", "/bin/echo -n foo", 0);
+		"S123", "/bin/echo -n foo", 0);
 
 	L("shebang, runlevels, flags");
 	test(	"#!/bin/sh\n"
 		"#:123\n"
 		"echo -n foo\n",
-		":123", "/etc/rc/foo", 1);
+		"S123", "/etc/rc/foo", 1);
 
 	L("non-shebang, with comments");
 	test(	"# some comment goes here\n"
 		"/bin/echo -n foo\n",
-		"", "/bin/echo -n foo", 0);
+		"S3+", "/bin/echo -n foo", 0);
 
 	L("non-shebang, with comments, empty line after");
 	test(	"# some comment goes here\n"
 		"\n"
 		"/bin/echo -n foo\n",
-		"", "/bin/echo -n foo", 0);
+		"S3+", "/bin/echo -n foo", 0);
 
 	L("non-shebang, with comments, empty line in-between");
 	test(	"# some comment goes here\n"
@@ -105,7 +107,7 @@ int main(void)
 		"# some more comments\n"
 		"\n"
 		"/bin/echo -n foo\n",
-		"", "/bin/echo -n foo", 0);
+		"S3+", "/bin/echo -n foo", 0);
 
 	return 0;
 }
