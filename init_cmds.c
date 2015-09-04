@@ -218,7 +218,7 @@ void dumpstate(void)
 	struct initrec *p, **pp;
 	bss char currstr[16];
 	bss char nextstr[16];
-	bss char cmdbuf[MAXREPORTCMD];		// " ...\0"
+	bss char cmdbuf[MAXREPORTCMD];
 	char* reportcmd;
 	
 	rlstr(currstr, 16, currlevel);
