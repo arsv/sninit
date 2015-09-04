@@ -3,9 +3,9 @@
 INIT=sninit
 sbindir=$(grep ^sbindir config.mk | sed -e 's/.*:=\s*//')
 s=$(grep "^s :=" Makefile | sed -e 's/.*:=\s*//')
-initctl=$(grep '^#define INITCTL' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
-inittab=$(grep '^#define INITTAB' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
-initdir=$(grep '^#define INITDIR' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
+initctl=$(grep '^#define INITCTL ' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
+inittab=$(grep '^#define INITTAB ' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
+initdir=$(grep '^#define INITDIR ' config.h | sed -e 's/.*"\([^"]\+\)".*/\1/')
 initdir=${initdir:-/etc/initdir}
 tabbase=`basename "$inittab"`
 
