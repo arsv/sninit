@@ -68,8 +68,8 @@ distclean: clean
 #
 # This differs significantly from the rest of the file
 # because statictab must be host-executable, not target-executable
-# like init and telinit. So got to use HOSTCC here, and select some libc.
-# Since the choice is hardly relevant for a build-time tool,
+# like init and telinit. So HOSTCC must be used here, together with some libc.
+# Since libc choice is hardly relevant for a build-time tool,
 # gcc/glibc is assumed, unless we're doing a native build in which case
 # primary objects and $LIBS are used.
 #
