@@ -60,8 +60,10 @@ Building sninit
 ~~~~~~~~~~~~~~
 See INSTALL file.
 
-The package comes pre-configure for a test build. Make sure to check
-config.h, config.mk or run ./configure before any target builds.
+The package comes pre-configure for a devel build. Make sure to check
+config.h, config.mk or run ./configure before doing any target builds.
+
+For more info on devel builds, check doc/devel.txt.
 
 
 Documentation
