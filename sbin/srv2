@@ -1,5 +1,0 @@
-#!/bin/bash
-
-echo "- S starting"
-sleep $[RANDOM%60]
-echo "- S dying"

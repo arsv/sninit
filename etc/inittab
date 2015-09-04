@@ -3,13 +3,13 @@
 PATH=/bin
 VAR=value
 
-i1	R1+	sbin/ini1
-i2	R1+	sbin/ini2
-i3	W1+	sbin/ini3
+ini1	R1+	sbin/ini1
+ini2	R1+	sbin/ini2
+ini3	W1+	sbin/ini3
 
-s1	F3+	sbin/srv1
-s2	F3+	sbin/srv2
-s3	F3+	sbin/srv3
+srv1	F3+	sbin/srv1
+srv2	F3+	sbin/srv2
+srv3	F3+	sbin/srv3
 
 	R789	!echo going to sleep
 sleep	W7	!echo mem > /sys/power/state

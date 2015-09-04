@@ -1,5 +1,0 @@
-#!/bin/bash
-
-echo "- R starting"
-sleep 5
-echo "- R dying"

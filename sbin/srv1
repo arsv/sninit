@@ -1,5 +1,0 @@
-#!/bin/bash
-
-echo "- Q starting"
-sleep 1h
-echo "- Q dying"

@@ -63,6 +63,7 @@ clean::
 distclean: clean
 	rm -f init telinit statictab run *.[58]
 	$(MAKE) -C test clean
+	$(MAKE) -C sbin clean
 
 # --- Built-in inittab ---------------------------------------------------------
 #

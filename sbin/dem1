@@ -1,5 +1,0 @@
-#!/bin/sh
-
-echo "- httpd starting"
-sleep 10
-echo "- httpd dying"
