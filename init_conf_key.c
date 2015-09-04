@@ -3,6 +3,26 @@
 #include "init_conf.h"
 #include "scope.h"
 
+/* Second inittab field parsing.
+
+         mount    W1+    /sbin/mount -a
+                  ~~~
+   The leading letter determines entry's flags, the rest is runlevel mask.
+   Plus sign extends the last primary runlevel: 3+ = 3456789
+
+   Empty runlevel mask makes no sense, so instead "R" = "R123456789" and
+   "S+" = "R0123456789". This way "R+" will never be run, hm.
+
+   Initdir entries here always have properly formatted type. */
+
+/* The idea is that entypes[] should list all useful flag combos.
+   Which is less that just all combos: DOF/DTF make no difference with ONCE,
+   for instance, HUSH = not (DOF or DTF) and not ONCE, and there may be others.
+
+   X inverts its runlevel mask. It looks better than having a separate
+   invert-mask sign. Inverting ONCE|WAIT and inverting non-ONCE are not
+   likely to be useful, so they are excluded. */
+
 static struct entrytype {
 	char key;
 	char inv;
