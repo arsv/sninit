@@ -240,7 +240,7 @@ void setargs(int argc, char** argv)
    SIGPIPE and SIGALRM do not need handlers, as their only job is to make
    blocking read(telinitfd) return with EINTR, which telinit code interprets
    as end-of-communication.
-   SIGCHLD must interrupt the only syscall it may delivered in, ppoll.
+   SIGCHLD must interrupt the only syscall it may be delivered in, ppoll.
    All the other signals need SA_RESTART. */
 
 void setsignals(void)
