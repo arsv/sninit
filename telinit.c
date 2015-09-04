@@ -30,8 +30,9 @@ static struct cmdrec {
 	{ 'P', 0, "poweroff",	},
 	{ 'H', 0, "halt",	},
 	{ 'R', 0, "reboot",	},
-	{ 'S', 0, "sleep",	},
-	{ 'Z', 0, "suspend",	},
+	{ '7', 0, "doze",	},
+	{ '8', 0, "sleep",	},
+	{ '9', 0, "suspend",	},
 	{ '?', 0, "list",	},
 	{  0  }
 };

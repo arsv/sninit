@@ -79,10 +79,6 @@ void parsecmd(char* cmd)
 
 	/* Now the command itself */
 	switch(*cmd) {
-		/* sleep levels */
-		case 'Y': nextlevel = (nextlevel & SUBMASK) | (1 << 7); break;
-		case 'S': nextlevel = (nextlevel & SUBMASK) | (1 << 8); break;
-		case 'Z': nextlevel = (nextlevel & SUBMASK) | (1 << 9); break;
 		/* halt */
 		case 'H': nextlevel = 1; rbcode = RB_HALT_SYSTEM; break;
 		case 'P': nextlevel = 1; rbcode = RB_POWER_OFF;   break;
