@@ -343,10 +343,6 @@ void sighandler(int sig)
 
    Note clock errors are not something that happens daily, and usually
    is's a sign of deep troubles, like running on an incompatible architecture.
-   Actually rebooting on clock_gettime failure does not sound like a bad
-   idea at all, and that's exactly what main() does when the very first
-   clock_gettime call fails.
-
    Still, once we have the system running, it makes sense to try handling
    the situation gracefully. After all, timing stuff is somewhat auxillilary
    in a non-realtime unix, a matter of convenience, not correctness, and
