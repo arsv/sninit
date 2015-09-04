@@ -58,6 +58,7 @@ to faciliate simple grep/sed operations on entry names:
 	/^name\>/
 
 Matching the 2nd field would require explicit pattern for the flags.
+And this way unnamed entries come out naturally as matching ^\s.
 
 
 Entry flags
@@ -67,50 +68,19 @@ and a separate mandatory field for runlevels:
 
 	mount:12345:wait:/bin/mount -a
 
-In sninit however has made runlevels optional, and treats action
-a bit differently. This is because of the way sninit represents
-this data internally.
+In sninit, the visible part is nearly the same:
 
+	mount	W12345	/bin/mount -a
 
-Entry flags: actions
-~~~~~~~~~~~~~~~~~~~~
-Unlike sysvinit, action in sninit is a bitmask (flags field in struct initrec),
-with individual bits having little relation to the action keywords in inittab.
+but internal representation is different. For instance, W (wait) sets
+two bits in flags, C_WAIT and C_ONCE. There are also R which sets C_ONCE
+only, and L which sets C_WAIT without C_ONCE.
 
-The bits work well for the code, but having something close to the internal
-representation in inittab turns out to be a bad idea: outside of the code,
-the choice is non-obvious, and the need to combine bits leads either to a very
-length field ("once,excl") or something barely readable ("ox").
+Why this discrepancy? Well, the internal bitflags work well internally,
+and with rare exceptions they are independent and trigger different
+conditions in different parts of initpass(). However, not all flag combinations
+make sense, and individual flags are really hard to document without turning
+to initpass source.
 
-So instead the decision was made to combine valid bit combinations into
-sysv-style actions, and use one descriptive word for each action. This way,
-it's "once" and "wait" even thought "wait" is two bits, O_ONCE | O_EXCL.
-
-
-Entry flags: runlevels
-~~~~~~~~~~~~~~~~~~~~~~
-Real life observation: sysv initlevels are rarely used, and unusual uses
-are nonexistant. Pretty much any modern system boots into runlevel 3,
-and that's about it. Few make difference between 3 (text login) and 5 (X login).
-Sometimes level 1 (single user mode) is implemented. Sometimes it's not.
-
-Even with sninit's slippery levels, the situation does not change much.
-
-In fact, the way slippery runlevels are hard-coded for sleep/suspend/hybernate
-commands extends nicely into the other runlevels. It's pretty safe to assume
-runlevel 1 is always a single-user mode, runlevel 3 is the normal system state
-and so on.
-
-
-Entry flags: actions and runlevels
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-There is a strong correlation between actions and runlevels tAhe entry runs on.
-Regular deamons are typically 23456789, most wait and once commands are ~0,
-syslog is 23456789 as well, gettys are likely 345 while X/xdm is 3 only.
-
-This makes it convenient to include runlevels together with flags into the action
-keyword, at least as a default setting.
-
-
-Entry flags: initdir and services
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+So instead, useful bitflag combinations are given specific codes (W, R, S etc)
+and those happen to work a lot like sysvinit actions.
