@@ -57,13 +57,17 @@ install-man:
 	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/$sinittab.5
 	install -m 0644 -D initdir.5 $(DESTDIR)$(man5dir)/$sinitdir.5
 
-clean::
+clean: clean-temp
+
+archclean: clean-temp clean-inst
+
+distclean: archclean
+
+clean-temp:
 	rm -f *.o *.ho *.d builtin.c
 
-distclean: clean
+clean-inst:
 	rm -f init telinit statictab run *.[58]
-	$(MAKE) -C test clean
-	$(MAKE) -C sbin clean
 
 # --- Built-in inittab ---------------------------------------------------------
 #
@@ -154,7 +158,9 @@ libc/$(ARCH)/%.o libc/libtest/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLA
 libc.a: $(libc)
 	$(AR) cru $@ $?
 
-clean::
+archclean: clean-libc
+
+clean-libc:
 	rm -f libc.a libc/*.[od] libc/*/*.[od]
 
 else
@@ -164,14 +170,26 @@ libc.a:
 
 endif
 
-# --- Tests entry point --------------------------------------------------------
+# --- Subdir entry points ------------------------------------------------------
 #
 # This is only for convenience, so that "make test" would work from the top dir.
 
-.PHONY: test
+.PHONY: test sbin
 
 test: $(if $(ARCH),libc.a)
 	$(MAKE) -C test run
+
+sbin: $(if $(ARCH),libc.a)
+	$(MAKE) -C sbin
+
+archclean: clean-test
+distclean: clean-sbin
+
+clean-test:
+	$(MAKE) -C test clean
+
+clean-sbin:
+	$(MAKE) -C sbin clean
 
 # --- Implicit rules -----------------------------------------------------------
 
