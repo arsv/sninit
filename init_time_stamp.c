@@ -1,10 +1,11 @@
 #include <string.h>
 #include <time.h>
 
-/* mktimestamp is roughly equivalent to strftime(buf, len, "%b %e %T ", gmtime(ts)) */
+/* mktimestamp is roughly strftime(buf, len, "%b %e %T ", gmtime(ts)) */
 
-/* A note on ts: gmtime(ts) == localtime(ts + tzoffset), and since the choice between
-   gmtime and localtime is a configure option, tzoffset has been moved out of mktimestamp.
+/* A note on ts: gmtime(ts) == localtime(ts + tzoffset), and since the choice
+   between gmtime and localtime is a configure option, tzoffset has been moved
+   out of mktimestamp.
    
    RFC 5424 says a lot about the timestamp format, however, most implementations
    including busybox syslogd ahere to RFC 3164 and expect a *local* time
@@ -15,8 +16,8 @@
    string format. Thus using musl and non-musl executables in the same
    system will likely result in messed-up syslog timestamps.
 
-   Using gmtime, regardless of its non-standard status, makes a lot of sense to me,
-   so I'm leaving it as an option. */
+   Using gmtime, regardless of its non-standard status, makes a lot of sense
+   to me, so I'm leaving it as an option. */
 
 static const char smonths[12][4];
 static char* nto2s(char* p, int n, int z);
