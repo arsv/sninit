@@ -28,6 +28,10 @@
    on non-MMU systems may build well and fail at runtime. */
 //#define NOMMU
 
+/* Development mode: do not (attempt to) reboot,
+   and do not assume uid = euid = 0 */
+//#define DEVMODE
+
 /* Timing constants, in seconds */
 
 /* minimum time between successive attempts to spawn the same entry */

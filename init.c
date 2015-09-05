@@ -195,6 +195,12 @@ int setup(int argc, char** argv)
 		state |= S_PID1;
 	else if(errno)
 		_exit(errno);
+#ifdef DEVMODE
+	/* Disable reboots in devel mode. A kind of workaround, but ifdefing
+	   forkreboot means it won't be parsed for syntax errors, and possibly
+	   unreachable code warnings too. */
+	state &= ~S_PID1;
+#endif
 
 	if(setinitctl())
 		/* Not having telinit is bad, but aborting system startup

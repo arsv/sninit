@@ -20,7 +20,7 @@ unset libs libs_syscall
 unset tstype null
 
 optimize=auto
-unset nommu lto debug depend builtin quiet
+unset nommu lto debug depend builtin quiet devmode
 unset initctl inittab run s cgbase logdir blocks run
 
 warn() { echo "$@" >&2; }
@@ -242,6 +242,7 @@ while [ $# -gt 0 ]; do
 			optimize=
 			debug="-Wall -g"
 			depend="-MD"
+			devmode=1
 			;;
 		quiet)
 			quiet=1
@@ -474,11 +475,13 @@ sed -i \
 unset nt; test -z "$inittab" && nt="//"
 unset nd; test -z "$initdir" && nd="//"
 unset mm; test -z "$nommu" && mm="//"
+unset dm; test -z "$devmode" && dm="//"
 sed -i \
 	-e "/^.*#define INITTAB/s@.*@$nt#define INITTAB \"$inittab\"@" \
 	-e "/^.*#define INITDIR/s@.*@$nd#define INITDIR \"$initdir\"@" \
 	-e "/#define INITCTL/s#\".*#\"$initctl\"#" \
 	-e "/^.*#define NOMMU/s@.*#define@$mm#define@" \
+	-e "/^.*#define DEVMODE/s@.*#define@$dm#define@" \
 	config.h
 
 sed -i \

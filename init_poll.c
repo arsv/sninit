@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "config.h"
 #include "init.h"
 #include "scope.h"
 
@@ -163,8 +164,13 @@ void readcmd(int fd)
 		retwarn_("ancilliary data is too short");
 
 	cred = (struct ucred*) CMSG_DATA(cmsg);
-	if(cred->uid && (state & S_PID1))
+#ifdef DEVMODE
+	if(cred->uid != getuid())
+		retwarn_("non-owner access");
+#else
+	if(cred->uid)
 		retwarn_("non-root access");
+#endif
 
 	if(rb <= 0)
 		return;
