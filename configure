@@ -355,6 +355,9 @@ if [ -n "$debug" ]; then
 	cflags=${cflags:+$cflags }$debug
 	asflags=${asflags:+$asflags }-g
 fi
+if [ -n "$depend" ]; then
+	cflags=${cflags:+$cflags }$depend
+fi
 
 # Check which blocks init needs
 
