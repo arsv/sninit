@@ -8,6 +8,7 @@
 pid_t getpid(void);
 gid_t getgid(void);
 
+uid_t getuid(void);
 uid_t geteuid(void);
 gid_t getegid(void);
 
