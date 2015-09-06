@@ -39,11 +39,9 @@ void spawn(struct initrec* p)
 
 	pid = vfork();
 	if(pid < 0) {
-		p->lastrun = passtime;
 		retwarn_("%s[*] can't fork: %m", p->name);
 	} else if(pid > 0) {
 		p->pid = pid;
-		p->lastrun = passtime;
 		p->lastsig = 0;
 		p->flags &= ~(P_SIGKILL | P_SIGTERM);
 		return;
@@ -88,6 +86,9 @@ void stop(struct initrec* p)
 	} else {
 		/* Regular stop() invocation, gently ask the process to leave
 		   the kernel process table */
+
+		/* Now there is not waitneeded here, so we've got to reset lastsig. */
+		p->lastsig = passtime;
 		kill(-p->pid, (p->flags & C_USEABRT ? SIGABRT : SIGTERM));
 		p->flags |= P_SIGTERM;
 
@@ -115,7 +116,7 @@ int waitneeded(struct initrec* p, time_t* last, time_t wait)
 	time_t endtime = *last + wait;
 
 	if(endtime <= curtime) {
-		*last = curtime;
+		*last = passtime;
 		return 0;
 	} else {
 		int ttw = endtime - curtime;
