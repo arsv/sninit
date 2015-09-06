@@ -15,7 +15,6 @@ local void markstopped(struct initrec* p, int status);
 
 local void checkfailacts(struct initrec* p, int failed);
 local void faildisable(struct initrec* p);
-local void failswitch(struct initrec* p);
 
 /* So we were signalled SIGCHLD and got to check what's up with
    the children. And because we care about killing paused (as in SIGSTOP)
@@ -77,7 +76,7 @@ void markdead(struct initrec* p, int status)
 		warn("%s[%i] abnormal exit %i", p->name, p->pid,
 			WIFEXITED(status) ? WEXITSTATUS(status) : -WTERMSIG(status));
 
-	if(p->flags & (C_DOF | C_DTF | C_ROFa | C_ROFb))
+	if(p->flags & (C_DOF | C_DTF))
 		checkfailacts(p, failed);
 
 	/* mark the entry as safely dead */
@@ -108,33 +107,10 @@ void checkfailacts(struct initrec* p, int failed)
 
 	} else if(failed && p->flags & C_DOF)
 		faildisable(p);
-
-	/* Use non-zero exit status *unless* DTF is given, in which case
-	   follow DTF logic (i.e. runlevel switch only if failed too fast) */
-	if(failed && (p->flags & (C_ROFa | C_ROFb)))
-		failswitch(p);
 }
 
 void faildisable(struct initrec* p)
 {
 	warn("%s[%i] failed, disabling", p->name, p->pid);
 	p->flags |= P_FAILED;
-}
-
-void failswitch(struct initrec* p)
-{
-	int lvl = 0;
-	switch(p->flags & (C_ROFa | C_ROFb)) {
-		case C_ROFa: lvl = FALLBACK1; break;
-		case C_ROFb: lvl = FALLBACK2; break;
-		case C_ROFa | C_ROFb: lvl = FALLBACK3; break;
-		default: return;
-	}
-
-	int next = (nextlevel & SUBMASK) | (1 << lvl);
-	if(next == nextlevel)
-		return; /* already going there */
-
-	warn("%s[%i] failure prompts runlevel switch to %i", p->name, p->pid, lvl);
-	nextlevel = next;
 }

@@ -9,10 +9,10 @@ time_t passtime;
 
 /* Startup: I1 * I2 * I3 I4 I5 * rlswitch */
 struct initrec I0 = { .pid = 11, .flags = 0 };
-struct initrec I1 = { .pid = 22, .flags = C_USEABRT | P_SIGTERM };
+struct initrec I1 = { .pid = 22, .flags = P_SIGTERM };
 struct initrec I2 = { .pid = 33, .flags = P_SIGTERM | P_SIGKILL };
 struct initrec I3 = { .pid = 44, .flags = 0 };
-struct initrec I4 = { .pid = 55, .flags = C_ROFa };
+struct initrec I4 = { .pid = 55, .flags = 0 };
 struct initrec I5 = { .pid = 66, .flags = C_DOF };
 struct initrec I6 = { .pid = 77, .flags = 0 };
 
@@ -33,7 +33,6 @@ struct waitret {
 	{ 22, 0x0014 }, /* I1 got killed as well */
 	/* 44 is not in the list */
 	{ 66, 0x1100 }, /* I5 exited abnormally */
-	{ 55, 0x0013 }, /* I4 got killed */
 	{ 77, 0x1300 }, /* I6 exited abnormally */
 	{  0, 0 }
 };
@@ -87,21 +86,13 @@ int main(void)
 	waitcnt = 1;
 	waitpids();
 	A(I1.pid == -1);
-	A(I1.flags == (C_USEABRT));
+	A(I1.flags == 0);
 
 	/* C_DOF test */
 	waitcnt = 1;
 	waitpids();
 	A(I5.pid == -1);
 	A(I5.flags == (C_DOF | P_FAILED));
-
-	/* C_ROF test */
-	nextlevel = R6 | Ra | Rb;
-	waitcnt = 1;
-	waitpids();
-	A(I4.pid == -1);
-	A(I4.flags == C_ROFa);
-	A(nextlevel == (R1 | Ra | Rb));
 
 	/* Just a simple abnormal exit */
 	waitcnt = 1;
