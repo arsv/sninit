@@ -107,10 +107,12 @@ void initpass(void)
 
 	state &= ~S_WAITING;
 
-	if(nextlevel == (1<<0))
+	if(nextlevel == (1<<0)) {
 		/* level 0 is slippery in its own particular way */
-		nextlevel = 0, timetowait = 0;
-	else if(currlevel != nextlevel)
+		currlevel = nextlevel;
+		nextlevel = 0;
+		timetowait = 0;
+	} else if(currlevel != nextlevel)
 		switchtonextlevel();
 }
 
