@@ -5,7 +5,7 @@
 .global sigprocmask
 
 sigprocmask:
-	mov	$sizeof_sigset_t, %r10d
+	mov	$sizeof_sigset_t, %rcx
 	mov	$NR_rt_sigprocmask, %al
 	jmp	unisys
 
