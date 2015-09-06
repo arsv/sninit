@@ -95,7 +95,7 @@ export int main(int argc, char** argv);		/* main loop */
 
 local int setup(int argc, char** argv);		/* initialization */
 local int setinitctl(void);
-local void setsignals(void);
+local int setsignals(void);
 local void setargs(int argc, char** argv);
 local int setpasstime(void);
 
@@ -207,7 +207,8 @@ int setup(int argc, char** argv)
 		   for this mere reason is likely even worse. */
 		warn("can't initialize initctl, init will be uncontrollable");
 
-	setsignals();
+	if(setsignals())
+		retwarn(-1, "failed to set signal handlers");
 	setargs(argc, argv);
 
 	if(!configure(NONSTRICT))
@@ -249,35 +250,42 @@ void setargs(int argc, char** argv)
    SIGCHLD must interrupt the only syscall it may be delivered in, ppoll.
    All the other signals need SA_RESTART. */
 
-void setsignals(void)
+int setsignals(void)
 {
 	struct sigaction sa = {
 		.sa_handler = sighandler,
 		.sa_flags = SA_RESTART,
 	};
+	/* The stuff below *can* fail. Regardless of whether it's sigprocmask
+	   or sigaction, it means there is something really wrong with libc,
+	   so there is no point in determining which one failed, or trying
+	   to recover for that matter. */
+	int ret = 0;
 
 	sigemptyset(&sa.sa_mask);
 	sigaddset(&sa.sa_mask, SIGCHLD);
-	sigprocmask(SIG_BLOCK, &sa.sa_mask, &defsigset);
+	ret |= sigprocmask(SIG_BLOCK, &sa.sa_mask, &defsigset);
 
 	sigaddset(&sa.sa_mask, SIGINT);
 	sigaddset(&sa.sa_mask, SIGTERM);
 	sigaddset(&sa.sa_mask, SIGHUP);
 
-	sigaction(SIGINT,  &sa, NULL);
-	sigaction(SIGTERM, &sa, NULL);
-	sigaction(SIGHUP,  &sa, NULL);
+	ret |= sigaction(SIGINT,  &sa, NULL);
+	ret |= sigaction(SIGTERM, &sa, NULL);
+	ret |= sigaction(SIGHUP,  &sa, NULL);
 
 	/* SIGCHLD is only allowed to arrive in ppoll,
 	   so SA_RESTART just does not make sense. */
 	sa.sa_flags = 0;
-	sigaction(SIGCHLD, &sa, NULL);
+	ret |= sigaction(SIGCHLD, &sa, NULL);
 
 	/* These *should* interrupt write() calls,
 	   which is the opposite of SA_RESTART. */
 	sa.sa_handler = SIG_IGN;
-	sigaction(SIGPIPE, &sa, NULL);
-	sigaction(SIGALRM, &sa, NULL);
+	ret |= sigaction(SIGPIPE, &sa, NULL);
+	ret |= sigaction(SIGALRM, &sa, NULL);
+
+	return ret;
 }
 
 int setinitctl(void)
