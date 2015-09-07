@@ -23,4 +23,4 @@ srv3: srv3.o srv_.o
 xftp: xftp.o srv_.o
 
 clean:
-	rm -f *.o $(all)
+	rm -f *.[od] $(all)
