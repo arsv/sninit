@@ -104,16 +104,16 @@ a configuration file and editing that file would have the same effect.
 
 
 Implications for sninit
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 Direct configuration can be implemented with pretty much any init, it is not
 sninit-specific. However, sninit was written with direct configuration in mind.
 
 sninit strongly assumes /etc/inittab is a host-specific configuration file.
-This was the key consideration for @dir lines syntax, in particular
-(not) implementing sleep hooks as a w-type initdir.
+This was the key consideration affecting initdir handling, in particular
+the decision to make it a single directory and to hardcode S type for all entries.
 
-If inittab was a distro-specific, distro-updatable and generally non-changeable
-file, it would make sense to do something like this:
+If inittab were a distro-specific, distro-updatable and generally non-changeable
+file, it would make sense to do something like this (in sysv syntax):
 
 	@8:once:/etc/rc/sleep
 

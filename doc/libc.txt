@@ -18,13 +18,13 @@ Reason for including libc:
 3. Clean code.
    Generic libc (even dietlibc) needs a lot of cruft in it to ensure
    compatibility with arbitrary code.
-   sninit is not arbitrary code, so the cruft can be trimmed off.
+   sninit is not some arbitrary code, so the cruft can be trimmed off.
 
 4. Full source for debugging.
    Ok, this is a bit vain but I like to have source code available
    when gdb stops somewhere in the middle of a libc call.
 
-   With some effort, this can be achieved with a generic libc,
+   With some effort, this can be achieved even for a generic libc,
    but it's rarely done. And generic libc tends to be rather unreadable
    anyway due to being generic.
 

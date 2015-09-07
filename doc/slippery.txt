@@ -62,12 +62,12 @@ Pre-sleep have 8 in runlevels field, post-sleep hooks have ~8.
 
 A complete configuration should look like this:
 
-	-	r8	/sbin/usb off
-	-	r8	/sbin/network down
-	-	w8	!echo mem > /sys/power/state
-	-	r8~	/sbin/vcreset
-	-	r8~	/sbin/network up
-	-	r8~	/sbin/usb on
+	-	R8	/sbin/usb off
+	-	R8	/sbin/network down
+	-	W8	!echo mem > /sys/power/state
+	-	X8	/sbin/vcreset
+	-	X8	/sbin/network up
+	-	X8	/sbin/usb on
 
 Commands shown are only for illustration, a real system will probably have
 something system-specific.
@@ -85,20 +85,20 @@ are stopped but those that should be started are NOT started.
 This is in line with using slippery runlevels to implement system sleep states.
 Consider the following setup:
 
-	P1	+137	/sbin/syslogd
-	P2	--37	/sbin/crond
-	P3	--3-	/sbin/networkd
+	p1	L137	/sbin/syslogd
+	p2	S-37	/sbin/crond
+	p3	S-3-	/sbin/networkd
 
-The idea here is that both P1 and P2 need no special treatment as far as sleep
-is concerned, but P3 must be restarted. During 3->7->3 transition everything
+The idea here is that both p1 and p2 need no special treatment as far as sleep
+is concerned, but p3 must be restarted. During 3->7->3 transition everything
 goes well, but 1->7->1 transition without the above exception for s-entries
-would cause P2 to be started before going to sleep, and killed immediately
+would cause p2 to be started before going to sleep, and killed immediately
 after waking up.
 
-Removing 7 from P2 wouldn't help either, as it would result in P2
+Removing 7 from p2 wouldn't help either, as it would result in p2
 being restarted during 3->7->3 transition. And ignoring s-entries completely
 when entering slippery levels (i.e. neither killing nor starting them) would
-break P3, which is expected to be restarted.
+break p3, which is expected to be restarted.
 
 
 Slippery runlevels and sublevels

@@ -13,26 +13,28 @@ and merges runlevels and action into mode field:
 
 Actions
 ~~~~~~~
-respawn		nothing (or -), this is the default mode for sninit
-once		use r with the same runlevels
-wait		use w with the same runlevels
+respawn		S for "slow" entries like foreground daemons
+		F for entries like gettys that can and do actually respawn
 
-sysninit	use w, no runlevels, and place before any other entries
-boot		use r, place before other entries but after sysinit
-bootwait	like boot but use w instead of r
+once		R with the same runlevels
+wait		W with the same runlevels
 
-ondemand	use - with the same secondary runlevel
-		(that is, ":a:ondemand: becomes "a")
+sysninit	W, no runlevels, and place before any other entries
+boot		R, place before other entries but after sysinit
+bootwait	W, place before other entries but after sysinit
+
+ondemand	S or F with the same secondary runlevel
+		(that is, ":a:ondemand: becomes "Sa")
 	beware of multiple runlevels: for sysvinit, :ab:ondemand:
 	means either a or b, while in sninit it's a *and* b.
 
-off		use x
+off		(not implemented)
 
 initdefault	not supported, specify desired runlevel in kernel command line.
 		sninit behaves as if initdefault is always 3
 
-powerwait	not supported; use secondary runlevels for tracking power state
-powerfail	 and telinit to switch them.
+powerwait	not supported; use either a primary or a secondary runlevel
+powerfail	 to track power states, and telinit to switch them.
 powerokwait
 powerfailnow
 
@@ -52,14 +54,14 @@ be restarted later when init has already settled in runlevel M.
 
 Mixing primary (0123456789) and secondary (aka ondemand, abcdef) runlevels
 is allowed; "23a" means "run on / when entering runlevels primary runlevels
-2 or 3, but ONLY if secondary runlevel a is activated".
+2 or 3, but only if secondary runlevel a is activated".
 
 While in sysvinit runlevels 0 and 6 were special mostly by convention,
 in sninit reaching runlevel 0 prompts a reboot(2) call and runlevel 6 should
 not be special in most sane configurations. Both halt, reboot and poweroff use
 runlevel 0, the only difference being the argument passed to reboot in the end.
 
-Runleves 789 are allowed in sninit, but designated "slippery" unless configured
+Runlevels 789 are allowed in sninit, but designated "slippery" unless configured
 otherwise. That is, upon reaching any of these runlevels, init will immediately
 start a switch back to the last non-slippery runlevel it was in.
 This is to allow sleep/suspend to be implemented as runlevels,

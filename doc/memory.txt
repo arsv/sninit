@@ -46,7 +46,7 @@ code size increase is negligible, so why bother.
 
 Why convert offsets to pointers in the end, as opposed to using offsets
 throughout? Well, syscalls need proper pointers either way, and the idea
-was to keeping all dirty pointer work within configure().
+was to keep all the dirty pointer work inside configure().
 
 
 Pages and bss buffers
@@ -82,3 +82,8 @@ syscall vs libc brk/sbrk semantics and the ugliness of coding around that.
 Moving newblock over cfgblock once configuration is done requires repointing
 everything just like in MAP_MAYMOVE case. Implementing (or using) some kind
 of malloc means unnecessary code complication and memory losses all around.
+
+On Linux, brk is not initialized until the first brk()/sbrk() call, and there
+are no pre-allocated heap pages.
+Initialization is typically done by (g)libc, the builtin libc does not do it,
+so with the builtin libc no pages are wasted by not using the heap.

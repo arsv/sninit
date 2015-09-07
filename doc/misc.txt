@@ -82,31 +82,21 @@ Service shell scripts
 That is, special handling for service file starting with #!.
 It was easy to implement, it didn't take much code space,
 and it provides a usable way for chaining w-type actions before
-a daemon s-entry.
-A typical problem,
+a daemon s-entry. Typical problem like this:
 
 	test -d /var/cache/squid && mkdir -p /var/cache/squid
 	exec squid
 
-would require really ugly workaround without this.
-
-Makes ps output clearer, too.
+would require really ugly workaround without script support.
 
 An alternative was to pipe the file contents to the interpreter, i.e.
 
-	#:345:log:/bin/sh -
+	#:345:/bin/sh -
 	test -d /var/cache/squid && mkdir -p /var/cache/squid
 	exec squid
 	
-This partly duplicates #! functionality, and requires sninit to store
-the whole file in initrec.
-
-In a way, storing the script in initrec IS implemented, since the following
-will work by passing the whole script as argument to sh -c:
-
-	#:345:log:!
-	test -d /var/cache/squid && mkdir -p /var/cache/squid
-	exec squid
+This partially duplicates #! functionality, and requires sninit
+to store the whole file within initrec.
 
 However the point is that it's not the only alternative.
 If one needs, one can use proper shell scripts.
@@ -117,7 +107,7 @@ Builtins
 That is, bundling some commands with init, busybox-style. Or perhaps sh style.
 Actually, there are two points here:
 	1. telinit as a link to init, and
-	2. " 123 run -u nobody daemon" with "run" being a part of init
+	2. "123 run -u nobody daemon" with "run" being a part of init
 Both were abandoned, for now at least.
 
 #1, telinit is much more independent from init than it is in sysvinit, due to

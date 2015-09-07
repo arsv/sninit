@@ -5,20 +5,25 @@ Initrec is an "init record", corresponding to one line in inittab
 In the code it is called struct initrec.
 Each initrec holds at most one pid.
 
-Throughout the code, initrecs are classified as s or r type:
+There are two principal kinds of initrecs: respawning (s-type, services)
+and run-once (r-type). Respawning is determined by C_ONCE flag internally.
 
-	new	sysvtab		respawn		exclusive
-	-------+---------------+---------------+---------
-	-	service		yes		no
-	+	hold		yes		yes
-	r	once		no		no
-	w	wait		no		yes
+	new     sysvtab     respawn  exclusive   type
+	-------+-----------+--------+-----------+------
+	S	service     yes      no          s-type
+	L	last        yes      yes         s-type
+	R	once        no       no          r-type
+	W	wait        no       yes         r-type
 
 Respawn determines how init should react when process dies
 "unexpectedly", as opposed to being killed by init.
 
 Exclusive means init should not start (r) or kill (s) anything
 else while this particular process is running (r) or dying (s).
+
+Note F is the same as S (the difference is in timing, not in the
+way respawning is handled) and X is the same as R with reversed
+runlevel mask.
 
 
 Same uniform list for r- and s-type initrecs
@@ -34,10 +39,10 @@ list is clearly simpler and the price (both cpu and mem) looks negligible.
 One clear advantage of uniform list is that it allows starting some
 services before performing r-type tasks:
 
-	mount	w   /sbin/mount -a
-	syslog	+   /sbin/syslogd
-	-	r   /sbin/setkeys
-	-	r   /sbin/setup-network ...
+	mount   W   /sbin/mount -a
+	syslog  S   /sbin/syslogd
+	        R   /sbin/setkeys
+	        R   /sbin/setup-network ...
 
 and so on. This way, syslogd will have a chance to come up before anything
 significant takes place, and thus to save some messages that otherwise could
@@ -51,7 +56,7 @@ see dependencies.txt.
 Startup entries
 ~~~~~~~~~~~~~~~
 Both sysvinit and busybox init can drop entries that are only used to
-bring the system up (=to switch from runlevel 0 to some other runlevel).
+bring the system up (that is, to switch from runlevel 0 to some other runlevel).
 
 It is possible for sninit, too, but more difficult due to different memory
 allocation model. And if implemented, it will probably consume more space
@@ -80,12 +85,12 @@ I can't see a simple solution here, so it's left unimplemented for now.
 
 Internal inittab: list vs array
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-(early versions had single-linked list of initrecs)
+(early versions had singly-linked list of initrecs)
 
-Initial reason for change: any viable S-type entry implementation
+Initial reason for change: any viable L-type entry implementation
 needs reverse traversal of the inittab.
 
-This is only part true, it it possible to implement S with two top-to-bottom
+This is only part true, it it possible to implement L with two top-to-bottom
 passes and little code size increase.
 Or using double-linked list, but that results in pretty ugly code.
 
