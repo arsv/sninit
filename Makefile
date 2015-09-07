@@ -85,7 +85,7 @@ clean-inst:
 # And yes, this whole section is pretty ugly.
 
 statictab := statictab.o init_conf.o init_conf_map.o init_conf_mem.o\
-	init_conf_tab.o init_conf_dir.o init_conf_rec.o\
+	init_conf_tab.o init_conf_dir.o init_conf_rec.o init_conf_key.o\
 	init_find.o
 
 ifndef HOSTCC
