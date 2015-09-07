@@ -266,6 +266,8 @@ void clearts(struct initrec* p)
 
 void dostart(struct initrec* p)
 {
+	/* C_INVERT is never used with anything that can be started */
+	if(p->flags & C_INVERT) return;
 	clearts(p);
 	p->rlvl |= (nextlevel & PRIMASK);
 	p->rlvl &= (nextlevel & SUBMASK) | PRIMASK;

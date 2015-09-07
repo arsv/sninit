@@ -52,6 +52,7 @@ local void rewirepointers(void);	/* turn offsets into actual pointers in newbloc
 					   assuming it won't be mremapped anymore */
 local void transferpids(void);
 extern struct initrec* findentry(const char* name);
+extern int levelmatch(struct initrec* p, int lmask);
 
 extern int mmapblock(struct memblock* m, int size);
 extern void munmapblock(struct memblock* m);
@@ -222,7 +223,7 @@ void transferpids(void)
 		   the next initpass() just because they are new.
 		   This requires (currlevel == nextlevel) which is enforced
 		   with S_RECONF. */
-		if((q->flags & C_ONCE) && (q->rlvl & currlevel))
+		if((q->flags & C_ONCE) && levelmatch(q, currlevel))
 			q->pid = -1;
 
 		if(!cfg) /* first call, no inittab to transfer pids from */

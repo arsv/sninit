@@ -25,17 +25,16 @@
 
 static struct entrytype {
 	char key;
-	char inv;
 	short flags;
 } entypes[] = {
-	{ 'S', 0, C_DOF | C_DTF },
-	{ 'L', 0, C_DOF | C_DTF | C_WAIT },
-	{ 'F', 0, C_DOF },
-	{ 'P', 0, C_HUSH },
-	{ 'W', 0, C_ONCE | C_WAIT },
-	{ 'R', 0, C_ONCE },
-	{ 'X', 1, C_ONCE },
-	{ 0, 0, 0 }
+	{ 'S', C_DOF | C_DTF },
+	{ 'L', C_DOF | C_DTF | C_WAIT },
+	{ 'F', C_DOF },
+	{ 'P', C_HUSH },
+	{ 'W', C_ONCE | C_WAIT },
+	{ 'R', C_ONCE },
+	{ 'X', C_ONCE | C_INVERT },
+	{ 0, 0 }
 };
 
 export int setrunflags(struct fileblock* fb, struct initrec* entry, char* type)
@@ -72,7 +71,7 @@ export int setrunflags(struct fileblock* fb, struct initrec* entry, char* type)
 		retwarn(-1, "%s:%i: unknown entry type %c", fb->name, fb->line, *type);
 
 	entry->flags = et->flags;
-	entry->rlvl = et->inv ? ((~rlvl & PRIMASK) | (rlvl & SUBMASK)) : rlvl;
+	entry->rlvl = rlvl;
 
 	return 0;
 }

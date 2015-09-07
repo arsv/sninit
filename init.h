@@ -16,6 +16,7 @@
 #define C_DTF		(1<<3)		/* disable on respawning too fast */
 #define C_HUSH		(1<<4)		/* do not warn about this entry */
 #define C_FAST		(1<<5)		/* use time_to_restart instead of minimum_runtime */
+#define C_INVERT	(1<<6)		/* invert runlevel mask */
 /* C_* flags are only set in configure(),
    P_* flags may be changed at runtime */
 #define P_MANUAL	(1<<8)		/* process has been disabled manually */

@@ -14,6 +14,7 @@ extern int timetowait;
 extern struct config* cfg;
 
 export void initpass(void);
+export int levelmatch(struct initrec* p, int level);
 
 extern void spawn(struct initrec* p);
 extern void stop(struct initrec* p);
@@ -159,16 +160,28 @@ int shouldberunning(struct initrec* p)
 	if(p->flags & (P_MANUAL | P_FAILED))
 		/* disabled, either manually or via C_DOF */
 		return 0;
-	if(!(p->rlvl & nextlevel & PRIMASK))
+	else
+		return levelmatch(p, nextlevel);
+}
+
+/* transferpids() needs to call this as well, but using currlevel
+   instead of nextlevel, so there is shouldberunning() for local
+   use and levelmatch there. */
+
+int levelmatch(struct initrec* p, int level)
+{
+	int go = (p->flags & C_INVERT ? 0 : 1);
+
+	if(!(p->rlvl & level & PRIMASK))
 		/* not in this primary level */
-		return 0;
+		return !go;
 	if(!(p->rlvl & SUBMASK))
 		/* sublevels not defined = run in all sublevels */
-		return 1;
-	if(!(p->rlvl & nextlevel & SUBMASK))
-		return 0;
+		return go;
+	if(!(p->rlvl & level & SUBMASK))
+		return !go;
 
-	return 1;
+	return go;
 }
 
 void swapi(int* a, int* b)
