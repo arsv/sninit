@@ -110,8 +110,8 @@ Does nesting inits make sense?
 Yes, it does, barely, and only if done in a very specific way.
 
 Running a complex respawner under supervision of a simple one
-adds a kind of protection against kernel panic due to the complex
-respawner dying.
+adds a kind of protection against kernel panic in case the complex
+respawner dies.
 
 The assumption is that the simple respawner (say, a non-configurable
 mini-init only capable of restarting a single hard-coded command)
