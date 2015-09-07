@@ -64,8 +64,12 @@ runlevel only, i.e. in the above situation running
 
 	telinit 5
 
-will move sninit to runlevel "5abc", not just "5". This may or may not change
-in the future.
+will move sninit to runlevel "5abc", not just "5". To drop any sublevels
+when switching,
+
+	telinit 5-
+
+instead.
 
 
 Rationale
@@ -77,40 +81,64 @@ telinit. There are only three of them, so they are not terribly useful,
 but the idea is the same anyway.
 
 In sninit, the main reason for implementing sublevels was handling independent
-aspects of system state, specifically laptop power mode.
+aspects of system state, like network connectivity status (online/offline),
+being/not being an access point, and possibly laptop power modes.
 
-Power modes behave a lot like runlevels, in that there are some script to run
+Stuff like this works a lot like runlevels, in that there are some script to run
 when switching to battery power, there are some scripts to run when going back
-to mains and so on.  However, save for some special cases, the switch between
-battery and mains does not warrant a change in the running daemons
-(or equivalently, and change in the (primary) runlevel).
+to mains, some daemons to run only when providing AP services and such.
 
 Sublevels provide a reasonably clean and readable way to handle this situation.
 Having battery/mains mode as a sublevel means primary runlevels can be used
 solely for managing running daemons.
 
 
-Initial state and negated conditions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-One possible drawback of the current implementation is that it makes it hard
-to do things like "keep the process running UNLESS sublevel x is active".
-This is only important because the initial state of the sublevels is all-0.
+Negating sublevels
+~~~~~~~~~~~~~~~~~~
+The problem: how should X23a entry work?
 
-For the laptop power mode problem, it is not really relevant. Laptop can very
-well start on battery, so it's always a matter of checking the state during
-startup.
+Without sublevels, the solution is relatively straightforward: X23 is the same
+as R0--1456789, and it works as expected: X23 entry is run when leaving
+runlevels 2 or 3.
+Which is the exactly opposite of R23 which is run on entering said runlevels.
 
-For other cases, the only solution for now is having some of sublevels set
-in INITDEFAULT.
+The same trick does not work with sublevels, because inverting sublevels
+makes no sense. So instead, there are two approaches:
 
+	* primary inversion
+	  keep inverting primary runlevels only which leaving sublevels unchanged
 
-Negated primary runlevels mask
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Tilde in inittab affects primary runlevels only.
-That is, "123a" means "levels 1, 2 or 3 with sublevel a active",
-and "~123a" means "any level except 1, 2 or 3 with sublevel a active",
-or equivalently, "levels 0, 4, 5, 6, 7, 8, 9 with sublevel a active".
+	* complete inversion
+	  do not invert the masks, keep a dedicated C_INVERT flag and
+	  invert shouldberunning() return instead
 
-As stated above, negating sublevels mask makes little sense.
-Atop of that, the intended usage implies adding "a" to "~123" should work
-more or less the same way as adding "a" to "0456789".
+While primary inversion looks cleaner and easier to implement,
+it results in some really weird behavior. Not really incorrect, just weird;
+something I don't think will be of much use. So the decision was made to go
+with the complete inversion instead.
+
+The following examples show two entries p1 and p2 with the same mask,
+one inverted and one not:
+
+    Primary inversion
+
+    R2  -> R2a     run p1                            0123456789 abcdef
+    R2a -> R2      nothing                p1   R2a   --x------- x-----
+    R2a -> R3a     run p2                 p2   X2a   xx-xxxxxxx x-----
+    R2a -> R3      nothing
+
+    Complete inversion
+
+    R2  -> R2a     run p1                          I 0123456789 abcdef
+    R2a -> R2      run p2                 p1   R2a   --x------- x-----
+    R2a -> R3a     run p2                 p2   X2a * --x------- x-----
+    R2a -> R3      run p2
+
+Primary inversion works by "hiding" entries which do not match current
+sublevel mask. With complete inversion, R2a acts as a separate runlevel,
+keeping all runlevel semantics, so R2 <-> R2a, R2a <-> R3a and R2a <-> R3
+all work as regular runlevel changes.
+
+The downside of complete inversion is that it keeps a dedicated INVERT flag
+(but that is handled in shouldberunning() anyway) and needs some additional
+logic for "enable entry" command (not really a problem).
