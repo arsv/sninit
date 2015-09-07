@@ -14,6 +14,7 @@ void readinittab() { };
 void readinitdir() { };
 void findentry() { };
 void addptrsarray() { };
+void levelmatch() { };
 
 extern int mmapblock(struct memblock* m, int size);
 extern void rewireptrsarray(void** a);

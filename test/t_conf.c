@@ -26,6 +26,11 @@ void die(const char* fmt, ...) __attribute__((format(printf, 1, 2))) __attribute
 #define HEAP 1024
 char heap[HEAP];
 
+int levelmatch(struct initrec* p, int level)
+{
+	return 0;
+}
+
 int parseinitline_(char* testline)
 {
 	char* line = strncpy(heap, testline, HEAP);

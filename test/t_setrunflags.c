@@ -89,9 +89,9 @@ int main(void)
 
 	/* Runlevels and flags together */
 	both("R3+",	C_ONCE, R3 | R4 | R5 | R6 | R7 | R8 | R9);
-	both("X3+",	C_ONCE, R0 | R1 | R2);
+	both("X3+",	C_ONCE | C_INVERT, R3 | R4 | R5 | R6 | R7 | R8 | R9);
 	/* only the primary levels are inverted by X */
-	both("X3a+",	C_ONCE, R0 | R1 | R2 | Ra);
+	both("X3a+",	C_ONCE | C_INVERT, R3 | R4 | R5 | R6 | R7 | R8 | R9 | Ra);
 
 	/* Incorrect strings that should fail */
 	wrong("");	/* no empty strings */

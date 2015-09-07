@@ -40,6 +40,7 @@ extern void transferpids(void);
 void readinittab(void) { };
 void readinitdir(void) { };
 void addptrsarray(void) { };
+int levelmatch(void) { return 0; };
 
 int main(void)
 {

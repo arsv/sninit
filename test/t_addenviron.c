@@ -25,6 +25,8 @@ char* test_env[] = {
 	NULL
 };
 
+NOCALL(levelmatch);
+
 #define SN(p) ((struct stringnode*) p)
 
 void scratch_all(char** test)
