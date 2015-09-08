@@ -96,3 +96,16 @@ Building with glibc or uClibc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Both glibc and uclibc lack getdents(2), even thought it is a linux system call.
 Use sys_getdents.c instead.
+
+
+Rebuilding
+~~~~~~~~~~
+Run "make archclean" before rebuilding with a different ARCH value
+or with a different libc type. Those affect config.mk, and Makefile
+does not track dependencies on config.mk
+
+Regular "make clean" should be enough for any changes in config.h alone.
+
+Use "make distclean" to remove all generated files including target executable.
+Note however that config.h and config.mk are modified in place, there are no
+autoconf-style config.h.in or config.mk.in, so distclean will not restore those.
