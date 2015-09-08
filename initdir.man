@@ -14,21 +14,21 @@ lacks any fixed entry ordering; in particular, entries are not sorted
 by name.
 .P
 Service files are simple text files or shell scripts, possibly
-containing entry \fIflags\fR field similar to inittab lines.
+containing \fIrunlevels\fR mask field similar to inittab lines.
 The (base)name of the file stands for \fIname\fR field of the entry.
 The \fIcommand\fR is either the contents of the file, or (in case of
 executable shell scripts) the full file path.
 .P
-Other than than, there is no difference between inittab entries and
-initdir entries. See \fBinittab\fR(5) for semantics and general usage
-notes.
+Initdir entries are always \fBS\fR-type. If no runlevel mask is specified,
+they default to \fB3+\fR. See \fBinittab\fR(5) for detailed description
+of entry types and runlevels.
 '''
 .SH SYNTAX
 There are two slighly different flavors of service files.
 The first one is a plain file:
 .P
 .EX
-    \fB#:\fIflags\fR
+    \fB#:\fIrunlevels\fR
     \fIcommand arg arg arg\fR ...
 .EE
 .P
@@ -40,18 +40,17 @@ The second is a script (shell or otherwise):
 .P
 .EX
     \fB#!\fIinterpreter\fR
-    \fB#:\fIflags\fR
+    \fB#:\fIrunlevels\fR
     \fIinterpreter-code\fR
     \fIinterpreter-code\fR
     \fIinterpreter-code\fR
 .EE
 .P
 Files or this kind must be executable, and init will use the full file
-path as the command to run. Only \fIflags\fR are parsed by init in this
+path as the command to run. Only \fIrunlevels\fR are parsed by init in this
 case, the rest is left to \fIinterpreter\fR.
 .P
-In both cases, \fB#:\fIflags\fR line may be omited, which is equivalent
-to using \fB-\fR in inittab.
+In both cases, \fB#:\fIrunlevels\fR line may be omited.
 '''
 .SH USAGE
 Service files are meant primarily for package-managed systems as a easy
