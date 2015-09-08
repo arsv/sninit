@@ -1,3 +1,5 @@
+#include <string.h>
+
 unsigned long strlen(const char* s)
 {
 	int l = 0;
