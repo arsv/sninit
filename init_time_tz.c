@@ -137,7 +137,7 @@ void tzparse(unsigned char* buf, int len, time_t t)
 	/* Do not try to re-load timezone after a failure. */
 	tzinfo.set = 1; 
 
-	if(len < 50 || strncmp((char*)buf, "TZif", 4))
+	if(len < 50 || memcmp((char*)buf, "TZif", 4))
 		return;
 
 	int tzh_timecnt = beint32(buf + 20 + 3*4);

@@ -8,7 +8,6 @@ char *strcpy(char* restrict dest, const char* restrict src) nonnull((1,2));
 int strcmp(const char *s1, const char *s2) pure nonnull((1,2));
 unsigned long strlen(const char *s) pure nonnull((1));
 char *strncpy(char* restrict dest, const char* restrict src, size_t n) nonnull((1,2));
-int strncmp(const char* s1, const char* s2, size_t n) pure nonnull((1,2));
 char *strcat(char* restrict dest, const char* restrict src) nonnull((1,2));
 
 void* memset(void* s, int c, size_t n) nonnull((1));
