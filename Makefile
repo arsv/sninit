@@ -11,9 +11,7 @@ include config.mk
 all: init telinit run init.8 telinit.8 inittab.5 initdir.5 run.8
 
 # Force early libc build
-ifneq ($(ARCH),)
-init telinit run: libc.a
-endif
+init telinit run: $(if $(ARCH),libc.a)
 
 init_conf = init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o \
 	init_conf_dir.o init_conf_rec.o init_conf_key.o
