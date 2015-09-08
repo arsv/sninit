@@ -25,7 +25,7 @@ init_sys = sys_printf.o sys_err_init.o
 init_dents = sys_getdents.o
 init_ppoll = sys_ppoll.o
 
-init: init.o init_pass.o init_proc.o init_poll.o \
+init: init.o init_pass.o init_proc.o init_poll.o init_dump.o \
 	init_wait.o init_warn.o init_cmds.o init_find.o \
 	$(sort $(foreach b,$(initblocks),$(init_$(b))))
 

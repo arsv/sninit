@@ -5,11 +5,8 @@
 #include "scope.h"
 
 extern int state;
-extern int currlevel;
 extern int nextlevel;
 extern int rbcode;
-
-extern struct config* cfg;
 
 export void parsecmd(char* cmd);
 
@@ -17,17 +14,15 @@ extern int configure(int strict);
 extern void stop(struct initrec* p);
 extern struct initrec* findentry(const char* name);
 
-local void setrunlevel(const char* cmd);
-local void dumpstate(void);
-local void dumpidof(struct initrec* p);
+extern void dumpstate(void);
+extern void dumpidof(struct initrec* p);
 
+local void setrunlevel(const char* cmd);
 local void dorestart(struct initrec* p);
 local void dodisable(struct initrec* p, int v);
 local void dostart(struct initrec* p);
 local void killrec(struct initrec* p, int sig);
 
-local char* joincmd(char* buf, int len, char** argv);
-local void rlstr(char* str, int len, int mask);
 local void clearts(struct initrec* p);
 
 /* Here we have a single command (cmd) sent by telinit, stored in some
@@ -142,102 +137,6 @@ void setrunlevel(const char* p)
 	}
 
 	nextlevel = next;
-}
-
-/* Convert runlevel bitmask into a readable string:
-       (1<<2) | (1<<a) | (1<<c) -> "1ac"
-   Telinit will show this as "current runlevel" */
-
-void rlstr(char* str, int len, int mask)
-{
-	char* p = str;	
-	char* end = str + len - 1;
-	static char bits[16] = "0123456789abcdef";
-	int i;
-
-	for(i = 0; i < 16; i++)
-		if(mask & (1 << i)) {
-			*p = bits[i];
-			if(p++ >= end - 1) break;
-		}
-
-	*p = '\0';
-}
-
-/* Join argv into a single string, to be reported by "telinit ?"
-   The string is cut, with ... added at the end, if it does not
-   fit in the output buffer. */
-
-char* joincmd(char* buf, int len, char** argv)
-{
-	char** arg;
-	int arglen;
-	int cpylen;
-	char* ret = buf;
-
-	if(len < 4)	/* "...\0"; should never happen */
-		goto out;
-
-	len--; /* terminating \0 */
-	for(arg = argv; *arg && len > 0; arg++) {
-		arglen = strlen(*arg);
-		cpylen = (arglen <= len ? arglen : len);
-
-		strncpy(buf, *arg, cpylen);
-		buf += cpylen;
-		len -= cpylen;
-
-		if(cpylen < arglen) {
-			break;
-		} else if(len > 0) {
-			*(buf++) = ' ';
-			len--;
-		}
-	} if(*arg) {
-		buf += (len > 3 ? 3 : len);
-		strncpy(buf - 3, "...", 3);
-	} else if(buf > ret && *(buf-1) == ' ')
-		buf--;
-
-out:	*buf = '\0';
-	return ret;
-}
-
-/* "telinit pidof (p)" output */
-
-void dumpidof(struct initrec* p)
-{
-	if(p->pid > 0)
-		warn("%i", p->pid);
-}
-
-/* "telinit ?" output, the list of services and their current state */
-
-void dumpstate(void)
-{
-	struct initrec *p, **pp;
-	bss char currstr[16];
-	bss char nextstr[16];
-	bss char cmdbuf[MAXREPORTCMD];
-	char* reportcmd;
-	
-	rlstr(currstr, 16, currlevel);
-	rlstr(nextstr, 16, nextlevel);
-	if(currlevel == nextlevel)
-		warn("Runlevel %s", currstr);
-	else
-		warn("Switching %s to %s", currstr, nextstr);
-
-	for(pp = cfg->inittab; (p = *pp); pp++) {
-		if(p->flags & C_ONCE)
-			if(currlevel == nextlevel)
-				continue;
-		reportcmd = p->name[0] ? p->name : joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
-		if(p->pid > 0)
-			warn("%i\t%s", p->pid, reportcmd);
-		else
-			warn("%s\t%s", "-", reportcmd);
-	}
 }
 
 /* User commands like start or stop should prompt immediate action
