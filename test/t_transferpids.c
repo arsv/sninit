@@ -37,9 +37,9 @@ struct memblock newblock = { .addr = &ncf_struct };
 
 extern void transferpids(void);
 
-void readinittab(void) { };
-void readinitdir(void) { };
-void addptrsarray(void) { };
+NOCALL(readinittab);
+NOCALL(readinitdir);
+NOCALL(addptrsarray);
 int levelmatch(void) { return 0; };
 
 int main(void)

@@ -6,11 +6,11 @@
 
 /* Empty symbols to keep the linker happy */
 struct memblock newblock;
-void addstrargarray(void) { };
-void addstringarray(void) { };
-void mextendblock(void) { };
-void checkdupname(void) { };
-void scratchptr(void) { };
+NOCALL(addstrargarray);
+NOCALL(addstringarray);
+NOCALL(mextendblock);
+NOCALL(checkdupname);
+NOCALL(scratchptr);
 
 extern int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
 

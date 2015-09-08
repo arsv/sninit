@@ -10,11 +10,12 @@ void* inittab;
 void* cfg;
 int state;
 int currlevel;
-void readinittab() { };
-void readinitdir() { };
-void findentry() { };
-void addptrsarray() { };
-void levelmatch() { };
+
+NOCALL(readinittab);
+NOCALL(readinitdir);
+NOCALL(findentry);
+NOCALL(addptrsarray);
+NOCALL(levelmatch);
 
 extern int mmapblock(struct memblock* m, int size);
 extern void rewireptrsarray(void** a);

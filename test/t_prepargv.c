@@ -6,13 +6,13 @@
 
 struct memblock newblock;	/* to keep the linker happy */
 
-int mextendblock() { return -1; }
-int addstrargarray() { return -1; }
-int checkdupname() { return -1; }
-int addstringarray() { return -1; }
-int linknode() { return -1; }
-int addstruct() { return -1; }
-int setrunflags() { return -1; }
+NOCALL(mextendblock);
+NOCALL(addstrargarray);
+NOCALL(checkdupname);
+NOCALL(addstringarray);
+NOCALL(linknode);
+NOCALL(addstruct);
+NOCALL(setrunflags);
 
 extern int prepargv(char* str, char** end);
 
