@@ -11,4 +11,5 @@ File structure:
 	ARCH/		machine-specific syscall code
 	ARCH/bits/	machine-specific constants
 
-There is no Makefile here; libc is built from the top source directory.
+There are no proper Makefiles anywhere under libc/.
+To build it, run "make libc" from the top source directory.
