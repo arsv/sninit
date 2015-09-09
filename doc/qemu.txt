@@ -69,6 +69,10 @@ executables in your rootfs image:
 	$BUILDROOT/output/target/sbin/telinit
 	$BUILDROOT/output/target/etc/inittab
 
+When building sninit for complete system test, make sure
+to disable DEVMODE, otherwise it won't be able to reboot
+the system.
+
 
 (a) Building sninit as a buildroot package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
