@@ -29,8 +29,8 @@ All user communication with init occurs via its control socket,
 see \fBtelinit\fR(8).
 .P
 Kernel passes any arguments it does not recognize to init.
-Among those, \fB1\fR, \fB2\fR, ..., \fB6\fR set the default runlevel,
-the rest are silently ignored.
+Among those, \fBsingle\fR, \fB1\fR, \fB2\fR, ..., \fB9\fR set initial
+runlevel, anything else is silently ignored.
 .P
 Check Documentation/kernel-parameters.txt, Documentation/init.txt from
 the kernel source on how to pass arguments to kernel
@@ -63,8 +63,7 @@ Initiates system shutdown (a switch to runlevel 0, in reboot mode).
 Pressing Ctrl+Alt+Del on the system console typically results in this signal
 being sent to init.
 .IP "\fBSIGCHLD\fR" 4
-Triggers init pass, normally because a child died.
-Sending this signal manually is harmless however.
+Sending this signal manually is harmless and does nothing.
 '''
 .SH FILES
 .IP "{/etc/inittab}" 4
