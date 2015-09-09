@@ -59,11 +59,9 @@ void rlstr(char* str, int len, int mask)
 	static char bits[16] = "0123456789abcdef";
 	int i;
 
-	for(i = 0; i < 16; i++)
-		if(mask & (1 << i)) {
-			*p = bits[i];
-			if(p++ >= end - 1) break;
-		}
+	for(i = 0; i < 16 && p < end; i++)
+		if(mask & (1 << i))
+			*(p++) = bits[i];
 
 	*p = '\0';
 }
