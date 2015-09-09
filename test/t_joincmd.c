@@ -4,13 +4,7 @@
 
 int nextlevel;
 int currlevel;
-int state;
-int rbcode;
 struct config* cfg;
-
-NOCALL(findentry);
-NOCALL(configure);
-NOCALL(stop);
 
 extern char* joincmd(char* buf, int len, char** argv);
 
