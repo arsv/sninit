@@ -15,10 +15,6 @@ a list of commands to spawn, which it executes sequentially.
 Init tracks pids of the spawned processes and, if configured so,
 respawns those that have died.
 .P
-To handle different system states, init keeps a number called
-\fIrunlevel\fR which determines the subset of processes that
-should be running at any given point.
-.P
 Init also adopts all orphaned processes in the system,
 becoming their parent process and reaping them when they die.
 '''
@@ -30,19 +26,19 @@ see \fBtelinit\fR(8).
 .P
 Kernel passes any arguments it does not recognize to init.
 Among those, \fBsingle\fR, \fB1\fR, \fB2\fR, ..., \fB9\fR set initial
-runlevel, anything else is silently ignored.
+runlevel, anything else is silently ignored. See \fBinittab\fR(5) for
+more information on runlevels.
 .P
 Check Documentation/kernel-parameters.txt, Documentation/init.txt from
 the kernel source on how to pass arguments to kernel
 (and subsequently to init).
 '''
 .SH CONFIGURATION
-\fBinit\fR reads the list of processes to spawn from \fBinittab\fR(5),
-and (if enabled at compile time) \fBinitdir\fR(5). See those pages on
-syntax as well as usage guidelines.
+\fBinit\fR reads the list of processes to spawn from \fBinittab\fR(5)
+and \fBinitdir\fR(5). See those pages on syntax as well as usage guidelines.
 .P
 The files are parsed early during system startup, and no attempts are made
-to re-read them later. To initiate re-configuration after editing the file,
+to re-read them later. To initiate re-configuration after editing anything,
 use "telinit reload". See \fBtelinit\fR(8).
 '''
 .SH ENVIRONMENT
@@ -58,9 +54,9 @@ Only signals listed below can be sent to init by a user process
 .IP "\fBSIGHUP\fR" 4
 Instructs init to reopen its control socket. Can be used to reset a hung
 telinit connection.
-.IP "\fBSIGINT\fR" 4
+.IP "\fBSIGINT\fR, \fBSIGTERM\fR" 4
 Initiates system shutdown (a switch to runlevel 0, in reboot mode).
-Pressing Ctrl+Alt+Del on the system console typically results in this signal
+Pressing Ctrl+Alt+Del on the system console typically results in SIGINT
 being sent to init.
 .IP "\fBSIGCHLD\fR" 4
 Sending this signal manually is harmless and does nothing.
@@ -79,4 +75,4 @@ This page describes init from {INIT} package.
 Other implementations, in particular sysvinit, behave somewhat differently.
 '''
 .SH SEE ALSO
-\fB{telinit}\fR(8), \fB{inittab}\fR(5).
+\fB{telinit}\fR(8), \fB{inittab}\fR(5), \fBinittdir\fR(5).
