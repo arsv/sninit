@@ -1,11 +1,9 @@
 Files in this directory are meant primarily for developers.
 
-
 -- Why sninit was written the way it is written
 
 builtin.txt	  What is builtin inittab, and why it is needed
 dependencies.txt  On systemd-style dependencies
-dietlibc.txt	  dietlibc configuration for sninit
 initdir.txt	  What is initdir
 inittab.txt	  Why a new inittab format
 initrec.txt	  Internal data structure
@@ -19,11 +17,17 @@ libc.txt	  Bundled libc, what and why
 syscalls.txt	  Bundled libc: syscall implementation
 
 
+-- Building and testing
+
+devel.txt	  Configuring development builds
+dietlibc.txt	  dietlibc configuration for sninit
+qemu.txt	  Using qemu to test sninit builds
+
+
 -- Usage notes
 
 initctl.txt	  Control socket protocol
 sysvinit.txt	  Migrating from sysvinit
-qemu.txt	  Using qemu to test sninit builds
 
 
 -- General init-related thoughts
