@@ -57,11 +57,23 @@ xinit or X display manager, as well as actual daemons in foreground mode.
 
 
 Building sninit
-~~~~~~~~~~~~~~
-See INSTALL file.
+~~~~~~~~~~~~~~~
+For proper build instructions, see INSTALL file.
 
-The package may be configured to run as a regular process from the source
-directory, for testing and development purposes. See doc/devel.txt on this.
+To try sninit without configuring a VM or installing anything:
+
+	./configure devel
+	make all sbin
+	./init
+	(from another terminal)
+	./telinit list
+	./telinit stop srv1
+	./telinit sleep
+	./telinit reload
+	./telinit poweroff
+
+In this configuration, init uses ./etc/inittab, ./etc/initdir
+and stub "daemons" from ./sbin.
 
 
 Documentation
