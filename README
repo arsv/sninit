@@ -73,7 +73,7 @@ To try sninit without configuring a VM or installing anything:
 	./telinit poweroff
 
 In this configuration, init uses ./etc/inittab, ./etc/initdir
-and stub "daemons" from ./sbin.
+and stub executables from ./sbin.
 
 
 Documentation
