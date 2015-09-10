@@ -102,11 +102,24 @@ void parsecmd(char* cmd)
 }
 
 /* Possible runlevel change commands here:
+
 	4	switch to runlevel 4, leaving sublevels unchanged
 	4-	switch to runlevel 4, clear sublevels
 	4ab	switch to runlevel 4, clear sublevels, activate a and b
 	+ab	activate sublevels a and b
-	-ac	deactivate sublevels a and c */
+	-ac	deactivate sublevels a and c
+
+   The whole thing is an awfully overkill for the purposse.
+   It could and probably should be limited to
+   	* switching a single primary runlevel
+	* adding a single secondary runlevel
+	* removing a single secondary runlevel
+
+   However, for the sake of completeness (since init switches
+   between two arbitrary runlevel masks), and because doing
+   the above simplification does not really remove that much code,
+   it is left as is, accepting back the same format as used
+   for telinit ? reports. */
 
 void setrunlevel(const char* p)
 {
