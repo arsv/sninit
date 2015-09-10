@@ -1,4 +1,4 @@
 #!/bin/sh
 #:2435
 
-exec sbin/xftp
+exec sbin/trap xftp

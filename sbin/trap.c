@@ -1,16 +1,25 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <stdlib.h>
 #include <time.h>
-#include "srv_.h"
 
-extern const char* tag;
-extern const int lifetime;
+/* Signal trap, to be used as a stub foreground daemon for ../etc/inittab
+   Trapping signals (normally sent by init) makes it clear what's going on,
+   specifically when and why the process dies.
+ 
+   Usage: trap [tag] [sleep-interval]
+
+   Tagging output helps a lot when several instances say something
+   at the same time. */
+
+const char* tag = "trap";
+int interval = 1000;
 
 #define BUF 1024
 static char saybuf[BUF];
 
-/* this should have been printf, but printf from libtest is not one-write
+/* This should have been printf, but printf from libtest is not one-write
    (which results in messy output) and bringing in ../sys_printf.c is kinda
    messy by itself. So why bother, it's not like this is something important. */
 
@@ -36,7 +45,11 @@ void sighandler(int sig)
 
 void trapsig(void)
 {
-	struct sigaction sa = { .sa_handler = sighandler, .sa_flags = SA_RESTART };
+	struct sigaction sa = {
+		.sa_handler = sighandler,
+		.sa_flags = SA_RESTART
+	};
+
 	sigaction(SIGINT,  &sa, NULL);
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGHUP,  &sa, NULL);
@@ -45,8 +58,12 @@ void trapsig(void)
 
 void sleepx(int sec)
 {
-	struct timespec ts = { .tv_sec = sec, .tv_nsec = 0 };
 	struct timespec tr;
+	struct timespec ts = {
+		.tv_sec = sec,
+		.tv_nsec = 0
+	};
+
 	while(1) {
 		if(!nanosleep(&ts, &tr))
 			break;
@@ -54,4 +71,19 @@ void sleepx(int sec)
 			break;
 		ts = tr;
 	};
+}
+
+int main(int argc, char** argv)
+{
+	if(argc > 1)
+		tag = argv[1];
+	if(argc > 2)
+		interval = atoi(argv[2]);
+
+	trapsig();
+	say("starting");
+	sleepx(interval);
+	say("normal exit");
+
+	return 0;
 }

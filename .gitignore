@@ -21,5 +21,4 @@ test/proto.c
 *.[58]
 .*.swp
 temp/
-sbin/srv[123]
-sbin/xftp
+sbin/trap

@@ -3,16 +3,24 @@
 PATH=/bin
 VAR=value
 
-ini1	R1+	sbin/ini1
-ini2	R1+	sbin/ini2
-ini3	W1+	sbin/ini3
+# System boot
+mount	R1+	sbin/mount -o remount,rw /
+hwc	R1+	sbin/hwclock
+	W1+	sbin/net up
 
-srv1	F3+	sbin/srv1
-srv2	F3+	sbin/srv2
-srv3	F3+	sbin/srv3
+# System shutdown
+	R0	sbin/net down
+	R0	sbin/umount -a
 
-	R789	!echo going to sleep
-sleep	W7	!echo mem > /sys/power/state
-	X789	!echo wakeup
+# Respawning services (see also initdir/)
+srv1	F3+	sbin/trap srv1 10
+srv2	F3+	sbin/trap srv2 23
+srv3	F3+	sbin/trap srv3
 
-# vim: ft=
+# Sleep modes
+	R789	sbin/net down
+sleep	W8	sbin/sleep 2
+suspend	W9	sbin/sleep 5
+	X789	sbin/net up
+
+# vim: ft=conf

@@ -2,9 +2,7 @@
 include ../config.mk
 o = $(if $(HOSTCC),.ho,.o)
 
-all = srv1 srv2 srv3 xftp
-
-all: $(all)
+trap: trap.o
 
 ifdef HOSTCC
 %: %.ho
@@ -17,10 +15,5 @@ $(LIBC): %.a:
 	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
 endif
 
-srv1: srv1.o srv_.o
-srv2: srv2.o srv_.o
-srv3: srv3.o srv_.o
-xftp: xftp.o srv_.o
-
 clean:
-	rm -f *.[od] $(all)
+	rm -f *.[od] trap
