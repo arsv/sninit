@@ -20,7 +20,6 @@ syscalls.txt	  Bundled libc: syscall implementation
 
 -- Building and testing
 
-devel.txt	  Configuring development builds
 dietlibc.txt	  dietlibc configuration for sninit
 qemu.txt	  Using qemu to test sninit builds
 
