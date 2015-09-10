@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 #include "init.h"
 #include "scope.h"
+#include "sys.h"
 
 extern int state;
 extern int nextlevel;

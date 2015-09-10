@@ -12,6 +12,14 @@
 #define SOCK_CLOEXEC 02000000
 #endif
 
+#ifndef WCONTINUED
+#define WCONTINUED 8
+#endif
+
+#ifndef WIFCONTINUED
+#define WIFCONTINUED(status) ((status) == 0xFFFF)
+#endif
+
 /* glibc intentionally omits getdents */
 #ifdef __GLIBC__
 struct dirent64;
