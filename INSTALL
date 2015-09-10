@@ -1,18 +1,16 @@
 Generic instructions
 ~~~~~~~~~~~~~~~~~~~~
-Check config.mk and/or config.h for build-time setup.
+Build sequence is similar to generic autotools packages:
+
+	./configure (...)
+	make
+	make DESTDIR=(...) install
+
+Run "./configure help" to see possible options.
+
+Alternatively, check config.mk and/or config.h.
 Specifically, check INITCTL, INITTAB, LOGDIR in config.h,
 compiler setup and installation directories in config.mk.
-
-Run make, then make install.
-
-Alternatively, run mostly-autotools-compatible configure.
-
-To try it on a system with another init installed, run
-
-	configure --with-s
-
-You will get sinit, stelinit and /etc/sinittab.
 
 
 Cross-compiling
@@ -55,12 +53,12 @@ Check libc/ subdirectories to see which architectures are supported
 by bundled libc. For unsupported architectures, fall back to dietlibc
 or perhaps system libc.
 
-Using bundled libc provides little benefit over properly configured
-dietlibc in terms of executable size (because it *is* dietlibc,
-if perhaps re-written in some places) but instead gives clear,
-uncluttered libc code for debugging.
+Using bundled libc may be more convenient, but provides little benefit
+over *properly*configured* dietlibc in terms of executable size
+(because it is mostly dietlibc, if perhaps re-written in some places).
+Instead gives clear, uncluttered libc code for debugging.
 
-Note "properly configured". Depending on target architecture,
+Note properly configured dietlibc. Depending on target architecture,
 default dietlibc configuration may add several kB of bloat.
 See doc/dietlibc.txt
 
@@ -80,7 +78,6 @@ Note syscall(2) is in libcompat.a, so you'll need
 Because dietlibc implies static linkage and small executable size,
 consider using sys_printf.c and sys_strerror.c. See comments in those files.
 Size optimization (-Os) helps in most cases.
-Link-time optimization (-flto) may or may not help, check for yourself.
 
 
 Building with musl
@@ -96,6 +93,27 @@ Building with glibc or uClibc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Both glibc and uclibc lack getdents(2), even thought it is a linux system call.
 Use sys_getdents.c instead.
+
+
+Choosing timezone module
+~~~~~~~~~~~~~~~~~~~~~~~~
+This only makes sense with bundled libc or dietlibc, and only affects
+the messages sent to syslog.
+
+The standard (also default) option is "tz", but "notz" will work just
+as well with most, if not all, syslogd implementations.
+
+When building with bundled libc for a musl-based system, prefer "utc"
+instead of "tz" because that's what musl syslog(3) uses.
+
+
+Link-time optimization
+~~~~~~~~~~~~~~~~~~~~~~
+To enable LTO, add -flto to CFLAGS and LDFLAGS, or alternatively use "lto"
+keyword for configure. It should work with any libc.
+
+LTO is generally harmless, but it requires support from cc/binutils, and its
+effects are usually minor. Because of this, it is not enabled by default.
 
 
 Rebuilding
