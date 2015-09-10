@@ -1,0 +1,91 @@
+Reboot on failure: why and why not
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The idea, well, two parts of the same idea actually:
+
+1. if an entry flagged C_ONCE | C_ROF fails, initiate
+   a switch either to
+    1a. runlevel 0 (reboot)
+    1b. runlevel 1 or 2 (recovery and alt-recovery resp.)
+
+2. if currlevel == nextlevel and there are no (*)
+   respawning entries left, initiate switch to runlevel 0.
+    2a. (*) = any
+    2b. (*) = flagged C_ROF
+
+C_ROF is naturally an additional initrec flag.
+While the purpose of #1 and #2 is different, their problems are common.
+
+
+Why implement them
+~~~~~~~~~~~~~~~~~~
+For #1, the clear goal is to handle critical initialization failure
+like failed mount root is a somewhat graceful way, instead of just
+ignoring it and trying to push forward.
+
+The reasoning behind #2 is a bit more tricky.
+Unlike sysvinit, P_FAILED in sninit is non-decaying, it can only be
+removed manually. Because of this, init may end up disabling all
+running services, leaving the system defunct.
+This violates #E from init.txt, and may otherwise be undesirable.
+
+The obvious extension, #2b, separates entries worth monitoring,
+like user UI or maybe the network services the system is kept for,
+while ignoring the rest.
+
+
+Why NOT implement them
+~~~~~~~~~~~~~~~~~~~~~~
+There are several somewhat independent reasons why the decision
+was made to avoid both #1 and #2.
+
+F1. Any in-init implementation is inherently very limited.
+      #1 can only track failure of a single command
+      #2 can only respond to all the services failing
+    More complicated scenarios are even harder to decide on, and
+    those will need to be hard-coded within init.
+
+F2. Both make the system hard to debug.
+    A sudden (and likely fast) reboot erases the traces of the problem.
+
+F3. Reboot loop may be a worse failure mode than system hang-up.
+    Especially if the system is running on batteries.
+
+So instead of implementing this, sninit makes a C-A-Del assumption:
+"in any unclear situation, the user can reboot the box".
+And chances are, before doing that, check what's wrong.
+
+
+What about decaying P_FAILED?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sure it is possible to mitigate #E issue somewhat by making P_FAILED flag
+decay over time, the same way it is done in SysVinit (as in "...respawning
+too fast, diabled for 5 minutes").
+
+The problems with decaying P_FAILED:
+
+1. It is a timed event, in inherently non-realtime Linux.
+
+   Why 5 minutes? Will anyone wait for 5 minutes instead of rebooting
+   the damn box? (see C-A-Del assumption above)
+
+2. It is not clear why the situation would rectify itself over time.
+
+   If the service was disabled because it ran out of pids or memory,
+   things may change — but again, it is not clear anyone will wait
+   before rebooting the system or intervening in some other way.
+   Anything else will likely require intervention anyway.
+
+In fact, this is essentially #F3. Why should attempts to restart a service
+that has failed be better than just letting it hang?
+
+Note this only applies to P_FAILED services, that is, those that were indeed
+respawning too fast. Since no process other than init is required to run
+forever, any respawning entry should be allowed to die, and be restarted
+afterward. Maybe it got SIGSEGV, who knows.
+
+P_FAILED attempts to catch a different kind of errors, namely failures
+to restart properly. We can't know for sure whether the entry succeeded
+in (re)starting or not, so we rely on timing instead.
+
+Since triggering P_FAILED requires an entry not expected to die do exactly
+that twice, it seems to be ok to use loose time-related conditions.
