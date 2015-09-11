@@ -11,8 +11,6 @@
    or may not be an issue though, especially considering syslogd
    is often a local process using the same system time. */
 
-#include <time.h>
-
 int timestamp(char* buf, int len)
 {
 	/* Timestamp must be followed by a space according to RFC 3164.
