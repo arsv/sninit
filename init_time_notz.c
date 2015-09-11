@@ -10,5 +10,7 @@ extern int mktimestamp(char* p, int l, time_t ts);
 
 int timestamp(char* buf, int len)
 {
-	return mktimestamp(buf, len, time(NULL));
+	struct timespec tp = { 0, 0 };
+	clock_gettime(CLOCK_REALTIME, &tp);
+	return mktimestamp(buf, len, tp.tv_sec);
 }
