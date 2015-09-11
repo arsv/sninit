@@ -3,10 +3,14 @@ Overview
 sninit is a small init implementation for linux.
 
 sninit was written as a smaller, cleaner replacement for sysvinit,
-fixing sysvinit's inability to stop/start services on the fly.
+fixing sysvinit's inability to stop/start services on the fly,
+and turning runlevels into something usable.
 
 To a lesser degree, it was also a response to a horrific,
 overbloated beast called systemd making its way into Arch linux.
+
+It is meant for systems that need something more capable than busybox
+init and more reliable than sysvinit+initscripts.
 
 
 Features
