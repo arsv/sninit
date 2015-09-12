@@ -22,8 +22,6 @@ local int waitneeded(struct initrec* p, time_t* last, time_t wait);
 
 void spawn(struct initrec* p)
 {
-	int pid;
-
 	if(p->pid > 0)
 		/* this is not right, spawn() should only be called
 		   for entries that require starting */
@@ -35,9 +33,14 @@ void spawn(struct initrec* p)
 	/* The code below is valid with either fork or vfork.
 	   There is almost no difference for MMU targets, but
 	   non-MMU targets only provide vfork, so let's use
-	   vfork and save ourselves a nasty ifdef. */
+	   vfork and save ourselves a nasty ifdef.
+	   XXX: och, nope, vfork fails badly on ARM (?!) */
+#ifdef NOMMU
+	pid_t pid = vfork();
+#else
+	pid_t pid = fork();
+#endif
 
-	pid = vfork();
 	if(pid < 0) {
 		retwarn_("%s[*] can't fork: %m", p->name);
 	} else if(pid > 0) {
