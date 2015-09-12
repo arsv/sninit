@@ -154,6 +154,8 @@ int parsesrvfile(struct fileblock* fb, char* basename)
 		shebang = 1;
 		if(!nextline(fb))
 			retwarn(-1, "%s: empty script", fb->name);
+	} else {
+		shebang = 0;
 	}
 
 	/* Do we have #: line? If so, note runlevels and flags */
