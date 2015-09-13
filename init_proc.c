@@ -14,7 +14,7 @@ extern time_t passtime;
 export void spawn(struct initrec* p);
 export void stop(struct initrec* p);
 
-local int waitneeded(struct initrec* p, time_t* last, time_t wait);
+local int waitneeded(time_t* last, time_t wait);
 
 /* Both spawn() and stop() should check relevant timeouts, do their resp.
    actions if that's ok to do, or update timetowait via waitneeded call
@@ -27,7 +27,7 @@ void spawn(struct initrec* p)
 		   for entries that require starting */
 		retwarn_("%s[%i] can't spawn, already running", p->name, p->pid);
 
-	if(waitneeded(p, &p->lastrun, TIME_TO_RESTART))
+	if(waitneeded(&p->lastrun, TIME_TO_RESTART))
 		return;
 
 	/* The code below is valid with either fork or vfork.
@@ -75,13 +75,13 @@ void stop(struct initrec* p)
 		/* The process has been sent SIGKILL, still refuses to kick the bucket.
 		   Just forget about it then, reset p->pid and let the next initpass
 		   restart the entry. */
-		if(waitneeded(p, &p->lastsig, TIME_TO_SKIP))
+		if(waitneeded(&p->lastsig, TIME_TO_SKIP))
 			return;
 		warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
 		p->pid = 0;
 	} else if(p->flags & P_SIGTERM) {
 		/* The process has been signalled, but has not died yet */
-		if(waitneeded(p, &p->lastsig, TIME_TO_SIGKILL))
+		if(waitneeded(&p->lastsig, TIME_TO_SIGKILL))
 			return;
 		warn("#%s[%i] process refuses to die, sending SIGKILL", p->name, p->pid);
 		kill(-p->pid, SIGKILL);
@@ -113,7 +113,7 @@ void stop(struct initrec* p)
    only act if the time is up, otherwise just set ppoll timer so that
    another initpass would be triggered when necessary. */
 
-int waitneeded(struct initrec* p, time_t* last, time_t wait)
+int waitneeded(time_t* last, time_t wait)
 {
 	time_t curtime = passtime;	/* start of current initpass, see main() */
 	time_t endtime = *last + wait;
