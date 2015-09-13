@@ -2,11 +2,13 @@
 include ../config.mk
 o = $(if $(HOSTCC),.ho,.o)
 
-trap: trap.o
+trap: trap$o
 
 ifdef HOSTCC
 %: %.ho
 	$(HOSTCC) -o $@ $(filter %.ho,$^)
+%.ho: %.c
+	$(HOSTCC) -o $@ -c $<
 else
 LIBC = $(sort $(filter %.a,$(LIBS)))
 $(LIBC): %.a:
