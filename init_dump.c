@@ -6,6 +6,7 @@ extern int currlevel;
 extern int nextlevel;
 extern struct config* cfg;
 
+extern int levelmatch(struct initrec* p, int level);
 local char* joincmd(char* buf, int len, char** argv);
 local void rlstr(char* str, int len, int mask);
 
@@ -40,6 +41,8 @@ void dumpstate(void)
 		if(p->flags & C_ONCE)
 			if(currlevel == nextlevel)
 				continue;
+		if(!levelmatch(p, nextlevel) && p->pid <= 0)
+			continue;
 		reportcmd = p->name[0] ? p->name : joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
 		if(p->pid > 0)
 			warn("%i\t%s", p->pid, reportcmd);

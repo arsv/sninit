@@ -6,6 +6,8 @@ int nextlevel;
 int currlevel;
 struct config* cfg;
 
+NOCALL(levelmatch);
+
 extern char* joincmd(char* buf, int len, char** argv);
 
 void check(char** argv, int len, char* expected)
