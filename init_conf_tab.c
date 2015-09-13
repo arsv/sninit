@@ -14,7 +14,7 @@ extern int mmapfile(struct fileblock* fb, int maxlen);
 extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
-local int parseinitline(struct fileblock* fb, int strict);
+local int parseinitline(struct fileblock* fb);
 local char* strssep(char** str);
 
 /* Strict means bail out on errors immediately; with strict=0, it should continue
@@ -31,7 +31,7 @@ int readinittab(const char* file, int strict)
 		return -1;
 
 	while(nextline(&fb))
-		if((ret = parseinitline(&fb, strict)) && strict)
+		if((ret = parseinitline(&fb)) && strict)
 			break;
 
 	munmapfile(&fb);
@@ -40,7 +40,7 @@ int readinittab(const char* file, int strict)
 }
 
 /* Parse current line from fb, the one marked by fb->ls and fb->le. */
-int parseinitline(struct fileblock* fb, int strict)
+int parseinitline(struct fileblock* fb)
 {
 	char* p;
 	char* l = fb->ls;

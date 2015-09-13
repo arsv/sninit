@@ -18,7 +18,7 @@ struct {
 	int exe;
 } U;
 
-extern int parseinitline(struct fileblock* fb, int strict);
+extern int parseinitline(struct fileblock* fb);
 int readinitdir(char* dir, int strict)
 {
 	return -1;
@@ -70,7 +70,7 @@ void test(input, name, rlvl, cmd)
 
 	memset(&U, 0, sizeof(U));
 
-	A(parseinitline(&fb, 0) == RET);
+	A(parseinitline(&fb) == RET);
 
 	A(U.called == 1);
 	S(U.name, name);
