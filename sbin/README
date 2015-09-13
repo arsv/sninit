@@ -1,0 +1,10 @@
+The files here are stub executables intended to be used with ../etc/inittab
+for test runs in source directory.
+
+Note trap.c is set to be host-compiled. This is because qemu-(arch) ./init
+translates syscalls to the underlying native kernel, and native execve
+naturally expects native executables.
+
+Testing with qemu-system-(arch) would require target-compiled trap,
+but there are much more interesting things to run with qemu-system
+so trap is assumed to be host-only.
