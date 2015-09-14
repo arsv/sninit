@@ -176,3 +176,23 @@ compared to current guess-type-of-line code.
 
 The move to crontab-like format largely alleviated the issue.
 Assignments look a lot less out of place now.
+
+
+SIGKILL with/out SIGTERM
+~~~~~~~~~~~~~~~~~~~~~~~~
+The normal way to kill a process is to send SIGTERM first, asking it to exit
+gracefully, maybe do some cleanup and such. And only if the process takes
+too long to die, init sends it SIGKILL.
+
+However, turns out busybox getty just ignores SIGTERM somehow, which means
+stopping it takes about TIME_TO_SIGKILL seconds.
+To handle this, C_KILL was introduces as a short-cut that skips the SIGTERM
+part. Since the process cannot do any cleanup, why bother asking it.
+
+The whole thing does not look right, but I can't think of any better solution.
+Why does getty ignores SIGTERM? What if there's a child process that *does*
+handle SIGTERM properly?
+
+Initially, SIGABRT was used instead of SIGTERM to achieve the same goal.
+This was deemed pointless however. If we know SIGABRT will just kill it,
+we can just as well send SIGKILL.
