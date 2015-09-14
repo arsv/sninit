@@ -87,9 +87,17 @@ See man pages and files in doc/ directory.
 
 Just how small exactly?
 ~~~~~~~~~~~~~~~~~~~~~~~
-Statically linked init executable is around 15KB on x86_64 and arm,
-25KB on mips. telinit, which is a standalone executable, adds
-3KB (x86_64 and arm) to 8KB (mips) more.
+Typical size of statically-linked, stripped executables for different
+architectures:
+                     init     telinit    run
+        x86          14KB       3KB      5KB
+        x86_64       15KB       3KB      6KB
+        arm          17KB       4KB      7KB
+        arm64        17KB       3KB      6KB
+        mips         25KB       4KB     10KB
+
+telinit is a standalone executable in sninit, not a hardlink to init.
+run is optional, and not really related to init at all.
 
 
 Credits
