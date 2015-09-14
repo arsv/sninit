@@ -30,6 +30,7 @@ static struct entrytype {
 	{ 'S', C_DOF | C_DTF },
 	{ 'L', C_DOF | C_DTF | C_WAIT },
 	{ 'F', C_DOF },
+	{ 'T', C_DOF | C_KILL },
 	{ 'P', C_HUSH },
 	{ 'W', C_ONCE | C_WAIT },
 	{ 'R', C_ONCE },

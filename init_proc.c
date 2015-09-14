@@ -92,8 +92,11 @@ void stop(struct initrec* p)
 
 		/* Now there is not waitneeded here, so we've got to reset lastsig. */
 		p->lastsig = passtime;
-		kill(-p->pid, SIGTERM);
-		p->flags |= P_SIGTERM;
+
+		int sig = p->flags & C_KILL ? SIGKILL : SIGTERM;
+		int flg = p->flags & C_KILL ? P_SIGKILL : P_SIGTERM;
+		kill(-p->pid, sig);
+		p->flags |= flg;
 
 		/* Attempt to wake the process up to recieve SIGTERM. */
 		/* This must be done *after* sending the killing signal
