@@ -318,7 +318,7 @@ esac
 
 # See if we'd like to use bundled libc by default,
 # and try to guess arch if bundled was specified without an arg
-if [ -z "$libc" -o "$libc" == 'bundled' ]; then
+if [ -z "$libc" -o "$libc" = 'bundled' ]; then
 	case "$arch:$ccarch" in
 		:x86_64*)  arch=x86_64 ;;
 		# x86_32 is *not* reported as such and must be specified explicitly!
@@ -328,14 +328,14 @@ if [ -z "$libc" -o "$libc" == 'bundled' ]; then
 		:mips64*) ;; # not supported atm
 		:mips*)    arch=mips ;;
 	esac
-fi; if [ "$libc" == 'bundled' -a -z "$arch" ]; then
+fi; if [ "$libc" = 'bundled' -a -z "$arch" ]; then
 	die "Can't guess target architecture, use arch= option"
 elif [ -z "$libc" -a -n "$arch" ]; then
 	libc=bundled
 fi
 
 # Handle optimization
-if [ "$optimize" == 'auto' ]; then
+if [ "$optimize" = 'auto' ]; then
 	optcommon="-Os -fno-asynchronous-unwind-tables"
 	case "$ccarch" in
 		# stdarg + x86 + SSE results in xmm* register handling bloat
@@ -376,7 +376,7 @@ case "${libc:-syslibc}" in
 		test -d "libc/$arch" || die "bundled libc: target $arch is not supported"
 		blocks="$blocks sys"
 		tsdefault=tz
-		test "$cctype" == "gcc" && libs=-lgcc
+		test "$cctype" = "gcc" && libs=-lgcc
 		;;
 	musl)
 		tsdefault=libc
@@ -417,7 +417,7 @@ case "${tstype:-$tsdefault}" in
 esac
 
 # Try to guess which qemu to use if this was requested
-if [ "$run" == 'auto' ]; then
+if [ "$run" = 'auto' ]; then
 	cclead=`echo "$ccarch" | sed -e 's/-.*//' -e 's/[^A-Za-z0-9_-]//'`
 	if [ -z "$cclead" -a -n "$target" ]; then
 		cclead=`echo "$target" | sed -e 's/-.*//'`
