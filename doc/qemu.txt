@@ -164,9 +164,9 @@ init's child-reaping functions are not likely to be buggy.
 Caveats
 ~~~~~~~
 Qemu in linux-user mode (qemu-arm, as opposed to qemu-system-arm) does not
-check or translate hidden syscall arguments (e.g. sizeof(sigset_t) as
-5th ppoll(2) argument), and supplies the right values to the host kernel
-even if the target executable gets them wrong.
+check nor translate hidden syscall arguments like sizeof(sigset_t) in
+ppoll, and always supplies the right values to the host kernel.
+This behavior may mask bugs in those arguments.
 
 Typical presentation: executable works well on qemu-arm but fails
 with EINVAL from ppoll on qemu-system-arm.
