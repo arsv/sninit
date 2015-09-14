@@ -320,12 +320,13 @@ esac
 # and try to guess arch if bundled was specified without an arg
 if [ -z "$libc" -o "$libc" == 'bundled' ]; then
 	case "$arch:$ccarch" in
-		:x86_64*) arch=x86_64 ;;
+		:x86_64*)  arch=x86_64 ;;
 		# x86_32 is *not* reported as such and must be specified explicitly!
-		:x86*) arch=x86 ;;
-		:arm*) arch=arm ;;
-		:mips64*) ;;
-		:mips*) arch=mips ;;
+		:x86*)     arch=x86 ;;
+		:arm*)     arch=arm ;;
+		:aarch64*) arch=arm64 ;;
+		:mips64*) ;; # not supported atm
+		:mips*)    arch=mips ;;
 	esac
 fi; if [ "$libc" == 'bundled' -a -z "$arch" ]; then
 	die "Can't guess target architecture, use arch= option"
