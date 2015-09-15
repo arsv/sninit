@@ -23,7 +23,7 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_joincmd t_setrunflags t_findentry t_waitpids t_dof_dtf \
 	t_rlstr
 # Tests with manual check (for now)
-XTESTS = x_printf x_hello x_open x_vfork
+XTESTS = x_printf x_hello x_open x_vfork x_sigprocset x_reboot
 
 # Default rule — built all tests but do not run them
 all: $(TESTS) $(XTESTS)
@@ -131,6 +131,10 @@ t_warn: t_warn.o init_warn.o sys_printf.o
 
 # Libc tests
 x_openread: x_openread.o test.o
+
+x_sigprocset: x_sigprocset.o
+
+x_reboot: x_reboot.o
 
 # Possible top-level libc
 #

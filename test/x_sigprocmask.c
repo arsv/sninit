@@ -10,7 +10,7 @@ void sighandler(int sig)
 	signalled |= (1 << sig);
 }
 
-int main(void)
+int main(int argc, char** argv)
 {
 	pid_t self = getpid();
 	sigset_t defsigset;
