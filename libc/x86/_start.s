@@ -47,10 +47,13 @@ _start:
 	call	main
 
 	movl	%eax, %ebx		/* return value */
-_exit:	xor	%eax, %eax
+4:	xor	%eax, %eax
 	movb	$NR_exit, %al		/* call _exit */
 	call	*vsyscall
 	hlt				/* catch fire and die */
+
+_exit:	movl	4(%esp), %ebx
+	jmp	4b
 
 .type _exit,@function
 .size _exit,.-_exit
