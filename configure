@@ -323,6 +323,7 @@ if [ -z "$libc" -o "$libc" = 'bundled' ]; then
 		:x86_64*)  arch=x86_64 ;;
 		# x86_32 is *not* reported as such and must be specified explicitly!
 		:x86*)     arch=x86 ;;
+		:i?86*)    arch=x86 ;;
 		:arm*)     arch=arm ;;
 		:aarch64*) arch=arm64 ;;
 		:mips64*) ;; # not supported atm
