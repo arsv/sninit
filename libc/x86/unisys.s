@@ -19,6 +19,7 @@ vsyscall: .long sysint80h
 .text
 .global unisys
 .global unisysx
+.global unisysc
 
 unisys:
 	mov	$0, %ah
@@ -37,6 +38,8 @@ unisysx:
 	movl	8*4(%edi), %esi
 	movl   10*4(%edi), %ebp
 	movl	9*4(%edi), %edi
+
+unisysc:
 	call	*vsyscall
 
 	pop	%ebp
