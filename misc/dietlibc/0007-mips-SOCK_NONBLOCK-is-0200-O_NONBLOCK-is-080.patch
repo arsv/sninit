@@ -1,0 +1,25 @@
+From 19a95c61bdec6f179ef35f64fe953b589018002a Mon Sep 17 00:00:00 2001
+From: Alex Suykov <alex.suykov@gmail.com>
+Date: Wed, 31 Dec 2014 17:33:21 +0200
+Subject: [PATCH 7/7] mips: SOCK_NONBLOCK is 0200 (O_NONBLOCK is 080)
+
+---
+ include/sys/socket.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/sys/socket.h b/include/sys/socket.h
+index 64d801d..69b8dda 100644
+--- a/include/sys/socket.h
++++ b/include/sys/socket.h
+@@ -322,6 +322,8 @@ __BEGIN_DECLS
+ 
+ #if defined(__hppa__) || defined(__alpha__)
+ #define SOCK_NONBLOCK 0x40000000
++#elif defined(__mips__)
++#define SOCK_NONBLOCK 0x00000200
+ #else
+ #define SOCK_NONBLOCK O_NONBLOCK
+ #endif
+-- 
+2.0.3
+

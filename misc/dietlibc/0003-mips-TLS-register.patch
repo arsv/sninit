@@ -1,0 +1,27 @@
+From c4e87b3af4728da52209d52609829401e28f7db8 Mon Sep 17 00:00:00 2001
+From: Alex Suykov <alex.suykov@gmail.com>
+Date: Tue, 30 Dec 2014 23:25:14 +0200
+Subject: [PATCH 3/7] mips: TLS register
+
+---
+ include/sys/tls.h | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/include/sys/tls.h b/include/sys/tls.h
+index c3137ac..9c1d7cb 100644
+--- a/include/sys/tls.h
++++ b/include/sys/tls.h
+@@ -71,6 +71,10 @@ int arch_prctl(unsigned int what, void* where);
+ 
+ #define __ABI_TLS_REGISTER	"%g7"
+ 
++#elif defined(__mips__)
++
++#define __ABI_TLS_REGISTER	"$29"
++
+ #elif defined(__arm__)
+ 
+ void __arm_set_tls(void *);
+-- 
+2.0.3
+

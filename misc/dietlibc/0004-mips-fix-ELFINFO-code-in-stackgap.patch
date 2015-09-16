@@ -1,0 +1,29 @@
+From a5192e434026ae2c68bf9df8bf424606520a73cf Mon Sep 17 00:00:00 2001
+From: Alex Suykov <alex.suykov@gmail.com>
+Date: Tue, 30 Dec 2014 23:25:46 +0200
+Subject: [PATCH 4/7] mips: fix ELFINFO code in stackgap
+
+---
+ mips/start.S | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/mips/start.S b/mips/start.S
+index 3cf3433..cf72351 100644
+--- a/mips/start.S
++++ b/mips/start.S
+@@ -48,11 +48,10 @@ __start:
+ 	add	$a2, $a2, $a1
+ 	sw	$a2, environ
+ #ifdef WANT_ELFINFO
+-#  warning "MAKE ME MIPS CODE!"
+ 1:	addu	$a2, $a2, 4	/* increment envp */
+ 	lw	$4, -4($a2)     /* load envp[-1]; TODO: is $4 a proper
+ 				   temporary register? */
+-	bnz	1b		/* ... until envp[-1]==NULL
++	bne	$4, $0, 1b	/* ... until envp[-1]==NULL
+ 				   TODO: use proper 'bnz' operation */
+ 	sw	$a2, __elfinfo
+ #endif
+-- 
+2.0.3
+

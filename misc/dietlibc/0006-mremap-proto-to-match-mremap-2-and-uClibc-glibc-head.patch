@@ -1,0 +1,25 @@
+From e5294a80936dfa70df451ffa7b487801cf241562 Mon Sep 17 00:00:00 2001
+From: Alex Suykov <alex.suykov@gmail.com>
+Date: Wed, 31 Dec 2014 17:28:46 +0200
+Subject: [PATCH 6/7] mremap proto to match mremap(2) and uClibc/glibc headers
+
+---
+ include/sys/mman.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/sys/mman.h b/include/sys/mman.h
+index ba616c1..37f9f93 100644
+--- a/include/sys/mman.h
++++ b/include/sys/mman.h
+@@ -225,7 +225,7 @@ extern int munmap (void *__addr, size_t __len) __THROW;
+ extern int mprotect (void *__addr, size_t __len, int __prot) __THROW;
+ extern int msync (void *__addr, size_t __len, int __flags) __THROW;
+ extern void *mremap (void *__addr, size_t __old_len, size_t __new_len,
+-		     unsigned long __may_move) __THROW;
++		     int __may_move, ...) __THROW;
+ extern int mincore (void *__start, size_t __len, unsigned char *__vec);
+ 
+ extern void *mmap64 (void *__addr, size_t __len, int __prot,
+-- 
+2.0.3
+
