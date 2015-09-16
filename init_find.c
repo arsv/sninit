@@ -8,8 +8,7 @@
    init_cmds uses it to start/stop entries
 
    This function looks for an entry from the primary inittab, cfg->inittab,
-   the one that initpass() uses.
-   Not for the inittab being assembled in newblock. */
+   the one that initpass() uses. Not the one being assembled in newblock. */
 
 extern struct config* cfg;
 

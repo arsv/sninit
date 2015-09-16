@@ -12,7 +12,7 @@ local void rlstr(char* str, int len, int mask);
 
 /* These two functions provide telinit pidof and telinit ? output
    respectively. Both are called from within parsecmd, with warnfd
-   being an open telinit connection.
+   being the open telinit connection.
 
    This is the only case when warn() is used for non-error output. */
 
