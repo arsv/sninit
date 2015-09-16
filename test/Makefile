@@ -23,7 +23,7 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_joincmd t_setrunflags t_findentry t_waitpids t_dof_dtf \
 	t_rlstr
 # Tests with manual check (for now)
-XTESTS = x_printf x_hello x_open x_vfork x_sigprocmask x_reboot
+XTESTS = x_printf x_hello x_open x_vfork x_sigprocmask x_reboot x_ppoll
 
 # Default rule — built all tests but do not run them
 all: $(TESTS) $(XTESTS)
