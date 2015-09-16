@@ -1,21 +1,8 @@
-/ = ../
-include ../config.mk
-o = $(if $(HOSTCC),.ho,.o)
+CC = gcc
+CFLAGS = -Wall
 
-trap: trap$o
-
-ifdef HOSTCC
-%: %.ho
-	$(HOSTCC) -o $@ $(filter %.ho,$^)
-%.ho: %.c
-	$(HOSTCC) -o $@ -c $<
-else
-LIBC = $(sort $(filter %.a,$(LIBS)))
-$(LIBC): %.a:
-	@echo Can\'t make $@ from this directory.; false
-%: %.o $(LIBC)
-	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
-endif
+trap: trap.c
+	$(CC) -o $@ $<
 
 clean:
-	rm -f *.[od] trap
+	rm -f trap
