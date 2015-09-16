@@ -136,6 +136,8 @@ x_sigprocset: x_sigprocset.o
 
 x_reboot: x_reboot.o
 
+x_ppoll: x_ppoll.o
+
 # Possible top-level libc
 #
 # This is pretty ugly, but absolutely necessary to allow the catch-all %: %.o
