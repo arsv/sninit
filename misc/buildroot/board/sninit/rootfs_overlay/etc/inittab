@@ -1,0 +1,14 @@
+PATH=/bin:/sbin
+
+	R3+	/bin/mount -t proc proc /proc
+	W3+	/bin/mount -o remount,rw /
+	R3+	/bin/mkdir -p /dev/pts
+	R3+	/bin/mkdir -p /dev/shm
+	W3+	/bin/mount -a
+	R3+	/bin/hostname -F /etc/hostname
+
+tty1	T3+	/sbin/getty -L tty1  115200 vt100
+
+	R0	/bin/umount -a -r
+
+# vim: ft=conf:

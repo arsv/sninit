@@ -1,0 +1,48 @@
+config BR2_PACKAGE_SNINIT
+	bool "sninit"
+	depends on BR2_USE_MMU		# fork
+	depends on BR2_INIT_NONE	# avoid overwriting another init
+	help
+	  Small init implementation based on sysvinit runlevel model
+	  with support for managed daemons.
+
+	  https://github.com/arsv/sninit
+
+comment "sninit needs Init System: None in System Configuration"
+	depends on !BR2_INIT_NONE
+
+if BR2_PACKAGE_SNINIT
+
+config BR2_PACKAGE_SNINIT_BUNDLED_LIBC
+	bool "Use bundled libc"
+	depends on BR2_i386 || BR2_arm || BR2_armeb || BR2_aarch64 || BR2_mips || BR2_mipsel || BR2_x86_64
+	default y
+	help
+	  sninit comes with a minimalistic libc implementation
+	  that provides just the necessary functions.
+
+	  Linking against bundled libc results in smallest possible
+	  static executables, but it is only available on certain platforms.
+
+	  With this option disabled, init will be linked against whatever
+	  libc has been chosen for the whole system (uClibc, musl etc).
+
+config BR2_PACKAGE_SNINIT_DEBUG
+	bool "Enable debug mode"
+	default y
+	help
+	  Debug mode disables optimization and enables debugging symbols.
+	  Buildroot strips target executables, but those in output/build/
+	  retain their symbols, stripped init can be run under gdbserver
+	  in qemu and non-stripped one can be loaded into target-gdb
+	  for a remote debugging session.
+
+config BR2_PACKAGE_SNINIT_BUILTIN_INITTAB
+	string "Built-in inittab name"
+	default ""
+	help
+	  A fallback inittab to use if /etc/inittab on the target system
+	  can not be read. This is compile-time option, and the file name
+	  should be relative to buildroot directory.
+
+endif

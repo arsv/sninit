@@ -1,0 +1,138 @@
+Buildroot system for sninit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+sninit comes with a set of pre-defined configurations for Buildroot
+which allow building a bootable system image for qemu with sninit
+set up as process #1. This is intended for testing overall usabitiy
+of sninit by interacting with a running system, possibly also trying
+different configurations.
+
+Check http://buildroot.uclibc.org/ for overall information on Buildroot.
+For the logic behind sninit-supplied configuration, check
+http://buildroot.uclibc.org/downloads/manual/manual.html#outside-br-custom
+
+The files are stored in misc/buildroot directory within sninit source tree. 
+
+
+Prerequisites
+~~~~~~~~~~~~~
+* buildroot-2015.08.1 sources
+  (with minor tweaks, other buildroot versions should work as well)
+  Get them from http://buildroot.uclibc.org/
+
+* qemu-system-$arch installed
+  This typically comes with distro's qemu package.
+  Which arch is needed depends on defconfig used (see below), but
+  in most cases they will all come in a single package.  
+
+* internet connection
+  buildroot will download ~250MB of source tarballs
+
+* lots of patience and up to 5GB of free disk space
+  (all that to test a ~20KB executable, yeah)
+
+
+Building and running
+~~~~~~~~~~~~~~~~~~~~
+Unpack Buildroot-2015.08.1 somewhere outside of sninit directory.
+
+For convenience, set the following variables:
+
+    BR=/path/to/unpacked/buildroot/source
+    SN=/path/to/unpacked/sninit/source
+
+so that $BR/toolchain and $SN/test are both existing directories.
+
+Initialize buildroot, and check available configs:
+
+    cd $BR
+    make BR2_EXTERNAL=$SN/misc/buildroot list-defconfigs
+
+You should get a long list with several sninit_(arch)_defconfigs at
+the very bottom. Choose one of them, and set it as current:
+
+    make sninit_(arch)_defconfig
+
+Once that's done, proceed to build the image:
+
+    make
+
+This part will likely take significant time.
+When it's done, it should leave a symlink $BR/qemu poiting to one
+of qemu* scripts in $SN/misc/buildroot/. Run it from $BR directory:
+
+    ./qemu
+
+The emulated system should boot, showing login: prompt in qemu graphic
+window if everything went well. Login as root and use telinit to communicate
+with the running sninit.
+
+
+Troubleshooting the build
+~~~~~~~~~~~~~~~~~~~~~~~~~
+In case the build fails before it gets to sninit, try building a clean Buildroot
+system without using supplied defconfigs to factor out possible bugs in defconfigs.
+Make sure to match target architecture and kernel configuration. Compare variable
+values in $SN/misc/buildroot/configs/sninit_(arch)_defconfig with what happens
+to be in $BR/.config after running menuconfig.
+
+In case sninit build fails, a quick way to re-try it (to get output and such):
+	rm -fr output/build/snint*
+	make
+Most buildroot commands can be re-run manually:
+	cd output/build/sninit*
+	./configure CC=...
+	make
+Once you're done fixing, run top-level make to finish the build and produce
+the final image. Buildroot is mostly make-based, and it generally won't overwrite
+stuff that has been built.
+
+Buildroot used hidden timestamp files to track completed actions.
+For sninit, these are:
+	
+	output/build/sninit*/.stamp_downloaded
+	output/build/sninit*/.stamp_extracted
+	output/build/sninit*/.stamp_patched
+	output/build/sninit*/.stamp_configured
+	output/build/sninit*/.stamp_built
+	output/build/sninit*/.stamp_target_installed
+
+Remove/touch them to re-do/skip specific actions during top-level make run.
+
+
+Troubleshooting runtime issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For hard qemu errors (incorrect command line options, kernel not booting), check
+qemu(1) *and* sample commands from $BR/boards/qemu/(arch)/README.
+All sninit defconfigs are based on Buildroot qemu defconfigs, so those can be used
+to exclude sninit as a possible cause of failure.
+
+In case sninit fails to start or does not work properly, start by adding
+init=/bin/sh to kernel command line like this:
+
+	qemu-system-arm ... -append "root=/dev/sda init=/bin/sh"
+
+The system should boot into sh prompt. With sh running, you can start /sbin/init,
+or possibly gdbserver:
+
+	gdbserver /dev/ttyS0 /sbin/init
+
+Check $SN/doc/qemu.txt for notes on remote debugging.
+
+
+Serial console and gdb
+~~~~~~~~~~~~~~~~~~~~~~
+Some targets (MIPS) have no emulated framebuffer console, and need two serial
+devices: one for login console and one for gdb:
+
+	qemu-system-mips ... -serial pty -serial stdio
+
+In this case, gdbserver should be started on /dev/ttyS0 and getty should get /dev/ttyS1.
+
+To have kernel output on stdout, add console=ttyS1 to the kernel command line:
+
+	qemu-system-mips ... -append "root=/dev/sda console=ttyS1"
+
+The same trick may be used if framebuffer console is available but for some reason
+serial one is preferred; qemu -display none may be used to suppress graphical window.
+
+Beware -nographic does a lot more than -display none, and will require additional setup.

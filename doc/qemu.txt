@@ -76,8 +76,10 @@ the system.
 
 (a) Building sninit as a buildroot package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-TODO: this requires package directory and patches,
-not uploaded anywhere yet.
+Check files in misc/buildroot/, in particular README there.
+With some luck, you should be able to build a complete,
+qemu-bootable, sninit-controlled linux system image with
+a couple of commands.
 
 
 (b) Building sninit using buildroot toolchain
@@ -112,7 +114,7 @@ busybox, gdbserver and sninit. Refer to buildroot docs for instructions.
 Build a target gdb for your host system too (BR2_PACKAGE_HOST_GDB=y)
 
 Enable serial port, and change kernel command line
-to start sh instead of the init:
+to start sh instead of sninit (init=/bin/sh):
 
     qemu-system-arm -machine versatilepb \
         -kernel output/images/zImage \
@@ -120,8 +122,8 @@ to start sh instead of the init:
         -append "root=/dev/sda init=/bin/sh" \
 	-serial pty
 
-Qemu will report allocated PTY slave device, something like /dev/pts/N
-Boot the target system and run
+With -serial pty, qemu will report allocated PTY slave device, typically
+something like /dev/pts/N. Boot the target system and run
 
     gdbserver /dev/ttyAMA0 /sbin/init
 
@@ -131,7 +133,7 @@ but for ARMs it's ttyAMA0.
 Start gdb on the host system:
 
     cd BUILDROOT/output/build/sninit
-    BUILDROOT/output/host/TARGET-gdb -ex "target remote /dev/pts/N" init
+    BUILDROOT/output/host/TARGET-gdb -ex "target remote /dev/pts/N" ./init
 
 Adjust sninit build directory and use the right pts device, the one that qemu
 reported before. If everything goes well, gdb will show the process stopped

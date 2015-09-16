@@ -22,3 +22,4 @@ test/proto.c
 .*.swp
 temp/
 sbin/trap
+!misc/buildroot
