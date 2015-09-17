@@ -8,20 +8,19 @@ struct config* cfg;
 
 NOCALL(levelmatch);
 
-extern char* joincmd(char* buf, int len, char** argv);
+extern void joincmd(char* buf, int len, char** argv);
 
 void check(char** argv, int len, char* expected)
 {
 	char buf[100];	/* must be greater than any tested len */
-	char* ret;
 	int rln;
 	char* ptr = buf + 1;
 
 	memset(buf, '-', 100);
-	ret = joincmd(ptr, len, argv);
-	rln = strlen(ret);
+	joincmd(ptr, len, argv);
+	rln = strlen(ptr);
 	A(rln <= len - 1);
-	S(ret, expected);
+	S(ptr, expected);
 	A(ptr[rln+2] == '-');
 	A(ptr[-1] == '-');
 }

@@ -7,7 +7,8 @@ extern int nextlevel;
 extern struct config* cfg;
 
 extern int levelmatch(struct initrec* p, int level);
-local char* joincmd(char* buf, int len, char** argv);
+local void dumprec(struct initrec* p);
+local void joincmd(char* buf, int len, char** argv);
 local void rlstr(char* str, int len, int mask);
 
 /* These two functions provide telinit pidof and telinit ? output
@@ -27,8 +28,6 @@ void dumpstate(void)
 	struct initrec *p, **pp;
 	bss char currstr[16];
 	bss char nextstr[16];
-	bss char cmdbuf[MAXREPORTCMD];
-	char* reportcmd;
 
 	rlstr(currstr, 16, currlevel);
 	rlstr(nextstr, 16, nextlevel);
@@ -43,12 +42,45 @@ void dumpstate(void)
 				continue;
 		if(!levelmatch(p, nextlevel) && p->pid <= 0)
 			continue;
-		reportcmd = p->name[0] ? p->name : joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
-		if(p->pid > 0)
-			warn("%i\t%s", p->pid, reportcmd);
-		else
-			warn("%s\t%s", "-", reportcmd);
+
+		dumprec(p);
 	}
+}
+
+/* The code below will not give a perfect output, far from it.
+   Before improving it however, think whether init is the right
+   place to practice elaborate text output formatting.
+
+   Showing detailed process state (flags) here is not optional,
+   the user should have some idea as to why a particular process
+   is not running.
+
+   Pretty much all output formatting here should have been in telinit.
+   However, init would still need to format the data for telinit
+   to parse, and with minimal effort said formatting happens to be
+   human-readable. So why bother. */
+
+void dumprec(struct initrec* p)
+{
+	bss char cmdbuf[MAXREPORTCMD];
+	joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
+	char ext[2] = { '\0', '\0' };
+
+	if(p->flags & P_MANUAL)
+		*ext = '+';
+	else if(p->flags & P_FAILED)
+		*ext = 'x';
+	else if(p->pid < 0)
+		*ext = '-';
+	else if(p->flags & (P_SIGTERM | P_SIGKILL))
+		*ext = '!';
+	else if(p->flags & P_SIGSTOP)
+		*ext = '*';
+
+	if(p->pid > 0)
+		warn("%s\t%i%s\t%s", p->name, p->pid, ext, cmdbuf);
+	else
+		warn("%s\t%s\t%s",  p->name, ext, cmdbuf);
 }
 
 /* Convert runlevel bitmask into a readable string:
@@ -73,12 +105,12 @@ void rlstr(char* str, int len, int mask)
    The string is cut, with ... added at the end, if it does not
    fit in the output buffer. */
 
-char* joincmd(char* buf, int len, char** argv)
+void joincmd(char* buf, int len, char** argv)
 {
 	char** arg;
 	int arglen;
 	int cpylen;
-	char* ret = buf;
+	char* ptr = buf;
 
 	if(len < 4)	/* "...\0"; should never happen */
 		goto out;
@@ -88,22 +120,21 @@ char* joincmd(char* buf, int len, char** argv)
 		arglen = strlen(*arg);
 		cpylen = (arglen <= len ? arglen : len);
 
-		strncpy(buf, *arg, cpylen);
-		buf += cpylen;
+		strncpy(ptr, *arg, cpylen);
+		ptr += cpylen;
 		len -= cpylen;
 
 		if(cpylen < arglen) {
 			break;
 		} else if(len > 0) {
-			*(buf++) = ' ';
+			*(ptr++) = ' ';
 			len--;
 		}
 	} if(*arg) {
-		buf += (len > 3 ? 3 : len);
-		strncpy(buf - 3, "...", 3);
-	} else if(buf > ret && *(buf-1) == ' ')
-		buf--;
+		ptr += (len > 3 ? 3 : len);
+		strncpy(ptr - 3, "...", 3);
+	} else if(ptr > buf && *(ptr-1) == ' ')
+		ptr--;
 
-out:	*buf = '\0';
-	return ret;
+out:	*ptr = '\0';
 }
