@@ -22,6 +22,7 @@ syscalls.txt	  Bundled libc: syscall implementation
 
 dietlibc.txt	  dietlibc configuration for sninit
 qemu.txt	  Using qemu to test sninit builds
+buildroot.txt	  Building small bootable system for sninit
 
 
 -- Usage notes
