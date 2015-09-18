@@ -2,15 +2,17 @@ Overview
 ~~~~~~~~
 sninit is a small init implementation for linux.
 
-sninit was written as a smaller, cleaner replacement for sysvinit,
-fixing sysvinit's inability to stop/start services on the fly,
-and turning runlevels into something usable.
+It is meant to be a cleaner and more reliable replacement
+for sysvinit/initscripts combo, providing better control over
+foreground processes and removing the need for initscripts.
 
-To a lesser degree, it was also a response to a horrific,
-overbloated beast called systemd making its way into Arch linux.
+Alternatively, it is a much much smaller systemd replacement
+for systems that need basic systemctl but would rather avoid
+bringing in enormous systemd bundle.
 
-It is meant for systems that need something more capable than busybox
-init and more reliable than sysvinit+initscripts.
+sninit is written mostly in raw syscalls and has no external
+dependencies — not even libc. On supported architectures it
+gets built into a statically-linked, self-contained executable. 
 
 
 Features
@@ -49,12 +51,12 @@ init is process 1 in Linux and other Unix-like systems.
 Upon booting itself, kernel only starts one process, typically /sbin/init.
 This process is expected to initialize the system and start everything else,
 including user interface.
-This process is not expected to exit; in case it does, kernel panics.
+This process is not expected to exit; in case it does, kernel panic happens.
 
-Init starts several processes in sequence, waiting for them
-to finish, mounting filesystems, initializing devices and so on.
-Once the system is ready, daemon-like processes are spawned;
-when such process dies, it is respawned.
+Init starts several processes in sequence, waiting for them to finish,
+mounting filesystems, initializing devices and so on.
+Once the system is ready, init starts daemon-like processes, and keeps
+respawning them in case they die.
 
 Daemon-like processes usually include getty (with login as a subprocess),
 xinit or X display manager, as well as actual daemons in foreground mode.
