@@ -163,6 +163,22 @@ and spawning some children that use setsid(). However, if things got this far,
 init's child-reaping functions are not likely to be buggy.
 
 
+Reboot and wakeup
+~~~~~~~~~~~~~~~~~
+Switch to qemu monitor (Ctrl-Alt-2 in the graphic window)
+and use these commands:
+
+    sendkey ctrl-alt-delete
+    system_wakeup
+
+Ctrl-Alt-Del naturally only works if particular VM has keyboard; the MIPS
+one doesn't. The event itself is handled by kernel, which is turn sends
+SIGTERM to init.
+
+For more info on this, use "help" command in the monitor, or check qemu docs.
+The scroll the monitor, use Ctrl-PageUp/Ctrl-PageDown.
+
+
 Caveats
 ~~~~~~~
 Qemu in linux-user mode (qemu-arm, as opposed to qemu-system-arm) does not
