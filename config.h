@@ -35,16 +35,16 @@
 /* Timing constants, in seconds */
 
 /* minimum time between successive attempts to spawn the same entry */
-#define TIME_TO_RESTART  2
+#define TIME_TO_RESTART 2
 /* entries are allowed to do post-SIGTERM cleanup for this long */
-#define TIME_TO_SIGKILL 15
+#define TIME_TO_SIGKILL 8
 /* an entry that fails to die for this long after SIGKILL is skipped */
-#define TIME_TO_SKIP     2
+#define TIME_TO_SKIP    2
 /* regular daemons must run for at least this long
  * to be considered non-failing */
-#define MINIMUM_RUNTIME 30
+#define MINIMUM_RUNTIME 8
 /* maximum time single telinit session may take */
-#define INITCTL_TIMEOUT 5
+#define INITCTL_TIMEOUT 2
 
 /* If you change the runlevels below, be ready to rewrite manual pages! */
 
