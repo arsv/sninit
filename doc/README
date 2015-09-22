@@ -35,3 +35,4 @@ sysvinit.txt	  Migrating from sysvinit
 
 init.txt	  What is init?
 direct.txt	  Direct configuration
+mininit.txt       On minimalistic init

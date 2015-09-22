@@ -1,0 +1,74 @@
+On minimalistic init
+~~~~~~~~~~~~~~~~~~~~
+Despite its size, sninit is not minimalistic. Far from it.
+
+Feature-wise it is a kind of extended sysvinit. There is a lot
+of features that are not strictly speaking necessary.
+Like runlevels. Or initdir. Or telinit communiction.
+
+Which begs the question: what is a truly minimalistic init?
+And what kind of (practical) system would require such an init?
+
+
+Minimalistic init features
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+A proper init must be a non-dying respawner; see init.txt on this.
+
+How many child processes should init respawn?
+The real minimum is one, but then that one must be a dying sub-respawner,
+or the system must be degenerate (running a single non-init process), which
+is not particulary interesting.
+So let's assume an reasonably long list of processes to respawn.
+
+How many system states?
+Minimalistic init could clearly do with a single system state aka runlevel.
+Which means there are some entries to run during boot, some respawning entries,
+and some to run when going down.
+
+How many non-respawning entries?
+The minimum seems to be two, with fixed names: the script to run during boot
+and the script to run during shutdown. No need to specify them in inittab,
+which means inittab should only list respawning entries.
+
+What kind of controllability is needed?
+Respnding to a small set of signals seems to be enough: SIGINT/SIGTERM to
+reboot (and/or shutdown, in case of hw support), possibly SIGHUP to re-read
+configuration, and naturally SIGCHLD.
+
+Configuration?
+With startup/shutdown scripts being (external and thus editable) scripts,
+it makes sense to have about the same level of configurability for respawning
+entries. So minimalistic init sould read inittab on startup. This in turn makes
+handling SIGHUP quite natural as well.
+Unlike sninit, built-in inttab is probably *not* an option.
+
+
+Comparison with existing implementations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+With the features outlined above, minimalistic init should sit somewhere
+in-between suckless init and busybox init.
+
+* bb init is a solid minimalistic init. It does however feature some things
+  it could easily do without: sysv format compatibility, several types
+  of entries, output redirection.
+
+* suckless init lacks respawner, but adding a minimalistic respawner
+  actually makes it a viable implementation — and this is exactly what is
+  described above.
+
+
+Inittab format
+~~~~~~~~~~~~~~
+Lack of telinit communication make inittab error reporting difficult.
+One possible solution is to choose a lax format so that nearly any garbage
+would be a valid inittab.
+
+    # Comment lines, and empty lines like the one below are ignored
+
+    # Variable assignment are treated the same way as in sninit,
+    # for the same reasons
+    PATH=/bin:/sbin
+
+    # anything else is a command to spawn, split on whitespaces, one per line
+    /sbin/syslogd -n
+    /usr/sbin/dropbear -F -R
