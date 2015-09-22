@@ -90,3 +90,6 @@
 
 /* Maximum command length in telinit ? output */
 #define MAXREPORTCMD 50
+
+/* Used for telinit ? output alignment */
+#define TABSTOP 8

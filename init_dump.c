@@ -1,4 +1,5 @@
 #include <string.h>
+#include "config.h"
 #include "init.h"
 #include "scope.h"
 
@@ -7,9 +8,10 @@ extern int nextlevel;
 extern struct config* cfg;
 
 extern int levelmatch(struct initrec* p, int level);
-local void dumprec(struct initrec* p);
+local void dumprec(struct initrec* p, int tabcol);
 local void joincmd(char* buf, int len, char** argv);
 local void rlstr(char* str, int len, int mask);
+local int shouldbeshown(struct initrec* p);
 
 /* These two functions provide telinit pidof and telinit ? output
    respectively. Both are called from within parsecmd, with warnfd
@@ -36,15 +38,25 @@ void dumpstate(void)
 	else
 		warn("Switching %s to %s", currstr, nextstr);
 
-	for(pp = cfg->inittab; (p = *pp); pp++) {
-		if(p->flags & C_ONCE)
-			if(currlevel == nextlevel)
-				continue;
-		if(!levelmatch(p, nextlevel) && p->pid <= 0)
-			continue;
+	/* Lame but we need to know maxlen to align columns properly */
+	int len, maxlen = 0;
+	for(pp = cfg->inittab; (p = *pp); pp++)
+		if(shouldbeshown(p) && ((len = strlen(p->name)) > maxlen))
+			maxlen = len;
+	int tabcol = (maxlen + (TABSTOP - maxlen % TABSTOP)) / TABSTOP;
 
-		dumprec(p);
-	}
+	for(pp = cfg->inittab; (p = *pp); pp++)
+		if(shouldbeshown(p))
+			dumprec(p, tabcol);
+}
+
+local int shouldbeshown(struct initrec* p)
+{
+	if(p->pid <= 0)
+		return 0;
+	if((p->flags & C_ONCE) && (currlevel == nextlevel))
+		return 0;
+	return levelmatch(p, nextlevel);
 }
 
 /* The code below will not give a perfect output, far from it.
@@ -60,11 +72,12 @@ void dumpstate(void)
    to parse, and with minimal effort said formatting happens to be
    human-readable. So why bother. */
 
-void dumprec(struct initrec* p)
+void dumprec(struct initrec* p, int tabcol)
 {
 	bss char cmdbuf[MAXREPORTCMD];
 	joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
 	char ext[2] = { '\0', '\0' };
+	char pad[5] = "\t\t\t\t";
 
 	if(p->flags & P_MANUAL)
 		*ext = '+';
@@ -77,10 +90,14 @@ void dumprec(struct initrec* p)
 	else if(p->flags & P_SIGSTOP)
 		*ext = '*';
 
+	int tabs = tabcol - strlen(p->name) / TABSTOP;
+	if(tabs < 0 || tabs > 4) tabs = 1;
+	pad[tabs] = '\0';
+
 	if(p->pid > 0)
-		warn("%s\t%i%s\t%s", p->name, p->pid, ext, cmdbuf);
+		warn("%s%s%i%s\t%s", p->name, pad, p->pid, ext, cmdbuf);
 	else
-		warn("%s\t%s\t%s",  p->name, ext, cmdbuf);
+		warn("%s%s%s\t%s",  p->name, pad, ext, cmdbuf);
 }
 
 /* Convert runlevel bitmask into a readable string:
