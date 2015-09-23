@@ -48,7 +48,14 @@ int main(void)
 	open("/nonexistant", O_RDONLY);
 	test("error: No such file or directory",
 	     "error: %m");
-
+	
+	/* padding */
+	test("here >abc   < padded",
+	     "here >%-*s< padded", 6, "abc");
+	test("here >abc< padded",
+	     "here >%-*s< padded", 0, "abc");
+	test("here >12   < padded",
+	     "here >%-*i< padded", 5, 12);
 
 	return 0;
 }

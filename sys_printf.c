@@ -2,7 +2,7 @@
 
 /* dietlibc complains (rightfully) about the full *printf code being bloated.
    Luckily, init does not need all that stuff. Only (v)snprintf is used,
-   and only with %s %i %c %m placeholders; no width, no alignment.
+   and only with %s %i %c %m placeholders; only limited width support is needed.
    So the following is a minimalistic implementation that provides just enough
    of dietlibc printf for init to use.
 
@@ -61,13 +61,20 @@ int vsnprintf(char* buf, size_t len, const char* fmt, va_list ap)
 	int stf;
 	int cpn;
 	int ret = 0;
+	int pad;
 	const char* arg;
 
 	len--; /* for terminating \0 */
 	while(*fmt && len) {
 		if(*fmt == '%') {
 			fmt++;
-			switch(*(fmt++)) {
+			pad = 0;
+refmt:			switch(*(fmt++)) {
+				case '-':
+					goto refmt;
+				case '*':
+					pad = va_arg(ap, int);
+					goto refmt;
 				case 's':
 					arg = va_arg(ap, const char*);
 					if(!arg) arg = "(null)";
@@ -94,7 +101,8 @@ int vsnprintf(char* buf, size_t len, const char* fmt, va_list ap)
 					/* can't risk guessing stack contents here, so bail out */
 					*buf = '\0';
 					return ret;
-			};
+			} while(cpn < pad && cpn < len)
+				buf[cpn++] = ' ';
 		} else {
 			stf = skiptofmt(fmt);
 			cpn = strlncpy(buf, len, fmt, stf);
