@@ -7,6 +7,8 @@ PATH=/bin:/sbin
 	W3+	/bin/mount -a
 	R3+	/bin/hostname -F /etc/hostname
 
+syslog	L	/sbin/syslogd -n
+
 tty1	T3+	/sbin/getty -L tty1  115200 vt100
 
 	R0	/bin/umount -a -r
