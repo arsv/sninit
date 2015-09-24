@@ -168,10 +168,9 @@ int addptrsarray(offset listoff, int terminate)
    as it makes telinit commands ambiguous, so dupes are checked and
    reported at parsing stage.
 
-   This is called during initrec parsing, way before SCR->inittab array
-   is formed. So it can't use SCR->inittab. Instead, it should use
-   SCR->inittab (which is offset list) to find location of entries added
-   so far. */
+   This is called during initrec parsing, way before NCF->inittab array
+   is formed. So it can't use NCF->inittab. Instead, it should use
+   SCR->inittab (the offset list) to find location of entries added so far. */
 
 int checkdupname(const char* name)
 {
