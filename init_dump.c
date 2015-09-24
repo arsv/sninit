@@ -95,13 +95,22 @@ void dumprec(struct initrec* p, int namewidth, int pidwidth)
 
 /* Run-once entries should only be shown when the init is switching
    runlevels, as it may help determining what's going on and why we're not
-   on the target runlevel yet. */
+   on the target runlevel yet.
+
+   Otherwise, we've got to check both nextlevel *and* currlevel to
+   show entries that are dying. */
 
 int shouldbeshown(struct initrec* p)
 {
-	if((p->flags & C_ONCE) && (currlevel == nextlevel))
+	int switching = (currlevel != nextlevel);
+
+	if(p->pid > 0)	/* anything running is worth showing */
+		return 1;
+	if((p->flags & C_ONCE) && !switching)
 		return 0;
-	return levelmatch(p, nextlevel);
+
+	return levelmatch(p, nextlevel) ||
+	(switching ? levelmatch(p, currlevel) : 0);
 }
 
 /* Expected string length of a positive integer (entry pid) */
