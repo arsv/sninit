@@ -13,6 +13,9 @@ all: init telinit run init.8 telinit.8 inittab.5 initdir.5 run.8
 # Force early libc build
 init telinit run: $(if $(ARCH),libc.a)
 
+# Init may be built using different subsets of code blocks.
+# Blocks are selected by keywords from $(initblocks); see config.mk on this.
+
 init_conf = init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o \
 	init_conf_dir.o init_conf_rec.o init_conf_key.o
 init_null = init_null.o

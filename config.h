@@ -24,8 +24,8 @@
 #define NAMELEN 16
 
 /* Include some tweaks for non-MMU systems.
-   Beware: enabling this may work on MMU systems, not enabling this
-   on non-MMU systems may build well and fail at runtime. */
+   Beware: enabling this should work well on MMU systems, not enabling
+   this on non-MMU systems will build fine and fail at runtime. */
 //#define NOMMU
 
 /* Development mode: do not (attempt to) reboot,
@@ -58,19 +58,14 @@
 /* (this is a string parsed just like the 2nd inittab field) */
 #define SRDEFAULT "S3+"
 
-/* Fallback runlevels, see C_ROFa and C_ROFb from init.h */
-#define FALLBACK1 1
-#define FALLBACK2 2
-#define FALLBACK3 3
-
-/* Do not change the following values unless you know what you are doing. */
-/* Wide range of values will work without affecting anything visible to the user. */
+/* Do not change the following values unless you know what you are doing.
+   Wide range of values will work here. */
 
 /* telinit command buffer size, also the maximum allowed command size. */
 /* init will reject commands longer than this. */
 #define CMDBUF 100
 
-/* Memory allocation granularity, for mmap(2). Should be something close to OS page size */
+/* Memory allocation granularity, for mmap(2). Should match OS page size */
 #define IRALLOC 4096
 
 /* File size limit for inittab and (non-script) service files. */

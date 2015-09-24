@@ -96,8 +96,7 @@ unmap:	munmapblock(&newblock);
 
 /* We start by creating the header of the struct in the newly-allocated
    block, then let addinitrec() fill the space with the compiled process
-   entries and environment variables, and once everthing is in place,
-   finishinittab() appends the arrays for initpass will use.
+   entries and environment variables.
 
    Both initrecs and environment lines are initially placed in their
    respective linked lists (struct scratch), with the list nodes scattered
@@ -123,6 +122,10 @@ void initcfgblocks(void)
 	cfg->env = NULL;
 }
 
+/* Once all initrecs are in place, inittab[] and env[] pointer arrays
+   are appended, with pointers (well offsets at this point) referring
+   back to initrecs. */
+
 int finishinittab(void)
 {
 	offset off;
@@ -147,7 +150,7 @@ int finishinittab(void)
    set up, we need to make those offsets into real pointers ("repoint" them)
    by adding the base address of newblock.
 
-   Now because the offsets are pointer-typed and (pointer + pointer) operation
+   Because the offsets are pointer-typed and (pointer + pointer) operation
    is illegal, we turn them into integers by subtracting NULL. */
 
 void* repoint(void* p)
@@ -210,8 +213,12 @@ void setnewconf(void)
 	newblock.addr = NULL;
 }
 
-/* old inittab is cfg->inittab (which may or may not be CFG->inittab) */
-/* new inittab is NCF->inittab */
+/* Old inittab is cfg->inittab (which may or may not be CFG->inittab),
+   new inittab is NCF->inittab. Old inittab may be missing during initial
+   configuration without built-in one.
+
+   Still, even without cfg we need to initialize pids of run-once entries. */
+
 void transferpids(void)
 {
 	struct initrec* p;

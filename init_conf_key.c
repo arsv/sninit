@@ -21,7 +21,7 @@
 
    X inverts its runlevel mask. It looks better than having a separate
    invert-mask sign. Inverting ONCE|WAIT and inverting non-ONCE are not
-   likely to be useful, so they are excluded. */
+   likely to be useful, so they are not implemented. */
 
 static struct entrytype {
 	char key;
