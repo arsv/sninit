@@ -25,11 +25,12 @@ local int comment(const char* s);
 /* Initdir is one-file-per-entry structure, while inittab is
    one-line-per-entry. Other than that, they are very similar.
    Both call addinitrec() the same way.
-   File basename is used as the entry name.
 
    Only the proper contents of INITDIR is checked, with no recursion.
    This simplifies the code *and* allows storing auxilliary scripts
    in a directory under INITDIR without init trying to pick them up.
+
+   File basename is used as the entry name for initdir entries.
 
    Just like with readinitdir, the files are mmaped whole.
    Here however init may come across a large script of which only

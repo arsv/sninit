@@ -82,10 +82,14 @@ local int strlenupto(const char* str, const char* end)
 	return p - str;
 }
 
-/* Treating str as n concatenated 0-terminated lines, append
-   argv-like structure to newblock.
-   The pointers array is always NULL-terminated.
+/* Treating str as n concatenated 0-terminated lines, append a proper
+   argv[] structure to newblock. It is assumed that initrec itself
+   is already there.
+
+   The pointers array is NULL-terminated, as required by execve(2).
+
    See prepargv() for how an array like this is formed. */
+
 int addstringarray(int n, const char* str, const char* end)
 {
 	offset po;
@@ -160,10 +164,15 @@ int addptrsarray(offset listoff, int terminate)
 	return ptrsoff;
 }
 
-/* This is called during initrec parsing, way before SCR->inittab array
+/* It's an error to have two entries with the same (non-empty) name
+   as it makes telinit commands ambiguous, so dupes are checked and
+   reported at parsing stage.
+
+   This is called during initrec parsing, way before SCR->inittab array
    is formed. So it can't use SCR->inittab. Instead, it should use
    SCR->inittab (which is offset list) to find location of entries added
    so far. */
+
 int checkdupname(const char* name)
 {
 	offset po = SCR->inittab.head;
