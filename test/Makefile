@@ -21,7 +21,7 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
 	t_readinitdir t_rewireptsarray t_linknode t_transferpids \
 	t_joincmd t_setrunflags t_findentry t_waitpids t_dof_dtf \
-	t_rlstr
+	t_rlstr t_pintlen t_dumprec t_dumpstate t_shouldbeshown
 # Tests with manual check (for now)
 XTESTS = x_printf x_hello x_open x_vfork x_sigprocmask x_reboot x_ppoll
 
@@ -128,6 +128,14 @@ t_waitpids: t_waitpids.o init_wait.o test.o
 t_dof_dtf: t_dof_dtf.o init_wait.o test.o
 
 t_warn: t_warn.o init_warn.o sys_printf.o
+
+t_pintlen: t_pintlen.o init_dump.o test.o
+
+t_dumprec: t_dumprec.o init_dump.o sys_printf.o test.o
+
+t_dumpstate: t_dumpstate.o init_dump.o sys_printf.o test.o
+
+t_shouldbeshown: t_shouldbeshown.o init_dump.o
 
 # Libc tests
 x_openread: x_openread.o test.o
