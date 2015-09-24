@@ -4,13 +4,13 @@ PATH=/bin
 VAR=value
 
 # System boot
-mount	R1+	sbin/mount -o remount,rw /
+mount	W1+	sbin/mount -o remount,rw /
 hwc	R1+	sbin/hwclock
 	W1+	sbin/net up
 
 # System shutdown
-	R0	sbin/net down
-	R0	sbin/umount -a
+	W0	sbin/net down
+	W0	sbin/umount -a
 
 # Respawning services (see also initdir/)
 srv1	F3+	sbin/trap srv1 10
