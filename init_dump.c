@@ -8,16 +8,34 @@ extern int nextlevel;
 extern struct config* cfg;
 
 extern int levelmatch(struct initrec* p, int level);
-local void dumprec(struct initrec* p, int tabcol);
+local void dumprec(struct initrec* p, int namewidth, int pidwidth);
 local void joincmd(char* buf, int len, char** argv);
 local void rlstr(char* str, int len, int mask);
+local char rectag(struct initrec* p);
+local int pintlen(int n);
 local int shouldbeshown(struct initrec* p);
 
 /* These two functions provide telinit pidof and telinit ? output
    respectively. Both are called from within parsecmd, with warnfd
    being the open telinit connection.
 
-   This is the only case when warn() is used for non-error output. */
+   This is the only case when warn() is used for non-error output.
+
+   How it should look like:
+
+       # telinit pidof sshd
+       1234
+
+       # telinit list
+       Runlevel 3a
+       ftpd        546     /usr/bin/vsftpd /etc/vsftpd.conf ...
+       dropbear    1234    /usr/sbin/dropbear -F -R
+       ntpd        -       /usr/sbin/ntpd -g -n
+
+   The code below takes some effort to align columns properly,
+   otherwise the output look really bad. Init is not the place to
+   do fancy text formatting, but other options are worse in various
+   ways. */
 
 void dumpidof(struct initrec* p)
 {
@@ -38,66 +56,81 @@ void dumpstate(void)
 	else
 		warn("Switching %s to %s", currstr, nextstr);
 
-	/* Lame but we need to know maxlen to align columns properly */
-	int len, maxlen = 0;
-	for(pp = cfg->inittab; (p = *pp); pp++)
-		if(shouldbeshown(p) && ((len = strlen(p->name)) > maxlen))
-			maxlen = len;
-	int tabcol = (maxlen + (TABSTOP - maxlen % TABSTOP)) / TABSTOP;
+	/* First pass, get column widths */
+
+	int len;
+	int maxnamelen = 0;
+	int maxpidlen = 0;
+
+	for(pp = cfg->inittab; (p = *pp); pp++) {
+		if(!shouldbeshown(p))
+			continue;
+		if((len = strlen(p->name)) > maxnamelen)
+			maxnamelen = len;
+		if((len = pintlen(p->pid)) > maxpidlen)
+			maxpidlen = len;
+	}
+
+	/* Second pass, do the output */
 
 	for(pp = cfg->inittab; (p = *pp); pp++)
 		if(shouldbeshown(p))
-			dumprec(p, tabcol);
+			dumprec(p, maxnamelen, maxpidlen);
 }
 
-local int shouldbeshown(struct initrec* p)
+void dumprec(struct initrec* p, int namewidth, int pidwidth)
 {
-	if(p->pid <= 0)
-		return 0;
+	char tag = rectag(p);
+
+	bss char cmdbuf[MAXREPORTCMD];
+	joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
+
+	if(p->pid > 0)
+		warn("%-*s    %c%-*i    %s",
+			namewidth, p->name, tag, pidwidth, p->pid, cmdbuf);
+	else
+		warn("%-*s     %-*c    %s",
+			namewidth, p->name, pidwidth, tag, cmdbuf);
+}
+
+/* Run-once entries should only be shown when the init is switching
+   runlevels, as it may help determining what's going on and why we're not
+   on the target runlevel yet. */
+
+int shouldbeshown(struct initrec* p)
+{
 	if((p->flags & C_ONCE) && (currlevel == nextlevel))
 		return 0;
 	return levelmatch(p, nextlevel);
 }
 
-/* The code below will not give a perfect output, far from it.
-   Before improving it however, think whether init is the right
-   place to practice elaborate text output formatting.
+/* Expected string length of a positive integer (entry pid) */
 
-   Showing detailed process state (flags) here is not optional,
-   the user should have some idea as to why a particular process
-   is not running.
-
-   Pretty much all output formatting here should have been in telinit.
-   However, init would still need to format the data for telinit
-   to parse, and with minimal effort said formatting happens to be
-   human-readable. So why bother. */
-
-void dumprec(struct initrec* p, int tabcol)
+int pintlen(int n)
 {
-	bss char cmdbuf[MAXREPORTCMD];
-	joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
-	char ext[2] = { '\0', '\0' };
-	char pad[5] = "\t\t\t\t";
+	int l = 0;
+	while(n > 0) { l++; n /= 10; }
+	return l;
+}
 
+/* For paused/disabled/failed/signalled entries, we show a sign next to
+   or instead of its pid. This is the only way for the user to know why
+   a certain process is not running. */
+
+char rectag(struct initrec* p)
+{
 	if(p->flags & P_MANUAL)
-		*ext = '+';
+		return '-';
 	else if(p->flags & P_FAILED)
-		*ext = 'x';
+		return 'x';
 	else if(p->pid < 0)
-		*ext = '-';
+		return '-';
 	else if(p->flags & (P_SIGTERM | P_SIGKILL))
-		*ext = '!';
+		return '!';
 	else if(p->flags & P_SIGSTOP)
-		*ext = '*';
-
-	int tabs = tabcol - strlen(p->name) / TABSTOP;
-	if(tabs < 0 || tabs > 4) tabs = 1;
-	pad[tabs] = '\0';
-
-	if(p->pid > 0)
-		warn("%s%s%i%s\t%s", p->name, pad, p->pid, ext, cmdbuf);
+		return '*';
 	else
-		warn("%s%s%s\t%s",  p->name, pad, ext, cmdbuf);
+		return ' ';
 }
 
 /* Convert runlevel bitmask into a readable string:
@@ -118,9 +151,17 @@ void rlstr(char* str, int len, int mask)
 	*p = '\0';
 }
 
-/* Join argv into a single string, to be reported by "telinit ?"
-   The string is cut, with ... added at the end, if it does not
-   fit in the output buffer. */
+/* warn() can't handle argv[] directly, and it can be too long to show anyway.
+
+   [ "/sbin/vsftpd", "/etc/vsftpd.conf", "-obackground=NO" ] ->
+           "/sbin/vsftpd /etc/vsftpd.conf -oback..."
+
+   The string is written to a temporary buffer, which is then passed
+   to warn as %s.
+
+   Command width is a constant set in config.h. There is no point in trying
+   to show the whole command, or even as much of the command as possible.
+   The first few args should be informative enough. */
 
 void joincmd(char* buf, int len, char** argv)
 {
