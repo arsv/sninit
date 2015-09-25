@@ -63,7 +63,7 @@
 
 /* telinit command buffer size, also the maximum allowed command size. */
 /* init will reject commands longer than this. */
-#define CMDBUF 100
+#define CMDBUF (NAMELEN + 2)
 
 /* Memory allocation granularity, for mmap(2). Should match OS page size */
 #define IRALLOC 4096
