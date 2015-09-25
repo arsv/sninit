@@ -20,6 +20,14 @@ local int waitneeded(time_t* last, time_t wait);
    actions if that's ok to do, or update timetowait via waitneeded call
    to ensure initpass() will be performed once the timeout expires. */
 
+/* The code below is valid with either fork or vfork.
+   Non-MMU targets must use vfork, and some MMU targets (ARM?) have troubles
+   with vfork implementation, so it's fork for MMU and vfork for NOMMU. */
+
+#ifdef NOMMU
+#define fork() vfork()
+#endif
+
 void spawn(struct initrec* p)
 {
 	if(p->pid > 0)
@@ -30,16 +38,7 @@ void spawn(struct initrec* p)
 	if(waitneeded(&p->lastrun, TIME_TO_RESTART))
 		return;
 
-	/* The code below is valid with either fork or vfork.
-	   There is almost no difference for MMU targets, but
-	   non-MMU targets only provide vfork, so let's use
-	   vfork and save ourselves a nasty ifdef.
-	   XXX: och, nope, vfork fails badly on ARM (?!) */
-#ifdef NOMMU
-	pid_t pid = vfork();
-#else
 	pid_t pid = fork();
-#endif
 
 	if(pid < 0) {
 		retwarn_("%s[*] can't fork: %m", p->name);

@@ -391,12 +391,16 @@ int setpasstime(void)
    to wait for the child before returning, because return here means
    _exit from init and immediate panic. */
 
+#ifdef NOMMU
+#define fork() vfork()
+#endif
+
 void forkreboot(void)
 {
 	int pid;
 	int status;
 
-	if((pid = vfork()) == 0)
+	if((pid = fork()) == 0)
 		_exit(reboot(rbcode));
 	else if(pid < 0)
 		return;
