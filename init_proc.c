@@ -77,13 +77,13 @@ void stop(struct initrec* p)
 		   restart the entry. */
 		if(waitneeded(&p->lastsig, TIME_TO_SKIP))
 			return;
-		warn("#%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
+		warn("%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
 		p->pid = 0;
 	} else if(p->flags & P_SIGTERM) {
 		/* The process has been signalled, but has not died yet */
 		if(waitneeded(&p->lastsig, TIME_TO_SIGKILL))
 			return;
-		warn("#%s[%i] process refuses to die, sending SIGKILL", p->name, p->pid);
+		warn("%s[%i] process refuses to die, sending SIGKILL", p->name, p->pid);
 		kill(-p->pid, SIGKILL);
 		p->flags |= P_SIGKILL;
 	} else {
