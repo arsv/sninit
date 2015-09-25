@@ -39,6 +39,7 @@ void sighandler(int sig)
 		case SIGINT:  say("dying on SIGINT");  _exit(0); break;
 		case SIGTERM: say("dying on SIGTERM"); _exit(0); break;
 		case SIGHUP:  say("got SIGHUP"); break;
+		case SIGCONT: say("got SIGCONT, continuing"); break;
 		default: say("ignoring unexpected signal"); break;
 	}
 }
@@ -54,6 +55,7 @@ void trapsig(void)
 	sigaction(SIGTERM, &sa, NULL);
 	sigaction(SIGHUP,  &sa, NULL);
 	sigaction(SIGKILL, &sa, NULL);
+	sigaction(SIGCONT, &sa, NULL);
 }
 
 void sleepx(int sec)
