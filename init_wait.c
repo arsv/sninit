@@ -12,7 +12,6 @@ extern time_t passtime;
 export void waitpids(void);
 
 local void markdead(struct initrec* p, int status);
-local void markstopped(struct initrec* p, int status);
 
 local void checkfailacts(struct initrec* p, int failed);
 local void faildisable(struct initrec* p);
@@ -38,23 +37,14 @@ void waitpids(void)
 			continue;
 
 		if(WIFSTOPPED(status))
-			markstopped(p, status);
+			p->flags |= P_SIGSTOP;
+		else if(WIFCONTINUED(status))
+			p->flags &= ~P_SIGSTOP;
 		else
 			markdead(p, status);
 	}
 
 	state &= ~S_SIGCHLD;
-}
-
-/* For stopped childred, just note their status;
-   stop() will send the stopped ones SIGCONT together with SIGTERM. */
-
-void markstopped(struct initrec* p, int status)
-{
-	if(WIFCONTINUED(status))
-		p->flags &= ~P_SIGSTOP;
-	else
-		p->flags |= P_SIGSTOP;
 }
 
 /* For dead children, there's a difference between "exited normally"
