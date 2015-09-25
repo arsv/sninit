@@ -10,33 +10,32 @@
 #define MSGBUF 120
 #define HDRBUF 50
 
-/* Generally init messages should be forwarded to syslog.
-   However, in some situations it's better to write them to
-   (or to copy them to) stderr, and sometimes also
-   to warnfd when it's a connection to active telinit.
-   
-   Within init, the value of warnfd is usually enough to decide where
-   the message should go. For instance, syslog-only process status
-   messages are never generated during reconfiguration.
-   See the first if() block in warn() below.
+/* Most of the output generated withint init is conditional with regard
+   to where it actually goes.
 
-   In case direct control is needed, desired logging mode is passed
-   as a prefix to the format string: "#message for syslog only".
+       * Process events (died/killed/failed) should go to syslog,
+         unless we can't contact syslogd, in which case they should
+	 be sent to stderr.
 
-   wall-style messages ("system is going down" etc) are not supported.
+       * Initial configuration errors should go to stderr, but any
+         errors encountered during user-requested reconfiguration
+	 should be sent back to telinit socket.
 
-   Init tries to reopen syslogfd every time warn() is called,
-   so not-yet-ready and/or failing syslogd shoudn't be a problem. */
+       * Responses to telinit requests should be sent back to telinit,
+         unless it was a configutaion request which is already conditional.
+
+   There is a lot of overlap between the cases, so the code calls warn()
+   and everything else is decided within warn(). This also keeps nasty
+   snprintf stuff in a single location. */
 
 extern int warnfd;
 extern int syslogfd;
 
 export int warn(const char* fmt, ...);
-extern int timestamp(char* buf, int len);
 
-/* Note: warn() essentially includes a simple syslog() implementation.
-   Full syslog() is not needed here, and neither are redundant sigprocmask() calls.
-   Also, using library syslog(3) with sys_printf.c is a bad idea. */
+/* warn() essentially includes a simple syslog() implementation.
+   Full syslog() is not needed here, and neither are redundant sigprocmask()
+   calls. Also, using library syslog(3) with sys_printf.c is a bad idea. */
 
 local int syslogtype;
 local struct sockaddr syslogaddr = {
@@ -46,15 +45,30 @@ local struct sockaddr syslogaddr = {
 
 local int writefullnl(int fd, char *buf, size_t count);
 local int writesyslog(const char* buf, int count);
-
-#define W_WARNFD	1<<0
-#define W_SYSLOG	1<<1
-#define W_STDERR	1<<2
+extern int timestamp(char* buf, int len);
 
 /* it's in RFC 3164 and we're not going to include syslog.h
    just because of two puny constants */
 #define LOG_NOTICE	5
 #define LOG_DAEMON	3<<3
+
+local int warnmode(const char* fmt);
+
+#define W_WARNFD	1<<0
+#define W_SYSLOG	1<<1
+#define W_STDERR	1<<2
+#define W_SKIP		1<<3
+
+/* Stderr output needs "init:" prefixed to the message,
+   and syslog needs its own prefix in addition to that.
+
+        |--------hdr--------|-tag-|-----------msg------------||
+        <29>Jan 10 12:34:56 init: crond[123] abnormal exit 67↵₀
+
+   The final message is formed with all prefixes needed for a given
+   mode mask (W_SYSLOG and/or W_STDERR).
+   If it comes down to a less demanding modes, extra prefixes are skipped
+   by passing (buf + prefixlen) to respective write* function. */
 
 int warn(const char* fmt, ...)
 {
@@ -63,28 +77,12 @@ int warn(const char* fmt, ...)
 	int hdrlen;
 	int msglen;
 	int taglen;
-	char over = ' ';
-	short mode;
-	int origerrno = errno;	/* timestamp() may overwrite it */
 
-	/* Ok, got to decide where warn() should put the message */
-	switch(*fmt) {
-		case '#':
-		case ' ':
-		case '!':
-			over = *(fmt++);
-	} if(over == '#')
-		mode = W_SYSLOG;		/* syslog only */
-	else if(over == '!')
-		mode = W_STDERR;
-	else if(warnfd > 2)
-		mode = W_WARNFD;		/* user-action error */
-	else if(warnfd == 2)
-		mode = W_SYSLOG | W_STDERR;	/* try syslog of fall back to stderr */
-	else if(warnfd < 0)
-		return -1;			/* warn locked */
-	else 
-		mode = W_STDERR;		/* do not even try syslog */
+	int origerrno = errno;	/* timestamp() may overwrite it */
+	short mode = warnmode(fmt);
+
+	if(!mode) return -1;
+	if(mode & W_SKIP) fmt++;
 
 	if(mode & W_SYSLOG) {
 		hdrlen = snprintf(buf, HDRBUF, "<%i>", LOG_DAEMON | LOG_NOTICE);
@@ -92,6 +90,7 @@ int warn(const char* fmt, ...)
 	} else {
 		hdrlen = 0;
 	}
+
 	taglen = snprintf(buf + hdrlen, HDRBUF - hdrlen, "init: ");
 
 	errno = origerrno;
@@ -105,21 +104,48 @@ int warn(const char* fmt, ...)
 
 	if(mode & W_WARNFD)
 		if(writefullnl(warnfd, buf + hdrlen + taglen, msglen))
-			/* socket connection lost, lock warn() until further notice */
-			return (warnfd = -1);
+			return (warnfd = -1); /* socket connection lost */
 
 	if(mode & W_SYSLOG)
-		/* process-status message */
-		/* try to log if syslog is available, otherwise dump everything to stderr */
 		if(!writesyslog(buf, hdrlen + taglen + msglen))
 			return 0;
 
-	/* either syslog write was unsuccessful, or it's too early/late to expect syslog */	
 	if(mode & W_STDERR)
 		return writefullnl(2, buf + hdrlen, taglen + msglen);
 	
 	return 0;
 }
+
+/* During telinit request, warnfd is the open telinit connection.
+   In case connection fails, we set warnfd to -1 to "lock" warn,
+   preventing further attempts to write anything until current telinit
+   session is over.
+
+   Without active telinit connection init output should be sent to syslog
+   if possible. Generally we should try to contact syslog to check that,
+   but during early boot and late shutdown it is clear syslogd is not running,
+   so we skip that by setting warnfd = 0.
+
+   Finally, ! at the start of fmt indicates the message should go to stderr,
+   skipping syslog. This is for debugging only. */
+
+int warnmode(const char* fmt)
+{
+	if(*fmt == '!')
+		return W_STDERR | W_SKIP;
+	if(warnfd > 2)
+		return W_WARNFD;
+	if(warnfd == 2)
+		return W_SYSLOG | W_STDERR;
+	if(warnfd < 0)
+		return 0;		/* warn locked */
+	else
+		return W_STDERR;	/* do not even try syslog */
+}
+
+/* Syslog socket may be either STREAM or DGRAM, prompting either write()
+   or send(), and warnfd may happen to be a stream socket as well.
+   With sockets, incomplete write()s are possible and must be handled. */
 
 int writefullnl(int fd, char *buf, size_t count)
 {
@@ -135,6 +161,10 @@ int writefullnl(int fd, char *buf, size_t count)
 
 	return 0;
 }
+
+/* Syslog connection is reused whenever possible, otherwise attempts
+   to open it are repeated on each warn() call. This way init can handle
+   dying/respawning syslog gracefully and spare some extra syscalls. */
 
 int tryconnectsyslog(int type)
 {
