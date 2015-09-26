@@ -109,7 +109,7 @@ void parsecmd(char* cmd)
 	+ab	activate sublevels a and b
 	-ac	deactivate sublevels a and c
 
-   The whole thing is an awfully overkill for the purposse.
+   The whole thing is an awful overkill for the purposse.
    It could and probably should be limited to
    	* switching a single primary runlevel
 	* adding a single secondary runlevel
