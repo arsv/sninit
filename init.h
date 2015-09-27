@@ -10,12 +10,12 @@
 #define S_WAITING	(1<<4)		/* waiting for some process (w- or o-type) to finish */
 
 /* Per-process flags (struct initrec.flags) */
-#define C_ONCE		(1<<0)		/* o-type entry; run once, do not restart */
-#define C_WAIT		(1<<1)		/* w-type entry; wait before starting, wait until finished */
-#define C_HUSH		(1<<4)		/* do not warn about this entry */
-#define C_FAST		(1<<5)		/* use time_to_restart instead of minimum_runtime */
-#define C_INVERT	(1<<6)		/* invert runlevel mask */
-#define C_KILL		(1<<7)		/* do not bother with SIGTERM, just shoot the damn thing */
+#define C_INVERT	(1<<0)		/* invert runlevel mask */
+#define C_ONCE		(1<<1)		/* o-type entry; run once, do not restart */
+#define C_WAIT		(1<<2)		/* w-type entry; wait before starting, wait until finished */
+#define C_HUSH		(1<<3)		/* do not warn about this entry */
+#define C_FAST		(1<<4)		/* use time_to_restart instead of minimum_runtime */
+#define C_KILL		(1<<5)		/* do not bother with SIGTERM, just shoot the damn thing */
 /* C_* flags are only set in configure(),
    P_* flags may be changed at runtime */
 #define P_MANUAL	(1<<8)		/* entry has been stopped manually */
