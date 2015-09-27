@@ -457,7 +457,7 @@ logdir=${logdir:-/var/log}
 sysconfdir=${sysconfdir:-$prefix/etc}
 initctl=${initctl:-@initctl}
 test "$inittab" != '-' && inittab=${inittab:-$sysconfdir/inittab} || unset inittab
-test "$initdir" != '-' && initdir=${initdir:-$sysconfdir/rc}      || unset initdir
+test "$initdir" != '-' && initdir=${initdir:-$sysconfdir/initdir} || unset initdir
 
 sed -i \
 	-e "/^ARCH :=/s#:=.*#:= $arch#"\
