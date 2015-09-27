@@ -13,7 +13,7 @@ extern time_t passtime;
 export void waitpids(void);
 
 local void markdead(struct initrec* p, int status);
-local void checkfailacts(struct initrec* p, int failed);
+local void checktoofast(struct initrec* p, int failed);
 local int badsignal(int sig);
 
 /* So we were signalled SIGCHLD and got to check what's up with
@@ -47,10 +47,10 @@ void waitpids(void)
 	state &= ~S_SIGCHLD;
 }
 
-/* Abnormal exits should be reported, and in case of DTF/DOF taken
-   actions upon. It is not a simple 0-return check however: applying
-   DOF/DTF to entries likely killed by the user is not a good idea,
-   and entries killed by init should not be reported. */
+/* Abnormal exits should be reported, and too fast respawns taken
+   actions upon. It is not a simple 0-return check however: disabling
+   entries likely killed by the user is not a good idea, and entries
+   killed by init should not be reported. */
 
 void markdead(struct initrec* p, int status)
 {
@@ -65,8 +65,9 @@ void markdead(struct initrec* p, int status)
 
 	if(p->flags & C_ONCE)
 		;  /* no point in timing run-once entries */
-	else if(p->flags & (C_DOF | C_DTF))
-		checkfailacts(p, status);
+	else if(p->flags & C_FAST)
+		;
+	else checktoofast(p, status);
 
 	p->pid = -1;
 	p->flags &= ~(P_SIGTERM | P_SIGKILL | P_SIGSTOP);
@@ -84,7 +85,7 @@ int badsignal(int sig)
 	}
 }
 
-void checkfailacts(struct initrec* p, int status)
+void checktoofast(struct initrec* p, int status)
 {
 	int failed;
 
@@ -93,29 +94,14 @@ void checkfailacts(struct initrec* p, int status)
 	else
 		failed = WEXITSTATUS(status);
 
-	if(p->flags & C_DTF) {
+	int toofast = (passtime - p->lastrun <= MINIMUM_RUNTIME);
 
-		int mintime = (p->flags & C_FAST ? TIME_TO_RESTART : MINIMUM_RUNTIME);
-		int toofast = (passtime - p->lastrun <= mintime);
-
-		/* fast respawning only counts when exit status is nonzero
-		   if C_DOF is set; without C_DOF, all exits are counted. */
-		if(p->flags & C_DOF)
-			failed = toofast && failed;
-		else
-			failed = toofast;
-
-		if(!failed) {
-			p->flags |= P_WAS_OK;
-			return;
-		} else if(p->flags & P_WAS_OK) {
-			p->flags &= ~P_WAS_OK;
-			return;
-		}
-	};
-
-	if(failed) {
-		warn("%s[%i] failed, disabling", p->name, p->pid);
+	if(!failed) {
+		p->flags |= P_WAS_OK;
+	} else if(p->flags & P_WAS_OK) {
+		p->flags &= ~P_WAS_OK;
+	} else if(toofast) {
+		warn("%s[%i] respawning too fast, disabling", p->name, p->pid);
 		p->flags |= P_FAILED;
 	}
 }

@@ -158,8 +158,7 @@ local void switchtonextlevel(void)
 int shouldberunning(struct initrec* p)
 {
 	if(p->flags & (P_MANUAL | P_FAILED))
-		/* disabled, either manually or via C_DOF */
-		return 0;
+		return 0; /* disabled (telinit or respawning too fast) */
 	else
 		return levelmatch(p, nextlevel);
 }

@@ -16,8 +16,8 @@
    Initdir entries here always have properly formatted type. */
 
 /* The idea is that entypes[] should list all useful flag combos.
-   Which is less that just all combos: DOF/DTF make no difference with ONCE,
-   for instance, HUSH = not (DOF or DTF) and not ONCE, and there may be others.
+   Which is less that just all combos: FAST make no difference with ONCE,
+   for instance, FAST implies HUSH, and there may be others.
 
    X inverts its runlevel mask. It looks better than having a separate
    invert-mask sign. Inverting ONCE|WAIT and inverting non-ONCE are not
@@ -27,11 +27,11 @@ static struct entrytype {
 	char key;
 	short flags;
 } entypes[] = {
-	{ 'S', C_DOF | C_DTF },
-	{ 'L', C_DOF | C_DTF | C_WAIT },
-	{ 'F', C_DOF },
-	{ 'T', C_HUSH | C_KILL },
-	{ 'P', C_HUSH },
+	{ 'S', 0 },
+	{ 'L', C_WAIT },
+	{ 'F', C_FAST },
+	{ 'H', C_HUSH },
+	{ 'T', C_FAST | C_HUSH | C_KILL },
 	{ 'W', C_ONCE | C_WAIT },
 	{ 'R', C_ONCE },
 	{ 'X', C_ONCE | C_INVERT },

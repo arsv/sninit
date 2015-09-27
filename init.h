@@ -12,20 +12,18 @@
 /* Per-process flags (struct initrec.flags) */
 #define C_ONCE		(1<<0)		/* o-type entry; run once, do not restart */
 #define C_WAIT		(1<<1)		/* w-type entry; wait before starting, wait until finished */
-#define C_DOF		(1<<2)		/* disable on failure */
-#define C_DTF		(1<<3)		/* disable on respawning too fast */
 #define C_HUSH		(1<<4)		/* do not warn about this entry */
 #define C_FAST		(1<<5)		/* use time_to_restart instead of minimum_runtime */
 #define C_INVERT	(1<<6)		/* invert runlevel mask */
 #define C_KILL		(1<<7)		/* do not bother with SIGTERM, just shoot the damn thing */
 /* C_* flags are only set in configure(),
    P_* flags may be changed at runtime */
-#define P_MANUAL	(1<<8)		/* process has been disabled manually */
-#define P_FAILED	(1<<9)		/* process has been disabled via C_DOF */
+#define P_MANUAL	(1<<8)		/* entry has been stopped manually */
+#define P_FAILED	(1<<9)		/* entry was respawning too fast  */
 #define P_SIGSTOP	(1<<10)		/* SIGSTOP has been sent */
 #define P_SIGTERM	(1<<11)		/* SIGTERM (or SIGABRT) has been sent to this process */
 #define P_SIGKILL	(1<<12)		/* SIGKILL has been sent to this process */
-#define P_WAS_OK	(1<<13)		/* previous run finished well (re. DOF and DTF) */
+#define P_WAS_OK	(1<<13)		/* previous run finished well */
 
 /* Sublevels mask (struct initrec.rlvls) */
 #define PRIMASK		0x03FF		/* ------9876543210 */
