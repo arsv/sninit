@@ -85,6 +85,23 @@ int badsignal(int sig)
 	}
 }
 
+/* An entry that should not exit yet somehow keeps respawning is
+   probably misconfigured (missing executable, config file errors
+   and such). We would like to detect and disable such entries.
+
+   At the same time, we should not prevent respawns on occassional
+   errors, which is what respawning entries are for.
+
+   There is no strict way to tell the two cases apart. A simple rule
+   of thumb is used instead: a process that has been running for at
+   least MINIMUM_RUNTIME is assumed to have passed initial configuration
+   stage and is eligible for respawning.
+
+   At boot, all entries are in a neutral state: neither failed nor
+   ever run successfully. This gives them a single shot at starting,
+   i.e. the first attempt must be at least MINIMUM_RUNTIME long or they
+   will get disabled immediately. */
+
 void checktoofast(struct initrec* p, int status)
 {
 	int failed;
