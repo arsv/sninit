@@ -14,7 +14,7 @@ hwc	R1+	sbin/hwclock
 
 # Respawning services (see also initdir/)
 srv1	S3+	sbin/trap srv1 10
-srv2	S3+	sbin/trp srv2 23
+srv2	S3+	sbin/trap srv2 23
 srv3	S3+	sbin/trap srv3
 
 # Sleep modes
