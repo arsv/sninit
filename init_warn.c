@@ -143,9 +143,9 @@ int warnmode(const char* fmt)
 		return W_STDERR;	/* do not even try syslog */
 }
 
-/* Syslog socket may be either STREAM or DGRAM, prompting either write()
-   or send(), and warnfd may happen to be a stream socket as well.
-   With sockets, incomplete write()s are possible and must be handled. */
+/* Syslog socket may be either STREAM or DGRAM, and warnfd may happen to be
+   a stream socket as well. With sockets, incomplete write()s are possible
+   and must be handled. */
 
 int writefullnl(int fd, char *buf, size_t count)
 {
