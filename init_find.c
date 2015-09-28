@@ -17,7 +17,7 @@ struct initrec* findentry(const char* name)
 	struct initrec *p, **pp;
 
 	for(pp = cfg->inittab; (p = *pp); pp++)
-		if(p->name && !strcmp(p->name, name))
+		if(*p->name && !strcmp(p->name, name))
 			return p;
 
 	return NULL;

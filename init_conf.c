@@ -236,7 +236,7 @@ void transferpids(void)
 		if(!cfg) /* first call, no inittab to transfer pids from */
 			continue;
 
-		if(!q->name) /* can't transfer unnamed entries */
+		if(!*q->name) /* can't transfer unnamed entries */
 			continue;
 
 		if(!(p = findentry(q->name)))
