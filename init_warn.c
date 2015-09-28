@@ -168,10 +168,16 @@ int writefullnl(int fd, char *buf, size_t count)
 
 int tryconnectsyslog(int type)
 {
-	syslogtype = type;
 	if((syslogfd = socket(AF_UNIX, type, 0)) < 0)
 		return -1;
-	return connect(syslogfd, &syslogaddr, sizeof(syslogaddr));
+	if(connect(syslogfd, &syslogaddr, sizeof(syslogaddr))) {
+		close(syslogfd);
+		syslogfd = -1;
+		return -1;
+	} else {
+		syslogtype = type;
+		return 0;
+	}
 }
 
 int writesyslog(const char* buf, int count)
