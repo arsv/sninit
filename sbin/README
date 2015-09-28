@@ -1,10 +1,39 @@
 The files here are stub executables intended to be used with ../etc/inittab
 for test runs in source directory.
 
-trap.c is set to be host-compiled. This is because qemu-(arch) ./init
-translates syscalls to the underlying native kernel, and native execve
-naturally expects native executables.
+Proper (non-script) executables are set to be host-compiled.
+This is because qemu-(arch) ./init translates syscalls to the underlying
+native kernel, and native execve naturally expects native executables.
 
 Testing with qemu-system-(arch) would require target-compiled trap,
-but there are much more interesting things to run with qemu-system
-so trap is assumed to be host-only.
+but there are much more interesting things to run with qemu-system.
+
+
+Signal trapping
+~~~~~~~~~~~~~~~
+trap should be used as a generic foreground daemon substitute.
+See ../etc/inittab for examples. All it does is dying on pre-set
+intervals (showing you how respawning works) and annouces received
+signals (showing signal operation in init).
+
+trap exits by calling _exit from signal handlers.
+init reports it as "exited", not as "killed by (signal)".
+That's correct behavior. Use SIGSEGV or SIGILL or SIGBUS to check
+termination by a signal.
+
+
+Syslog
+~~~~~~
+slogdg and slogst are syslogd stubs, using DGRAM and STREAM sockets
+respectively. Both dump all received messages to stdout.
+
+Unless there is a very good reason to do otherwise, use DGRAM implementation.
+
+Check ../config.h for the proper socket name.
+This naturaly only makes sense in devel mode.
+
+Neither stub is called syslogd to avoid confusion with the actual syslog
+presumably running in the system.
+
+logger is a simple syslog client to check slogdg and slogst.
+When running, make sure to use the same socket name for the slog* and logger.

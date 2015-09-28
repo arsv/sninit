@@ -1,8 +1,20 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -g -Wall
+
+all = trap slogdg slogst logger
+
+all: $(all)
 
 trap: trap.c
-	$(CC) -o $@ $<
+
+slogdg: slogdg.c
+
+slogst: slogst.c
+
+logger: logger.c
+
+%: %.c
+	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	rm -f trap
+	rm -f $(all) devlog daemon.log
