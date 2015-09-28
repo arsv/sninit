@@ -20,6 +20,8 @@ local int shouldbeshown(struct initrec* p);
    being the open telinit connection.
 
    This is the only case when warn() is used for non-error output.
+   The leading # sign is used to pass that to telinit, making
+   it choose stdout instead of stderr and exit with code 0.
 
    How it should look like:
 
@@ -40,7 +42,7 @@ local int shouldbeshown(struct initrec* p);
 void dumpidof(struct initrec* p)
 {
 	if(p->pid > 0)
-		warn("%i", p->pid);
+		warn("#%i", p->pid);
 }
 
 void dumpstate(void)
@@ -52,9 +54,9 @@ void dumpstate(void)
 	rlstr(currstr, 16, currlevel);
 	rlstr(nextstr, 16, nextlevel);
 	if(currlevel == nextlevel)
-		warn("Runlevel %s", currstr);
+		warn("#Runlevel %s", currstr);
 	else
-		warn("Switching %s to %s", currstr, nextstr);
+		warn("#Switching %s to %s", currstr, nextstr);
 
 	/* First pass, get column widths */
 

@@ -127,7 +127,8 @@ int warn(const char* fmt, ...)
    so we skip that by setting warnfd = 0.
 
    Finally, ! at the start of fmt indicates the message should go to stderr,
-   skipping syslog. This is for debugging only. */
+   skipping syslog. This is for debugging only. There is also # prefix which
+   is *not* handled here and must be passed to telinit. */
 
 int warnmode(const char* fmt)
 {

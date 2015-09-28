@@ -67,15 +67,17 @@ int main(int argc, char** argv)
 		hasarg = cr->arg;
 	}
 
+	int ret = 0;
+
 	if(!hasarg)
-		runcmd(ptr);
+		ret = runcmd(ptr);
 	else for(i = 2; i < argc; i++) {
 		memset(buf + 1, 0, sizeof(buf)-1);
 		strncpy(buf + 1, argv[i], sizeof(buf)-2);
-		runcmd(buf);
+		ret |= runcmd(buf);
 	}
 
-	return 0;
+	return (ret ? 1 : 0);
 }
 
 static int opensocket(void)
@@ -134,26 +136,43 @@ static int sendcmd(int fd, const char* cmd)
 	return 0;
 }
 
-static void recvreply(int fd)
+static int recvreply(int fd)
 {
 	char buf[100];
 	int rr;
+	int out = 0;
+	int ret = 0;
+	int off = 0;
 
-	while((rr = read(fd, buf, sizeof(buf))) > 0)
-		write(2, buf, rr);
+	while((rr = read(fd, buf, sizeof(buf))) > 0) {
+		if(!out) {
+			if(buf[0] == '#') {
+				off = 1;
+				out = 1;
+			} else {
+				ret = -1;
+				out = 2;
+			}
+		} else if(off) off = 0;
+
+		write(out, buf + off, rr - off);
+	}
+
+	return ret;
 }
 
 static int runcmd(const char* cmd)
 {
 	int fd;
+	int r = 0;
 
 	fd = opensocket();
 	sendcmd(fd, cmd);
 	shutdown(fd, SHUT_WR);
-	recvreply(fd);
+	r = recvreply(fd);
 	close(fd);
 
-	return 0;
+	return r;
 };
 
 static void die(const char* msg, const char* arg)
