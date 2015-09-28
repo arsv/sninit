@@ -13,6 +13,7 @@ hwc	R1+	sbin/hwclock
 	W0	sbin/umount -a
 
 # Respawning services (see also initdir/)
+syslog	L3+	sbin/slogdg sbin/devlog sbin/daemon.log
 srv1	S3+	sbin/trap srv1 10
 srv2	S3+	sbin/trap srv2 23
 srv3	S3+	sbin/trap srv3
