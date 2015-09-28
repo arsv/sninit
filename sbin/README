@@ -2,7 +2,7 @@ The files here are stub executables intended to be used with ../etc/inittab
 for test runs in source directory.
 
 Proper (non-script) executables are set to be host-compiled.
-This is because qemu-(arch) ./init translates syscalls to the underlying
+This is because qemu-(arch) ./init passes syscalls to the underlying
 native kernel, and native execve naturally expects native executables.
 
 Testing with qemu-system-(arch) would require target-compiled trap,
@@ -13,7 +13,7 @@ Signal trapping
 ~~~~~~~~~~~~~~~
 trap should be used as a generic foreground daemon substitute.
 See ../etc/inittab for examples. All it does is dying on pre-set
-intervals (showing you how respawning works) and annouces received
+intervals (showing you how respawning works) and announces received
 signals (showing signal operation in init).
 
 trap exits by calling _exit from signal handlers.
@@ -30,7 +30,7 @@ respectively. Both dump all received messages to stdout.
 Unless there is a very good reason to do otherwise, use DGRAM implementation.
 
 Check ../config.h for the proper socket name.
-This naturaly only makes sense in devel mode.
+This naturally only makes sense in devel mode.
 
 Neither stub is called syslogd to avoid confusion with the actual syslog
 presumably running in the system.
