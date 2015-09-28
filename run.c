@@ -134,13 +134,13 @@ static void parseopt(char* opt)
 again:	switch(c = *(opt++)) {
 		case '\0': break;
 
-		case 'g': addgroup(opt);		break;
-		case 'u':   uid = finduser(opt, &gid);	break;
-		case 'U': fsuid = finduser(opt, &fsgid);break;
-		case 'G': fsgid = findgroup(opt);	break;
-		case 'C': wdir = opt;			break;
-		case 'R': root = opt;			break;
-		case 'X': setcg(opt);			break;
+		case 'g': addgroup(opt);                 break;
+		case 'u':   uid = finduser(opt, &gid);   break;
+		case 'U': fsuid = finduser(opt, &fsgid); break;
+		case 'G': fsgid = findgroup(opt);        break;
+		case 'C': wdir = opt;                    break;
+		case 'R': root = opt;                    break;
+		case 'X': setcg(opt);                    break;
 
 		case 'l': err = opt;
 		case 'o': out = opt; break;
@@ -149,9 +149,9 @@ again:	switch(c = *(opt++)) {
 		case 'm': setmask(opt); break;
 
 		case 'n': bits |= NULLOUT; goto again;
-		case 'c': bits |= RUNSH; goto again;
-		case 's': setsess(); goto again;
-		case 'y': setctty(); goto again;
+		case 'c': bits |= RUNSH;   goto again;
+		case 's': setsess();       goto again;
+		case 'y': setctty();       goto again;
 
 		case 'r': setprio(opt); break;
 
