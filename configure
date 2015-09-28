@@ -240,8 +240,8 @@ while [ $# -gt 0 ]; do
 			inittab=etc/inittab
 			initdir=etc/initdir
 			initctl=@initest
-			syslog=var/syslog
-			logdir=var/log
+			syslog=sbin/devlog
+			logdir=sbin/log
 			optimize=
 			debug="-Wall -g"
 			depend="-MD"
