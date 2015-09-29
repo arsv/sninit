@@ -3,8 +3,7 @@ Buildroot system for sninit
 sninit comes with a set of pre-defined configurations for Buildroot
 which allow building a bootable system image for qemu with sninit
 set up as process #1. This is intended for testing overall usabitiy
-of sninit by interacting with a running system, possibly also trying
-different configurations.
+of sninit by interacting with a running system.
 
 Check http://buildroot.uclibc.org/ for overall information on Buildroot.
 For the logic behind sninit-supplied configuration, check
@@ -21,14 +20,14 @@ Prerequisites
 
 * qemu-system-$arch installed
   This typically comes with distro's qemu package.
-  Which arch is needed depends on defconfig used (see below), but
-  in most cases they will all come in a single package.  
+  Which arch is needed depends on defconfig used (see below),
+  but in most cases they all come in a single package.  
 
 * internet connection
   buildroot will download ~250MB of source tarballs
 
 * lots of patience and up to 5GB of free disk space
-  (all that to test a ~20KB executable, yeah)
+  (all that to test some ~20KB of executables, yeah)
 
 
 Building and running
@@ -47,8 +46,8 @@ Initialize buildroot, and check available configs:
     cd $BR
     make BR2_EXTERNAL=$SN/misc/buildroot list-defconfigs
 
-You should get a long list with several sninit_(arch)_defconfigs at
-the very bottom. Choose one of them, and set it as current:
+It should output a long list with several sninit_(arch)_defconfigs
+at the very bottom. Choose one of them, and set it as current:
 
     make sninit_(arch)_defconfig
 
