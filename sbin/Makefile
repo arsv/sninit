@@ -17,4 +17,4 @@ logger: logger.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
-	rm -f $(all) devlog daemon.log
+	rm -f *.o $(all) devlog daemon.log
