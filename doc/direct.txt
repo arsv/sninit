@@ -12,22 +12,28 @@ values instead of referencing variables.
 
 Example and motivation
 ~~~~~~~~~~~~~~~~~~~~~~
-Let's see how linux console charset and keyboard layout was configured in
-(pre-systemd) Arch linux.
+Let's take at an excerpt from pre-systemd rc.conf from my Arch system:
 
-	/etc/rc.conf	(host-specific file)
-		CHARSET=utf-8
-		KEYMAP="ru-utf"
-		FONT=UniCyr_8x16
+	# LOCALIZATION
+	# ------------
+	HARDWARECLOCK=UTC
+	TIMEZONE=Europe/Kiev
+	KEYMAP=
+	CONSOLEFONT=
+	CONSOLEMAP=
 
-	/etc/rc.sysninit	(common for all Arch systems)
-		if [ -n "$FONT" ]; then
-			if [ -n "$KEYMAP" ]; then
-				loadfont -m $KEYMAP $FONT
-			else
-				loadfont $FONT
-			fi
-		fi
+One of distro-supplied executable rc.something script then did
+something like this:
+
+	if [ "$HARDWARECLOCK" == 'UTC' ]; then
+		hwclock --utc --hctosys
+	else
+		hwclock --localtime --hctosys
+	fi
+
+	if [ -n "$KEYMAP" ]; then
+		loadkeys -m "$KEYMAP"
+	fi
 
 Now loadkeys source contains basically the same if() statement:
 
@@ -39,38 +45,33 @@ rc.conf adds a wrapper atop of loadfont, without actually changing
 (simplifying) anything.  The above code can simply be replaced with
 
 	/etc/rc.local	(host-specific file)
-		loadfont -m ru-utf UniCyr_8x16
+		hwclock --utc --hctosys
+		# loadfont is not needed
 
-or maybe just
-		loadfont UniCyr_8x16
-
-or maybe just skipped if there's no need to load font
-(empty FONT nor KEYMAP is set in rc.conf).
-
-Writing "loadfont -m ru-utf UniCyr_8x16" in an executable startup file is what
-I call "direct configuration", as opposed to setting variables which indirectly
-affect loadkeys call later. It's equivalent semantically, but shorter and,
-well, direct.
+Writing "hwclock --utc --hctosys" in an executable startup file, and treating
+it as configuration keywords, is what I call "direct configuration".
+It's equivalent semantically, but typically shorter and, well, direct.
 
 
 Why direct configuration?
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-Direct configuration is always simpler, but it's not the only advantage.
-It's much less system-dependent, more versatile, and generally much better
-documented.
+Direct configuration is simpler, it's much less system-dependent, and generally
+much better documented.
 
-In this example, loadkeys is pretty much a standard Linux utility, coming from
-either kbd package or busybox. There's loadkeys(1) man page in almost any
-system. On the other hand, rc.conf is Arch-specific. It's necessary to consult
+In this example, hwclock and loadkeys are pretty much standard Linux utilities,
+coming from either kbd package or busybox. There's hwclock(1) man page in almost
+any system. On the other hand, rc.conf is Arch-specific. It's necessary to consult
 Arch wiki to find out which variables to set, and in most non-trivial cases
-also check /etc/rc.sysninit for the actual commands.
+also check the (Arch-specific) script for the actual commands.
+
 And then you go to some Ubuntu system, and start digging through its own,
 ridiculously complicated, indirect configuration scripts just to find out how
 the same utility (loadkeys) is started on that particular system.
 
-Adding a level of abstraction over loadkeys could make sense if loadkeys was
-ridiculously difficult to use. It is not, and even if it were, the Linux way
-to fix that is rewriting loadkeys, not adding wrappers atop.
+Adding a level of abstraction over loadkeys or hwclock could make sense
+if either of them was ridiculously difficult to use.
+Neither is, and even if it were, the Linux way to fix that is rewriting the
+offending utility, not adding wrappers atop.
 
 
 Pre-existing implementation
