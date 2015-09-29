@@ -14,9 +14,12 @@ The files are stored in misc/buildroot directory within sninit source tree.
 
 Prerequisites
 ~~~~~~~~~~~~~
-* buildroot-2015.08.1 sources
-  (with minor tweaks, other buildroot versions should work as well)
-  Get them from http://buildroot.uclibc.org/
+* buildroot-2015.08.1
+  With minor tweaks, other buildroot versions should work as well.
+  Get it from http://buildroot.uclibc.org/
+
+* buildroot dependencies installed, see list here:
+  http://buildroot.uclibc.org/downloads/manual/manual.html#requirement-mandatory
 
 * qemu-system-$arch installed
   This typically comes with distro's qemu package.
