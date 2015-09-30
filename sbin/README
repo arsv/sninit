@@ -36,4 +36,5 @@ Neither stub is called syslogd to avoid confusion with the actual syslog
 presumably running in the system.
 
 logger is a simple syslog client to check slogdg and slogst.
-When running, make sure to use the same socket name for the slog* and logger.
+When trying to log something, make sure to use the same socket name
+for the slog* and logger.
