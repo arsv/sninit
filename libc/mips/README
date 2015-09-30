@@ -15,3 +15,6 @@ There are irregularities, like pipe(2) returning (v0, v1),
 but as far as sninit is concerned everything is neat and uniform,
 with functions and syscalls using exactly the same registers
 for their arguments.
+
+Note [4] and [5] are in fact 4 and 5 even though the first four
+arguments are passed in registers.

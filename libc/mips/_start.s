@@ -1,5 +1,5 @@
 /* Register names */
-/* Now this results in rather weird disassembly (as in objdump -d), but it works */
+/* This results in rather weird disassembly (as in objdump -d), but it works */
 .equ zero, 0
 .equ ra, 31
 .equ sp, 29
@@ -24,9 +24,10 @@ environ: .word 0
 
 .text
 .align 4
-/* MIPS toolchain apparently can be configure to use either _start or __start */
-/* Can be fixed by -Wl,-e -Wl,_start but that's ugly and hey, declaring extra */
-/* symbols is free! */
+/* MIPS toolchain may be configured to use either _start or __start for default
+   entry point, and will complain if the wrong one is provided by libc.
+   This can be fixed by -Wl,-e -Wl,_start but that's ugly and hey, declaring
+   extra symbols is free! */
 .globl __start	
 .globl _start
 .globl _exit
