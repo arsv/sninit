@@ -71,6 +71,7 @@ int vsnprintf(char* buf, size_t len, const char* fmt, va_list ap)
 			pad = 0;
 refmt:			switch(*(fmt++)) {
 				case '-':
+					/* %-*s for compatibility with common libc printfs */
 					goto refmt;
 				case '*':
 					pad = va_arg(ap, int);
