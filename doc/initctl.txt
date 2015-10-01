@@ -36,12 +36,12 @@ Possible commands:
 	H	halt     = switch to runlevel 0, call reboot(CMD_HALT)
 	P	poweroff = switch to runlevel 0, call reboot(CMD_POWEROFF)
 
-Check parsecmd() in init_cmds.c for a full list, and cmdtbl[] in telinit.c
+Check parsecmd() in init_cmds.c for the full list, and cmdtbl[] in telinit.c
 for corresponding telinit commands.
 
-Current implementation does not indicate whether the command failed or not,
-so telinit always exits with code 0. This is nearly inevitable, since most
-commands are deferred: the command itself only sets a flag, and the action
+Current implementation can only report immediate error, like bad entry
+names or incorrect runlevel specification. This is because most commands
+are deferred: the command itself only sets a flag, and the action
 is performed during initpass() after closing telinit connection.
 
 
@@ -49,7 +49,13 @@ telinit q
 ~~~~~~~~~
 In sysvinit, q can be used to reload, *or* to reset (rather long) timers,
 essentially triggering restart attempt for failed entries.
-The latter makes no sense in sninit, due to short timers and explicit start
-command. And reconfiguration on whim is not exactly the best thing to do.
 
+Unlike sysvinit, sninit allows starting entries by name, so instead of
+generic "telinit q" something more specific like "telinit start ftpd"
+should be used.
+
+At the same time, reconfiguration on whim is not exactly the best thing to do.
 So q command was ditched, in favor of explicit "reload".
+
+XXX: wouldn't it be better to leave q as a shorthand? Having more that one
+     failed entry is not very likely.
