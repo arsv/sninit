@@ -20,7 +20,7 @@ TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
 	t_addstringarray t_addstrargarray t_fileblock t_tzinit \
 	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
 	t_readinitdir t_rewireptsarray t_linknode t_transferpids \
-	t_joincmd t_setrunflags t_findentry t_waitpids t_dof_dtf \
+	t_joincmd t_setrunflags t_findentry t_waitpids t_toofast \
 	t_rlstr t_pintlen t_dumprec t_dumpstate t_shouldbeshown
 # Tests with manual check (for now)
 XTESTS = x_printf x_hello x_open x_vfork x_sigprocmask x_reboot x_ppoll
@@ -125,7 +125,7 @@ t_rlstr: t_rlstr.o init_dump.o test.o
 t_findentry: t_findentry.o init_find.o test.o
 
 t_waitpids: t_waitpids.o init_wait.o test.o
-t_dof_dtf: t_dof_dtf.o init_wait.o test.o
+t_toofast: t_toofast.o init_wait.o test.o
 
 t_warn: t_warn.o init_warn.o sys_printf.o
 
