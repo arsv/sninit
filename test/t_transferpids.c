@@ -13,16 +13,16 @@ int state = 0;
 struct initrec** inittab = NULL;
 
 struct initrec c0 = { .name = "c0", .flags = C_ONCE, .rlvl = R1,  .pid = 0 };
-struct initrec c1 = { .name = "c1", .flags = C_ONCE, .rlvl = R2, .pid = -1 };
-struct initrec c2 = { .name = "", .flags = C_ONCE, .rlvl = R2,  .pid = -1 };
-struct initrec c3 = { .name = "c3", .flags = 0, .rlvl = R2, .pid = 4 };
-struct initrec c4 = { .name = "c4", .flags = 0, .rlvl = R2, .pid = 5 };
+struct initrec c1 = { .name = "c1", .flags = C_ONCE, .rlvl = R2,  .pid = -1 };
+struct initrec c2 = { .name = "",   .flags = C_ONCE, .rlvl = R2,  .pid = -1 };
+struct initrec c3 = { .name = "c3", .flags = 0,      .rlvl = R2,  .pid = 4 };
+struct initrec c4 = { .name = "c4", .flags = 0,      .rlvl = R2,  .pid = 5 };
 
 struct initrec n0 = { .name = "c0", .flags = C_ONCE, .rlvl = R1,  .pid = 0 };
-struct initrec n1 = { .name = "c1", .flags = C_ONCE, .rlvl = R2, .pid = -1 };
-struct initrec n2 = { .name = "", .flags = C_ONCE, .rlvl = R2,  .pid = 0 };
-struct initrec n3 = { .name = "c3", .flags = 0, .rlvl = R2,  .pid = 0 };
-struct initrec n5 = { .name = "c5", .flags = 0, .rlvl = R2,  .pid = 0 };
+struct initrec n1 = { .name = "c1", .flags = C_ONCE, .rlvl = R2,  .pid = -1 };
+struct initrec n2 = { .name = "",   .flags = C_ONCE, .rlvl = R2,  .pid = 0 };
+struct initrec n3 = { .name = "c3", .flags = 0,      .rlvl = R2,  .pid = 0 };
+struct initrec n5 = { .name = "c5", .flags = 0,      .rlvl = R2,  .pid = 0 };
 
 struct initrec* cfg_inittab[] = { &c0, &c1, &c2, &c3, &c4, NULL };
 struct initrec* ncf_inittab[] = { &n0, &n1, &n2, &n3, &n5, NULL };
@@ -40,7 +40,7 @@ extern void transferpids(void);
 NOCALL(readinittab);
 NOCALL(readinitdir);
 NOCALL(addptrsarray);
-int levelmatch(void) { return 0; };
+int levelmatch(struct initrec* p, int level) { return (p->rlvl & level); };
 
 int main(void)
 {
