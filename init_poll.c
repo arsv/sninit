@@ -124,9 +124,8 @@ void acceptctl(void)
 	state &= ~S_INITCTL;
 }
 
-/* telinit must provide user's credentials in ancillary data,
-   as init should only accept commands from root when running with S_PID1.
-   See unix(7). */
+/* telinit must provide user's credentials in ancillary data, as init should
+   only accept commands from root when running as pid 1. See unix(7). */
 
 void readcmd(int fd)
 {

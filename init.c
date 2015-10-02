@@ -167,7 +167,12 @@ int main(int argc, char** argv)
 
 reboot:
 	warnfd = 0;		/* stderr only, do not try syslog */
-	if(!(state & S_PID1))	/* we're not running as *the* init */
+
+#ifdef DEVMODE
+	return 0;		/* no reboots in devel mode */
+#endif
+
+	if(getpid() != 1)	/* not running as *the* init */
 		return 0;
 
 	forkreboot();
@@ -182,26 +187,10 @@ reboot:
    configuration may still be enough for basic ui to come up, allowing
    the user to fix whatever is wrong.
 
-   In case inittab file is missing, we try to fall back to built-in config.
-
-   Init starts by calling getpid(), partially to know whether it is ok to
-   call reboot() later, and partially to test environment sanity.
-   getpid() can not fail, that is, unless it fails with ENOSYS, in which case
-   we are probably running x86{,_32,_64} with an incompatible kernel. */
+   In case inittab file is missing, we try to fall back to built-in config. */
 
 int setup(int argc, char** argv)
 {
-	if(getpid() == 1)
-		state |= S_PID1;
-	else if(errno)
-		_exit(errno);
-#ifdef DEVMODE
-	/* Disable reboots in devel mode. A kind of workaround, but ifdefing
-	   forkreboot means it won't be parsed for syntax errors, and possibly
-	   unreachable code warnings too. */
-	state &= ~S_PID1;
-#endif
-
 	if(setinitctl())
 		/* Not having telinit is bad, but aborting system startup
 		   for this mere reason is likely even worse. */
@@ -331,7 +320,7 @@ void sighandler(int sig)
 			break;
 
 		case SIGTERM:	/* C-c when testing */
-		case SIGINT:	/* C-A-Del with S_PID1 */
+		case SIGINT:	/* C-A-Del */
 			rbcode = RB_AUTOBOOT;
 			nextlevel = (1<<0);
 			break;

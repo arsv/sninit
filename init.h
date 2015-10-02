@@ -3,11 +3,10 @@
 #include "config.h"
 
 /* Global state (int state) */
-#define S_PID1		(1<<0)		/* running a process #1 */
-#define S_SIGCHLD	(1<<1)		/* SIGCHLD was received, got to call wait() */
-#define S_INITCTL	(1<<2)		/* telinit connection on initctlfd is waiting to be accept()ed */
-#define S_RECONFIG	(1<<3)		/* new configuration is ready in newblock */
-#define S_WAITING	(1<<4)		/* waiting for some process (w- or o-type) to finish */
+#define S_SIGCHLD	(1<<0)		/* SIGCHLD was received, got to call wait() */
+#define S_INITCTL	(1<<1)		/* telinit connection on initctlfd is waiting to be accept()ed */
+#define S_RECONFIG	(1<<2)		/* new configuration is ready in newblock */
+#define S_WAITING	(1<<3)		/* waiting for some process (w- or o-type) to finish */
 
 /* Per-process flags (struct initrec.flags) */
 #define C_INVERT	(1<<0)		/* invert runlevel mask */
