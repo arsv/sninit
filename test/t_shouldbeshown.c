@@ -45,16 +45,16 @@ int main(void)
 	currlevel = R3;
 	nextlevel = R3;
 
-	SHOW(C_DOF,  R3 | R4);
-	HIDE(C_DOF,  R2 | R1);
+	SHOW(0,      R3 | R4);
+	HIDE(0,      R2 | R1);
 	HIDE(C_ONCE, R3);
 
 	currlevel = 1<<2;
 	nextlevel = 1<<3;
 
-	SHOW(C_DOF,  R3 | R4);
-	SHOW(C_DOF,  R2);
-	HIDE(C_DOF,  R4);
+	SHOW(0,      R3 | R4);
+	SHOW(0,      R2);
+	HIDE(0,      R4);
 	SHOW(C_ONCE, R3);
 
 	return 0;

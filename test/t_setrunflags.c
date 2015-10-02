@@ -61,10 +61,10 @@ struct initrec rec = {
 int main(void)
 {
 	/* First check that the flags work */
-	flags("P",	C_HUSH);
+	flags("H",	C_HUSH);
 	flags("R",	C_ONCE);
 	flags("W",	C_ONCE | C_WAIT);
-	flags("L",	C_WAIT | C_DOF | C_DTF);
+	flags("L",	C_WAIT);
 
 	/* regular runlevel specification */
 	levels("R12",	R1 | R2);

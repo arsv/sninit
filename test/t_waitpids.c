@@ -8,15 +8,16 @@ int nextlevel;
 time_t passtime;
 
 /* Startup: I1 * I2 * I3 I4 I5 * rlswitch */
-struct initrec I0 = { .pid = 11, .flags = 0 };
-struct initrec I1 = { .pid = 22, .flags = P_SIGTERM };
-struct initrec I2 = { .pid = 33, .flags = P_SIGTERM | P_SIGKILL };
-struct initrec I3 = { .pid = 44, .flags = 0 };
-struct initrec I4 = { .pid = 55, .flags = 0 };
-struct initrec I5 = { .pid = 66, .flags = C_DOF };
-struct initrec I6 = { .pid = 77, .flags = 0 };
+/* C_FAST to prevent DTF checks from messing up the results;
+   DTF logic test are in t_toofast. */
+struct initrec I0 = { .pid = 11, .flags = C_FAST };
+struct initrec I1 = { .pid = 22, .flags = C_FAST | P_SIGTERM };
+struct initrec I2 = { .pid = 33, .flags = C_FAST | P_SIGTERM | P_SIGKILL };
+struct initrec I3 = { .pid = 44, .flags = C_FAST };
+struct initrec I4 = { .pid = 55, .flags = C_FAST };
+struct initrec I5 = { .pid = 66, .flags = C_FAST };
 
-struct initrec* testinittab[] = { NULL, &I0, &I1, &I2, &I3, &I4, &I5, &I6, NULL };
+struct initrec* testinittab[] = { NULL, &I0, &I1, &I2, &I3, &I4, &I5, NULL };
 struct config testconfig = { .inittab = testinittab + 1, .initnum = sizeof(testinittab)/sizeof(void*) - 2 };
 
 struct config* cfg = &testconfig;
@@ -32,8 +33,7 @@ struct waitret {
 	{ 33, 0x0013 }, /* I2 got killed */
 	{ 22, 0x0014 }, /* I1 got killed as well */
 	/* 44 is not in the list */
-	{ 66, 0x1100 }, /* I5 exited abnormally */
-	{ 77, 0x1300 }, /* I6 exited abnormally */
+	{ 66, 0x1300 }, /* I5 exited abnormally */
 	{  0, 0 }
 };
 
@@ -75,30 +75,23 @@ int main(void)
 	A(I0.pid == -1);
 	A(I1.pid == 22);
 	A(I2.pid == -1);
-	A(I2.flags == 0);
+	A(I2.flags == C_FAST);
 	A(I3.pid == 44);
 	A(I4.pid == 55);
 	A(I5.pid == 66);
-	A(I6.pid == 77);
 	A(state == 0);
 
 	/* Are signal flags removed properly? */
 	waitcnt = 1;
 	waitpids();
 	A(I1.pid == -1);
-	A(I1.flags == 0);
-
-	/* C_DOF test */
-	waitcnt = 1;
-	waitpids();
-	A(I5.pid == -1);
-	A(I5.flags == (C_DOF | P_FAILED));
+	A(I1.flags == C_FAST);
 
 	/* Just a simple abnormal exit */
 	waitcnt = 1;
 	waitpids();
-	A(I6.pid == -1);
-	A(I6.flags == 0);
+	A(I5.pid == -1);
+	A(I5.flags == C_FAST);
 
 	/* Dry run */
 	state = S_SIGCHLD;
