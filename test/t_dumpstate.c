@@ -87,7 +87,7 @@ int main(void)
 {
 	dumpstate();
 
-	S(warnbuf, "Switching 2 to 3");
+	S(warnbuf, "#Switching 2 to 3");
 	Eqi(recptr, 3);
 	TEST(0, "first",    8, 4);
 	TEST(1, "longrec2", 8, 4);
