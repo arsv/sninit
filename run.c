@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <sched.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
@@ -54,6 +55,8 @@ char* err = NULL;
 /* chdir and chroot */
 char* wdir = NULL;
 char* root = NULL;
+/* Things to unshare(2) */
+int nsflags = 0;
 /* Misc stuff to do (see constants above) */
 int bits = 0;
 
@@ -78,6 +81,7 @@ static void parselim(char* opt);
 static void addgroup(char* p);
 static void setlimit(int key, char* p);
 static void setcg(char* p);
+static void setns(char* p);
 static void setprio(char* p);
 static void setsess(void);
 static void setctty(void);
@@ -141,6 +145,7 @@ again:	switch(c = *(opt++)) {
 		case 'C': wdir = opt;                    break;
 		case 'R': root = opt;                    break;
 		case 'X': setcg(opt);                    break;
+		case 'S': setns(opt);                    break;
 
 		case 'l': err = opt;
 		case 'o': out = opt; break;
@@ -376,6 +381,28 @@ static void setcg(char* cg)
 	close(fd);
 }
 
+static void setns(char* ns)
+{
+	char* p;
+	int f = 0;
+
+	if(!*ns) f = CLONE_FILES | CLONE_FS | CLONE_NEWIPC | CLONE_NEWNET
+			| CLONE_NEWNS | CLONE_NEWUTS;
+	else for(p = ns; *p; p++)
+		switch(*p) {
+			case 'd': f |= CLONE_FILES; break;
+			case 'f': f |= CLONE_FS; break;
+			case 'i': f |= CLONE_NEWIPC; break;
+			case 'n': f |= CLONE_NEWNET; break;
+			case 'm': f |= CLONE_NEWNS; break;
+			case 'u': f |= CLONE_NEWUTS; break;
+			case 'v': f |= CLONE_SYSVSEM; break;
+			default: die("Bad namespace flags ", ns, NULL);
+		}
+
+	nsflags = f;
+}
+
 /* Linux uses 1..40 range for process priorities and a return of -1
    from getpriority means error. Now of course glibc people can not
    just stick with the native kernel data so they wrap to (apparently
@@ -466,6 +493,10 @@ char* basename(const char* path)
 static void apply(char* cmd)
 {
 	int outfd;
+
+	if(nsflags)
+		if(unshare(nsflags))
+			die("unshare failed", NULL, ERRNO);
 
 	if(fsuid >= 0)
 		if(setfsuid(fsuid))

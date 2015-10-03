@@ -43,6 +43,27 @@ Set \fBumask\fR(2) for the spawned process.
 Set stdout as the controlling TTY; see TIOCSCTTY in \fBtty_ioctl\fR(4).
 .IP "\fB-c\fR" 4
 Exec \fBsh -c \fIcommand args\fR instead of just \fIcommand args\fR.
+.IP "\fB-S\fR[\fIflags\fR]" 4
+Call \fBunshare\fR(2) to diassociate all of, or only selected parts
+of the process execution context:
+.PD 0
+.RS
+.TP
+\fBd\fR file descriptors (CLONE_FILES)
+.TP
+\fBf\fR filesystem (CLONE_FS)
+.TP
+\fBi\fR System V IPC namespace (CLONE_NEWIPC)
+.TP
+\fBn\fR network namespace (CLONE_NEWNET)
+.TP
+\fBm\fR mount namespace (CLONE_NEWNS)
+.TP
+\fBu\fR UTS IPC namespace (CLONE_NEWUTS)
+.TP
+\fBv\fR System V semaphore undo values (CLONE_SYSVSEM)
+.RE
+.PD 1
 .IP "\fB+\fIc\fIN\fR[\fB/\fIM\fR]" 4
 Set process ulimits. \fIN\fR is soft limit, \fIM\fR is hard limit;
 in case only one number is specified, equal hard and soft limits are set.
@@ -106,7 +127,7 @@ Similar utilities: \fBsu\fR(1), \fBsudo\fR(1), \fBrunuser\fR(1),
 \fBnice\fR(1), \fBcgexec\fR(1), \fBsetsid\fR(1).
 .P
 Syscalls: \fBsetresuid\fR(2), \fBsetresgid\fR(2), \fBsetrlimit\fR(2),
-\fBsetpriority\fR(2), \fBexecve\fR(2), \fBsetsid\fR(2).
+\fBsetpriority\fR(2), \fBexecve\fR(2), \fBsetsid\fR(2), \fBunshare\fR(2).
 .P
-General concepts: \fBcredentials\fR(7), documentation/cgroups/ from the kernel
-source tree.
+General concepts: \fBcredentials\fR(7), \fBnamespaces\fR(7),
+documentation/cgroups/ from the kernel source tree.
