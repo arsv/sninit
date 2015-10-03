@@ -10,7 +10,8 @@ direct4 += open close read write dup2 fstat ioctl getdents64 openat stat
 direct4 += munmap clock_gettime nanosleep setfsuid setfsgid umask
 direct4 += socket bind connect listen accept sendmsg recvmsg shutdown
 direct4 += prctl setresgid setresuid setsid getegid geteuid setrlimit
-direct4 += send sigaction sigprocmask setpgid setpriority getpriority getuid
+direct4 += send sigaction sigprocmask setpgid setpriority getpriority
+direct4 += getuid unshare
 direct5 = mremap setsockopt
 direct6 = sendto
 
