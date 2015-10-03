@@ -27,8 +27,7 @@ declares syscalls as regular functions, and moves arguments into their proper
 locations in assembly code. Check platform README files for more info.
 
 All syscalls return -ECODE on failure. It's libc duty to move that to global
-errno and return -1 from the function. That's wrong, but this is how other
-libcs work.
+errno and return -1 from the function. That's wrong, but it's in the standard.
 
 Errno handling and common argument code is in unisys.s.
 The calls themselves are typically trivial (load NR_*, invoke unisys),
@@ -38,13 +37,13 @@ There are some special hand-written syscalls on most platforms however.
 
 Startup code
 ~~~~~~~~~~~~
-The entry point is in _start.s for all platforms. Most have _exit there
-as well, because it must be called to end the process.
+The entry point is in _start.s for all platforms.
+_exit is there as well, because it must be called to end the process.
 
 What entry code does is setting up the topmost frame and calling
-_exit(main(argc, argv, envp)). Where are argc, argv, envp when _start
+_exit(main(argc, argv, envp)). Where argc, argv, envp are when _start
 is invoked is highly platform-dependent.
-The only common answer is "not where main() expects them to be".
+The most common answer is "not where main() expects them to be".
 
 
 Syscall constants
@@ -54,7 +53,7 @@ in C headers by the kernel. Within bundled libc, this is resolved by grepping
 the headers for raw numbers and defining them via .equ's in assembly.
 See per-platform _syscall.sh on how this is done.
 
-This is course means the numbers must be kept is sync with the actual kernel
+This of course means the numbers must be kept is sync with the actual kernel
 data somehow. The good news is that syscall numbers are among the most stable
 parts of the linux kernel.
 
@@ -82,8 +81,8 @@ There are some x_* tests in test/ directory, those may help during early
 stages. Run them via qemu-ARCH -strace to make sure they do what they are
 expected to do.
 
-When porting, do *NOT* use x86 as a template!
-Use something saner instead, like arm or arm64 or x86_64.
+When porting, do *NOT* use x86 as a template! It is overly complex and highly
+unusual in many aspects. Use something saner instead, like arm or x86_64.
 
 
 Extended syscalls
