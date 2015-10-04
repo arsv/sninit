@@ -1,0 +1,140 @@
+Background and foreground daemons
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Long-running, non-interactive processes commonly called as "daemons" can be
+run in two distinct ways: as a forking aka background daemons (the original
+definition of the word daemon, see daemon(3)), or as regular foreground
+processes.
+
+Foreground mode should be strongly preferred for any system with reasonably
+capable init, and in fact for any system that needs reliable control over
+daemons.
+
+However, due to wide spread of sysv initscript based systems and presumably
+the lack of clear documentation on the problem, background mode is still widely
+used in cases where it shouldn't really be.
+
+
+Definitions
+~~~~~~~~~~~
+Background (aka forking) daemon spawns a child process and exits immediately:
+
+	int main(...)
+	{
+		if(setup(...))
+			return -1;
+
+		if(pid = fork())
+			return 0;
+		
+		while(1) { ... }
+
+		return -1;
+	}
+
+Foreground daemon does not exit during normal operation:
+
+	int main(...)
+	{
+		if(setup(...))
+			return -1;
+
+		while(1) { ... }
+
+		return -1;
+	}
+
+In both cases, the loop is not expected to stop unless there
+is a hard error of some kind. Daemons should run indefinitely.
+
+This is different from applications like getty which are typically
+long-running but which do exit normally. Such applications are always
+started as foreground processes.
+
+
+Implications for process control
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Background daemons use the parent-child connection to inform the parent
+of an (un)successful startup. The connection is then broken, leaving the parent
+(or anyone else for that matter) with no reliable way of controlling or killing
+the running child process, or being notified of its death.
+
+Foreground daemons save the connection to inform the parent of an unexpected
+death. The connection remains valid for the whole run time of the child process,
+so the parent can be sure the pid it has is valid and can be used to kill
+the daemon.
+
+Having valid pid and reliable death notifications allows restarting the entry.
+Some heuristic is needed to tell whether the entry has a chance to restart
+successfully, but it is possible.
+
+Startup reports are nearly useless for the parent process.
+Early configuration errors are not likely to be restartable, and successful
+exit of the original child after forking means almost nothing.
+
+
+When to use background mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Background daemons can be started by a simple, non-concurrent shell script.
+If they are not expected to die, or if no-one cares about them dying,
+and if the simplicity of the startup script over some kind of proper init
+system provides any benefits, background daemons should be considered.
+
+Background daemons may also be an option in case the init system is not
+capable of controlling foreground processes. In practice, however, even
+the simplest implementation (busybox init) can do it well.
+
+The lack of proper control over init itself (i.e. telinit start/stop)
+may look like a reason to get initscripts, but it's not really.
+Any init that can reload its config can also start/stop entries on demand.
+
+
+What's wrong with initscripts
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Initscripts are typically used alongside a proper init like sysvinit or
+bb init which alone would do a better job supervising the same processes.
+
+Initscripts also rely heavily on `cat something.pid` instead of doing proper
+process supervision. That's wrong. By the time the value is used,
+no-one can be sure which process has that pid.
+
+
+What's wrong with forking systemd services
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using background daemons (Type=forking, see systemd.service(7)) means
+combining the worst aspects of systemd with the worst aspects of initscripts:
+a huge supervisor performing on the level of non-supervising shell scripts.
+
+Initscripts at least have some excuses for performing badly: they lack
+the supervisor process, and sh "wait" command is too limited to implement
+a proper supervisor anyway.
+
+With systemd, a proper supervisor is already there. Not using it is pointless.
+
+
+What's wrong with running daemons in background
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Comparison with gettys above shows the crucial assumption behind background
+daemons: each daemon is thought to be immortal.
+
+That's a very strong assumption. A lot of things can break it.
+
+If it does in fact hold, running background daemons is perfectly ok.
+But making sure it does is very difficult. Most daemons are not written
+to be verifiably immortal, they are too large and too buggy for that.
+
+The idea behind sninit (any proper init, in fact) is to relax this assumption.
+Only one process, init itself, is required to be immortal. All other processes
+are allowed to die, and the system is given a chance to recover without
+rebooting.
+
+
+How to run a daemon in foreground mode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The absolute majority of applications designed to be run as daemons has some
+kind of command-line switches or in rare cases configuration options to disable
+forking behavior.
+
+For those few packages that lack the options, fixing the source code
+is typically a simple task. As seen above, it's about removing or disabling
+a single fork() call.
+
