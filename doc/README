@@ -4,7 +4,7 @@ Files in this directory are meant primarily for developers.
 
 builtin.txt	  What is builtin inittab, and why it is needed
 dependencies.txt  On systemd-style dependencies
-failure.txt       Reboot on failure: why and why not
+failure.txt	  Reboot on failure: why and why not
 initdir.txt	  What is initdir
 inittab.txt	  Why a new inittab format
 initrec.txt	  Internal data structure
@@ -35,5 +35,5 @@ sysvinit.txt	  Migrating from sysvinit
 
 init.txt	  What is init?
 direct.txt	  Direct configuration
-mininit.txt       On minimalistic init
+mininit.txt	  On minimalistic init
 daemons.txt	  Background and foreground daemons
