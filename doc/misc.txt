@@ -102,6 +102,19 @@ However the point is that it's not the only alternative.
 If one needs, one can use proper shell scripts.
 
 
+Command parsing vs /bin/sh -c
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Both sysvinit and bbinit only split commands on spaces by themselves.
+If anything else is needed, they call sh to parse the command.
+
+For a long time, sninit could do much more parsing on its own,
+and required an explicit ! prefix to spawn /bin/sh.
+
+This idea has been abandoned. Complex commands are rare,
+and most of them need output redirection or variable substitution,
+not proper quotes handling.
+
+
 Builtins
 ~~~~~~~~
 That is, bundling some commands with init, busybox-style. Or perhaps sh style.
