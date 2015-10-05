@@ -108,20 +108,13 @@ Leaving out runlevels completely is the same as using \fB123456789\fR.
 The last field, \fIcommand\fR, is the command to run. The field is parsed and
 passed as the second argument to \fBexecve\fR(2) call.
 .P
-Unless specifically told otherwise, init does not call \fBsh\fR(1) to handle
-the command, and only does limited command parsing on its own. Single and
-double quotes are handled properly, but variable substitution, output
-redirects, compound statements etc. and not supported. $PATH,
-even if set, has no effect; use absolute names for executables instead.
-.P
-To use sh, prepend \fB!\fR to the command. This will cause init to pass the command
-directly to /bin/sh -c without any parsing.
+Wherever necessary, init calls /bin/sh -c to execute the command.
 .P
 .EX
     # Regular command, execve("/sbin/agetty", ...) will be used
     tty1   F3+    /sbin/agetty --noclear -8 -s 38400 tty1 linux
     # Shell command, execve("/bin/sh", "-c", "echo 1 > /proc/...")
-           R3+    !echo 1 > /proc/sys/net/ipv4/ip_forward
+           R3+    echo 1 > /proc/sys/net/ipv4/ip_forward
 .EE
 '''
 .SH USAGE
