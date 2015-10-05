@@ -268,9 +268,9 @@ int setsignals(void)
 	sa.sa_flags = 0;
 	ret |= sigaction(SIGCHLD, &sa, NULL);
 
-	/* These *should* interrupt write() calls,
-	   which is the opposite of SA_RESTART. */
-	sa.sa_handler = SIG_IGN;
+	/* These *should* interrupt write() calls, which is the opposite
+	   of SA_RESTART; sighandler must be set here, because SIG_IGN
+	   prevents syscall interruption. */
 	ret |= sigaction(SIGPIPE, &sa, NULL);
 	ret |= sigaction(SIGALRM, &sa, NULL);
 
@@ -330,6 +330,8 @@ void sighandler(int sig)
 				close(initctlfd);
 			setinitctl();
 			break;
+
+		/* SIGPIPE and SIGALRM may arrive here */
 	}
 }
 
