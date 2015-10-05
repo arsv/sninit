@@ -16,6 +16,7 @@ NOCALL(readinitdir);
 NOCALL(findentry);
 NOCALL(addptrsarray);
 NOCALL(levelmatch);
+NOCALL(addstruct);
 
 extern int mmapblock(struct memblock* m, int size);
 extern void rewireptrsarray(void** a);

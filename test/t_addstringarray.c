@@ -7,56 +7,34 @@
 struct memblock newblock;
 struct memblock scratchblock;
 
-int addstringarray(int n, const char* str, const char* end);
+int addstringarray(char* str);
 extern int mmapblock(struct memblock* b, int len);
-void munmapblock(struct memblock* m);
 
-void check(char* tt, void** ep, char** test)
-{
-	char** p; int i;
-	Bc(newblock, ep, "%s is valid", tt);
-	Ac(ep != NULL, "%s is not null", tt);
-	if(!ep) return;
-	for(p = test, i = 0; *p; p++, i++)
-		Ac((ep[i] - NULL >= 0) && ((ep[i] - NULL) <= newblock.len), "%s[%i] is valid", tt, i);
-
-	for(p = test, i = 0; *p; p++, i++) {
-		char* str = newblock.addr + (ep[i] - NULL);
-		Ac(!strcmp(str, *p), "%s[%i] = %p \"%s\" expected \"%s\"", tt, i, ep[i], str, *p);
-	}
-	Ac(ep[i] == NULL, "%s[%i] = %p", tt, i, ep[i]);
-}
+#define count(a) (sizeof(a)/sizeof(*a))
+#define to_offset(ptr) ((offset)((void*)ptr - NULL))
 
 int main(void)
 {
-	int off;
-	if(mmapblock(&newblock, 100)) return -1;
+	if(mmapblock(&newblock, 10)) return -1;
+	int start = 0;
+	newblock.ptr = start;
 
-	char* T1[] = { "foo", "bar", NULL };
-	char S1[] = "foo\0bar\0";
-	off = newblock.ptr;
-	A(addstringarray(2, S1, S1 + 8) == 0);
-	check("T1", newblock.addr + off, T1);
+	char args[] = "blah  foo\tbar  ";
+	int off = newblock.ptr;
 
-	char* T2[] = { "foo", "bar", NULL };
-	char S2[] = "foo\0bar\0";
-	off = newblock.ptr;
-	A(addstringarray(2, S2, S2 + 8) == 0);
-	check("T2", newblock.addr + off, T2);
+	int ret = addstringarray(args);
+	A(ret == 0);
+	Eq(newblock.ptr, start + 4*sizeof(char*) + 13, "%i");
 
-	/* Single-string case */
-	char* T3[] = { "foo", NULL };
-	char S3[] = "foo\0";
-	off = newblock.ptr;
-	A(addstringarray(1, S3, S3 + 4) == 0);
-	check("T3", newblock.addr + off, T3);
-
-	/* Empty initial string */
-	char* T4[] = { "", "bar", NULL };
-	char S4[] = "\0bar\0";
-	off = newblock.ptr;
-	A(addstringarray(2, S4, S4 + 5) == 0);
-	check("T4", newblock.addr + off, T4);
+	char** ptr = newblockptr(off, char**);
+	A(ptr[0] == NULL + off + 4*sizeof(char*));
+	char* s1 = newblockptr(to_offset(ptr[0]), char*);
+	char* s2 = newblockptr(to_offset(ptr[1]), char*);
+	char* s3 = newblockptr(to_offset(ptr[2]), char*);
+	S(s1, "blah");
+	S(s2, "foo");
+	S(s3, "bar");
+	A(to_offset(ptr[3]) == 0);
 
 	return 0;
 }

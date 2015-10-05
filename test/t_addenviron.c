@@ -26,6 +26,9 @@ char* test_env[] = {
 };
 
 NOCALL(levelmatch);
+NOCALL(readinittab);
+NOCALL(readinitdir);
+NOCALL(setrunflags);
 
 #define SN(p) ((struct stringnode*) p)
 

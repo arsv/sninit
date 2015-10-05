@@ -40,6 +40,7 @@ extern void transferpids(void);
 NOCALL(readinittab);
 NOCALL(readinitdir);
 NOCALL(addptrsarray);
+NOCALL(addstruct);
 int levelmatch(struct initrec* p, int level) { return (p->rlvl & level); };
 
 int main(void)

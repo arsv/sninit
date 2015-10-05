@@ -7,42 +7,34 @@
 struct memblock newblock;
 extern int memblockalign;
 
-int addstrargarray(const char* argv[]);
 extern int mmapblock(struct memblock* b, int len);
-void munmapblock(struct memblock* m);
+int addstrargarray(const char** args, int n);
 
-void check(char* tt, void** ep, const char* test[])
-{
-	const char** p; int i;
-	Bc(newblock, ep, "%s is valid", tt);
-	Ac(ep != NULL, "%s is not null", tt);
-	if(!ep) return;
-	for(p = test, i = 0; *p; p++, i++)
-		Ac((ep[i] - NULL >= 0) && (ep[i] - NULL <= newblock.len), "%s[%i] is valid", tt, i);
-
-	for(p = test, i = 0; *p; p++, i++) {
-		char* str = newblock.addr + (ep[i] - NULL);
-		Ac(!strcmp(str, *p), "%s[%i] = \"%s\"", tt, i, str);
-	}
-	Ac(ep[i] == NULL, "%s[%i] = NULL", tt, i);
-}
+#define count(a) (sizeof(a)/sizeof(*a))
+#define to_offset(ptr) ((offset)((void*)ptr - NULL))
 
 int main(void)
 {
-	int off;
-
-	memblockalign = 1;
 	if(mmapblock(&newblock, 10)) return -1;
+	int start = 0;
+	newblock.ptr = start;
 
-	const char* T1[] = { "foo", "bar", NULL };
-	off = newblock.ptr;
-	A(addstrargarray(T1) == 0);
-	check("T1", newblock.addr + off, T1);
+	const char* arg[] = { "foo", "bar" };
+	int off = newblock.ptr;
 
-	const char* T2[] = { "foo", NULL };
-	off = newblock.ptr;
-	A(addstrargarray(T2) == 0);
-	check("T2", newblock.addr + off, T2);
+	int ret = addstrargarray(arg, 2);
+	A(ret == 0);
+	Eq(newblock.ptr, start + 3*sizeof(void*) + 8, "%i");
+
+	char** ptr = newblockptr(off, char**);
+	A(ptr[0] == NULL + off + (count(arg)+1)*sizeof(char*));
+	char* s1 = newblockptr(to_offset(ptr[0]), char*);
+	char* s2 = newblockptr(to_offset(ptr[1]), char*);
+	S(s1, "foo");
+	S(s2, "bar");
+	A(to_offset(ptr[2]) == 0);
+
+	//A((void*)ptr[1] < newblock.addr + newblock.ptr);
 
 	return 0;
 }

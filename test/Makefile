@@ -15,7 +15,7 @@ override CFLAGS += -ffunction-sections
 RUN_ := $(if $(RUN),$(RUN) ,)
 
 # Regular automated tests
-TESTS = t_mblocks t_prepargv t_parseinitline t_parsesrvfile \
+TESTS = t_mblocks t_parseinitline t_parsesrvfile t_strssep \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock t_tzinit \
 	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
@@ -71,34 +71,31 @@ clean:
 t_mblocks: LIBS += $(LIBS_syscall)
 t_mblocks: t_mblocks.o init_conf_map.o test.o
 
-t_prepargv: t_prepargv.o init_conf_rec.o test.o
-
-t_addinitrec: t_addinitrec.o init_conf_map.o init_conf_mem.o init_conf_map.o \
-	init_conf_rec.o init_conf_key.o test.o
+t_addinitrec: t_addinitrec.o init_conf_map.o init_conf_map.o \
+	init_conf_rec.o init_conf_arg.o init_conf_key.o test.o
 
 t_parseinitline: t_parseinitline.o \
-	init_conf_map.o init_conf_tab.o test.o
+	init_conf_map.o init_conf_tab.o init_conf_arg.o test.o
 
 t_parsesrvfile: t_parsesrvfile.o init_conf_dir.o init_conf_map.o \
 	test.o $(SYS)
 
-t_conf: t_conf.o init_find.o init_conf.o init_conf_mem.o init_conf_map.o \
+t_conf: t_conf.o init_find.o init_conf.o init_conf_map.o init_conf_arg.o \
 	init_conf_tab.o init_conf_dir.o init_conf_rec.o init_conf_key.o \
 	test.o $(SYS)
 
-t_addenviron: t_addenviron.o init_find.o init_conf.o init_conf_mem.o \
-	init_conf_map.o init_conf_rec.o init_conf_key.o \
-	init_conf_tab.o init_conf_dir.o test.o $(SYS)
+t_addenviron: t_addenviron.o init_conf.o init_conf_arg.o init_conf_map.o \
+	init_conf_rec.o init_find.o test.o $(SYS)
 
 t_itostr: t_itostr.o sys_printf.o test.o
 
 t_printf: t_printf.o sys_printf.o test.o
 
-t_addstringarray: t_addstringarray.o init_conf_mem.o init_conf_map.o test.o
+t_addstringarray: t_addstringarray.o init_conf_map.o init_conf_arg.o test.o
 
-t_addstrargarray: t_addstrargarray.o init_conf_mem.o init_conf_map.o test.o
+t_addstrargarray: t_addstrargarray.o init_conf_map.o init_conf_arg.o test.o
 
-t_linknode: t_linknode.o init_conf_rec.o init_conf_mem.o init_conf_map.o test.o
+t_linknode: t_linknode.o init_conf_rec.o init_conf_map.o init_conf_arg.o test.o
 
 t_rewireptsarray: t_rewireptsarray.o init_conf.o init_conf_map.o test.o
 
@@ -112,7 +109,7 @@ t_initpass_wku: t_initpass_wku.o t_initpass_.o init_pass.o test.o
 t_initpass_rev: t_initpass_rev.o t_initpass_.o init_pass.o test.o
 t_initpass_off: t_initpass_off.o t_initpass_.o init_pass.o test.o
 
-t_setrunflags: t_setrunflags.o init_conf_key.o init_conf_mem.o test.o
+t_setrunflags: t_setrunflags.o init_conf_key.o test.o
 
 t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_map.o test.o
 
@@ -136,6 +133,11 @@ t_dumprec: t_dumprec.o init_dump.o sys_printf.o test.o
 t_dumpstate: t_dumpstate.o init_dump.o sys_printf.o test.o
 
 t_shouldbeshown: t_shouldbeshown.o init_dump.o
+
+t_strssep: t_strssep.o init_conf_arg.o test.o
+t_strssep.o: CFLAGS += -Wno-format
+
+t_addstring: t_addstring.o init_conf_arg.o init_conf_map.o test.o
 
 # Libc tests
 x_openread: x_openread.o test.o
