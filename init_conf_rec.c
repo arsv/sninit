@@ -13,16 +13,12 @@ extern struct memblock newblock;
 export int addenviron(const char* def);
 export int addinitrec(struct fileblock* fb, char* name, char* flags, char* cmd, int exe);
 
-local int prepargv(char* str, char** end);
-local int addrecargv(char* cmd, int exe);
+extern int addrecargv(char* cmd, int exe);
 extern int setrunflags(struct fileblock* fb, struct initrec* entry, char* flags);
-
 extern int addstruct(int size, int extra);
-extern int addstringarray(int n, const char* str, const char* end);
-extern int addstrargarray(const char* args[]);
 
 local int linknode(offset listptr, offset nodeptr);
-extern int checkdupname(const char* name);
+local int checkdupname(const char* name);
 
 /* Context:
 
@@ -109,30 +105,6 @@ int addenviron(const char* def)
 	return 0;
 }
 
-/* Lay out argv[] array right after its parent initrec.
-   For the command, there are three options:
-	(1) exe=0 argv="/sbin/httpd -f /etc/httpd.conf"
-	(2) exe=0 argv="!httpd -f /etc/httpd.conf"
-	(3) exe=1 argv="/etc/rc/script"
-   Option (1) is parsed in-place, (2) is passed to sh -c, while (3) assumes
-   the file itself is executable and no arguments should be passed.
-   This all affects only the way initrec.argv is built. */
-
-int addrecargv(char* cmd, int exe)
-{
-	if(exe) {
-		const char* argv[] = { cmd, NULL };
-		return addstrargarray(argv);
-	} else if(*cmd == '!') {
-		for(cmd++; *cmd && *cmd == ' '; cmd++);
-		const char* argv[] = { "/bin/sh", "-c", cmd, NULL };
-		return addstrargarray(argv);
-	} else {
-		char* arge; int argc = prepargv(cmd, &arge);
-		return addstringarray(argc, cmd, arge);
-	}
-}
-
 int linknode(offset listptr, offset nodeptr)
 {
 	struct ptrnode* node = newblockptr(nodeptr, struct ptrnode*);
@@ -151,50 +123,29 @@ int linknode(offset listptr, offset nodeptr)
 	return 0;
 }
 
-/* Parse the line, counting the entries and simultaineously
-   marking them by placing \0 in appropriate places. */
-/* Note: str is always 0-terminated, see parseinitline */
-/* Note: this changes *str */
-local void strpull(char* p) { for(;*p;p++) *p = *(p+1); }
-/* Input:  |/sbin/foo -a 30 -b "foo bar" -c some\ thing₀| */
-/* Output: |/sbin/foo₀-a₀30₀-b₀foo bar₀-c₀some thing₀₀₀₀| */
-/* Return: 7 */
-int prepargv(char* str, char** end)
+/* It's an error to have two entries with the same (non-empty) name
+   as it makes telinit commands ambiguous, so dupes are checked and
+   reported at parsing stage.
+
+   This is called during initrec parsing, way before NCF->inittab array
+   is formed. So it can't use NCF->inittab. Instead, it should use
+   SCR->inittab (the offset list) to find location of entries added so far. */
+
+int checkdupname(const char* name)
 {
-	char* p;
-	int argc = 0;
-	int state = 1;	/* 4 = after backslash, 2 = in quotes, 1 = in separator / skipping spaces */
+	offset po = SCR->inittab.head;
+	struct ptrnode* n;
+	struct initrec* p;
 
-	for(p = str; *p; p++) {
-		if(state & 4) {
-			switch(*p) {
-				case 'n': *p = '\n'; break;
-				case 't': *p = '\t'; break;
-			}
-			state &= ~4;
-		} else if(state & 2) {
-			/* ..but come and think of it, ""s are unnecessary luxury
-			   in inittab. Probably got to drop them and leave spaces
-			   only, with an added bonus of keeping string length constant */
-			if(*p == '"') {
-				strpull(p--);
-				state &= ~2;
-			};
-		} else {
-			if(state & 1) switch(*p) {
-				case '\n':
-				case '\t':
-				case ' ': strpull(p--); continue;
-				default: state &= ~1; argc++;
-			} switch(*p) {
-				case '\\': state |= 4; strpull(p--); break;
-				case '"':  state |= 2; strpull(p--); break;
-				case '\n':
-				case ' ':
-				case '\t': *p = '\0'; state |= 1; break;
-			};
-		}
-	} if(end) *end = p;
+	while(po) {
+		n = newblockptr(po, struct ptrnode*);
+		p = newblockptr(po + sizeof(struct ptrnode), struct initrec*);
 
-	return argc;
+		if(p->name[0] && !strcmp(p->name, name))
+			return -1;
+
+		po = n->next;
+	}
+
+	return 0;
 }

@@ -16,7 +16,7 @@ init telinit run: $(if $(ARCH),libc.a)
 # Init may be built using different subsets of code blocks.
 # Blocks are selected by keywords from $(initblocks); see config.mk on this.
 
-init_conf = init_conf.o init_conf_map.o init_conf_mem.o init_conf_tab.o \
+init_conf = init_conf.o init_conf_map.o init_conf_arg.o init_conf_tab.o \
 	init_conf_dir.o init_conf_rec.o init_conf_key.o
 init_null = init_null.o
 init_tz = init_time_tz.o init_time_stamp.o

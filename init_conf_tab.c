@@ -15,7 +15,7 @@ extern int munmapfile(struct fileblock* fb);
 extern int nextline(struct fileblock* f);
 
 local int parseinitline(struct fileblock* fb);
-local char* strssep(char** str);
+extern char* strssep(char** str);
 
 /* Strict means bail out on errors immediately; with strict=0, it should continue
    as far as possible, assuming it's initial configuration with no fallback. */
@@ -64,20 +64,4 @@ int parseinitline(struct fileblock* fb)
 		return addinitrec(fb, name, rlvl, l, 0);
 
 bad:	retwarn(-1, "%s:%i: bad line", fb->name, fb->line);
-}
-
-/* Like strsep(), but using /\s+/ for delimiter */
-char* strssep(char** str)
-{
-	char* ret = *str;
-	char* ptr = ret;
-
-	for(ptr = ret; *ptr; ptr++)
-		if(*ptr == ' ' || *ptr == '\t')
-			break;
-	while(*ptr == ' ' || *ptr == '\t')
-		*(ptr++) = '\0';
-
-	*str = ptr;
-	return ret;
 }

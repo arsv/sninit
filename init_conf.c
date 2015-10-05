@@ -57,6 +57,7 @@ extern int levelmatch(struct initrec* p, int lmask);
 extern int mmapblock(struct memblock* m, int size);
 extern void munmapblock(struct memblock* m);
 extern int addptrsarray(offset listoff, int terminate);
+extern offset addstruct(int size, int extra);
 
 /* If successful, configure() leaves a valid struct config in newblock.
    Otherwise, it should clean up after itself.
@@ -248,4 +249,58 @@ void transferpids(void)
 		q->lastrun = p->lastrun;
 		q->lastsig = p->lastsig;
 	}
+}
+
+/* Make type* array[] style structure in newblock from a ptrlist
+   located at listoff in newblock. The array is NULL-terminated
+   at the back and/or at the front.
+   (inittab needs front NULL for reverse pass in initpass)
+
+   Because the pointers are only available when all the data has
+   been placed, the pointer array ends up after the actual data
+   in newblock, with back-referencing pointers.
+
+   This function is used to lay out config.inittab and config.env,
+   but not for initrec.argv which gets a different treatment. */
+
+int addptrsarray(offset listoff, int terminate)
+{
+	struct ptrlist* list = newblockptr(listoff, struct ptrlist*);
+
+	int rem = list->count;
+	int ptrn = rem;
+	void** ptrs;
+	struct ptrnode* node;
+	offset nodeoff;		/* in scratchblock */
+	offset ptrsoff;		/* in newblock */
+
+	if(rem < 0) return -1;
+
+	if(terminate & NULL_FRONT) ptrn++;
+	if(terminate & NULL_BACK ) ptrn++;
+
+	if((ptrsoff = addstruct(ptrn*sizeof(void*), 0)) < 0)
+		return -1;
+
+	ptrs = newblockptr(ptrsoff, void**);
+
+	/* leading NULL pointer is used as terminator when traversing inittab backwards */
+	if(terminate & NULL_FRONT) {
+		*(ptrs++) = NULL;
+		ptrsoff += sizeof(void*);
+	}
+
+	/* set up offsets; repoiting will happen later */
+	for(nodeoff = list->head; rem && nodeoff; rem--) {
+		node = newblockptr(nodeoff, struct ptrnode*);
+		*(ptrs++) = NULL + nodeoff + sizeof(struct ptrnode);
+		nodeoff = node->next;
+	} if(rem)
+		/* less elements than expected; this may break initpass, so let's not take chances */
+		return -1;
+
+	if(terminate & NULL_BACK)
+		*ptrs = NULL;
+
+	return ptrsoff;
 }
