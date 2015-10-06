@@ -11,7 +11,7 @@ unset prefix sbindir mandir man5dir man8dir sysconfdir
 
 # configure uses lower-case variables to store "kinda-default" values
 # while resp. upper-case variables are used for unconditional overrides
-unset cc ar as cflags asflags ldflags
+unset cc ar as strip cflags asflags ldflags
 unset hostcc hostcflags
 
 unset target build host diet
@@ -161,6 +161,9 @@ while [ $# -gt 0 ]; do
 		with-ar|ar) argreq
 			ar=$val
 			;;
+		with-strip|strip) argreq
+			strip=$val
+			;;
 		with-gcc|gcc)
 			cc=${val:-gcc}
 			cctype=gcc
@@ -292,9 +295,10 @@ case "$cc:${cctype:-gcc}" in
 		;;
 esac
 
-# Decide which as and ar to use
+# Decide which binutils to use
 ar=${ar:-${cross}ar}
 as=${as:-\$(CC) -c}	# this will go straight into Makefile
+strip=${strip:-${cross}strip}
 
 # Try to guess target architecture
 # This should be done *after* deciding $CC of course
@@ -439,6 +443,7 @@ fi
 CC=${CC:-$cc}
 AS=${AS:-$as}
 AR=${AR:-$ar}
+STRIP=${STRIP:-$strip}
 CFLAGS=${CFLAGS:-$cflags}
 ASFLAGS=${ASFLAGS:-$asflags}
 LDFLAGS=${LDFLAGS:-$ldflags}
@@ -466,6 +471,7 @@ sed -i \
 	-e "/^CC :=/s#:=.*#:= $CC#"\
 	-e "/^AS :=/s#:=.*#:= $AS#"\
 	-e "/^AR :=/s#:=.*#:= $AR#"\
+	-e "/^STRIP :=/s#:=.*#:= $STRIP#"\
 	-e "/^CFLAGS :=/s#:=.*#:= $CFLAGS#"\
 	-e "/^ASFLAGS :=/s#:=.*#:= $ASFLAGS#"\
 	-e "/^LDFLAGS :=/s#:=.*#:= $LDFLAGS#"\

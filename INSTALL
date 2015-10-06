@@ -22,6 +22,18 @@ sninit follows Linux kernel naming scheme, with CC for target executables
 and HOSTCC for build system executables.
 
 
+Packaging for small size
+~~~~~~~~~~~~~~~~~~~~~~~~
+Simple make install does not strip executables.
+If you need stripped executable, run this instead:
+
+	make DESTDIR=(...) install-stripped
+
+If you don't need man pages as well, use
+
+	make DESTDIR=(...) install-bin-stripped
+
+
 Which libc to use
 ~~~~~~~~~~~~~~~~~
 In most cases sninit should be built with dietlibc.

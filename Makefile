@@ -46,6 +46,7 @@ run: run.o \
 	$(sort $(foreach b,$(initblocks),$(run_$(b))))
 
 install: install-bin install-man
+install-stripped: install-bin-stripped install-man
 
 install-bin:
 	install -m 0755 -D init $(DESTDIR)$(sbindir)/$sinit
@@ -57,6 +58,11 @@ install-man:
 	install -m 0644 -D telinit.8 $(DESTDIR)$(man8dir)/$stelinit.8
 	install -m 0644 -D inittab.5 $(DESTDIR)$(man5dir)/$sinittab.5
 	install -m 0644 -D initdir.5 $(DESTDIR)$(man5dir)/$sinitdir.5
+
+install-bin-stripped: install-bin
+	$(STRIP) $(DESTDIR)$(sbindir)/$sinit
+	$(STRIP) $(DESTDIR)$(sbindir)/$stelinit
+	$(STRIP) $(DESTDIR)$(sbindir)/$srun
 
 clean: clean-temp
 

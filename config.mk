@@ -5,6 +5,7 @@ ARCH :=
 CC := cc
 AS := $(CC) -c
 AR := ar
+STRIP := strip
 CFLAGS := -Os
 ASFLAGS :=
 LDFLAGS :=
