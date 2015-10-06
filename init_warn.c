@@ -28,8 +28,7 @@
    and everything else is decided within warn(). This also keeps nasty
    snprintf stuff in a single location. */
 
-extern int warnfd;
-extern int syslogfd;
+int warnfd = 0;
 
 export int warn(const char* fmt, ...);
 
@@ -37,6 +36,7 @@ export int warn(const char* fmt, ...);
    Full syslog() is not needed here, and neither are redundant sigprocmask()
    calls. Also, using library syslog(3) with sys_printf.c is a bad idea. */
 
+local int syslogfd = -1;	/* not yet opened */
 local int syslogtype;
 local struct sockaddr syslogaddr = {
 	.sa_family = AF_UNIX,

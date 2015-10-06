@@ -72,12 +72,12 @@ time_t passtime;
 int rbcode = RB_HALT_SYSTEM;
 
 /* These fds are kept open more or less all the time.
-   initctl is the listening socket, syslogfd is /dev/log, warnfd is
-   where warn() will put its messages. */
+   initctl is the listening socket, warnfd is where warn()
+   will put its messages. There is also syslogfd which is
+   kept and managed in init_warn. */
 
 int initctlfd;
-int syslogfd = -1;	/* not yet opened */
-int warnfd = 0;		/* stderr only, see warn() */
+extern int warnfd;
 
 /* Init blocks all most signals when not in ppoll. This is the orignal
    pre-block signal mask, used for ppoll and passed to spawned children. */
