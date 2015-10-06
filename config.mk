@@ -44,6 +44,9 @@ HOSTCC := gcc
 #	ppoll	ppoll via syscall() (only needed with unpatched dietlibc)
 initblocks := conf sys tz dents
 
+# Extra targets to build on "make all". Only used for sbin atm.
+extra :=
+
 # Set up bundled libc stuff
 # Note $/ here expands to the top-level directory
 ifneq ($(ARCH),)

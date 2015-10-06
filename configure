@@ -21,7 +21,7 @@ unset tstype null
 
 optimize=auto
 unset nommu lto debug depend builtin quiet devmode
-unset initctl inittab run s cgbase logdir blocks run
+unset initctl inittab run s cgbase logdir blocks run extra
 syslog=/dev/log
 
 warn() { echo "$@" >&2; }
@@ -249,6 +249,7 @@ while [ $# -gt 0 ]; do
 			debug="-Wall -g"
 			depend="-MD"
 			devmode=1
+			extra=sbin
 			;;
 		quiet)
 			quiet=1
@@ -480,6 +481,7 @@ sed -i \
 	-e "/^HOSTCC :=/s#:=.*#:= $HOSTCC#"\
 	-e "/^RUN :=/s#:=.*#:= $RUN#"\
 	-e "/^s :=/s#:=.*#:= $s#"\
+	-e "/^extra :=/s#:=.*#:= $extra#"\
 	-e "/^initblocks :=/s#:=.*#:= $blocks#"\
 	config.mk
 

@@ -8,7 +8,7 @@
 
 include config.mk
 
-all: init telinit run init.8 telinit.8 inittab.5 initdir.5 run.8
+all: init telinit run init.8 telinit.8 inittab.5 initdir.5 run.8 $(extra)
 
 # Force early libc build
 init telinit run: $(if $(ARCH),libc.a)
@@ -181,13 +181,15 @@ endif
 #
 # This is only for convenience, so that "make test" would work from the top dir.
 
-.PHONY: test sbin
+.PHONY: test
 
 test: $(if $(ARCH),libc.a)
 	$(MAKE) -C test run
 
-sbin: $(if $(ARCH),libc.a)
-	$(MAKE) -C sbin
+# entering/exiting messages for this get really annoying, and there's only two
+# targets there, with no dependecies, so let's list them here explicitly.
+sbin: sbin/trap sbin/slogdg $(if $(ARCH),libc.a)
+	$(MAKE) -C sbin $(filter sbin/%,$^)
 
 archclean: clean-test
 distclean: clean-sbin

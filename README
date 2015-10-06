@@ -69,7 +69,7 @@ For proper build instructions, see INSTALL file.
 To try sninit without configuring a VM or installing anything:
 
 	./configure devel
-	make all sbin
+	make
 	./init
 	(from another terminal)
 	./telinit list
