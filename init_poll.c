@@ -36,8 +36,13 @@ extern int warnfd;
 export void pollfds(void);
 export void acceptctl(void);
 
+extern int passtime;
+local int ctltime = 0;
+local int ctlcount = 0;
+
 extern void parsecmd(char* cmd);
 local int checkuser(int fd);
+local int checkthrottle(void);
 local void readcmd(int fd);
 
 /* called from the main loop */
@@ -114,8 +119,11 @@ void acceptctl(void)
 	};
 
 	/* initctlfd is SOCK_NONBLOCK */
-	while((fd = accept(initctlfd, (struct sockaddr*)&addr, &addr_len)) > 0) {
-		if(checkuser(fd)) {
+	while((fd = accept(initctlfd, (struct sockaddr*)&addr, &addr_len)) > 0)
+	{
+		int nonroot = checkuser(fd);
+
+		if(nonroot) {
 			/* no need to bother with warnfd here */
 			const char* denied = "Access denied\n";
 			write(fd, denied, strlen(denied));
@@ -123,7 +131,15 @@ void acceptctl(void)
 			gotcmd = 1;
 			setitimer(ITIMER_REAL, &it, NULL);
 			readcmd(fd);
-		} close(fd);
+		}
+
+		close(fd);
+
+		if(nonroot && checkthrottle()) {
+			close(initctlfd);
+			initctlfd = -1;
+			break;
+		}
 	} if(gotcmd) {
 		/* disable the timer in case it has been set */
 		it.it_value.tv_sec = 0;
@@ -164,6 +180,20 @@ int checkuser(int fd)
 		retwarn(-1, "non-root access, uid %i", cred.uid);
 #endif
 	return 0;
+}
+
+/* Initctl is closed once there are more than N failed attempts
+   in the last M seconds. To reopen the socket, root can kill -HUP 1
+   at any point, preferably after checking syslog and kicking perpetrator
+   out of the system.  */
+
+int checkthrottle(void)
+{
+	if(ctltime + THROTTLETIME < passtime) {
+		ctlcount = 0;
+		ctltime = passtime;
+	}
+	return (++ctlcount > THROTTLECOUNT);
 }
 
 /* Typical command length here is *way* below atomic send limit. */

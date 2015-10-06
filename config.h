@@ -85,3 +85,9 @@
 
 /* Maximum command length in telinit ? output */
 #define MAXREPORTCMD 50
+
+/* Initctl socket gets closed if more than given number of failed
+   (non-root) connections are made within given time.
+   See comments in init_poll.c on why this is necessary. */
+#define THROTTLETIME 2
+#define THROTTLECOUNT 50
