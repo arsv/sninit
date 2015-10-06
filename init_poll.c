@@ -5,6 +5,7 @@
 #include <sys/time.h>
 #include <signal.h>
 #include <unistd.h>
+#include <string.h>
 #include <errno.h>
 
 #include "config.h"
@@ -101,6 +102,7 @@ void pollctl(void)
 void acceptctl(void)
 {
 	int fd;
+	int gotcmd = 0;
 	struct sockaddr addr;
 	socklen_t addr_len = sizeof(addr);
 	struct itimerval it = {
@@ -110,15 +112,39 @@ void acceptctl(void)
 
 	/* initctlfd is SOCK_NONBLOCK */
 	while((fd = accept(initctlfd, (struct sockaddr*)&addr, &addr_len)) > 0) {
-		if(checkuser(fd)) continue;
+		if(checkuser(fd)) {
+			/* no need to bother with warnfd here */
+			const char* denied = "Access denied\n";
+			write(fd, denied, strlen(denied));
+		} else {
+			gotcmd = 1;
+			setitimer(ITIMER_REAL, &it, NULL);
+			readcmd(fd);
+		} close(fd);
+	} if(gotcmd) {
+		/* disable the timer in case it has been set */
+		it.it_value.tv_sec = 0;
 		setitimer(ITIMER_REAL, &it, NULL);
-		readcmd(fd);
-		shutdown(fd, SHUT_WR);
-		close(fd);
 	}
 
 	state &= ~S_INITCTL;
 }
+
+/* Telinit socket, especially ANS socket, lacks any protection against
+   non-root access. Which allows a simple kind-of-DoS attack: flooding
+   the socket with connect() requests.
+   It takes more effort for init to reply than it does for the attacker
+   to connect, so it's init who suffers.
+
+   A simple solution could be replying as fast as possible, but it's not
+   possible. Even in the best case it's going to take more syscalls than
+   a connection attempt.
+
+   The only real protection is closing the listening socket.
+
+   Which means, there's no point in trying to reply fast. We can safely
+   log the attempt in warn(), and we can even send "Access denied" back
+   instead of just closing the socket which is unbelievably polite. */
 
 int checkuser(int fd)
 {
@@ -129,14 +155,15 @@ int checkuser(int fd)
 		retwarn(-1, "cannot get peer credentials");
 #ifdef DEVMODE
 	if(cred.uid != getuid())
-		retwarn(-1, "non-owner access");
+		retwarn(-1, "non-owner access, uid %i", cred.uid);
 #else
 	if(cred.uid)
-		retwarn(-1, "non-root access");
+		retwarn(-1, "non-root access, uid %i", cred.uid);
 #endif
-	warn("!uid=%i", cred.uid);
 	return 0;
 }
+
+/* Typical command length here is *way* below atomic send limit. */
 
 void readcmd(int fd)
 {
