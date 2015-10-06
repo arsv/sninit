@@ -15,10 +15,8 @@ dependencies — not even libc. On supported architectures it
 gets built into a statically-linked, self-contained executable. 
 
 
-Features
-~~~~~~~~
-Key things sninit has:
-
+Key features
+~~~~~~~~~~~~
 + Runlevels for process management
 + Starting/stopping individual processes manually
   "telinit stop httpd" and so on
@@ -29,7 +27,7 @@ Key things sninit has:
 + Simplified memory management;
   no malloc, memory allocation only while reconfiguring
 
-Things sninit lacks:
+Missing features:
 
 - built-in system state management (network/mounts/sysconfig/ulimits)
 - inter-process dependencies, systemd-style
@@ -38,7 +36,7 @@ Things sninit lacks:
 - wall(8), shutdown(8) and some other sysvinit-style utilities
 - in-place restarting a-la sysvinit
 
-Things sninit has which are not in any way exceptional:
+Features sninit has that are not in any way exceptional:
 
 * parallel startups
   (busybox init allows it, never mind sysvinit)
@@ -81,10 +79,7 @@ To try sninit without configuring a VM or installing anything:
 In this configuration, init uses ./etc/inittab, ./etc/initdir
 and stub executables from ./sbin.
 
-
-Documentation
-~~~~~~~~~~~~~
-See man pages and files in doc/ directory.
+For further trials and testing, check doc/buildroot.txt.
 
 
 Just how small exactly?
@@ -110,7 +105,7 @@ sninit draws ideas from busybox init, minit and the original sysvinit.
 though in rockbox itself it was done in a different way.
 
 Small size and static linkage are mostly due to dietlibc and busybox.
-(see "Writing Small and Fast Software" by F. von Leitner).
+See "Writing Small and Fast Software" by Felix von Leitner.
 
 
 Licensing

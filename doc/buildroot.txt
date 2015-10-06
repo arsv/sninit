@@ -1,11 +1,11 @@
 Buildroot system for sninit
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 sninit comes with a set of pre-defined configurations for Buildroot
-which allow building a bootable system image for qemu with sninit
-set up as process #1. This is intended for testing overall usabitiy
-of sninit by interacting with a running system.
+which allow building a bootable system image for qemu.
+This is intended for testing overall usabitiy of sninit by interacting
+with an actual running system.
 
-Check http://buildroot.uclibc.org/ for overall information on Buildroot.
+Check http://buildroot.uclibc.org/ for general information on Buildroot.
 For the logic behind sninit-supplied configuration, check
 http://buildroot.uclibc.org/downloads/manual/manual.html#outside-br-custom
 
