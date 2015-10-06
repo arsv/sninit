@@ -56,7 +56,7 @@ char* err = NULL;
 char* wdir = NULL;
 char* root = NULL;
 /* Things to unshare(2) */
-int nsflags = 0;
+int usflags = 0;
 /* Misc stuff to do (see constants above) */
 int bits = 0;
 
@@ -81,7 +81,7 @@ static void parselim(char* opt);
 static void addgroup(char* p);
 static void setlimit(int key, char* p);
 static void setcg(char* p);
-static void setns(char* p);
+static void setus(char* p);
 static void setprio(char* p);
 static void setsess(void);
 static void setctty(void);
@@ -145,7 +145,7 @@ again:	switch(c = *(opt++)) {
 		case 'C': wdir = opt;                    break;
 		case 'R': root = opt;                    break;
 		case 'X': setcg(opt);                    break;
-		case 'S': setns(opt);                    break;
+		case 'S': setus(opt);                    break;
 
 		case 'l': err = opt;
 		case 'o': out = opt; break;
@@ -381,7 +381,7 @@ static void setcg(char* cg)
 	close(fd);
 }
 
-static void setns(char* ns)
+static void setus(char* ns)
 {
 	char* p;
 	int f = 0;
@@ -400,7 +400,7 @@ static void setns(char* ns)
 			default: die("Bad namespace flags ", ns, NULL);
 		}
 
-	nsflags = f;
+	usflags = f;
 }
 
 /* Linux uses 1..40 range for process priorities and a return of -1
@@ -494,8 +494,8 @@ static void apply(char* cmd)
 {
 	int outfd;
 
-	if(nsflags)
-		if(unshare(nsflags))
+	if(usflags)
+		if(unshare(usflags))
 			die("unshare failed", NULL, ERRNO);
 
 	if(fsuid >= 0)
