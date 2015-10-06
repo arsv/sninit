@@ -7,7 +7,7 @@
 extern struct memblock newblock;
 extern int mextendblock(struct memblock* m, int size);
 
-export int addrecargv(char* cmd, int exe);
+export int addrecargv(struct initrec* entry, char* cmd, int exe);
 export offset addstruct(int size, int extra);
 export char* strssep(char** str);
 
@@ -34,7 +34,13 @@ local int isspace(int c);
    (2) and (3) need no string manipulation and share the same logic,
    but (1) requires some effort to parse the string. */
 
-int addrecargv(char* cmd, int exe)
+/* The entry pointer is fragile, add*array calls invalidate it.
+   However, this whole function depends on newblock.ptr not moving
+   after the static of the entry has been added, so it's just as fragile
+   itself. The pointer is only needed to make dumpstate() output pretty,
+   so why bother. See addinitrec(). */
+
+int addrecargv(struct initrec* entry, char* cmd, int exe)
 {
 	while(*cmd && isspace(*cmd)) cmd++;
 
@@ -43,6 +49,7 @@ int addrecargv(char* cmd, int exe)
 		return addstrargarray(argv, 1);
 	} else if(shellneeded(cmd)) {
 		const char* argv[] = { "/bin/sh", "-c", cmd };
+		entry->flags |= C_SHELL;
 		return addstrargarray(argv, 3);
 	} else {
 		return addstringarray(cmd);

@@ -13,7 +13,7 @@ extern struct memblock newblock;
 export int addenviron(const char* def);
 export int addinitrec(struct fileblock* fb, char* name, char* flags, char* cmd, int exe);
 
-extern int addrecargv(char* cmd, int exe);
+extern int addrecargv(struct initrec* entry, char* cmd, int exe);
 extern int setrunflags(struct fileblock* fb, struct initrec* entry, char* flags);
 extern int addstruct(int size, int extra);
 
@@ -52,13 +52,6 @@ int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 		return -1;
 	entryoff = nodeoff + sizeof(struct ptrnode);
 
-	/* Put argv[] right after struct initrec */
-	if((ret = addrecargv(cmd, exe)))
-		goto out;
-
-	/* Initialize the entry. Now because addrecargv() calls above could
-	   very well change newblock.addr, the entry pointer must be evaluated here
-	   and not next to entryoff above */
 	entry = newblockptr(entryoff, struct initrec*); 
 
 	memset(entry->name, 0, NAMELEN);
@@ -68,7 +61,12 @@ int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 	entry->lastrun = 0;
 	entry->lastsig = 0;
 
+	/* This should *NOT* move newblock.ptr to allow proper argv layout. */
 	if(setrunflags(fb, entry, rlvl))
+		goto out;
+
+	/* Put argv[] right after struct initrec. */
+	if((ret = addrecargv(entry, cmd, exe)))
 		goto out;
 
 	/* initrec has been added successfully, so note its offset to use when

@@ -83,9 +83,13 @@ void dumpstate(void)
 void dumprec(struct initrec* p, int namewidth, int pidwidth)
 {
 	char tag = rectag(p);
-
 	bss char cmdbuf[MAXREPORTCMD];
-	joincmd(cmdbuf, sizeof(cmdbuf), p->argv);
+
+	if(p->flags & C_SHELL)
+		/* C_SHELL implies argv = [ /bin/sh, -c, command, NULL ] */
+		joincmd(cmdbuf+1, sizeof(cmdbuf)-1, p->argv+2), *cmdbuf = '!';
+	else
+		joincmd(cmdbuf,   sizeof(cmdbuf),   p->argv);
 
 	if(p->pid > 0)
 		warn("%-*s    %c%-*i    %s",

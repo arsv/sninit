@@ -15,6 +15,7 @@
 #define C_HUSH		(1<<3)		/* do not warn about this entry */
 #define C_FAST		(1<<4)		/* use time_to_restart instead of minimum_runtime */
 #define C_KILL		(1<<5)		/* do not bother with SIGTERM, just shoot the damn thing */
+#define C_SHELL		(1<<6)		/* sh -c is used to run this command */
 /* C_* flags are only set in configure(),
    P_* flags may be changed at runtime */
 #define P_MANUAL	(1<<8)		/* entry has been stopped manually */
