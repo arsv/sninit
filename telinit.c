@@ -117,38 +117,13 @@ static int opensocket(void)
 
 static int sendcmd(int fd, const char* cmd)
 {
-	char mbuf[CMSG_SPACE(sizeof(struct ucred))];
-	struct iovec iov[1] = { {
-		.iov_base = (char*)cmd,	/* sendmsg isn't going to change it */
-		.iov_len = strlen(cmd)	
-	} };
-	struct msghdr mhdr = {
-		.msg_name = NULL,
-		.msg_iov = iov,
-		.msg_iovlen = 1,
-		.msg_control = mbuf,
-		.msg_controllen = sizeof(mbuf),
-		.msg_flags = 0
-	};
-	struct cmsghdr *cmsg;
-	struct ucred cred = {
-		.pid = getpid(),
-		.uid = geteuid(),
-		.gid = getegid()
-	};
+	int len = strlen(cmd);
+	int wrt;
 
-	/* erase the whole buffer, to keep valgrind happy
-	   and the message clean of any stack noise */
-	memset(mbuf, 0, sizeof(mbuf));
-
-	cmsg = CMSG_FIRSTHDR(&mhdr);
-	cmsg->cmsg_level = SOL_SOCKET;
-	cmsg->cmsg_type = SCM_CREDENTIALS;
-	cmsg->cmsg_len = CMSG_LEN(sizeof(cred));
-	memcpy((int *)CMSG_DATA(cmsg), &cred, sizeof(cred));
-
-	if(sendmsg(fd, &mhdr, 0) < 0)
-		die("sendmsg failed: ", ERR);
+	if((wrt = write(fd, cmd, len)) < 0)
+		die("write failed: ", ERR);
+	else if(wrt < len)
+		die("write incomplete", NULL);
 	
 	return 0;
 }

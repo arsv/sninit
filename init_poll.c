@@ -36,9 +36,8 @@ export void pollfds(void);
 export void acceptctl(void);
 
 extern void parsecmd(char* cmd);
-local int setsockopti(int fd, int opt, int val);
+local int checkuser(int fd);
 local void readcmd(int fd);
-
 
 /* called from the main loop */
 /* timetowait may be set by start() and spawn() */
@@ -94,9 +93,6 @@ void pollctl(void)
    here in init; instead, kernel-side connection state is used to manage
    data direction.
 
-   Commands are always supplemented with credentials passed as ancilliary
-   data. See unix(7) for explaination.
-
    The use of alarm (setitimer) is tricky here: it is pointless for the root
    user, however it is possible for a non-root user to make a connection and
    let it hang without sending anything, blocking init operation.
@@ -111,11 +107,11 @@ void acceptctl(void)
 		.it_interval = { 0, 0 },
 		.it_value = { INITCTL_TIMEOUT, 0 }
 	};
-	
+
 	/* initctlfd is SOCK_NONBLOCK */
 	while((fd = accept(initctlfd, (struct sockaddr*)&addr, &addr_len)) > 0) {
+		if(checkuser(fd)) continue;
 		setitimer(ITIMER_REAL, &it, NULL);
-		setsockopti(fd, SO_PASSCRED, 1);
 		readcmd(fd);
 		shutdown(fd, SHUT_WR);
 		close(fd);
@@ -124,64 +120,36 @@ void acceptctl(void)
 	state &= ~S_INITCTL;
 }
 
-/* telinit must provide user's credentials in ancillary data, as init should
-   only accept commands from root when running as pid 1. See unix(7). */
+int checkuser(int fd)
+{
+	struct ucred cred;
+	socklen_t credlen = sizeof(cred);
+
+	if(getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &credlen))
+		retwarn(-1, "cannot get peer credentials");
+#ifdef DEVMODE
+	if(cred.uid != getuid())
+		retwarn(-1, "non-owner access");
+#else
+	if(cred.uid)
+		retwarn(-1, "non-root access");
+#endif
+	warn("!uid=%i", cred.uid);
+	return 0;
+}
 
 void readcmd(int fd)
 {
+	int rb;
 	bss char cbuf[CMDBUF];
-	bss char mbuf[CMSG_SPACE(sizeof(struct ucred))];
-	bss struct iovec iov[1] = { {
-		.iov_base = cbuf,
-		.iov_len = CMDBUF
-	} };
-	bss struct msghdr mhdr = {
-		.msg_name = NULL,
-		.msg_namelen = 0,
-		.msg_iov = iov,
-		.msg_iovlen = 1,
-		.msg_control = mbuf,
-		.msg_controllen = sizeof(mbuf),
-		.msg_flags = 0
-	};
-	struct cmsghdr *cmsg;
-	struct ucred *cred;
-	ssize_t rb;
 
-	rb = recvmsg(fd, &mhdr, 0);
-	if(rb < 0)
+	if((rb = read(fd, cbuf, CMDBUF-1)) < 0)
 		retwarn_("recvmsg failed: %m");
-
-	cmsg = CMSG_FIRSTHDR(&mhdr);
-	if(!cmsg)
-		retwarn_("no ancilliary data (?)");
-
-	if(!(cmsg->cmsg_level == SOL_SOCKET && cmsg->cmsg_type == SCM_CREDENTIALS))
-		retwarn_("ancilliary data isn't SCM_CREDENTIALS");
-
-	if(cmsg->cmsg_len < CMSG_LEN(sizeof(*cred)))
-		retwarn_("ancilliary data is too short");
-
-	cred = (struct ucred*) CMSG_DATA(cmsg);
-#ifdef DEVMODE
-	if(cred->uid != getuid())
-		retwarn_("non-owner access");
-#else
-	if(cred->uid)
-		retwarn_("non-root access");
-#endif
-
-	if(rb <= 0)
-		return;
-
+	if(rb >= CMDBUF)
+		retwarn_("recvmsg returned bogus data");
 	cbuf[rb] = '\0';
 
 	warnfd = fd;
 	parsecmd(cbuf);
 	warnfd = 2;
-}
-
-int setsockopti(int fd, int opt, int val)
-{
-	return setsockopt(fd, SOL_SOCKET, opt, &val, sizeof(val));
 }
