@@ -94,10 +94,13 @@ void pollctl(void)
    here in init; instead, kernel-side connection state is used to manage
    data direction.
 
-   The use of alarm (setitimer) is tricky here: it is pointless for the root
-   user, however it is possible for a non-root user to make a connection and
-   let it hang without sending anything, blocking init operation.
-   To counteract that, telinit connection time is limited. */
+   Alarm (setitimer) is needed here to force-reset a hung connection that
+   would otherwise block init completely. It's not clear whether connect
+   can hang, but if it can, that would be pretty bad.
+
+   For the actual recover logic, see warn() and comments around setsignals().
+   The only thing SIGALRM does is interrupting whatever call is blocking
+   at the moment. */
 
 void acceptctl(void)
 {
