@@ -115,6 +115,35 @@ and most of them need output redirection or variable substitution,
 not proper quotes handling.
 
 
+Auto-inserting exec for /bin/sh -c entries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+BB init runs /bin/sh -c "exec $command" instead of just -c "$command".
+This is not done in sninit. Reasons:
+
+	* doing so with arbitrary command is wrong
+
+	* using some heuristic to tell whether it's ok or not
+	  is unreliable and requires bypass for cases of misdetection
+	  ("prefix with ! to prevent exec")
+
+	* there is already the opposite bypass: put "exec" where
+	  you need it to force exec
+
+	* the optimization is superficial for run-once entries,
+	  and most of sh-entries are going to be run-once.
+
+	* even better optimization: write commands so that
+	  they would not be shell-escaped
+
+	* without exec-injections, executable and non-executable
+	  initscripts share the same syntax. Especially if multiline.
+	  With injection, it's suddenly different.
+
+In other words, it does not look like a good idea. At all.
+Shell escape itself is a kind of fallback, it's easy to implement on top
+of initdir code, but it's not something that should be used extensively.
+
+
 Builtins
 ~~~~~~~~
 That is, bundling some commands with init, busybox-style. Or perhaps sh style.

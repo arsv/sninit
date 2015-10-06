@@ -32,7 +32,10 @@ local int isspace(int c);
    are passed to /bin/sh -c.
 
    (2) and (3) need no string manipulation and share the same logic,
-   but (1) requires some effort to parse the string. */
+   but (1) requires some effort to parse the string.
+
+   For (2), bb init attempts to inject "exec" befor the command.
+   This is not done here. See doc/misc.txt for explaination. */
 
 /* The entry pointer is fragile, add*array calls invalidate it.
    However, this whole function depends on newblock.ptr not moving
