@@ -12,7 +12,7 @@ direct4 += socket bind connect listen accept sendmsg recvmsg shutdown
 direct4 += prctl setresgid setresuid setsid getegid geteuid setrlimit
 direct4 += send sigaction sigprocmask setpgid setpriority getpriority
 direct4 += getuid unshare
-direct5 = mremap setsockopt
+direct5 = mremap getsockopt
 direct6 = sendto
 
 direct = $(direct4) $(direct5) $(direct6)

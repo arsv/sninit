@@ -3,20 +3,16 @@
 
 #define AF_UNIX		1
 
-#define SOCK_STREAM		1
-#define SOCK_DGRAM		2
-#define SOCK_NONBLOCK       04000
-#define SOCK_CLOEXEC     02000000
+#define SOCK_STREAM	(1<<0)
+#define SOCK_DGRAM	(1<<1)
+#define SOCK_NONBLOCK	(1<<11)
+#define SOCK_CLOEXEC	(1<<19)
 
-#define SO_PASSCRED	16
 #define SOL_SOCKET	1
+#define SO_PEERCRED	17
 
-#define SCM_RIGHTS	0x01	/* rw: access rights (array of int) */
-#define SCM_CREDENTIALS	0x02	/* rw: struct ucred             */
-#define SCM_CONNECT	0x03	/* rw: struct scm_connect       */
-
-#define SHUT_RD 0
-#define SHUT_WR 1
-#define SHUT_RDWR 2
+#define SHUT_RD		0
+#define SHUT_WR		1
+#define SHUT_RDWR	2
 
 #endif

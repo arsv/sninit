@@ -6,7 +6,7 @@
 direct = fork execve kill getpid setfsuid setfsgid chroot chdir setitimer
 direct += open close read write dup2 fstat ioctl getdents64 openat stat
 direct += mmap mremap munmap clock_gettime nanosleep setpriority getpriority
-direct += socket setsockopt bind connect listen accept sendto sendmsg recvmsg
+direct += socket getsockopt bind connect listen accept sendto sendmsg recvmsg
 direct += shutdown prctl setresgid setresuid setsid getegid geteuid setrlimit
 direct += setpgid umask getuid unshare
 
@@ -14,7 +14,7 @@ directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))
 
 # for these, some argument mangling is required
-custom = ppoll reboot send setsockopt sigaction sigprocmask waitpid vfork
+custom = ppoll reboot send sigaction sigprocmask waitpid vfork
 
 # for quick syntax check
 AS = x86_64-unknown-linux-gnu-gcc -c

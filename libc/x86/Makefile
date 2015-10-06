@@ -9,7 +9,7 @@ direct += mremap munmap clock_gettime nanosleep setpgid setpriority getpriority
 direct += prctl setresgid setresuid setsid getegid geteuid setrlimit umask
 direct += setitimer getuid unshare
 
-socket = socket setsockopt bind connect listen accept sendto sendmsg recvmsg
+socket = socket getsockopt bind connect listen accept sendto sendmsg recvmsg
 socket += shutdown send
 
 directs = $(patsubst %,%.s,$(direct))
