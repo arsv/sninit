@@ -19,9 +19,9 @@ The (base)name of the file stands for \fIname\fR field of the entry.
 The \fIcommand\fR is either the contents of the file, or (in case of
 executable shell scripts) the full file path.
 .P
-Initdir entries are always \fBS\fR-type. If no runlevel mask is specified,
-they default to \fB3+\fR. See \fBinittab\fR(5) for detailed description
-of entry types and runlevels.
+Initdir entries are always \fBS\fR-type.
+If no runlevel mask is specified, default value of \fB3+\fR is used.
+See \fBinittab\fR(5) for detailed description of entry types and runlevels.
 '''
 .SH SYNTAX
 There are two slighly different flavors of service files.
