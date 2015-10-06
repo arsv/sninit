@@ -56,6 +56,10 @@ in-between suckless init and busybox init.
   actually makes it a viable implementation — and this is exactly what is
   described above.
 
+Naturally this has been done before, in daemontools and its derivatives.
+Notably runit come really close to the description with its process #1.
+Too bad the whole system is far from being minimalistic.
+
 
 Inittab format
 ~~~~~~~~~~~~~~
