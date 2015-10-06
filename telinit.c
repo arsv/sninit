@@ -118,12 +118,9 @@ static int opensocket(void)
 static int sendcmd(int fd, const char* cmd)
 {
 	int len = strlen(cmd);
-	int wrt;
 
-	if((wrt = write(fd, cmd, len)) < 0)
+	if(write(fd, cmd, len) < 0)
 		die("write failed: ", ERR);
-	else if(wrt < len)
-		die("write incomplete", NULL);
 	
 	return 0;
 }
