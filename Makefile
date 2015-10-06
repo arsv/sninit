@@ -186,8 +186,9 @@ test: $(if $(ARCH),libc.a)
 
 # entering/exiting messages for this get really annoying, and there's only two
 # targets there, with no dependecies, so let's list them here explicitly.
-sbin: sbin/trap sbin/slogdg
-sbin/%: ; $(MAKE) -C sbin $^
+sbin = sbin/trap sbin/slogdg
+sbin: $(sbin)
+$(sbin): ; $(MAKE) -C sbin $(notdir $(sbin))
 
 clean: clean-test clean-sbin
 
