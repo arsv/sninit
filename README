@@ -11,18 +11,17 @@ for systems that need basic systemctl but would rather avoid
 bringing in enormous systemd bundle.
 
 sninit is written mostly in raw syscalls and has no external
-dependencies — not even libc. On supported architectures it
-gets built into a statically-linked, self-contained executable. 
+dependencies on supported architectures — not even libc.
 
 
-Key features
-~~~~~~~~~~~~
+Key features:
+
 + Runlevels for process management
 + Starting/stopping individual processes manually
-  "telinit stop httpd" and so on
+  ("telinit stop httpd" and so on)
 + Sleep/suspend/hibernate as runlevels
-+ Support for initdirs (one file per process),
-  in addition to sysvinit inittab (one line per process)
++ Support for initdirs in addition to sysvinit inittab
+  (one file per process vs one line per process)
 + Small size and static linkage
 + Simplified memory management;
   no malloc, memory allocation only while reconfiguring
@@ -79,13 +78,13 @@ To try sninit without configuring a VM or installing anything:
 In this configuration, init uses ./etc/inittab, ./etc/initdir
 and stub executables from ./sbin.
 
-For further trials and testing, check doc/buildroot.txt.
+For further trials, check doc/buildroot.txt.
 
 
 Just how small exactly?
 ~~~~~~~~~~~~~~~~~~~~~~~
-Typical size of statically-linked, stripped executables for different
-architectures:
+Typical size of statically-linked, stripped executables:
+
                      init     telinit    run
         x86          14KB       3KB      5KB
         x86_64       15KB       3KB      6KB
