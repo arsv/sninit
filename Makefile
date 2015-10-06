@@ -66,9 +66,7 @@ install-bin-stripped: install-bin
 
 clean: clean-temp
 
-archclean: clean-temp clean-inst
-
-distclean: archclean
+distclean: clean clean-inst
 
 clean-temp:
 	rm -f *.o *.ho *.d builtin.c
@@ -165,7 +163,7 @@ libc/$(ARCH)/%.o libc/libtest/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLA
 libc.a: $(libc)
 	$(AR) cru $@ $?
 
-archclean: clean-libc
+clean: clean-libc
 
 clean-libc:
 	rm -f libc.a libc/*.[od] libc/*/*.[od]
@@ -188,11 +186,10 @@ test: $(if $(ARCH),libc.a)
 
 # entering/exiting messages for this get really annoying, and there's only two
 # targets there, with no dependecies, so let's list them here explicitly.
-sbin: sbin/trap sbin/slogdg $(if $(ARCH),libc.a)
-	$(MAKE) -C sbin $(filter sbin/%,$^)
+sbin: sbin/trap sbin/slogdg
+sbin/%: ; $(MAKE) -C sbin $^
 
-archclean: clean-test
-distclean: clean-sbin
+clean: clean-test clean-sbin
 
 clean-test:
 	$(MAKE) -C test clean
