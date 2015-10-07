@@ -14,13 +14,18 @@
 
    fileblocks are used to read text files linewise.  */
 
-export int mmapblock(struct memblock* m, int size);
-export int mextendblock(struct memblock* m, int size);
-export void munmapblock(struct memblock* m);
+struct cfgblock cb;
+struct newblock nb;
+struct fileblock fb;
 
-export int mmapfile(struct fileblock* f, int maxlen);
-export int munmapfile(struct fileblock* f);
-export int nextline(struct fileblock* f);
+export int mmapblock(int size);
+export int extendblock(int size);
+export void exchangeblocks(void);
+export void munmapblock(void);
+
+export int mmapfile(const char* filename, int maxlen);
+export int munmapfile(void);
+export char* nextline(void);
 
 /* Whenever possible, memory is mmaped in memblockalign increments
    to reduce the number of calls. To make the whole thing testable,
@@ -33,30 +38,37 @@ local int memblockalign = IRALLOC;
    get them as arguments.
    This also made sense when there was a separate scratchblock. */
 
-int mmapblock(struct memblock* m, int size)
+int mmapblock(int size)
 {
-	m->ptr = 0;
-
 	int aligned = size;
+
 	if(size % memblockalign)
 		aligned += (memblockalign - size % memblockalign);
 
-	if(m->addr) {
+	if(nb.addr) {
 		/* This is a relatively unlikely case when a new reconfigure
 		   request comes before newblock from the previous one
 		   is moved over to cfgblock. In such a case, try to re-use
 		   newblock without unmmaping it. Due to the way mextendblock
 		   works, the old block must be large enough; if it is not,
 		   it's a hard error. */
-		if(m->len < size)
+		if(nb.len < size)
 			return -1;
-		memset(m->addr, 0, m->len);
 	} else {
-		m->addr = mmap(NULL, aligned, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-		if(m->addr == MAP_FAILED)
+		const int prot = PROT_READ | PROT_WRITE;
+		const int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+
+		void* addr = mmap(NULL, aligned, prot, flags, -1, 0);
+
+		if(addr == MAP_FAILED)
 			return -1;
-		m->len = aligned;
+
+		nb.addr = addr;
+		nb.len = aligned;
 	}
+
+	memset(nb.addr, 0, nb.len);
+	nb.ptr = size;
 
 	return 0;
 }
@@ -84,34 +96,52 @@ static void* mremapnommu(void* oldaddr, size_t oldsize, size_t newsize, int flag
 #define mremap(oa, os, ns, fl) mremapnommu(oa, os, ns, fl)
 #endif
 
-int mextendblock(struct memblock* m, int size)
+offset extendblock(int size)
 {
-	if(m->len - m->ptr > size)
-		return 0;
+	int ret = nb.ptr;
+	int alloc = size;
+
+	if(nb.len - nb.ptr > size)
+		goto moveptr;
 	
-	if(size % memblockalign)
-		size += (memblockalign - size % memblockalign);
+	if(alloc % memblockalign)
+		alloc += (memblockalign - alloc % memblockalign);
 
 	/* size is just an int, overflows are possible (but very unlikely) */
-	if(size < 0 || m->len + size < 0)
+	if(alloc < 0 || nb.len + alloc < 0)
 		return -1;
 
-	void* np = mremap(m->addr, m->len, m->len + size, MREMAP_MAYMOVE);
+	void* np = mremap(nb.addr, nb.len, nb.len + alloc, MREMAP_MAYMOVE);
+
 	if(np == MAP_FAILED)
 		return -1;
 
-	m->addr = np;
-	m->len += size;
-	return 0;
+	nb.addr = np;
+	nb.len += alloc;
+moveptr:
+	nb.ptr += size;
+
+	return ret;
 }
 
-void munmapblock(struct memblock* m)
+void munmapblock(void)
 {
-	if(!m->addr) return;
+	munmap(nb.addr, nb.len);
 
-	munmap(m->addr, m->len);
-	m->addr = 0;
-	m->len = 0;
+	nb.addr = 0;
+	nb.len = 0;
+};
+
+void exchangeblocks(void)
+{
+	if(cb.addr)
+		munmap(cb.addr, cb.len);
+
+	cb.addr = nb.addr;
+	cb.len = nb.len;
+
+	nb.addr = NULL;
+	nb.len = 0;
 };
 
 /* Due to average inittab being about 1-2k, it is always read whole;
@@ -124,38 +154,44 @@ void munmapblock(struct memblock* m)
 
    The result is always 0-terminated. */
 
-int mmapfile(struct fileblock* f, int maxlen)
+int mmapfile(const char* filename, int maxlen)
 {
 	struct stat st;
 
-	int fd = open(f->name, O_RDONLY);
+	int fd = open(filename, O_RDONLY);
 	if(fd < 0)
-		retwarn(-1, "can't open %s: %m", f->name);
+		retwarn(-1, "can't open %s: %m", filename);
 
 	if(fstat(fd, &st) < 0)
-		gotowarn(out, "can't stat %s: %m", f->name);
+		gotowarn(out, "can't stat %s: %m", filename);
 
 	if(!S_ISREG(st.st_mode))
-		gotowarn(out, "%s: not a regular file", f->name);
+		gotowarn(out, "%s: not a regular file", filename);
 	if(maxlen < 0 && st.st_size > -maxlen)
 		/* Because ints are used in lots of places,
 		   it is a good idea to avoid loading anything that
 		   exceeds 2^31 when compiled into newblock */
-		gotowarn(out, "%s: file too large", f->name);
+		gotowarn(out, "%s: file too large", filename);
 
 	int stm = st.st_size;
 	if(maxlen > 0 && stm > maxlen) stm = maxlen;
 
 	/* with one guard byte at the end, to hold \0 */
-	f->len = stm;
-	f->buf = mmap(NULL, stm + 1, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-	if(f->buf == MAP_FAILED)
-		gotowarn(out, "%s: mmap failed: %m", f->name);
-	f->buf[stm] = '\0';
+	const int prot = PROT_READ | PROT_WRITE;
+	const int flags = MAP_PRIVATE;
+	char* addr = mmap(NULL, stm + 1, prot, flags, fd, 0);
 
-	f->ls = NULL;
-	f->le = NULL;
-	f->line = 0;
+	if(addr == MAP_FAILED)
+		gotowarn(out, "%s: mmap failed: %m", filename);
+
+	addr[stm] = '\0';
+
+	fb.buf = addr;
+	fb.len = stm;
+	fb.ls = NULL;
+	fb.le = NULL;
+	fb.name = filename;
+	fb.line = 0;
 
 	close(fd);
 	return 0;
@@ -164,29 +200,29 @@ out:	close(fd);
 	return -1;
 }
 
-int munmapfile(struct fileblock* f)
+int munmapfile(void)
 {
-	return munmap(f->buf, f->len);
+	return munmap(fb.buf, fb.len);
 }
 
 /* The file is mmaped rw and private, so we place the pointers
    and terminate the line with \0, overwriting \n. */
 
-int nextline(struct fileblock* f)
+char* nextline(void)
 {
-	char* le = f->le;
-	char* ls = le ? le + 1 : f->buf;
-	char* end = f->buf + f->len;
+	char* le = fb.le;
+	char* ls = le ? le + 1 : fb.buf;
+	char* end = fb.buf + fb.len;
 
-	if(ls >= end) return 0;
+	if(ls >= end) return NULL;
 
 	for(le = ls; le < end && *le != '\n'; le++)
 		; /* clang is full of hatred towards elegant concise expressions */
 	*le = '\0';
 
-	f->ls = ls;
-	f->le = le;
-	f->line++;
+	fb.ls = ls;
+	fb.le = le;
+	fb.line++;
 
-	return 1;
+	return ls;
 }

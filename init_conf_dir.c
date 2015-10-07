@@ -12,14 +12,15 @@
 
 export int readinitdir(const char* dir, int strict);
 
-extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe);
+extern int addinitrec(char* name, char* rlvl, char* cmd, int exe);
 
-extern int mmapfile(struct fileblock* fb, int maxlen);
-extern int munmapfile(struct fileblock* fb);
-extern int nextline(struct fileblock* f);
+extern struct fileblock fb;
+extern int mmapfile(const char* name, int maxlen);
+extern int munmapfile(void);
+extern char* nextline(void);
 
 local int skipdirent(struct dirent64* de);
-local int parsesrvfile(struct fileblock* fb, char* basename);
+local int parsesrvfile(char* fullname, char* basename);
 local int comment(const char* s);
 
 /* Initdir is one-file-per-entry structure, while inittab is
@@ -51,7 +52,6 @@ int readinitdir(const char* dir, int strict)
 	const int fnlen = sizeof(fname);
 	int bnoff;		/* basename offset in fname */
 	int bnlen;
-	struct fileblock fb = { .name = fname };
 
 	/*        |            |<---- bnlen ---->| */
 	/* fname: |/path/to/dir/filename         | */
@@ -77,9 +77,9 @@ int readinitdir(const char* dir, int strict)
 
 			strncpy(fname + bnoff, de->d_name, bnlen);
 
-			if(!(ret = mmapfile(&fb, 1024))) {
-				ret = parsesrvfile(&fb, de->d_name);
-				munmapfile(&fb);
+			if(!(ret = mmapfile(fname, 1024))) {
+				ret = parsesrvfile(fname, de->d_name);
+				munmapfile();
 			} if(ret && strict)
 				goto out;
 			else if(ret)
@@ -140,31 +140,32 @@ int comment(const char* s)
 	while(*s == ' ' || *s == '\t') s++; return !*s || *s == '#';
 }
 
-int parsesrvfile(struct fileblock* fb, char* basename)
+int parsesrvfile(char* fullname, char* basename)
 {
 	int shebang;
 	char* cmd;
 	char* rlvls;
 	char srdefault[] = SRDEFAULT; /* TODO: should be const */
+	char* ls;
 
-	if(!nextline(fb))
-		retwarn(-1, "%s: empty file", fb->name);
+	if(!(ls = nextline()))
+		retwarn(-1, "%s: empty file", fb.name);
 
 	/* Check for, and skip #! line if present */
-	if(fb->ls[0] == '#' && fb->ls[1] == '!') {
+	if(ls[0] == '#' && ls[1] == '!') {
 		shebang = 1;
-		if(!nextline(fb))
-			retwarn(-1, "%s: empty script", fb->name);
+		if(!(ls = nextline()))
+			retwarn(-1, "%s: empty script", fb.name);
 	} else {
 		shebang = 0;
 	}
 
 	/* Do we have #: line? If so, note runlevels and flags */
-	if(fb->ls[0] == '#' && fb->ls[1] == ':') {
-		fb->ls[1] = srdefault[0];
-		rlvls = fb->ls + 1;
-		if(!nextline(fb))
-			retwarn(-1, "%s: no command found", fb->name);
+	if(ls[0] == '#' && ls[1] == ':') {
+		ls[1] = srdefault[0];
+		rlvls = ls + 1;
+		if(!(ls = nextline()))
+			retwarn(-1, "%s: no command found", fb.name);
 	} else {
 		rlvls = srdefault;
 	}
@@ -173,16 +174,15 @@ int parsesrvfile(struct fileblock* fb, char* basename)
 		/* No need to parse anything anymore, it's a script. */
 		/* Note: for an initdir entry, fb->name is in readinitdir() stack
 		   and thus writable */
-		cmd = (char*)fb->name;
+		cmd = fullname;
 	} else {
 		/* Get to first non-comment line, and that's it, the rest
 		   will be done in addinitrec. */
-		while(comment(fb->ls))
-			if(!nextline(fb))
-				retwarn(-1, "%s: no command found", fb->name);
-
-		cmd = fb->ls;
+		while(comment(ls))
+			if(!(ls = nextline()))
+				retwarn(-1, "%s: no command found", fb.name);
+		cmd = ls;
 	}
 
-	return addinitrec(fb, basename, rlvls, cmd, shebang);
+	return addinitrec(basename, rlvls, cmd, shebang);
 }

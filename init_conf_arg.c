@@ -4,11 +4,10 @@
 #include "init_conf.h"
 #include "scope.h"
 
-extern struct memblock newblock;
-extern int mextendblock(struct memblock* m, int size);
+extern struct newblock nb;
+extern offset extendblock(int size);
 
 export int addrecargv(struct initrec* entry, char* cmd, int exe);
-export offset addstruct(int size, int extra);
 export char* strssep(char** str);
 
 local int addstrargarray(const char** args, int n);
@@ -59,23 +58,10 @@ int addrecargv(struct initrec* entry, char* cmd, int exe)
 	}
 }
 
-/* These two copy data into newblock and move ptr over it. */
-
-offset addstruct(int size, int extra)
-{
-	if(mextendblock(&newblock, size + extra))
-		return -1;
-
-	offset ret = newblock.ptr;
-	newblock.ptr += size;
-
-	return ret;
-}
-
 int addstring(const char* s)
 {
 	int l = strlen(s);
-	int o = addstruct(l + 1, 0);
+	int o = extendblock(l + 1);
 
 	if(o < 0) return -1;
 
@@ -97,7 +83,7 @@ int addstrargarray(const char** args, int n)
 	offset argio;	/* argv[i] string location in newblock */
 
 	/* pointers array */
-	if((argvo = addstruct((n+1)*sizeof(char*), 0)) < 0)
+	if((argvo = extendblock((n+1)*sizeof(char*))) < 0)
 		return -1;
 
 	/* strings themselves */
@@ -126,11 +112,11 @@ int addstringarray(char* str)
 	char* argi;	/* argv[i] string location in the source file */
 	offset argvi;	/* argv[i] pointer location in newblock */
 	offset argio;	/* copied argv[i] string location in newblock */
-	offset argvo = newblock.ptr;	/* argv[] location in newblock */
+	offset argvo = nb.ptr;	/* argv[] location in newblock */
 
 	do {
 		argi = strssep(&str);
-		if((argvi = addstruct(sizeof(char*), 0)) < 0)
+		if((argvi = extendblock(sizeof(char*))) < 0)
 			return -1;
 		*(newblockptr(argvi, char**)) = argi;
 		argc++;

@@ -32,12 +32,11 @@ extern int state;
 extern int currlevel;
 extern struct config* cfg;
 
+extern struct newblock nb;
+
 /* default/built-in stuff */
 const char* inittab = INITTAB;
 const char* initdir = INITDIR;
-
-struct memblock cfgblock = { NULL };
-struct memblock newblock = { NULL };
 
 export int configure(int strict);
 export void setnewconf(void);
@@ -46,7 +45,6 @@ export void setnewconf(void);
 extern int readinittab(const char* file, int strict);
 extern int readinitdir(const char* dir, int strict);
 
-local void initcfgblocks(void);		/* set initial values for struct config */
 local int finishinittab(void);		/* copy the contents of newenviron to newblock */
 local void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
 					   assuming it won't be mremapped anymore */
@@ -54,10 +52,11 @@ local void transferpids(void);
 extern struct initrec* findentry(const char* name);
 extern int levelmatch(struct initrec* p, int lmask);
 
-extern int mmapblock(struct memblock* m, int size);
-extern void munmapblock(struct memblock* m);
+extern int mmapblock(int size);
+extern void munmapblock(void);
+export void exchangeblocks(void);
 extern int addptrsarray(offset listoff, int terminate);
-extern offset addstruct(int size, int extra);
+extern offset extendblock(int size);
 
 /* If successful, configure() leaves a valid struct config in newblock.
    Otherwise, it should clean up after itself.
@@ -72,10 +71,10 @@ extern offset addstruct(int size, int extra);
 
 int configure(int strict)
 {
-	if(mmapblock(&newblock, IRALLOC + sizeof(struct config) + sizeof(struct scratch)))
-		goto unmap;
+	const int headersize = sizeof(struct config) + sizeof(struct scratch);
 
-	initcfgblocks();
+	if(mmapblock(headersize))
+		goto nomap;
 
 	if(readinittab(inittab, strict))
 		goto unmap;
@@ -88,39 +87,10 @@ int configure(int strict)
 		goto unmap;
 
 	rewirepointers();
-
 	return 0;
 
-unmap:	munmapblock(&newblock);
-	return -1;
-}
-
-/* We start by creating the header of the struct in the newly-allocated
-   block, then let addinitrec() fill the space with the compiled process
-   entries and environment variables.
-
-   Both initrecs and environment lines are initially placed in their
-   respective linked lists (struct scratch), with the list nodes scattered
-   between initrecs. The lists are only used to create inittab[] and env[]
-   in struct config, but they are left in place anyway, since recovering
-   the space is more trouble than it's worth.
-
-   Why not use the lists directly?
-   Well execve(2) takes envp[], and initpass iterates over initrecs in both
-   directions, which turns out to be easier with inittab[] vs some kind
-   of doubly-linked list. */
-
-void initcfgblocks(void)
-{
-	struct config* cfg = newblockptr(0, struct config*);
-
-	/* newblock has enough space for struct config, see configure() */
-	int nblen = sizeof(struct config) + sizeof(struct scratch);
-	newblock.ptr += nblen;
-	memset(newblock.addr, 0, nblen);
-
-	cfg->inittab = NULL;
-	cfg->env = NULL;
+unmap:	munmapblock();
+nomap:	return -1;
 }
 
 /* Once all initrecs are in place, inittab[] and env[] pointer arrays
@@ -156,9 +126,9 @@ int finishinittab(void)
 
 void* repoint(void* p)
 {
-	if(p - NULL > newblock.ptr)
+	if(p - NULL > nb.ptr)
 		return NULL;	// XXX: should never happen
-	return p ? (newblock.addr + (p - NULL)) : p;
+	return p ? (nb.addr + (p - NULL)) : p;
 }
 
 #define REPOINT(a) a = repoint(a)
@@ -206,11 +176,8 @@ void rewirepointers()
 void setnewconf(void)
 {
 	transferpids();
-	munmapblock(&cfgblock);	 /* munmapblock can handle empty blocks */
-
-	cfgblock = newblock;
-	cfg = (struct config*) cfgblock.addr;
-	newblock.addr = NULL;
+	cfg = newblockptr(0, struct config*);
+	exchangeblocks();
 }
 
 /* Old inittab is cfg->inittab (which may or may not be CFG->inittab),
@@ -278,7 +245,7 @@ int addptrsarray(offset listoff, int terminate)
 	if(terminate & NULL_FRONT) ptrn++;
 	if(terminate & NULL_BACK ) ptrn++;
 
-	if((ptrsoff = addstruct(ptrn*sizeof(void*), 0)) < 0)
+	if((ptrsoff = extendblock(ptrn*sizeof(void*))) < 0)
 		return -1;
 
 	ptrs = newblockptr(ptrsoff, void**);

@@ -8,14 +8,15 @@
    and their task is to copy stuff from the fileblock being parsed
    over to newblock. */
 
-extern struct memblock newblock;
+extern struct newblock nb;
+extern struct fileblock fb;
 
 export int addenviron(const char* def);
-export int addinitrec(struct fileblock* fb, char* name, char* flags, char* cmd, int exe);
+export int addinitrec(char* name, char* flags, char* cmd, int exe);
 
 extern int addrecargv(struct initrec* entry, char* cmd, int exe);
-extern int setrunflags(struct fileblock* fb, struct initrec* entry, char* flags);
-extern int addstruct(int size, int extra);
+extern int setrunflags(struct initrec* entry, char* flags);
+extern offset extendblock(int size);
 
 local int linknode(offset listptr, offset nodeptr);
 local int checkdupname(const char* name);
@@ -33,7 +34,7 @@ local int checkdupname(const char* name);
    not be parsed. See addrecargv() below.
 */
 
-int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
+int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 {
 	offset nodeoff;
 	offset entryoff;
@@ -45,10 +46,11 @@ int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 	if(name[0] == '-' && !name[1])
 		name[0] = '\0';
 	else if(checkdupname(name))
-		retwarn(-1, "%s:%i: duplicate name %s", fb->name, fb->line, name);
+		retwarn(-1, "%s:%i: duplicate name %s", fb.name, fb.line, name);
 
 	/* Put ptrnode and struct initrec itself */
-	if((nodeoff = addstruct(sizeof(struct ptrnode) + sizeof(struct initrec), 0)) < 0)
+	const int nodesize = sizeof(struct ptrnode) + sizeof(struct initrec);
+	if((nodeoff = extendblock(nodesize)) < 0)
 		return -1;
 	entryoff = nodeoff + sizeof(struct ptrnode);
 
@@ -62,7 +64,7 @@ int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
 	entry->lastsig = 0;
 
 	/* This should *NOT* move newblock.ptr to allow proper argv layout. */
-	if(setrunflags(fb, entry, rlvl))
+	if(setrunflags(entry, rlvl))
 		goto out;
 
 	/* Put argv[] right after struct initrec. */
@@ -79,7 +81,7 @@ out:	/* Cancel the entry, resetting newblock.ptr
 	   This is enough to completely undo the effect of this function,
 	   assuming linknode hasn't been called to change values before
 	   the initial newblock.ptr (saved as nodeoff) */
-	newblock.ptr = nodeoff;
+	nb.ptr = nodeoff;
 	return -1;
 }
 
@@ -90,8 +92,9 @@ int addenviron(const char* def)
 {
 	int len = strlen(def);
 	offset nodeoff;
+	const int nodesize = sizeof(struct ptrnode) + len + 1;
 
-	if((nodeoff = addstruct(sizeof(struct ptrnode) + len + 1, 0)) < 0)
+	if((nodeoff = extendblock(nodesize)) < 0)
 		return -1;
 
 	offset dstoff = nodeoff + sizeof(struct ptrnode);

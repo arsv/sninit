@@ -1,12 +1,5 @@
 typedef int offset;
 
-/* mmaped blocks -- see init_mmem.c */
-struct memblock {
-	void* addr;		/* base address */
-	int len;		/* allocated length */
-	int ptr;		/* current pointer (=first unused byte offset) */
-};
-
 /* A linked list of ptrnode-s */
 struct ptrlist {
 	offset head;
@@ -25,13 +18,23 @@ struct scratch {
 	struct ptrlist env;
 };
 
-/* mmaped file, to be parsed in linewise manner */
-struct fileblock {
-	const char* name;
-	int line;
+struct cfgblock {
+	void* addr;
+	int len;
+};
 
+struct newblock {
+	void* addr;
+	int len;
+	int ptr;
+};
+
+struct fileblock {
 	char* buf;
 	int len;
+
+	const char* name;
+	int line;
 
 	char* ls;
 	char* le;
@@ -55,10 +58,9 @@ struct fileblock {
 
    Trailing arrays are only added in finishinittab */
 
-#define newblockptr(offset, type) ((type)(newblock.addr + offset))
+#define newblockptr(offset, type) ((type)(nb.addr + offset))
 
-#define CFG ((struct config*) cfgblock.addr)
-#define NCF ((struct config*) newblock.addr)
+#define NCF newblockptr(0, struct config*)
 #define SCR newblockptr(sizeof(struct config), struct scratch*)
 
 /* Offsets of scratch.{inittab,env} within newblock, for linknode */
@@ -67,7 +69,7 @@ struct fileblock {
 
 /* For addptrsarray */
 #define NULL_FRONT (1<<0)
-#define NULL_BACK (1<<1)
+#define NULL_BACK  (1<<1)
 #define NULL_BOTH (NULL_FRONT | NULL_BACK)
 
 /* Some versions of musl (0.9.14 but not 0.9.10) #define NULL as 0L,

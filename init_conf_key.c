@@ -23,6 +23,8 @@
    invert-mask sign. Inverting ONCE|WAIT and inverting non-ONCE are not
    likely to be useful, so they are not implemented. */
 
+extern struct fileblock fb;
+
 static struct entrytype {
 	char key;
 	short flags;
@@ -38,14 +40,14 @@ static struct entrytype {
 	{ 0, 0 }
 };
 
-export int setrunflags(struct fileblock* fb, struct initrec* entry, char* type)
+export int setrunflags(struct initrec* entry, char* type)
 {
 	char* p;
 	int rlvl = 0;
 	int last = 0;
 
 	if(!*type) /* cannot risk *(type+1) below */
-		retwarn(-1, "%s:%i: empty entry key", fb->name, fb->line);
+		retwarn(-1, "%s:%i: empty entry key", fb.name, fb.line);
 
 	for(p = type + 1; *p; p++)
 		switch(*p) {
@@ -59,7 +61,7 @@ export int setrunflags(struct fileblock* fb, struct initrec* entry, char* type)
 				rlvl |= (PRIMASK << last) & PRIMASK;
 				break;
 			default:
-				retwarn(-1, "%s:%i: bad runlevel specifier", fb->name, fb->line);
+				retwarn(-1, "%s:%i: bad runlevel specifier", fb.name, fb.line);
 		}
 	if(!(rlvl & PRIMASK))
 		rlvl = (PRIMASK & ~1);
@@ -69,7 +71,7 @@ export int setrunflags(struct fileblock* fb, struct initrec* entry, char* type)
 		if(*type == et->key)
 			break;
 	if(!et->key)
-		retwarn(-1, "%s:%i: unknown entry type %c", fb->name, fb->line, *type);
+		retwarn(-1, "%s:%i: unknown entry type %c", fb.name, fb.line, *type);
 
 	entry->flags = et->flags;
 	entry->rlvl = rlvl;
