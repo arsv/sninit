@@ -21,7 +21,8 @@ TESTS = t_mblocks t_parseinitline t_parsesrvfile t_strssep \
 	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
 	t_readinitdir t_rewireptsarray t_linknode t_transferpids \
 	t_joincmd t_setrunflags t_findentry t_waitpids t_toofast \
-	t_rlstr t_pintlen t_dumprec t_dumpstate t_shouldbeshown
+	t_rlstr t_pintlen t_dumprec t_dumpstate t_shouldbeshown \
+	t_shellneeded
 # Tests with manual check (for now)
 XTESTS = x_printf x_hello x_open x_vfork x_sigprocmask x_reboot x_ppoll
 
@@ -138,6 +139,8 @@ t_strssep: t_strssep.o init_conf_arg.o test.o
 t_strssep.o: CFLAGS += -Wno-format
 
 t_addstring: t_addstring.o init_conf_arg.o init_conf_map.o test.o
+
+t_shellneeded: t_shellneeded.o init_conf_arg.o test.o
 
 # Libc tests
 x_openread: x_openread.o test.o
