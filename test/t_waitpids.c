@@ -69,7 +69,6 @@ int main(void)
 {
 	/* Simple common case, I0 and I2 die at the same time */
 	/* Make sure they get marked, and nothing else is changed */
-	state = S_SIGCHLD;
 	waitcnt = 2;
 	waitpids();
 	A(I0.pid == -1);
@@ -79,7 +78,6 @@ int main(void)
 	A(I3.pid == 44);
 	A(I4.pid == 55);
 	A(I5.pid == 66);
-	A(state == 0);
 
 	/* Are signal flags removed properly? */
 	waitcnt = 1;
@@ -94,10 +92,8 @@ int main(void)
 	A(I5.flags == C_FAST);
 
 	/* Dry run */
-	state = S_SIGCHLD;
 	waitcnt = 0;
 	waitpids();
-	A(state == 0);
 
 	return 0;
 }
