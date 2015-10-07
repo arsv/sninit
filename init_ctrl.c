@@ -136,7 +136,7 @@ void acceptctl(void)
 
    Which means, there's no point in trying to reply fast. We can safely
    log the attempt in warn(), and we can even send "Access denied" back
-   instead of just closing the socket which is unbelievably polite. */
+   instead of just closing the socket. */
 
 int checkuser(int fd)
 {
