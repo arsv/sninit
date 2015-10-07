@@ -143,41 +143,36 @@ int main(int argc, char** argv)
 		warnfd = 2;
 		timetowait = -1;
 
-		initpass();		/* spawn/kill processes */
+		initpass();	/* spawn/kill processes */
 
 		if(!currlevel)
 			goto reboot;
-
 		if(!(state & S_WAITING) && (state & S_RECONFIG))
 			setnewconf();
 
-		pollctl();		/* waiting happens here */
+		pollctl();	/* waiting happens here */
 
 		if(setpasstime() && timetowait > 0)
 			passtime += timetowait;
 
+		if(state & S_SIGCHLD)
+			waitpids();
+		if(state & S_INITCTL)
+			acceptctl();
 		if(state & S_REOPEN)
 			setinitctl();
-
-		if(state & S_SIGCHLD)
-			waitpids();	/* reap dead children */
-
-		if(state & S_INITCTL)
-			acceptctl();	/* telinit communication */
 	}
 
 reboot:
 	warnfd = 0;		/* stderr only, do not try syslog */
-
 #ifdef DEVMODE
 	return 0;		/* no reboots in devel mode */
 #endif
-
 	if(getpid() != 1)	/* not running as *the* init */
 		return 0;
 
 	forkreboot();
-	return 0xFE; /* feh */
+	return 0xFE;
 };
 
 /* During startup no user interaction is possible, so init must somehow
