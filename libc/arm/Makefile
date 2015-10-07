@@ -6,16 +6,15 @@
 # To avoid doing extra work, only include relevant code for calls
 # which actually use those args.
 direct4 = fork vfork execve kill getpid chroot chdir setitimer
-direct4 += open close read write dup2 fstat ioctl getdents64 openat stat
+direct4 += open close read write dup2 stat fstat ioctl getdents64
 direct4 += munmap clock_gettime nanosleep setfsuid setfsgid umask
-direct4 += socket bind connect listen accept sendmsg recvmsg shutdown
-direct4 += prctl setresgid setresuid setsid getegid geteuid setrlimit
-direct4 += send sigaction sigprocmask setpgid setpriority getpriority
+direct4 += socket bind connect listen accept shutdown
+direct4 += setresgid setresuid setsid setrlimit
+direct4 += send sigaction sigprocmask setpriority
 direct4 += getuid unshare
 direct5 = mremap getsockopt
-direct6 = sendto
 
-direct = $(direct4) $(direct5) $(direct6)
+direct = $(direct4) $(direct5)
 directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))
 
@@ -30,8 +29,6 @@ $(patsubst %,%.s,$(direct4)): %.s:
 	./_syscall.sh $* > $@
 $(patsubst %,%.s,$(direct5)): %.s:
 	./_syscall.sh $* 5 > $@
-$(patsubst %,%.s,$(direct6)): %.s:
-	./_syscall.sh $* 6 > $@
 
 clean: $(patsubst %.s, x-%, $(wildcard $(directs)))
 	rm -f *.o

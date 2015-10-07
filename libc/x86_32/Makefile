@@ -4,11 +4,11 @@
 
 # syscalls that do no require any additional setup
 direct = fork execve kill getpid setfsuid setfsgid chroot chdir setitimer
-direct += open close read write dup2 fstat ioctl getdents64 openat stat
-direct += mmap mremap munmap clock_gettime nanosleep setpriority getpriority
-direct += socket getsockopt bind connect listen accept sendto sendmsg recvmsg
-direct += shutdown prctl setresgid setresuid setsid getegid geteuid setrlimit
-direct += setpgid umask getuid unshare
+direct += open close read write dup2 stat fstat ioctl getdents64
+direct += mmap mremap munmap clock_gettime nanosleep setpriority
+direct += socket getsockopt bind connect listen accept
+direct += shutdown setresgid setresuid setsid setrlimit
+direct += umask getuid unshare
 
 directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))

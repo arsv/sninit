@@ -23,7 +23,6 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
-#include <sys/prctl.h>
 #include <sys/ioctl.h>
 #include <sys/fsuid.h>
 #include <string.h>

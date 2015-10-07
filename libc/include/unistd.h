@@ -7,25 +7,19 @@
 
 pid_t getpid(void);
 gid_t getgid(void);
-
 uid_t getuid(void);
-uid_t geteuid(void);
-gid_t getegid(void);
-
-pid_t setsid (void);
+pid_t setsid(void);
 
 int setresuid(uid_t ruid, uid_t euid, uid_t suid);
 int setresgid(gid_t rgid, gid_t egid, gid_t sgid);
-
 int setpgid(pid_t pid, pid_t pgid);
 
 void _exit(int status) __attribute__((__noreturn__));
 
 int open(const char* pathname,int flags, ...);
-int openat(int dirfd, const char *pathname, int flags, ...);
+int close(int fd);
 ssize_t write(int fd,const void* buf,size_t len);
 ssize_t read(int fd,void* buf,size_t len);
-int close(int fd);
 
 pid_t fork(void);
 pid_t vfork(void);

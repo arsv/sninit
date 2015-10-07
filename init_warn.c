@@ -194,5 +194,5 @@ send:
 	if(syslogtype == SOCK_STREAM)
 		count++;	/* include terminating \0 */
 
-	return (send(syslogfd, buf, count, 0) < 0);
+	return (write(syslogfd, buf, count) < 0);
 }

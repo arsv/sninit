@@ -3,7 +3,7 @@
 
 #include <bits/stat.h>
 
-int stat(const char *pathname, struct stat *buf);
+int stat(const char* filename, struct stat *buf);
 int fstat(int fd, struct stat *buf);
 int umask(int mask);
 

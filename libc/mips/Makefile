@@ -3,11 +3,11 @@
 # This one is only for re-generating arch-specific syscall files.
 
 direct = fork execve kill getpid chroot chdir setitimer
-direct += open close read write dup2 fstat ioctl getdents64 openat stat
-direct += mmap mremap munmap clock_gettime nanosleep setpriority getpriority
-direct += socket bind connect listen accept sendto sendmsg recvmsg shutdown
-direct += prctl setresgid setresuid setsid getegid geteuid setrlimit umask
-direct += send getsockopt sigaction sigprocmask waitpid setpgid setfsuid
+direct += open close read write dup2 fstat ioctl getdents64
+direct += mmap mremap munmap clock_gettime nanosleep setpriority
+direct += socket bind connect listen accept shutdown
+direct += setresgid setresuid setsid setrlimit umask
+direct += send getsockopt sigaction sigprocmask waitpid setfsuid
 direct += setfsgid getuid unshare
 
 directs = $(patsubst %,%.s,$(direct))

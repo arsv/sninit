@@ -5,16 +5,16 @@
 direct = execve kill getpid chroot chdir setitimer
 direct += close read write fstat ioctl getdents64
 direct += munmap clock_gettime nanosleep
-direct += socket bind connect listen accept sendmsg recvmsg shutdown
-direct += prctl setresgid setresuid setsid getegid geteuid setrlimit
-direct += setpgid setpriority getpriority setfsuid setfsgid umask
+direct += socket bind connect listen accept shutdown
+direct += setresgid setresuid setsid setrlimit
+direct += setpriority setfsuid setfsgid umask
 direct += mremap getsockopt getuid unshare
 
 directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))
 
 # for these, some argument mangling is required
-custom = fork waitpid reboot ppoll dup3 send reboot mmap sigaction
+custom = fork waitpid reboot ppoll dup3 stat reboot mmap sigaction
 
 # for quick syntax check
 AS = aarch64-linux-gnu-gcc -c
