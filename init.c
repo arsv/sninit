@@ -3,12 +3,10 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/reboot.h>
-#include <sys/socket.h>
 #include <sys/wait.h>
-#include <sys/un.h>
+#include <poll.h>
 #include <time.h>
 #include <errno.h>
-#include <unistd.h>
 
 #include "config.h"
 #include "sys.h"
@@ -73,10 +71,10 @@ int rbcode = RB_HALT_SYSTEM;
 
 /* These fds are kept open more or less all the time.
    initctl is the listening socket, warnfd is where warn()
-   will put its messages. There is also syslogfd which is
-   kept and managed in init_warn. */
+   will put its messages.
+   There is also syslogfd which is kept and managed in init_warn. */
 
-int initctlfd;
+extern int initctlfd;
 extern int warnfd;
 
 /* Init blocks all most signals when not in ppoll. This is the orignal
@@ -94,10 +92,10 @@ int state = 0;
 export int main(int argc, char** argv);		/* main loop */
 
 local int setup(int argc, char** argv);		/* initialization */
-local int setinitctl(void);
 local int setsignals(void);
 local void setargs(int argc, char** argv);
 local int setpasstime(void);
+local void pollctl(void);		/* telinit communication */
 
 extern int configure(int);		/* inittab parsing */
 extern void setnewconf(void);
@@ -105,7 +103,7 @@ extern void setnewconf(void);
 extern void initpass(void);		/* the core: process (re)spawning */
 extern void waitpids(void);
 
-extern void pollctl(void);		/* telinit communication */
+extern int setinitctl(void);
 extern void acceptctl(void);
 
 local void sighandler(int sig);		/* global singnal handler */
@@ -277,36 +275,6 @@ int setsignals(void)
 	return ret;
 }
 
-int setinitctl(void)
-{
-	struct sockaddr_un addr = {
-		.sun_family = AF_UNIX,
-		.sun_path = INITCTL
-	};
-
-	/* This way readable "@initctl" can be used for reporting below,
-	   and config.h looks better too. */
-	if(addr.sun_path[0] == '@')
-		addr.sun_path[0] = '\0';
-
-	/* we're not going to block for connections, just accept whatever
-	   is already there; so it's SOCK_NONBLOCK */
-	if((initctlfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0)) < 0)
-		retwarn(-1, "Can't create control socket: %m");
-
-	if(bind(initctlfd, (struct sockaddr*)&addr, sizeof(addr)))
-		gotowarn(close, "Can't bind %s: %m", INITCTL)
-	else if(listen(initctlfd, 1))
-		gotowarn(close, "listen() failed: %m");
-
-	return 0;
-
-close:
-	close(initctlfd);
-	initctlfd = -1;
-	return -1;
-}
-
 /* A single handler for all four signals we care about.
    SIGALARM is not handled, as its only function is to make
    write() return EINTR. */
@@ -373,6 +341,54 @@ int setpasstime(void)
 	passtime = tp.tv_sec + BOOTCLOCKOFFSET;
 
 	return 0;
+}
+
+/* Init spends most of its time in ppoll() here, waiting for signals
+   or incoming telinit requests.
+
+   This is also the only place where handled signals (including SIGCHLD)
+   may arrive. Outside of ppoll, only non SIGPIPE and SIGALRM are allowed,
+   and only because their purpose is to interrupt stuck read()s write()s. */
+
+void pollctl(void)
+{
+	int r;
+	struct pollfd pfd;
+	struct timespec pts;
+	struct timespec* ppts;
+
+	pfd.fd = initctlfd;
+	pfd.events = POLLIN;
+	if(timetowait >= 0) {
+		pts.tv_sec = timetowait;
+		pts.tv_nsec = 0;
+		ppts = &pts;
+	} else {
+		ppts = NULL;
+	}
+
+	r = ppoll(&pfd, 1, ppts, &defsigset);
+
+	if(r < 0 && errno != EINTR) {
+		/* Failed ppoll means the main loop becomes unconstrained,
+		   making init uncontrollable and wasting cpu cycles.
+		   To avoid that, let's try to slow things down a bit. */
+		warn("poll failed: %m");
+
+		sigset_t cursigset;
+		pts.tv_sec = timetowait >= 0 ? timetowait : 1;
+		pts.tv_nsec = 0;
+
+		/* ppoll also handles sigmask-lifting, try to work around that */
+		sigprocmask(SIG_SETMASK, &defsigset, &cursigset);
+		nanosleep(&pts, NULL);
+		sigprocmask(SIG_SETMASK, &cursigset, NULL);
+
+		/* EINTR, on the other hand, is totally ok (SIGCHLD etc) */
+	} else if(r > 0) {
+		/* only one fd in pfd, so not that much choice here */
+		state |= S_INITCTL;
+	}
 }
 
 /* Linux kernel treats reboot() a lot like _exit(), including, quite

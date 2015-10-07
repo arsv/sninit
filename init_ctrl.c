@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
-#include <poll.h>
 #include <time.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <sys/time.h>
 #include <signal.h>
 #include <unistd.h>
@@ -12,28 +12,18 @@
 #include "init.h"
 #include "scope.h"
 
-/* FD polling and telinit communication.
+/* Init keeps an open unix(7) socket for telinit to connect to.
+   The socket is SOCK_STREAM, to allow bi-directional communication
+   and in particular arbitrary output from init.
 
-   Call order:
+   The actual command processing happens in init_cmds.c, the code
+   here only receives them. */
 
-       main() calls pollfds()
-       pollfds sets state |= S_INITCTL
-       main checks for state & S_INITCTL and calls acceptctl()
-
-   The separation of pollfds and acceptctl is necessary to reap deceased
-   children before interpreting commands. That, in turn, is not really
-   necessary but makes the output clear, both for ? and for child control.
-
-   The actual command processing happens in init_cmds.c, these routines
-   only receive them. */
-
+int initctlfd;
 extern int state;
-extern int initctlfd;
-extern int timetowait;
-extern sigset_t defsigset;
 extern int warnfd;
 
-export void pollfds(void);
+export int setinitctl(void);
 export void acceptctl(void);
 
 extern int passtime;
@@ -45,50 +35,36 @@ local int checkuser(int fd);
 local int checkthrottle(void);
 local void readcmd(int fd);
 
-/* called from the main loop */
-/* timetowait may be set by start() and spawn() */
-void pollctl(void)
+/* This gets called during startup, and also in case init gets SIGHUP. */
+
+int setinitctl(void)
 {
-	int r;
-	struct pollfd pfd;	
-	struct timespec pts;
-	struct timespec* ppts;
+	struct sockaddr_un addr = {
+		.sun_family = AF_UNIX,
+		.sun_path = INITCTL
+	};
 
-	pfd.fd = initctlfd;
-	pfd.events = POLLIN;
-	if(timetowait >= 0) {
-		pts.tv_sec = timetowait;
-		pts.tv_nsec = 0;
-		ppts = &pts;
-	} else {
-		ppts = NULL;
-	}
+	/* This way readable "@initctl" can be used for reporting below,
+	   and config.h looks better too. */
+	if(addr.sun_path[0] == '@')
+		addr.sun_path[0] = '\0';
 
-	/* init spends most of its time here in ppoll(), waiting
-	   either for signals or telinit requests. */
-	/* See comments in setup() regarding defsigset. */
-	r = ppoll(&pfd, 1, ppts, &defsigset);
+	/* we're not going to block for connections, just accept whatever
+	   is already there; so it's SOCK_NONBLOCK */
+	if((initctlfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0)) < 0)
+		retwarn(-1, "Can't create control socket: %m");
 
-	if(r < 0 && errno != EINTR) {
-		/* Failed ppoll means the main loop becomes unconstrained,
-		   making init uncontrollable and wasting cpu cycles.
-		   To avoid that, let's try to slow things down a bit. */
-		warn("poll failed: %m");
+	if(bind(initctlfd, (struct sockaddr*)&addr, sizeof(addr)))
+		gotowarn(close, "Can't bind %s: %m", INITCTL)
+	else if(listen(initctlfd, 1))
+		gotowarn(close, "listen() failed: %m");
 
-		sigset_t cursigset;
-		pts.tv_sec = timetowait >= 0 ? timetowait : 1;
-		pts.tv_nsec = 0;
+	return 0;
 
-		/* ppoll also handles sigmask-lifting, try to work around that */
-		sigprocmask(SIG_SETMASK, &defsigset, &cursigset);
-		nanosleep(&pts, NULL);
-		sigprocmask(SIG_SETMASK, &cursigset, NULL);
-
-		/* EINTR, on the other hand, is totally ok (SIGCHLD etc) */
-	} else if(r > 0) {
-		/* only one fd in pfd, so not that much choice here */
-		state |= S_INITCTL;
-	}
+close:
+	close(initctlfd);
+	initctlfd = -1;
+	return -1;
 }
 
 /* We've got a pending connection on initctlfd, ppoll tells us.
@@ -100,12 +76,12 @@ void pollctl(void)
    data direction.
 
    Alarm (setitimer) is needed here to force-reset a hung connection that
-   would otherwise block init completely. It's not clear whether connect
-   can hang, but if it can, that would be pretty bad.
+   would otherwise block init completely.
 
-   For the actual recover logic, see warn() and comments around setsignals().
-   The only thing SIGALRM does is interrupting whatever call is blocking
-   at the moment. */
+   For the recovery logic, see warn() and comments around setsignals().
+   In short, all SIGALRM does is interrupting whatever call is blocking
+   at the moment, the rest is normal handling of negative read() or write()
+   return. */
 
 void acceptctl(void)
 {
