@@ -20,7 +20,6 @@
    here only receives them. */
 
 int initctlfd;
-extern int state;
 extern int warnfd;
 
 export int setinitctl(void);
@@ -121,8 +120,6 @@ void acceptctl(void)
 		it.it_value.tv_sec = 0;
 		setitimer(ITIMER_REAL, &it, NULL);
 	}
-
-	state &= ~S_INITCTL;
 }
 
 /* Telinit socket, especially ANS socket, lacks any protection against
