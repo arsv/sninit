@@ -3,14 +3,11 @@
 #include "../init_conf.h"
 #include "test.h"
 
-int state;
 int currlevel;
 struct config* cfg;
-char* inittab = NULL;
 
-extern struct memblock newblock;
-extern int mmapblock(struct memblock* b, int len);
-extern void initcfgblocks(void);
+extern struct newblock nb;
+extern int mmapblock(int len);
 extern int finishinittab(void);
 extern void rewirepointers();
 
@@ -42,11 +39,11 @@ void scratch_all(char** test)
 void check_all(char* tt, char** ep, char** test)
 {
 	char** p; int i;
-	Bc(newblock, ep, "%s is valid", tt);
+	Bc(nb, ep, "%s is valid", tt);
 	Ac(ep != NULL, "%s is not null", tt);
 	if(!ep) return;
 	for(p = test, i = 0; *p; p++, i++)
-		Bc(newblock, ep[i], "%s[%i] is valid", tt, i);
+		Bc(nb, ep[i], "%s[%i] is valid", tt, i);
 	Ac(ep[i] == NULL, "%s[%i] = NULL", tt, i);
 
 	for(p = test, i = 0; *p; p++, i++)
@@ -55,16 +52,16 @@ void check_all(char* tt, char** ep, char** test)
 
 int main(void)
 {
-	T(mmapblock(&newblock, 1024));
-	initcfgblocks();
+	int hdrsize = sizeof(struct config) + sizeof(struct scratch);
+	T(mmapblock(hdrsize));
 
 	scratch_all(test_env);
 
 	finishinittab();
 	rewirepointers();
 
+	B(nb, NCF->env);
 	check_all("env", NCF->env, test_env);
-	B(newblock, NCF->env);
 
 	return 0;
 }

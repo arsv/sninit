@@ -3,31 +3,28 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct memblock newblock;
+extern struct newblock nb;
+extern struct fileblock fb;
 
-extern int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe);
-extern int mmapblock(struct memblock* m, int length);
+extern int addinitrec(char* name, char* rlvl, char* cmd, int exe);
+extern int mmapblock(int length);
 
 int main(void)
 {
 	struct ptrnode* nptr;
 	struct initrec* pptr;
-	struct fileblock fb = {
-		.name = "(none)",
-		.line = 0,
-		.buf = NULL,
-		.ls = NULL,
-		.le = NULL
-	};
+
+	fb.name = "nofile";
+	fb.line = 0;
 
 	/* mmap a decidedly too small block, and set pointer somewhere in the middle
 	   to check how addinitrec will deal with the situation */
 	int dynhead = sizeof(struct config) + sizeof(struct scratch);
-	T(mmapblock(&newblock, dynhead + 17));
-	newblock.ptr = dynhead + 10;
-	memset(newblock.addr, 0x00, newblock.len);
+	T(mmapblock(dynhead + 17));
+	nb.ptr = dynhead + 10;
+	memset(nb.addr, 0x00, nb.len);
 
-	T(addinitrec(&fb, "foo", heapdup("S12"), heapdup("/bin/sh -c true"), 0));
+	T(addinitrec("foo", heapdup("S12"), heapdup("/bin/sh -c true"), 0));
 
 	/* Sanity check for ptrlist */
 	A(SCR->inittab.head > 0);
@@ -36,9 +33,9 @@ int main(void)
 	A(SCR->inittab.count == 1);
 
 	nptr = newblockptr(SCR->inittab.head, struct ptrnode*);
-	B(newblock, nptr);
+	B(nb, nptr);
 	pptr = newblockptr(SCR->inittab.head + sizeof(struct ptrnode), struct initrec*);
-	B(newblock, pptr);
+	B(nb, pptr);
 
 	/* the structure itself should be initialized */
 	S(pptr->name, "foo");
@@ -49,7 +46,7 @@ int main(void)
 	A(pptr->lastsig == 0);
 
 	/* One more initrec */
-	T(addinitrec(&fb, "bar", heapdup("S234"), heapdup("/sbin/httpd"), 0));
+	T(addinitrec("bar", heapdup("S234"), heapdup("/sbin/httpd"), 0));
 
 	/* Sanity check for ptrlist */
 	A(SCR->inittab.head < SCR->inittab.last);
@@ -57,9 +54,9 @@ int main(void)
 
 	/* Same stuff, now with .last instead of .head */
 	nptr = newblockptr(SCR->inittab.last, struct ptrnode*);
-	B(newblock, nptr);
+	B(nb, nptr);
 	pptr = newblockptr(SCR->inittab.last + sizeof(struct ptrnode), struct initrec*);
-	B(newblock, pptr);
+	B(nb, pptr);
 
 	/* the structure itself should be initialized */
 	S(pptr->name, "bar");

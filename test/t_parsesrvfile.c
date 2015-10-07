@@ -6,7 +6,7 @@
 
 #define RET 0xAB
 
-//struct memblock newblock;	/* to keep the linker happy */
+extern struct fileblock fb;
 
 struct {
 	int called;
@@ -16,10 +16,9 @@ struct {
 	int exe;
 } U;
 
-extern int parsesrvfile(struct fileblock* fb, char* basename);
-extern int mmapblock(struct memblock* m, int size);
+extern int parsesrvfile(char* fullname, char* basename);
 
-int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
+int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 {
 	U.called++;
 	U.name = heapdupnull(name);
@@ -42,17 +41,15 @@ void test(input, rlvl, cmd, exe)
 	char* data = heapdup(input);
 	char* file = "/etc/rc/foo";
 	char* base = "foo";
-	struct fileblock fb = {
-		.name = file,
-		.line = 0,
-		.buf = data,
-		.len = strlen(data),
-		.ls = NULL,
-		.le = NULL
-	};
+
+	fb.buf = data;
+	fb.len = strlen(data);
+	fb.line = 0;
+	fb.ls = NULL;
+	fb.le = NULL;
 
 	memset(&U, 0, sizeof(U));
-	A(parsesrvfile(&fb, base) == RET);
+	A(parsesrvfile(file, base) == RET);
 	A(U.called == 1);
 	S(U.name, base);
 	S(U.rlvl, rlvl);

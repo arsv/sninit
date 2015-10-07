@@ -7,6 +7,7 @@
 
 #define RLVL 4
 
+extern struct fileblock fb;
 extern int readinitdir(const char* dir, int strict);
 
 int seen;
@@ -32,7 +33,7 @@ int findentry(char* basename)
 	return -1;
 }
 
-int parsesrvfile(struct fileblock* fb, char* basename)
+int parsesrvfile(char* fullname, char* basename)
 {
 	int idx = findentry(basename);
 	char* contents = (!strcmp(basename, "script") ? "script contents\n" : "plain contents\n");
@@ -46,7 +47,7 @@ int parsesrvfile(struct fileblock* fb, char* basename)
 		printf("OK file %s\n", basename);
 	}
 
-	if(strcmp(fb->buf, contents))
+	if(strcmp(fb.buf, contents))
 		printf("FAIL file %s bad contents\n", basename);
 
 	return 0;

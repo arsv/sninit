@@ -5,14 +5,13 @@
 #include "test.h"
 
 /* Empty symbols to keep the linker happy */
-struct memblock newblock;
 NOCALL(addstrargarray);
 NOCALL(addstringarray);
 NOCALL(mextendblock);
 NOCALL(checkdupname);
 NOCALL(scratchptr);
 
-extern int setrunflags(struct fileblock* fb, struct initrec* entry, char* flagstring);
+extern int setrunflags(struct initrec* entry, char* flagstring);
 
 #define R0 (1<<0)
 #define R1 (1<<1)
@@ -40,10 +39,10 @@ struct initrec rec = {
 };
 
 #define right(str) \
-	T(setrunflags(&fb, &rec, heapdup(str)))
+	T(setrunflags(&rec, heapdup(str)))
 
 #define wrong(str) \
-	T(!setrunflags(&fb, &rec, heapdup(str)))
+	T(!setrunflags(&rec, heapdup(str)))
 
 #define levels(str, exp) \
 	right(str);\

@@ -15,7 +15,7 @@ override CFLAGS += -ffunction-sections
 RUN_ := $(if $(RUN),$(RUN) ,)
 
 # Regular automated tests
-TESTS = t_mblocks t_parseinitline t_parsesrvfile t_strssep \
+TESTS = t_parseinitline t_parsesrvfile t_strssep \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
 	t_addstringarray t_addstrargarray t_fileblock t_tzinit \
 	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
@@ -72,8 +72,8 @@ clean:
 t_mblocks: LIBS += $(LIBS_syscall)
 t_mblocks: t_mblocks.o init_conf_map.o test.o
 
-t_addinitrec: t_addinitrec.o init_conf_map.o init_conf_map.o \
-	init_conf_rec.o init_conf_arg.o init_conf_key.o test.o
+t_addinitrec: t_addinitrec.o init_conf_map.o init_conf_rec.o \
+		init_conf_arg.o init_conf_key.o test.o
 
 t_parseinitline: t_parseinitline.o \
 	init_conf_map.o init_conf_tab.o init_conf_arg.o test.o

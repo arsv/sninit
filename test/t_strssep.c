@@ -4,8 +4,8 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct memblock newblock;
-NOCALL(mextendblock);
+struct newblock nb;
+NOCALL(extendblock);
 
 extern char* strssep(char** str);
 

@@ -3,12 +3,10 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct memblock newblock;
-struct memblock scratchblock;
+struct newblock nb;
 
 void* inittab;
 void* cfg;
-int state;
 int currlevel;
 
 NOCALL(readinittab);
@@ -18,12 +16,12 @@ NOCALL(addptrsarray);
 NOCALL(levelmatch);
 NOCALL(addstruct);
 
-extern int mmapblock(struct memblock* m, int size);
+extern int mmapblock(int size);
 extern void rewireptrsarray(void** a);
 
 int main(void)
 {
-	T(mmapblock(&newblock, 1024));
+	T(mmapblock(10));
 
 	/* First, construct required pointers structure */
 	int testargc = 3;
@@ -48,10 +46,10 @@ int main(void)
 		*(argp++) = spoff;		// save the offset the string was placed at
 		spoff += strlen(*(srcp++)) + 1;	// skip over the newly placed string
 	}
-	newblock.ptr = spoff;
+	nb.ptr = spoff;
 
 	/* Now try to repoint the array... */
-	char** argv = newblock.addr + argvoff;
+	char** argv = nb.addr + argvoff;
 	rewireptrsarray((void**) argv);
 
 	/* ..and check the results */

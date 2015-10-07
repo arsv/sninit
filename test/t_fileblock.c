@@ -7,9 +7,10 @@
 
 const char* testtxt = "t_fileblock.txt";
 
-int mmapfile(struct fileblock* f, int maxlen);
-int munmapfile(struct fileblock* f);
-int nextline(struct fileblock* f);
+extern struct fileblock fb;
+int mmapfile(const char* name, int maxlen);
+int munmapfile(void);
+char* nextline(void);
 
 int filelen(const char* file)
 {
@@ -21,34 +22,34 @@ int filelen(const char* file)
 
 int main(void)
 {
-	struct fileblock fb = { .name = testtxt };
 	int testlen = filelen(testtxt);
+	char* s;
 
-	T(mmapfile(&fb, 1024));
+	T(mmapfile(testtxt, 1024));
 	S(fb.name, testtxt);
 	A(fb.len == testlen);
 	A(fb.ls == NULL);
 	A(fb.le == NULL);
 	A(fb.line == 0);
 
-	A(nextline(&fb) > 0);
+	A((s = nextline()));
 	S(fb.ls, "line 1");
-	A(nextline(&fb) > 0);
+	A((s = nextline()));
 	S(fb.ls, "line 2");
-	A(nextline(&fb) > 0);
+	A((s = nextline()));
 	S(fb.ls, "");
-	A(nextline(&fb) > 0);
+	A((s = nextline()));
 	S(fb.ls, "somewhat longer line 4");
-	A(nextline(&fb) == 0);
+	A((s = nextline()) == NULL);
 
-	T(munmapfile(&fb));
+	T(munmapfile());
 
 	int shortlen = testlen / 2;
 	A(shortlen > 0);
-	A(mmapfile(&fb, -shortlen) < 0);
-	A(mmapfile(&fb,  shortlen) == 0);
+	A(mmapfile(testtxt, -shortlen) < 0);
+	A(mmapfile(testtxt,  shortlen) == 0);
 	A(fb.len == shortlen);
-	T(munmapfile(&fb));
+	T(munmapfile());
 
 	return 0;
 }

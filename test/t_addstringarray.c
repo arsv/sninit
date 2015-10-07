@@ -4,27 +4,27 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct memblock newblock;
-struct memblock scratchblock;
+extern struct newblock nb;
 
 int addstringarray(char* str);
-extern int mmapblock(struct memblock* b, int len);
+extern int mmapblock(int len);
 
 #define count(a) (sizeof(a)/sizeof(*a))
 #define to_offset(ptr) ((offset)((void*)ptr - NULL))
 
 int main(void)
 {
-	if(mmapblock(&newblock, 10)) return -1;
-	int start = 0;
-	newblock.ptr = start;
+	int start = 10;
+
+	if(mmapblock(start))
+		return -1;
 
 	char args[] = "blah  foo\tbar  ";
-	int off = newblock.ptr;
+	int off = nb.ptr;
 
 	int ret = addstringarray(args);
 	A(ret == 0);
-	Eq(newblock.ptr, start + 4*sizeof(char*) + 13, "%i");
+	Eq(nb.ptr, start + 4*sizeof(char*) + 13, "%i");
 
 	char** ptr = newblockptr(off, char**);
 	A(ptr[0] == NULL + off + 4*sizeof(char*));

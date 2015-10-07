@@ -7,9 +7,6 @@
 
 #define RET 0xAB
 
-struct memblock newblock;	/* to keep the linker happy */
-struct memblock scratch;
-
 struct {
 	int called;
 	char* name;
@@ -18,7 +15,8 @@ struct {
 	int exe;
 } U;
 
-extern int parseinitline(struct fileblock* fb);
+extern int parseinitline(char* l);
+
 int readinitdir(char* dir, int strict)
 {
 	return -1;
@@ -29,7 +27,7 @@ int readinitdir(char* dir, int strict)
 	return str ? strdup(str) : NULL;
 }*/
 
-int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
+int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 {
 	U.called++;
 	U.name = name;
@@ -49,7 +47,7 @@ int scratchenv(const char* string)
 	return -1;
 }
 
-int setrunlevels(struct fileblock* fb, unsigned short* rlvl, char* runlevels)
+int setrunlevels(unsigned short* rlvl, char* runlevels)
 {
 	return -1;
 }
@@ -60,17 +58,10 @@ void test(input, name, rlvl, cmd)
 {
 	char* data = alloca(strlen(input) + 1);
 	strcpy(data, input);
-	struct fileblock fb = {
-		.name = "(none)",
-		.line = 1,
-		.buf = data,
-		.ls = data,
-		.le = data + strlen(data)
-	};
 
 	memset(&U, 0, sizeof(U));
 
-	A(parseinitline(&fb) == RET);
+	A(parseinitline(data) == RET);
 
 	A(U.called == 1);
 	S(U.name, name);

@@ -10,16 +10,15 @@
 
 /* Run (almost) full config sequence and check whether newblock is being formed properly */
 
-int state;
-struct config* cfg;
-int currlevel;
-extern struct memblock newblock;
+int currlevel = 0;
+struct config* cfg = NULL;
+extern struct newblock nb;
 
 extern void initcfgblocks(void);
 extern int finishinittab(void);
-extern int parseinitline(struct fileblock* fb, int strict);
+extern int parseinitline(char* line, int strict);
 extern void rewirepointers(void);
-extern int mmapblock(struct memblock* m, int size);
+extern int mmapblock(int size);
 
 void die(const char* fmt, ...) __attribute__((format(printf, 1, 2))) __attribute__((noreturn));
 
@@ -31,74 +30,71 @@ int levelmatch(struct initrec* p, int level)
 	return 0;
 }
 
+struct initrec* findentry(const char* name)
+{
+	return NULL;
+}
+
 int parseinitline_(char* testline)
 {
 	char* line = strncpy(heap, testline, HEAP);
-	struct fileblock fb = {
-		.name="(none)",
-		.line=1,
-		.buf = line,
-		.ls = line,
-		.le = line + strlen(line)
-	};
-	int ret = parseinitline(&fb, 1);
-	return ret;
+	return parseinitline(line, 1);
 }
 
-int checkptr(struct memblock* block, void* ptr)
+int checkptr(void* ptr)
 {
-	return (ptr >= block->addr && ptr < block->addr + block->len);
+	return (ptr >= nb.addr && ptr < nb.addr + nb.len);
 }
 
-void dump_env(struct memblock* block);
-void dump_inittab(struct memblock* block);
+#define blockoffset(ptr) ( (int)((void*)(ptr) - nb.addr) )
 
-void dump(struct memblock* block)
+void dumpenv(struct config* cfg)
 {
-	struct config* cfg = (struct config*) block->addr;
-
-	A(checkptr(block, cfg));
-	//printf("initdefault = %i\n", cfg->initdefault);
-
-	dump_env(block);
-	dump_inittab(block);
-}
-
-void dump_env(struct memblock* block)
-{
-	struct config* cfg = (struct config*) block->addr;
 	char** p;
 
-	printf("ENV: %p [%i]\n", cfg->env, (int)((void*)cfg->env - block->addr));
+	printf("ENV: %p [%i]\n", cfg->env, blockoffset(cfg->env));
 	for(p = cfg->env; p && *p; p++) {
-		if(!checkptr(block, *p))
+		if(!checkptr(*p))
 			die("ENV %p bad pointer\n", p);
-		printf("%i = [%i] %s\n", (int)((void*)p - block->addr), (int)((void*)*p - block->addr), *p ? *p : "NULL");
+		printf("  [%i] -> [%i] %s\n",
+				blockoffset(p),
+				blockoffset(*p),
+				*p ? *p : "NULL");
 	}
 }
 
-void dump_inittab(struct memblock* block)
+void dumptab(struct config* cfg)
 {
-	struct config* cfg = (struct config*) block->addr;
 	struct initrec *q, **qq;
 	char** p;
 	int i;
 
-	printf("INITTAB: %p\n", cfg->inittab);
+	printf("TAB: %p [%i]\n", cfg->inittab, blockoffset(cfg->inittab));
 	for(qq = cfg->inittab; (q = *qq); qq++) {
-		printf("%p name=\"%s\" rlvl=0x%04x flags=0x%04x\n", q, q->name, q->rlvl, q->flags);
+		printf("  [%i] name=\"%s\" rlvl=%i flags=%i\n",
+				blockoffset(q), q->name, q->rlvl, q->flags);
 		for(i = 0, p = q->argv; p && *p; p++, i++)
-			if(checkptr(block, *p))
-				printf("\targv[%i]=\"%s\"\n", i, *p);
+			if(checkptr(*p))
+				printf("\targv[%i] -> [%i] \"%s\"\n", i, blockoffset(*p), *p);
 			else
 				printf("\targv[%i] BAD %p\n", i, *p);
 	}
 }
 
+void dumpconfig(void)
+{
+	struct config* cfg = NCF;
+
+	A(checkptr(cfg));
+	printf("NCF: %p [%i]\n", cfg, blockoffset(cfg));
+
+	dumptab(cfg);
+	dumpenv(cfg);
+}
+
 int main(void)
 {
-	T(mmapblock(&newblock, IRALLOC + sizeof(struct config) + sizeof(struct scratch)));
-	initcfgblocks();
+	T(mmapblock(sizeof(struct config) + sizeof(struct scratch)));
 
 	T(parseinitline_("# comment here"));
 	T(parseinitline_(""));
@@ -111,7 +107,7 @@ int main(void)
 	T(finishinittab())
 	rewirepointers();
 
-	dump(&newblock);
+	dumpconfig();
 	
 	return 0;
 }

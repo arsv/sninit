@@ -2,9 +2,10 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct memblock newblock;
+struct newblock nb;
+
 extern int shellneeded(const char* cmd);
-NOCALL(mextendblock);
+NOCALL(extendblock);
 
 #define shell(s) \
 	A(shellneeded(s))
