@@ -44,6 +44,8 @@ int setinitctl(void)
 		.sun_path = INITCTL
 	};
 
+	state &= ~S_REOPEN;
+
 	/* This way readable "@initctl" can be used for reporting below,
 	   and config.h looks better too. */
 	if(addr.sun_path[0] == '@')
