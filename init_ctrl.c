@@ -44,8 +44,6 @@ int setinitctl(void)
 		.sun_path = INITCTL
 	};
 
-	state &= ~S_REOPEN;
-
 	/* This way readable "@initctl" can be used for reporting below,
 	   and config.h looks better too. */
 	if(addr.sun_path[0] == '@')
@@ -123,8 +121,6 @@ void acceptctl(void)
 		it.it_value.tv_sec = 0;
 		setitimer(ITIMER_REAL, &it, NULL);
 	}
-
-	state &= ~S_INITCTL;
 }
 
 /* Telinit socket, especially ANS socket, lacks any protection against

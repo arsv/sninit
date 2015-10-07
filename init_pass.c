@@ -61,8 +61,6 @@ void initpass(void)
 	struct initrec** inittab = cfg->inittab;
 	struct initrec** initend = cfg->inittab + cfg->initnum - 1;
 
-	state |= S_WAITING;
-
 	/* Kill pass, reverse order */
 	for(pp = initend; (p = *pp); pp--)
 		if(!shouldberunning(p) && p->pid > 0)
@@ -105,8 +103,6 @@ void initpass(void)
 
 	if(waitfor)
 		return;
-
-	state &= ~S_WAITING;
 
 	if(nextlevel == (1<<0)) {
 		/* level 0 is slippery in its own particular way */

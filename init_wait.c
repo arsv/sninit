@@ -43,8 +43,6 @@ void waitpids(void)
 		else
 			markdead(p, status);
 	}
-
-	state &= ~S_SIGCHLD;
 }
 
 /* Abnormal exits should be reported, and too fast respawns taken

@@ -210,7 +210,6 @@ void setnewconf(void)
 
 	cfgblock = newblock;
 	cfg = (struct config*) cfgblock.addr;
-	state &= ~S_RECONFIG;
 	newblock.addr = NULL;
 }
 

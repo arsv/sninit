@@ -147,8 +147,6 @@ int main(int argc, char** argv)
 
 		if(!currlevel)
 			goto reboot;
-		if(!(state & S_WAITING) && (state & S_RECONFIG))
-			setnewconf();
 
 		pollctl();	/* waiting happens here */
 
@@ -161,6 +159,14 @@ int main(int argc, char** argv)
 			acceptctl();
 		if(state & S_REOPEN)
 			setinitctl();
+		state &= ~(S_SIGCHLD | S_INITCTL | S_REOPEN);
+
+		if(currlevel != nextlevel)
+			continue;
+
+		if(state & S_RECONFIG)
+			setnewconf();
+		state &= ~S_RECONFIG;
 	}
 
 reboot:
