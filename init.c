@@ -161,8 +161,6 @@ int main(int argc, char** argv)
 
 		if(state & S_INITCTL)
 			acceptctl();	/* telinit communication */
-
-		state &= ~(S_SIGCHLD | S_INITCTL);
 	}
 
 reboot:

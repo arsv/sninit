@@ -5,6 +5,7 @@
 #include "scope.h"
 #include "sys.h"
 
+extern int state;
 extern int nextlevel;
 extern struct config* cfg;
 extern time_t passtime;
@@ -42,6 +43,8 @@ void waitpids(void)
 		else
 			markdead(p, status);
 	}
+
+	state &= ~S_SIGCHLD;
 }
 
 /* Abnormal exits should be reported, and too fast respawns taken
