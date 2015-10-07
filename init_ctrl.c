@@ -26,7 +26,7 @@ extern int warnfd;
 export int setinitctl(void);
 export void acceptctl(void);
 
-extern int passtime;
+extern time_t passtime;
 local int ctltime = 0;
 local int ctlcount = 0;
 
