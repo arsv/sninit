@@ -156,6 +156,9 @@ int main(int argc, char** argv)
 		if(setpasstime() && timetowait > 0)
 			passtime += timetowait;
 
+		if(state & S_REOPEN)
+			setinitctl();
+
 		if(state & S_SIGCHLD)
 			waitpids();	/* reap dead children */
 
@@ -294,9 +297,12 @@ void sighandler(int sig)
 			break;
 
 		case SIGHUP:
+			/* close the socket here but defer reopening,
+			   that's way too much to do in singhandler */
 			if(initctlfd >= 0)
 				close(initctlfd);
-			setinitctl();
+			initctlfd = -1;
+			state |= S_REOPEN;
 			break;
 
 		/* SIGPIPE and SIGALRM may arrive here */
