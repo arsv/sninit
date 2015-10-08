@@ -69,7 +69,7 @@ On x86_64, there is *no* difference.
 Decision for sninit
 ~~~~~~~~~~~~~~~~~~~
 Bundled libc follows dietlibc and declares syscalls as functions.
-Argument-moving happens in unisys.s for all available architectures.
+Argument-moving happens in _syscall.s for all available architectures.
 
 At present, syscall code is not nearly the worst offender when it comes
 to redundant code size, so it makes sense for me to trade some extra cycles

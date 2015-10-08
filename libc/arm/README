@@ -17,7 +17,7 @@ callee saved:	             x  x  x  x  x  x   x   x       x
 
 
 IP (r12) may be used as a scratch register but not across a branch.
-So even though "ldr ip, =NR_...; b unisys" looks like good idea
+So even though "ldr ip, =NR_...; b _syscall" looks like good idea
 it won't work reliably.
 
 Given sninit's size however, it is *probably* safe to assume there will be
