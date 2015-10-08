@@ -71,11 +71,12 @@ with the running sninit.
 
 Troubleshooting the build
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-In case the build fails before it gets to sninit, try building a clean Buildroot
-system without using supplied defconfigs to factor out possible bugs in defconfigs.
-Make sure to match target architecture and kernel configuration. Compare variable
-values in $SN/misc/buildroot/configs/sninit_(arch)_defconfig with what happens
-to be in $BR/.config after running menuconfig.
+In case the build fails before it gets to sninit, try building a clean
+Buildroot system without using supplied defconfigs to factor out possible
+bugs in defconfigs.
+Make sure to match target architecture and kernel configuration.
+Compare variable values in $SN/misc/buildroot/configs/sninit_(arch)_defconfig
+with what happens to be in $BR/.config after running menuconfig.
 
 In case sninit build fails, a quick way to re-try it (to get output and such):
 	rm -fr output/build/snint*
@@ -85,8 +86,8 @@ Most buildroot commands can be re-run manually:
 	./configure CC=...
 	make
 Once you're done fixing, run top-level make to finish the build and produce
-the final image. Buildroot is mostly make-based, and it generally won't overwrite
-stuff that has been built.
+the final image. Buildroot is mostly make-based, and it generally won't
+overwrite stuff that has been built.
 
 Buildroot used hidden timestamp files to track completed actions.
 For sninit, these are:
@@ -103,18 +104,18 @@ Remove/touch them to re-do/skip specific actions during top-level make run.
 
 Troubleshooting runtime issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-For hard qemu errors (incorrect command line options, kernel not booting), check
-qemu(1) *and* sample commands from $BR/boards/qemu/(arch)/README.
-All sninit defconfigs are based on Buildroot qemu defconfigs, so those can be used
-to exclude sninit as a possible cause of failure.
+For hard qemu errors (incorrect command line options, kernel not booting),
+check qemu(1) *and* sample commands from $BR/boards/qemu/(arch)/README.
+All sninit defconfigs are based on Buildroot qemu defconfigs, so those
+can be used to exclude sninit as a possible cause of failure.
 
 In case sninit fails to start or does not work properly, start by adding
 init=/bin/sh to kernel command line like this:
 
 	qemu-system-arm ... -append "root=/dev/sda init=/bin/sh"
 
-The system should boot into sh prompt. With sh running, you can start /sbin/init,
-or possibly gdbserver:
+The system should boot into sh prompt. With sh running, you can start
+/sbin/init, or possibly gdbserver:
 
 	gdbserver /dev/ttyS0 /sbin/init
 
@@ -128,13 +129,27 @@ devices: one for login console and one for gdb:
 
 	qemu-system-mips ... -serial pty -serial stdio
 
-In this case, gdbserver should be started on /dev/ttyS0 and getty should get /dev/ttyS1.
+In this case, gdbserver should be started on /dev/ttyS0
+and getty should get /dev/ttyS1.
 
 To have kernel output on stdout, add console=ttyS1 to the kernel command line:
 
 	qemu-system-mips ... -append "root=/dev/sda console=ttyS1"
 
-The same trick may be used if framebuffer console is available but for some reason
-serial one is preferred; qemu -display none may be used to suppress graphical window.
+The same trick may be used if framebuffer console is available but for some
+reason serial one is preferred; qemu -display none may be used to suppress
+graphical window.
 
-Beware -nographic does a lot more than -display none, and will require additional setup.
+Beware -nographic does a lot more than -display none, and will require
+additional setup.
+
+
+Post-build scripts
+~~~~~~~~~~~~~~~~~~
+Before attempting to reconfigure qemu, take a look at
+
+	$SN/misc/buildroot/board/sninit/post_build.sh
+
+This script is run each time fs image is created, that is, at the end
+of every top-level make command, even if nothing was built).
+And it runs sed on the installed inittab.

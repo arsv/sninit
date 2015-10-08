@@ -10,6 +10,7 @@ PATH=/bin:/sbin
 syslog	L	/sbin/syslogd -n
 
 tty1	T3+	/sbin/getty -L tty1  115200 vt100
+ttyS	T3+	/sbin/getty -L ttyS0 115200 vt100
 
 	R0	/bin/umount -a -r
 

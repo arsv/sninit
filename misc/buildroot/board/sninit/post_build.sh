@@ -5,12 +5,12 @@ arch="$2"
 external="$3"
 
 case "$arch" in
-	arm*)
-		sed -i \
-			-e "s@ttyS0@ttyAMA0@g" \
-			-e "s@ttyS1@ttyAMA1@g" \
-				"$target/etc/inittab"
-		;;
+	mips*)
+		# MIPS has no fb console
+		sed -i -e '/^tty1/d' "$target/etc/inittab" ;;
+	*)
+		# for arches with fb colsole, we leave ttyS0 for gdb
+		sed -i -e '/^ttyS/d' "$target/etc/inittab" ;;
 esac
 
 if [ -n "$arch" -a -n "$external" ]; then
