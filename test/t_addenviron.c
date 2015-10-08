@@ -6,7 +6,7 @@
 int currlevel;
 struct config* cfg;
 
-extern struct newblock nb;
+extern struct newblock nblock;
 extern int mmapblock(int len);
 extern int finishinittab(void);
 extern void rewirepointers();
@@ -39,11 +39,11 @@ void scratch_all(char** test)
 void check_all(char* tt, char** ep, char** test)
 {
 	char** p; int i;
-	Bc(nb, ep, "%s is valid", tt);
+	Bc(nblock, ep, "%s is valid", tt);
 	Ac(ep != NULL, "%s is not null", tt);
 	if(!ep) return;
 	for(p = test, i = 0; *p; p++, i++)
-		Bc(nb, ep[i], "%s[%i] is valid", tt, i);
+		Bc(nblock, ep[i], "%s[%i] is valid", tt, i);
 	Ac(ep[i] == NULL, "%s[%i] = NULL", tt, i);
 
 	for(p = test, i = 0; *p; p++, i++)
@@ -60,7 +60,7 @@ int main(void)
 	finishinittab();
 	rewirepointers();
 
-	B(nb, NCF->env);
+	B(nblock, NCF->env);
 	check_all("env", NCF->env, test_env);
 
 	return 0;

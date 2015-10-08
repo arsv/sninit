@@ -4,7 +4,7 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct newblock nb;
+struct newblock nblock;
 NOCALL(extendblock);
 
 extern char* strssep(char** str);

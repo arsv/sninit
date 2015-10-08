@@ -2,7 +2,7 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct newblock nb;
+struct newblock nblock;
 
 extern int shellneeded(const char* cmd);
 NOCALL(extendblock);

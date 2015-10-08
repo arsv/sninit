@@ -7,7 +7,7 @@
 
 #define RLVL 4
 
-extern struct fileblock fb;
+extern struct fileblock fblock;
 extern int readinitdir(const char* dir, int strict);
 
 int seen;
@@ -47,13 +47,13 @@ int parsesrvfile(char* fullname, char* basename)
 		printf("OK file %s\n", basename);
 	}
 
-	if(strcmp(fb.buf, contents))
+	if(strcmp(fblock.buf, contents))
 		printf("FAIL file %s bad contents\n", basename);
 
 	return 0;
 }
 
-int addinitrec(struct fileblock* fb, char* name, char* rlvl, char* cmd, int exe)
+int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 {
 	return 0;
 }

@@ -27,7 +27,7 @@ extern int setrunflags(struct initrec* entry, char* flagstring);
 #define Rb (1<<0xb)
 #define Rf (1<<0xf)
 
-struct fileblock fb = {
+struct fileblock fblock = {
 	.name = "(none)",
 	.line = 0,
 	.buf = NULL,

@@ -3,7 +3,7 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct newblock nb;
+struct newblock nblock;
 
 extern offset extendblock(int size);
 extern int mmapblock(int size);
@@ -22,7 +22,7 @@ int main(void)
 	int listlen = sizeof(struct config) + sizeof(struct ptrlist);
 	if(mmapblock(listlen + 100))
 		return -1;
-	nb.ptr = listoff + listlen;
+	nblock.ptr = listoff + listlen;
 
 	/* Sanity check, the list should be empty */
 	list = newblockptr(listoff, struct ptrlist*);
@@ -38,7 +38,7 @@ int main(void)
 	Eq(list->last, node1ptr, "%i");
 	Eq(list->count, 1, "%i");
 	A(list->last > listoff);
-	Eq(list->last, nb.ptr - sizeof(struct ptrnode), "%i");
+	Eq(list->last, nblock.ptr - sizeof(struct ptrnode), "%i");
 	node = newblockptr(list->last, struct ptrnode*);
 	A(node->next == 0);
 
@@ -50,7 +50,7 @@ int main(void)
 	A(list->last == node2ptr);
 	A(list->count == 2);
 	A(list->last > node1ptr);
-	A(list->last == nb.ptr - sizeof(struct ptrnode));
+	A(list->last == nblock.ptr - sizeof(struct ptrnode));
 	node = newblockptr(list->last, struct ptrnode*);
 	A(node->next == 0);
 

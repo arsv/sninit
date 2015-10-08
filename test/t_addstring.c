@@ -4,18 +4,19 @@
 #include "../init.h"
 #include "../init_conf.h"
 
-struct memblock newblock;
+extern struct newblock nblock;
 
-extern int mmapblock(struct memblock* m, int size);
+extern int mmapblock(int size);
 extern int addstring(const char* s);
 
 int main(void)
 {
-	mmapblock(&newblock, 1000);
+	mmapblock(10);
 
+	nblock.ptr = 0;
 	A(addstring("abc") == 0);
-	A(((char*)newblock.addr)[4] == '\0');
-	S((char*)newblock.addr, "abc");
+	A(((char*)nblock.addr)[4] == '\0');
+	S((char*)nblock.addr, "abc");
 
 	return 0;
 }

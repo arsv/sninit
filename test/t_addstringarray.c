@@ -4,7 +4,7 @@
 #include "../init_conf.h"
 #include "test.h"
 
-extern struct newblock nb;
+extern struct newblock nblock;
 
 int addstringarray(char* str);
 extern int mmapblock(int len);
@@ -20,11 +20,11 @@ int main(void)
 		return -1;
 
 	char args[] = "blah  foo\tbar  ";
-	int off = nb.ptr;
+	int off = nblock.ptr;
 
 	int ret = addstringarray(args);
 	A(ret == 0);
-	Eq(nb.ptr, start + 4*sizeof(char*) + 13, "%i");
+	Eq(nblock.ptr, start + 4*sizeof(char*) + 13, "%i");
 
 	char** ptr = newblockptr(off, char**);
 	A(ptr[0] == NULL + off + 4*sizeof(char*));

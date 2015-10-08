@@ -33,7 +33,7 @@ struct config ncf_struct = { .inittab = ncf_inittab };
 struct config* cfg = &cfg_struct;
 struct config* ncf = &ncf_struct;
 
-struct newblock nb = { .addr = &ncf_struct, .len = 0, .ptr = 0 };
+struct newblock nblock = { .addr = &ncf_struct, .len = 0, .ptr = 0 };
 
 extern void transferpids(void);
 

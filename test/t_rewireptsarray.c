@@ -3,7 +3,7 @@
 #include "../init_conf.h"
 #include "test.h"
 
-struct newblock nb;
+struct newblock nblock;
 
 void* inittab;
 void* cfg;
@@ -46,10 +46,10 @@ int main(void)
 		*(argp++) = spoff;		// save the offset the string was placed at
 		spoff += strlen(*(srcp++)) + 1;	// skip over the newly placed string
 	}
-	nb.ptr = spoff;
+	nblock.ptr = spoff;
 
 	/* Now try to repoint the array... */
-	char** argv = nb.addr + argvoff;
+	char** argv = nblock.addr + argvoff;
 	rewireptrsarray((void**) argv);
 
 	/* ..and check the results */

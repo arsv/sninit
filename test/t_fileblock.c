@@ -7,7 +7,7 @@
 
 const char* testtxt = "t_fileblock.txt";
 
-extern struct fileblock fb;
+extern struct fileblock fblock;
 int mmapfile(const char* name, int maxlen);
 int munmapfile(void);
 char* nextline(void);
@@ -26,20 +26,20 @@ int main(void)
 	char* s;
 
 	T(mmapfile(testtxt, 1024));
-	S(fb.name, testtxt);
-	A(fb.len == testlen);
-	A(fb.ls == NULL);
-	A(fb.le == NULL);
-	A(fb.line == 0);
+	S(fblock.name, testtxt);
+	A(fblock.len == testlen);
+	A(fblock.ls == NULL);
+	A(fblock.le == NULL);
+	A(fblock.line == 0);
 
 	A((s = nextline()));
-	S(fb.ls, "line 1");
+	S(s, "line 1");
 	A((s = nextline()));
-	S(fb.ls, "line 2");
+	S(s, "line 2");
 	A((s = nextline()));
-	S(fb.ls, "");
+	S(s, "");
 	A((s = nextline()));
-	S(fb.ls, "somewhat longer line 4");
+	S(s, "somewhat longer line 4");
 	A((s = nextline()) == NULL);
 
 	T(munmapfile());
@@ -48,7 +48,7 @@ int main(void)
 	A(shortlen > 0);
 	A(mmapfile(testtxt, -shortlen) < 0);
 	A(mmapfile(testtxt,  shortlen) == 0);
-	A(fb.len == shortlen);
+	A(fblock.len == shortlen);
 	T(munmapfile());
 
 	return 0;
