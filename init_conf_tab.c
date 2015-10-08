@@ -8,7 +8,7 @@ export int readinittab(const char* file, int strict);
 extern int addinitrec(char* code, char* name, char* cmd, int exe);
 extern int addenviron(const char* string);
 
-extern struct fileblock fblock;
+extern struct fblock fileblock;
 extern int mmapfile(const char* filename, int maxlen);
 extern int munmapfile(void);
 extern char* nextline(void);
@@ -56,7 +56,7 @@ int parseinitline(char* l)
 	if(!(p = strpbrk(l, "= \t:")))
 		goto bad;
 	else if(*p == ':')
-		retwarn(-1, "%s:%i: SysV-style inittab detected, aborting", fblock.name, fblock.line);
+		retwarn(-1, "%s:%i: SysV-style inittab detected, aborting", FBN, FBL);
 	else if(*p == '=')
 		return addenviron(l);
 
@@ -67,5 +67,5 @@ int parseinitline(char* l)
 	if(name && rlvl && *l)
 		return addinitrec(name, rlvl, l, 0);
 
-bad:	retwarn(-1, "%s:%i: bad line", fblock.name, fblock.line);
+bad:	retwarn(-1, "%s:%i: bad line", FBN, FBL);
 }

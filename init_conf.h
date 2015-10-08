@@ -18,18 +18,18 @@ struct scratch {
 	struct ptrlist env;
 };
 
-struct cfgblock {
+struct cblock {
 	void* addr;
 	int len;
-};
+}; /* cfgblock */
 
-struct newblock {
+struct nblock {
 	void* addr;
 	int len;
 	int ptr;
-};
+}; /* newblock */
 
-struct fileblock {
+struct fblock {
 	char* buf;
 	int len;
 
@@ -38,7 +38,7 @@ struct fileblock {
 
 	char* ls;
 	char* le;
-};
+}; /* fileblock */
 
 /* newblock layout looks like this:
 
@@ -58,10 +58,12 @@ struct fileblock {
 
    Trailing arrays are only added in finishinittab */
 
-#define newblockptr(offset, type) ((type)(nblock.addr + offset))
+#define newblockptr(offset, type) ((type)(newblock.addr + offset))
 
 #define NCF newblockptr(0, struct config*)
 #define SCR newblockptr(sizeof(struct config), struct scratch*)
+#define FBN fileblock.name
+#define FBL fileblock.line
 
 /* Offsets of scratch.{inittab,env} within newblock, for linknode */
 #define TABLIST (sizeof(struct config) + offsetof(struct scratch, inittab))

@@ -14,7 +14,7 @@ export int readinitdir(const char* dir, int strict);
 
 extern int addinitrec(char* name, char* rlvl, char* cmd, int exe);
 
-extern struct fileblock fblock;
+extern struct fblock fileblock;
 extern int mmapfile(const char* name, int maxlen);
 extern int munmapfile(void);
 extern char* nextline(void);
@@ -149,13 +149,13 @@ int parsesrvfile(char* fullname, char* basename)
 	char* ls;
 
 	if(!(ls = nextline()))
-		retwarn(-1, "%s: empty file", fblock.name);
+		retwarn(-1, "%s: empty file", FBN);
 
 	/* Check for, and skip #! line if present */
 	if(ls[0] == '#' && ls[1] == '!') {
 		shebang = 1;
 		if(!(ls = nextline()))
-			retwarn(-1, "%s: empty script", fblock.name);
+			retwarn(-1, "%s: empty script", FBN);
 	} else {
 		shebang = 0;
 	}
@@ -165,7 +165,7 @@ int parsesrvfile(char* fullname, char* basename)
 		ls[1] = srdefault[0];
 		rlvls = ls + 1;
 		if(!(ls = nextline()))
-			retwarn(-1, "%s: no command found", fblock.name);
+			retwarn(-1, "%s: no command found", FBN);
 	} else {
 		rlvls = srdefault;
 	}
@@ -180,7 +180,7 @@ int parsesrvfile(char* fullname, char* basename)
 		   will be done in addinitrec. */
 		while(comment(ls))
 			if(!(ls = nextline()))
-				retwarn(-1, "%s: no command found", fblock.name);
+				retwarn(-1, "%s: no command found", FBN);
 		cmd = ls;
 	}
 

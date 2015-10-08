@@ -11,9 +11,9 @@
 /* Init uses mmap to allocate memory *and* to read files.
    At any given point, there are at most three mmaped areas: */
 
-struct cfgblock cblock;         /* active configuration */
-struct newblock nblock;         /* newly compiled configuration */
-struct fileblock fblock;        /* the file being parsed */
+struct cblock cfgblock;         /* active configuration */
+struct nblock newblock;         /* newly compiled configuration */
+struct fblock fileblock;        /* the file being parsed */
 
 /* New configuration is built by appending structures of known size
    to newblock. If reconfiguration succeeds, the blocks are exchanged:
@@ -56,8 +56,8 @@ int mmapblock(int size)
 	if(size > memblockalign)
 		return -1;
 
-	if(nblock.addr) {
-		if(nblock.len < size)
+	if(newblock.addr) {
+		if(newblock.len < size)
 			return -1;
 	} else {
 		const int prot = PROT_READ | PROT_WRITE;
@@ -68,12 +68,12 @@ int mmapblock(int size)
 		if(addr == MAP_FAILED)
 			return -1;
 
-		nblock.addr = addr;
-		nblock.len = memblockalign;
+		newblock.addr = addr;
+		newblock.len = memblockalign;
 	}
 
-	memset(nblock.addr, 0, nblock.len);
-	nblock.ptr = size;
+	memset(newblock.addr, 0, newblock.len);
+	newblock.ptr = size;
 
 	return 0;
 }
@@ -104,60 +104,60 @@ static void* mremapnommu(void* oldaddr, size_t oldsize, size_t newsize, int flag
 #define mremap(oa, os, ns, fl) mremapnommu(oa, os, ns, fl)
 #endif
 
-/* nblock.ptr tracks the start of empty space in nblock.
+/* newblock.ptr tracks the start of empty space in newblock.
    We make sure there is enough space, and allocate it by moving ptr over. */
 
 offset extendblock(int size)
 {
-	int ret = nblock.ptr;
+	int ret = newblock.ptr;
 
-	int rem = (nblock.len - nblock.ptr);	/* space remaining */
-	int add = size - rem;			/* space to be added */
+	int rem = (newblock.len - newblock.ptr); /* space remaining */
+	int add = size - rem;			 /* space to be added */
 
 	if(add <= 0)
 		goto moveptr;
 	if(add % memblockalign)
 		add += (memblockalign - add % memblockalign);
 	
-	int oldlen = nblock.len;
+	int oldlen = newblock.len;
 	int newlen = oldlen + add;
 
 	if(newlen < oldlen)
 		return -1;	/* overflow? */
 
-	void* newaddr = mremap(nblock.addr, oldlen, newlen, MREMAP_MAYMOVE);
+	void* newaddr = mremap(newblock.addr, oldlen, newlen, MREMAP_MAYMOVE);
 
 	if(newaddr == MAP_FAILED)
 		return -1;
 
-	nblock.addr = newaddr;
-	nblock.len = newlen;
+	newblock.addr = newaddr;
+	newblock.len = newlen;
 moveptr:
-	nblock.ptr += size;
+	newblock.ptr += size;
 
 	return ret;
 }
 
 void munmapblock(void)
 {
-	munmap(nblock.addr, nblock.len);
+	munmap(newblock.addr, newblock.len);
 
-	nblock.addr = 0;
-	nblock.len = 0;
+	newblock.addr = 0;
+	newblock.len = 0;
 };
 
 /* cfgblock is empty if builtin config is used */
 
 void exchangeblocks(void)
 {
-	if(cblock.addr)
-		munmap(cblock.addr, cblock.len);
+	if(cfgblock.addr)
+		munmap(cfgblock.addr, cfgblock.len);
 
-	cblock.addr = nblock.addr;
-	cblock.len = nblock.len;
+	cfgblock.addr = newblock.addr;
+	cfgblock.len = newblock.len;
 
-	nblock.addr = NULL;
-	nblock.len = 0;
+	newblock.addr = NULL;
+	newblock.len = 0;
 };
 
 /* Due to average inittab being about 1-2k, it is always read whole;
@@ -202,12 +202,12 @@ int mmapfile(const char* filename, int maxlen)
 
 	addr[stm] = '\0';
 
-	fblock.buf = addr;
-	fblock.len = stm;
-	fblock.ls = NULL;
-	fblock.le = NULL;
-	fblock.name = filename;
-	fblock.line = 0;
+	fileblock.buf = addr;
+	fileblock.len = stm;
+	fileblock.ls = NULL;
+	fileblock.le = NULL;
+	fileblock.name = filename;
+	fileblock.line = 0;
 
 	close(fd);
 	return 0;
@@ -218,7 +218,7 @@ out:	close(fd);
 
 int munmapfile(void)
 {
-	return munmap(fblock.buf, fblock.len);
+	return munmap(fileblock.buf, fileblock.len);
 }
 
 /* The file is mmaped rw and private. We place the pointers
@@ -226,9 +226,9 @@ int munmapfile(void)
 
 char* nextline(void)
 {
-	char* le = fblock.le;
-	char* ls = le ? le + 1 : fblock.buf;
-	char* end = fblock.buf + fblock.len;
+	char* le = fileblock.le;
+	char* ls = le ? le + 1 : fileblock.buf;
+	char* end = fileblock.buf + fileblock.len;
 
 	if(ls >= end) return NULL;
 
@@ -236,9 +236,9 @@ char* nextline(void)
 		; /* clang is full of hatred towards elegant concise expressions */
 	*le = '\0';
 
-	fblock.ls = ls;
-	fblock.le = le;
-	fblock.line++;
+	fileblock.ls = ls;
+	fileblock.le = le;
+	fileblock.line++;
 
 	return ls;
 }
