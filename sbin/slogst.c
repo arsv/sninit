@@ -12,7 +12,7 @@
 
 /* Stub syslog server, with STREAM socket. Do not use it, except for checking
    init's SOCK_STREAM capability. It uses a dirty alarm() trick to avoid muxing
-   inputs of forking which still retaining limited ability to handle several
+   inputs or forking while still retaining limited ability to handle several
    connections. */
 
 #define BUF 1024
