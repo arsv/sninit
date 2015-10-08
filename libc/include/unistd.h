@@ -33,6 +33,4 @@ int dup2 (int oldfd,int newfd);
 int chroot(const char *path);
 int chdir(const char *path);
 
-long syscall(int nr, ...);
-
 #endif
