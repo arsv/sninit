@@ -23,16 +23,16 @@ local int checkdupname(const char* name);
 
 /* Context:
 
-	fileblock=(mmaped /etc/inittab) name="tty" rlvl="fast"
-		cmd=[/sbin/getty, 115200, /dev/ttyS0] exe=0
-	fileblock=(mmaped /etc/rc/httpd) name="httpd" rlvl=""
-		cmd=[/sbin/httpd] exe=0
-	fileblock=(mmaped /etc/rc/squid) name="squid" rlvl=":a"
-		cmd=[/etc/rc/squid] exe=1
+   [fb: /etc/inittab]
+   	name="tty" rlvl="fast" cmd=[/sbin/getty, 115200, /dev/ttyS0] exe=0
 
-   Non-zero exe means cmd is the name of the script to run, and need
-   not be parsed. See addrecargv() below.
-*/
+   [fb: non-executable /etc/rc/httpd]
+   	name="httpd" rlvl="" cmd=[/sbin/httpd] exe=0
+
+   [fb: executable /etc/rc/squid]
+	name="squid" rlvl=":a" cmd=[/etc/rc/squid] exe=1
+
+   Non-zero exe means cmd is the name of the script to run. See addrecargv(). */
 
 int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 {
@@ -105,6 +105,17 @@ int addenviron(const char* def)
 
 	return 0;
 }
+
+/* Both initrecs and environment lines are initially placed in their
+   respective linked lists (struct scratch), with the list nodes scattered
+   between initrecs. The lists are only used to create inittab[] and env[]
+   in struct config, but they are left in place anyway, since recovering
+   the space is more trouble than it's worth.
+   
+   Why not use the lists directly?
+   Well execve(2) takes envp[], and initpass iterates over initrecs in both
+   directions, which turns out to be easier with inittab[] vs some kind
+   of doubly-linked list. */
 
 int linknode(offset listptr, offset nodeptr)
 {

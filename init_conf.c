@@ -18,15 +18,16 @@
    implies waiting for pids that have no place for them in newtab.
 
    This file only handles step 1. configure() is the entry point.
-   It sets up newblock memory block and returns 0 on success.
+   It sets up newblock and returns 0 on success.
 
    In case init gets another reconfigure request while in the main
-   loop during step 2, compiled newtab is discarded and we're back to step 1. */
+   loop during step 2, compiled newtab is discarded and we're back
+   to step 1.
 
-/* Note that until rewirepointers() call late in the process, all pointers
-   in struct config, struct initrec and envp aren't real pointers,
-   they are offsets from the start of newblock.
-   This is to avoid a lot of hassle in case mremap changes the block address. */
+   Note that until rewirepointers() call late in the process, all pointers
+   in struct config, struct initrec and envp aren't real pointers, they are
+   offsets from the start of newblock. This is to avoid a lot of hassle
+   in case mremap changes the block address. */
 
 extern int state;
 extern int currlevel;

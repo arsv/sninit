@@ -9,19 +9,25 @@
 #include "scope.h"
 
 /* Init uses mmap to allocate memory *and* to read files.
+   At any given point, there are at most three mmaped areas: */
 
-   memblocks are used for building (incrementally) struct config.
+struct cfgblock cb;	/* active configuration */
+struct newblock nb;	/* newly compiled configuration */
+struct fileblock fb;	/* the file being parsed */
 
-   fileblocks are used to read text files linewise.  */
-
-struct cfgblock cb;
-struct newblock nb;
-struct fileblock fb;
+/* New configuration is built by appending structures of known size
+   to newblock. If reconfiguration succeeds, the blocks are exchanged:
+   old cfgblock gets unmmaped and newblock becomes cfgblock.
+   In case configuration fails, we just unmmap newblock. */
 
 export int mmapblock(int size);
-export int extendblock(int size);
+export offset extendblock(int size);
 export void exchangeblocks(void);
 export void munmapblock(void);
+
+/* The file block is used to parse inittab or service files linewise.
+   Filename is stored in the structure for error reporting.
+   The pointer must be usable up until munmapfile is called. */
 
 export int mmapfile(const char* filename, int maxlen);
 export int munmapfile(void);
@@ -30,13 +36,11 @@ export char* nextline(void);
 /* Whenever possible, memory is mmaped in memblockalign increments
    to reduce the number of calls. To make the whole thing testable,
    int is used instead of placing IRALLOC in all relevant calls. */
+
 local int memblockalign = IRALLOC;
 
-/* There is actually only one memblock to allocate, newblock,
-   and only one to deallocate, cfgblock.
-   However, to keep things somewhat decoupled, all m*block functions
-   get them as arguments.
-   This also made sense when there was a separate scratchblock. */
+/* The block is initially allocated to hold struct config and
+   struct scratch. Initrecs are added later with extendblock. */
 
 int mmapblock(int size)
 {
@@ -96,6 +100,9 @@ static void* mremapnommu(void* oldaddr, size_t oldsize, size_t newsize, int flag
 #define mremap(oa, os, ns, fl) mremapnommu(oa, os, ns, fl)
 #endif
 
+/* nb.ptr tracks the start of empty space in nb.
+   We make sure there is enough space, and allocate it by moving ptr over. */
+
 offset extendblock(int size)
 {
 	int ret = nb.ptr;
@@ -131,6 +138,8 @@ void munmapblock(void)
 	nb.addr = 0;
 	nb.len = 0;
 };
+
+/* cfgblock is empty if builtin config is used */
 
 void exchangeblocks(void)
 {
@@ -205,7 +214,7 @@ int munmapfile(void)
 	return munmap(fb.buf, fb.len);
 }
 
-/* The file is mmaped rw and private, so we place the pointers
+/* The file is mmaped rw and private. We place the pointers
    and terminate the line with \0, overwriting \n. */
 
 char* nextline(void)

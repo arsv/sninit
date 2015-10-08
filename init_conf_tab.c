@@ -1,5 +1,3 @@
-/* Parsing inittab */
-
 #include <string.h>
 #include "init.h"
 #include "init_conf.h"
@@ -18,8 +16,19 @@ extern char* nextline(void);
 local int parseinitline(char* line);
 extern char* strssep(char** str);
 
-/* Strict means bail out on errors immediately; with strict=0, it should continue
-   as far as possible, assuming it's initial configuration with no fallback. */
+/* Typical lines:
+
+	# comment
+	VARIABLE=value
+
+	mount    W1+    /sbin/mount -a
+	         R3+    /sbin/net up
+
+   Leading whitespace is siginificant, means unnamed entry.
+
+   strict=1: bail out on errors immediately
+   strict=0: ignore errors, used during startup */
+
 int readinittab(const char* file, int strict)
 {
 	int ret = -1;
@@ -37,13 +46,11 @@ int readinittab(const char* file, int strict)
 	return strict ? ret : 0;
 }
 
-/* Parse current line from fb, the one marked by fb->ls and fb->le. */
 int parseinitline(char* l)
 {
 	char* p;
 
 	if(!*l || *l == '#')
-		/* empty or comment line */
 		return 0;
 
 	if(!(p = strpbrk(l, "= \t:")))
