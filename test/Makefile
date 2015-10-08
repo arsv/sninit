@@ -22,7 +22,7 @@ TESTS = t_mblocks t_parseinitline t_parsesrvfile t_strssep \
 	t_readinitdir t_rewireptsarray t_linknode t_transferpids \
 	t_joincmd t_setrunflags t_findentry t_waitpids t_toofast \
 	t_rlstr t_pintlen t_dumprec t_dumpstate t_shouldbeshown \
-	t_shellneeded
+	t_shellneeded t_addstring
 # Tests with manual check (for now)
 XTESTS = x_printf x_hello x_open x_vfork x_sigprocmask x_reboot x_ppoll
 
