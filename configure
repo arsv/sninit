@@ -13,11 +13,8 @@ unset prefix sbindir mandir man5dir man8dir sysconfdir
 # while resp. upper-case variables are used for unconditional overrides
 unset cc ar as strip cflags asflags ldflags
 unset hostcc hostcflags
-
 unset target build host diet
-unset cctype libc 
-unset libs libs_syscall
-unset tstype null
+unset cctype libc libs tstype null
 
 optimize=auto
 unset nommu lto debug depend builtin quiet devmode
