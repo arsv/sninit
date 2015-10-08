@@ -14,7 +14,7 @@ directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))
 
 # for these, some argument mangling is required
-custom = fork waitpid reboot ppoll dup3 stat reboot mmap sigaction
+custom = fork waitpid reboot ppoll dup3 stat open reboot mmap sigaction
 
 # for quick syntax check
 AS = aarch64-linux-gnu-gcc -c
