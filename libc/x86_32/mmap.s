@@ -6,7 +6,7 @@
 
 mmap:
 	mov	$NR_mmap, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type mmap,@function
 .size mmap,.-mmap

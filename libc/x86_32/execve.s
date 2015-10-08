@@ -6,7 +6,7 @@
 
 execve:
 	mov	$NR_execve, %ax
-	jmp	unisysx
+	jmp	_syscallx
 
 .type execve,@function
 .size execve,.-execve

@@ -8,18 +8,18 @@ errno:	.int	0
 
 
 .text
-.global unisys
-.global unisysx
-.global uniret
+.global _syscall
+.global _syscallx
+.global _sysret
 
-unisys:
+_syscall:
 	mov	$0, %ah
-unisysx:
+_syscallx:
 	movzwl	%ax, %eax
 	orl	$0x40000000, %eax
 	mov	%rcx, %r10
 	syscall
-uniret:
+_sysret:
 	cmpq	$-132, %rax
 	jbe	ok
 	negl	%eax
@@ -27,8 +27,8 @@ uniret:
 	orq	$-1, %rax
 ok:	ret
 
-.type unisysx,@function
-.size unisysx,.-unisysx
+.type _syscallx,@function
+.size _syscallx,.-_syscallx
 
-.type unisys,@function
-.size unisys,unisysx-unisys
+.type _syscall,@function
+.size _syscall,_syscallx-_syscall

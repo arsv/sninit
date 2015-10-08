@@ -6,7 +6,7 @@
 
 fork:
 	mov	$NR_fork, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type fork,@function
 .size fork,.-fork

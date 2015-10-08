@@ -7,7 +7,7 @@
 ppoll:
 	mov	$sizeof_sigset_t, %r8d
 	mov	$NR_ppoll, %ax
-	jmp	unisysx
+	jmp	_syscallx
 
 .type ppoll,@function
 .size ppoll,.-ppoll

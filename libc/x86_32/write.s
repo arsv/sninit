@@ -6,7 +6,7 @@
 
 write:
 	mov	$NR_write, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type write,@function
 .size write,.-write

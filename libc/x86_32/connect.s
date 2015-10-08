@@ -6,7 +6,7 @@
 
 connect:
 	mov	$NR_connect, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type connect,@function
 .size connect,.-connect

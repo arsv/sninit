@@ -23,7 +23,7 @@ sigaction:
 	mov	$sizeof_sigset_t, %cl
 	/* syscall(__NR_rt_sigaction) */
 	mov	$NR_rt_sigaction, %ax
-	jmp	unisysx
+	jmp	_syscallx
 
 /* dietlibc quoting gcc implies this should be 16-aligned */
 /* no idea why, and it seems to work well as it is */

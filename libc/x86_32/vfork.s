@@ -10,7 +10,7 @@ vfork:
 	syscall
 	push	%rdx
 	mov	%rax, %rdi
-	jmp	uniret
+	jmp	_sysret
 
 .type vfork,@function
 .size vfork,.-vfork

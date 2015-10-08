@@ -6,7 +6,7 @@
 
 mremap:
 	mov	$NR_mremap, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type mremap,@function
 .size mremap,.-mremap

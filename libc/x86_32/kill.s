@@ -6,7 +6,7 @@
 
 kill:
 	mov	$NR_kill, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type kill,@function
 .size kill,.-kill

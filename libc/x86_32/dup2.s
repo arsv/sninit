@@ -6,7 +6,7 @@
 
 dup2:
 	mov	$NR_dup2, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type dup2,@function
 .size dup2,.-dup2

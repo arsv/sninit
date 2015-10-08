@@ -6,7 +6,7 @@
 
 shutdown:
 	mov	$NR_shutdown, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type shutdown,@function
 .size shutdown,.-shutdown

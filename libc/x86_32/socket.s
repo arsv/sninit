@@ -6,7 +6,7 @@
 
 socket:
 	mov	$NR_socket, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type socket,@function
 .size socket,.-socket

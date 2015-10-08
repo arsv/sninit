@@ -6,7 +6,7 @@
 
 fstat:
 	mov	$NR_fstat, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type fstat,@function
 .size fstat,.-fstat

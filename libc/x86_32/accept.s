@@ -6,7 +6,7 @@
 
 accept:
 	mov	$NR_accept, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type accept,@function
 .size accept,.-accept

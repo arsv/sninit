@@ -6,7 +6,7 @@
 
 listen:
 	mov	$NR_listen, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type listen,@function
 .size listen,.-listen

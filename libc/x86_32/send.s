@@ -7,7 +7,7 @@ send:
 	xor %r8d, %r8d
 	xor %r9d, %r9d
 	mov $NR_sendto, %al
-	jmp unisys
+	jmp _syscall
 
 .type send,@function
 .size send,.-send
