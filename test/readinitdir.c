@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-
 #include "../init.h"
 #include "../init_conf.h"
 #include "_test.h"

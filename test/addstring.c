@@ -1,8 +1,6 @@
-#include <stdlib.h>
-#include <string.h>
-#include "_test.h"
 #include "../init.h"
 #include "../init_conf.h"
+#include "_test.h"
 
 extern struct nblock newblock;
 

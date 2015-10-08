@@ -1,7 +1,3 @@
-#define _GNU_SOURCE
-#include <string.h>
-#include <unistd.h>
-
 #include "../init.h"
 #include "../init_conf.h"
 #include "_test.h"

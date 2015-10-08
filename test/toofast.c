@@ -1,5 +1,3 @@
-#include <stdlib.h>
-#include <string.h>
 #include <signal.h>
 #include "../init.h"
 #include "../config.h"

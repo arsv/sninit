@@ -1,8 +1,5 @@
-#include <unistd.h>
-#include <signal.h>
-#include <string.h>
-#include "_test.h"
 #include "../init.h"
+#include "_test.h"
 
 int state;
 int currlevel;

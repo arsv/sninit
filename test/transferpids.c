@@ -1,6 +1,6 @@
-#include "_test.h"
 #include "../init.h"
 #include "../init_conf.h"
+#include "_test.h"
 
 #define R0 (1<<0)
 #define R1 (1<<1)

@@ -1,7 +1,6 @@
-#include <string.h>
+#include "../config.h"
 #include "../init.h"
 #include "../init_conf.h"
-#include "../config.h"
 #include "_test.h"
 
 /* Empty symbols to keep the linker happy */

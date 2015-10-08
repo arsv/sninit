@@ -1,4 +1,3 @@
-#include <string.h>
 #include "_test.h"
 
 extern int itostr(char* buf, size_t len, size_t n);
