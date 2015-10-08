@@ -33,7 +33,7 @@ extern int state;
 extern int currlevel;
 extern struct config* cfg;
 
-extern struct newblock nb;
+extern struct newblock nblock;
 
 /* default/built-in stuff */
 const char* inittab = INITTAB;
@@ -127,9 +127,9 @@ int finishinittab(void)
 
 void* repoint(void* p)
 {
-	if(p - NULL > nb.ptr)
+	if(p - NULL > nblock.ptr)
 		return NULL;	// XXX: should never happen
-	return p ? (nb.addr + (p - NULL)) : p;
+	return p ? (nblock.addr + (p - NULL)) : p;
 }
 
 #define REPOINT(a) a = repoint(a)

@@ -4,7 +4,7 @@
 #include "init_conf.h"
 #include "scope.h"
 
-extern struct newblock nb;
+extern struct newblock nblock;
 extern offset extendblock(int size);
 
 export int addrecargv(struct initrec* entry, char* cmd, int exe);
@@ -112,7 +112,7 @@ int addstringarray(char* str)
 	char* argi;	/* argv[i] string location in the source file */
 	offset argvi;	/* argv[i] pointer location in newblock */
 	offset argio;	/* copied argv[i] string location in newblock */
-	offset argvo = nb.ptr;	/* argv[] location in newblock */
+	offset argvo = nblock.ptr;	/* argv[] location in newblock */
 
 	do {
 		argi = strssep(&str);

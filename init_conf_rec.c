@@ -8,8 +8,8 @@
    and their task is to copy stuff from the fileblock being parsed
    over to newblock. */
 
-extern struct newblock nb;
-extern struct fileblock fb;
+extern struct newblock nblock;
+extern struct fileblock fblock;
 
 export int addenviron(const char* def);
 export int addinitrec(char* name, char* flags, char* cmd, int exe);
@@ -46,7 +46,7 @@ int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 	if(name[0] == '-' && !name[1])
 		name[0] = '\0';
 	else if(checkdupname(name))
-		retwarn(-1, "%s:%i: duplicate name %s", fb.name, fb.line, name);
+		retwarn(-1, "%s:%i: duplicate name %s", fblock.name, fblock.line, name);
 
 	/* Put ptrnode and struct initrec itself */
 	const int nodesize = sizeof(struct ptrnode) + sizeof(struct initrec);
@@ -81,7 +81,7 @@ out:	/* Cancel the entry, resetting newblock.ptr
 	   This is enough to completely undo the effect of this function,
 	   assuming linknode hasn't been called to change values before
 	   the initial newblock.ptr (saved as nodeoff) */
-	nb.ptr = nodeoff;
+	nblock.ptr = nodeoff;
 	return -1;
 }
 

@@ -58,7 +58,7 @@ struct fileblock {
 
    Trailing arrays are only added in finishinittab */
 
-#define newblockptr(offset, type) ((type)(nb.addr + offset))
+#define newblockptr(offset, type) ((type)(nblock.addr + offset))
 
 #define NCF newblockptr(0, struct config*)
 #define SCR newblockptr(sizeof(struct config), struct scratch*)

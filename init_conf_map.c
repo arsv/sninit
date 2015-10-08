@@ -11,9 +11,9 @@
 /* Init uses mmap to allocate memory *and* to read files.
    At any given point, there are at most three mmaped areas: */
 
-struct cfgblock cb;	/* active configuration */
-struct newblock nb;	/* newly compiled configuration */
-struct fileblock fb;	/* the file being parsed */
+struct cfgblock cblock;         /* active configuration */
+struct newblock nblock;         /* newly compiled configuration */
+struct fileblock fblock;        /* the file being parsed */
 
 /* New configuration is built by appending structures of known size
    to newblock. If reconfiguration succeeds, the blocks are exchanged:
@@ -49,14 +49,14 @@ int mmapblock(int size)
 	if(size % memblockalign)
 		aligned += (memblockalign - size % memblockalign);
 
-	if(nb.addr) {
+	if(nblock.addr) {
 		/* This is a relatively unlikely case when a new reconfigure
 		   request comes before newblock from the previous one
 		   is moved over to cfgblock. In such a case, try to re-use
 		   newblock without unmmaping it. Due to the way mextendblock
 		   works, the old block must be large enough; if it is not,
 		   it's a hard error. */
-		if(nb.len < size)
+		if(nblock.len < size)
 			return -1;
 	} else {
 		const int prot = PROT_READ | PROT_WRITE;
@@ -67,12 +67,12 @@ int mmapblock(int size)
 		if(addr == MAP_FAILED)
 			return -1;
 
-		nb.addr = addr;
-		nb.len = aligned;
+		nblock.addr = addr;
+		nblock.len = aligned;
 	}
 
-	memset(nb.addr, 0, nb.len);
-	nb.ptr = size;
+	memset(nblock.addr, 0, nblock.len);
+	nblock.ptr = size;
 
 	return 0;
 }
@@ -100,57 +100,57 @@ static void* mremapnommu(void* oldaddr, size_t oldsize, size_t newsize, int flag
 #define mremap(oa, os, ns, fl) mremapnommu(oa, os, ns, fl)
 #endif
 
-/* nb.ptr tracks the start of empty space in nb.
+/* nblock.ptr tracks the start of empty space in nblock.
    We make sure there is enough space, and allocate it by moving ptr over. */
 
 offset extendblock(int size)
 {
-	int ret = nb.ptr;
+	int ret = nblock.ptr;
 	int alloc = size;
 
-	if(nb.len - nb.ptr > size)
+	if(nblock.len - nblock.ptr > size)
 		goto moveptr;
 	
 	if(alloc % memblockalign)
 		alloc += (memblockalign - alloc % memblockalign);
 
 	/* size is just an int, overflows are possible (but very unlikely) */
-	if(alloc < 0 || nb.len + alloc < 0)
+	if(alloc < 0 || nblock.len + alloc < 0)
 		return -1;
 
-	void* np = mremap(nb.addr, nb.len, nb.len + alloc, MREMAP_MAYMOVE);
+	void* np = mremap(nblock.addr, nblock.len, nblock.len + alloc, MREMAP_MAYMOVE);
 
 	if(np == MAP_FAILED)
 		return -1;
 
-	nb.addr = np;
-	nb.len += alloc;
+	nblock.addr = np;
+	nblock.len += alloc;
 moveptr:
-	nb.ptr += size;
+	nblock.ptr += size;
 
 	return ret;
 }
 
 void munmapblock(void)
 {
-	munmap(nb.addr, nb.len);
+	munmap(nblock.addr, nblock.len);
 
-	nb.addr = 0;
-	nb.len = 0;
+	nblock.addr = 0;
+	nblock.len = 0;
 };
 
 /* cfgblock is empty if builtin config is used */
 
 void exchangeblocks(void)
 {
-	if(cb.addr)
-		munmap(cb.addr, cb.len);
+	if(cblock.addr)
+		munmap(cblock.addr, cblock.len);
 
-	cb.addr = nb.addr;
-	cb.len = nb.len;
+	cblock.addr = nblock.addr;
+	cblock.len = nblock.len;
 
-	nb.addr = NULL;
-	nb.len = 0;
+	nblock.addr = NULL;
+	nblock.len = 0;
 };
 
 /* Due to average inittab being about 1-2k, it is always read whole;
@@ -195,12 +195,12 @@ int mmapfile(const char* filename, int maxlen)
 
 	addr[stm] = '\0';
 
-	fb.buf = addr;
-	fb.len = stm;
-	fb.ls = NULL;
-	fb.le = NULL;
-	fb.name = filename;
-	fb.line = 0;
+	fblock.buf = addr;
+	fblock.len = stm;
+	fblock.ls = NULL;
+	fblock.le = NULL;
+	fblock.name = filename;
+	fblock.line = 0;
 
 	close(fd);
 	return 0;
@@ -211,7 +211,7 @@ out:	close(fd);
 
 int munmapfile(void)
 {
-	return munmap(fb.buf, fb.len);
+	return munmap(fblock.buf, fblock.len);
 }
 
 /* The file is mmaped rw and private. We place the pointers
@@ -219,9 +219,9 @@ int munmapfile(void)
 
 char* nextline(void)
 {
-	char* le = fb.le;
-	char* ls = le ? le + 1 : fb.buf;
-	char* end = fb.buf + fb.len;
+	char* le = fblock.le;
+	char* ls = le ? le + 1 : fblock.buf;
+	char* end = fblock.buf + fblock.len;
 
 	if(ls >= end) return NULL;
 
@@ -229,9 +229,9 @@ char* nextline(void)
 		; /* clang is full of hatred towards elegant concise expressions */
 	*le = '\0';
 
-	fb.ls = ls;
-	fb.le = le;
-	fb.line++;
+	fblock.ls = ls;
+	fblock.le = le;
+	fblock.line++;
 
 	return ls;
 }
