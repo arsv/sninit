@@ -210,4 +210,9 @@ void joincmd(char* buf, int len, char** argv)
 		ptr--;
 
 out:	*ptr = '\0';
+
+	/* sanitize the string */
+	for(ptr = buf; *ptr; ptr++)
+		if(*ptr < 0x20)
+			*ptr = ' ';
 }
