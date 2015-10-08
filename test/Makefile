@@ -15,31 +15,37 @@ override CFLAGS += -ffunction-sections
 RUN_ := $(if $(RUN),$(RUN) ,)
 
 # Regular automated tests
-TESTS = t_mblocks t_parseinitline t_parsesrvfile t_strssep \
-	t_addinitrec t_conf t_addenviron t_itostr t_printf \
-	t_addstaticargv t_addparsedargv t_fileblock t_tzinit \
-	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
-	t_readinitdir t_rewireptsarray t_linknode t_transferpids \
-	t_joincmd t_setrunflags t_findentry t_waitpids t_toofast \
-	t_rlstr t_pintlen t_dumprec t_dumpstate t_shouldbeshown \
-	t_shellneeded t_addstring
+TESTS = mblocks parseinitline parsesrvfile strssep \
+	addinitrec conf addenviron itostr printf \
+	addstaticargv addparsedargv fileblock tzinit \
+	initpass_pri initpass_sec initpass_wku initpass_rev \
+	readinitdir rewireptsarray linknode transferpids \
+	joincmd setrunflags findentry waitpids toofast \
+	rlstr pintlen dumprec dumpstate shouldbeshown \
+	shellneeded addstring
 # Tests with manual check (for now)
-XTESTS = x_printf x_hello x_open x_vfork x_sigprocmask x_reboot x_ppoll
+XTESTS = xprintf xhello xopen xvfork xsigprocmask xreboot xppoll
 
-# Default rule — built all tests but do not run them
-all: $(TESTS) $(XTESTS)
+# Default rule — build all tests but do not run them
+all: $(TESTS)
+
+# Do not build or run these unless explicitly requested
+xtests: $(XTESTS)
+
+# "make test" to work the same way in .. and here.
+test: run 
 
 # Running tests. The rules will cause make to fail on the first failed test,
 # which is ok since make has -k switch.
 OUTS = $(patsubst %,%.out,$(TESTS))
 RUNS = $(patsubst %,%.run,$(TESTS))
-# Force building before running, to avoid cluttering test output.
+# Force building before running, to avoid cluttering _test output.
 run: $(TESTS) $(OUTS)
 $(RUNS): %.run: %
 	$(RUN_)./$<
-$(OUTS): %.out: % | test.sh
+$(OUTS): %.out: % | _test.sh
 	$(RUN_)./$< > $@
-	@./test.sh $@
+	@./_test.sh $@
 .PHONY: $(OUTS) $(RUNS)
 
 # Recompile init files in test/
@@ -48,7 +54,7 @@ $(OUTS): %.out: % | test.sh
 # is it possible to have a different compiler and/or different
 # options here.
 
-init_%.o: ../init_%.c
+ini%.o: ../ini%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 sys_%.o: ../sys_%.c
@@ -65,90 +71,59 @@ proto.c: ../init*.[ch] ../sys.h | protocheck.px
 # Cleanup
 
 clean:
-	rm -f *.o *.d proto.c $(TESTS) $(OUTS) $(XTESTS)
+	rm -f *.o *.d *.out proto.c $(TESTS) $(XTESTS)
 
 # Ok, now the tests themselves
 
-t_mblocks: t_mblocks.o init_conf_map.o test.o
-
-t_addinitrec: t_addinitrec.o init_conf_map.o init_conf_rec.o \
-		init_conf_arg.o init_conf_key.o test.o
-
-t_parseinitline: t_parseinitline.o \
-	init_conf_map.o init_conf_tab.o init_conf_arg.o test.o
-
-t_parsesrvfile: t_parsesrvfile.o init_conf_dir.o init_conf_map.o \
-	test.o $(SYS)
-
-t_conf: t_conf.o init_find.o init_conf.o init_conf_map.o init_conf_arg.o \
+mblocks: mblocks.o init_conf_map.o _test.o
+addinitrec: addinitrec.o init_conf_map.o init_conf_rec.o \
+		init_conf_arg.o init_conf_key.o _test.o
+parseinitline: parseinitline.o \
+	init_conf_map.o init_conf_tab.o init_conf_arg.o _test.o
+parsesrvfile: parsesrvfile.o init_conf_dir.o init_conf_map.o \
+	_test.o $(SYS)
+conf: conf.o init_find.o init_conf.o init_conf_map.o init_conf_arg.o \
 	init_conf_tab.o init_conf_dir.o init_conf_rec.o init_conf_key.o \
-	test.o $(SYS)
+	_test.o $(SYS)
+addenviron: addenviron.o init_conf.o init_conf_arg.o init_conf_map.o \
+	init_conf_rec.o init_find.o _test.o $(SYS)
+itostr: itostr.o sys_printf.o _test.o
+printf: printf.o sys_printf.o _test.o
+addstaticargv: addstaticargv.o init_conf_map.o init_conf_arg.o _test.o
+addparsedargv: addparsedargv.o init_conf_map.o init_conf_arg.o _test.o
+linknode: linknode.o init_conf_rec.o init_conf_map.o init_conf_arg.o _test.o
+rewireptsarray: rewireptsarray.o init_conf.o init_conf_map.o _test.o
+fileblock: fileblock.o init_conf_map.o _test.o
+tzinit: tzinit.o init_time_tz.o init_time_stamp.o _test.o
+initpass_pri: initpass_pri.o initpass_.o init_pass.o _test.o
+initpass_sec: initpass_sec.o initpass_.o init_pass.o _test.o
+initpass_wku: initpass_wku.o initpass_.o init_pass.o _test.o
+initpass_rev: initpass_rev.o initpass_.o init_pass.o _test.o
+initpass_off: initpass_off.o initpass_.o init_pass.o _test.o
+setrunflags: setrunflags.o init_conf_key.o _test.o
+readinitdir: readinitdir.o init_conf_dir.o init_conf_map.o _test.o
+transferpids: transferpids.o init_conf.o init_conf_map.o init_find.o _test.o
+joincmd: joincmd.o init_dump.o _test.o
+rlstr: rlstr.o init_dump.o _test.o
+findentry: findentry.o init_find.o _test.o
+waitpids: waitpids.o init_wait.o _test.o
+toofast: toofast.o init_wait.o _test.o
+warn: warn.o init_warn.o sys_printf.o
+pintlen: pintlen.o init_dump.o _test.o
+dumprec: dumprec.o init_dump.o sys_printf.o _test.o
+dumpstate: dumpstate.o init_dump.o sys_printf.o _test.o
+shouldbeshown: shouldbeshown.o init_dump.o
+addstring: addstring.o init_conf_arg.o init_conf_map.o _test.o
+shellneeded: shellneeded.o init_conf_arg.o _test.o
 
-t_addenviron: t_addenviron.o init_conf.o init_conf_arg.o init_conf_map.o \
-	init_conf_rec.o init_find.o test.o $(SYS)
-
-t_itostr: t_itostr.o sys_printf.o test.o
-
-t_printf: t_printf.o sys_printf.o test.o
-
-t_addstaticargv: t_addstaticargv.o init_conf_map.o init_conf_arg.o test.o
-
-t_addparsedargv: t_addparsedargv.o init_conf_map.o init_conf_arg.o test.o
-
-t_linknode: t_linknode.o init_conf_rec.o init_conf_map.o init_conf_arg.o test.o
-
-t_rewireptsarray: t_rewireptsarray.o init_conf.o init_conf_map.o test.o
-
-t_fileblock: t_fileblock.o init_conf_map.o test.o
-
-t_tzinit: t_tzinit.o init_time_tz.o init_time_stamp.o test.o
-
-t_initpass_pri: t_initpass_pri.o t_initpass_.o init_pass.o test.o
-t_initpass_sec: t_initpass_sec.o t_initpass_.o init_pass.o test.o
-t_initpass_wku: t_initpass_wku.o t_initpass_.o init_pass.o test.o
-t_initpass_rev: t_initpass_rev.o t_initpass_.o init_pass.o test.o
-t_initpass_off: t_initpass_off.o t_initpass_.o init_pass.o test.o
-
-t_setrunflags: t_setrunflags.o init_conf_key.o test.o
-
-t_readinitdir: t_readinitdir.o init_conf_dir.o init_conf_map.o test.o
-
-t_transferpids: t_transferpids.o init_conf.o init_conf_map.o init_find.o test.o
-
-t_joincmd: t_joincmd.o init_dump.o test.o
-
-t_rlstr: t_rlstr.o init_dump.o test.o
-
-t_findentry: t_findentry.o init_find.o test.o
-
-t_waitpids: t_waitpids.o init_wait.o test.o
-t_toofast: t_toofast.o init_wait.o test.o
-
-t_warn: t_warn.o init_warn.o sys_printf.o
-
-t_pintlen: t_pintlen.o init_dump.o test.o
-
-t_dumprec: t_dumprec.o init_dump.o sys_printf.o test.o
-
-t_dumpstate: t_dumpstate.o init_dump.o sys_printf.o test.o
-
-t_shouldbeshown: t_shouldbeshown.o init_dump.o
-
-t_strssep: t_strssep.o init_conf_arg.o test.o
-t_strssep.o: CFLAGS += -Wno-format
-
-t_addstring: t_addstring.o init_conf_arg.o init_conf_map.o test.o
-
-t_shellneeded: t_shellneeded.o init_conf_arg.o test.o
+strssep: strssep.o init_conf_arg.o _test.o
+strssep.o: CFLAGS += -Wno-format
 
 # Libc tests
-x_openread: x_openread.o test.o
-
-x_sigprocset: x_sigprocset.o
-
-x_reboot: x_reboot.o
-
-x_ppoll: x_ppoll.o
+xopenread: xopenread.o _test.o
+xsigprocset: xsigprocset.o
+xreboot: xreboot.o
+xppoll: xppoll.o
 
 # Possible top-level libc
 #
