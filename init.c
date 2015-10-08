@@ -171,9 +171,7 @@ int main(int argc, char** argv)
 
 reboot:
 	warnfd = 0;		/* stderr only, do not try syslog */
-#ifdef DEVMODE
-	return 0;		/* no reboots in devel mode */
-#endif
+
 	if(getpid() != 1)	/* not running as *the* init */
 		return 0;
 
