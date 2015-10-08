@@ -3,8 +3,8 @@
 #include "../init_conf.h"
 #include "test.h"
 
-extern struct newblock nblock;
-extern struct fileblock fblock;
+extern struct nblock newblock;
+extern struct fblock fileblock;
 
 extern int addinitrec(char* name, char* rlvl, char* cmd, int exe);
 extern int mmapblock(int length);
@@ -14,15 +14,15 @@ int main(void)
 	struct ptrnode* nptr;
 	struct initrec* pptr;
 
-	fblock.name = "nofile";
-	fblock.line = 0;
+	fileblock.name = "nofile";
+	fileblock.line = 0;
 
 	/* mmap a decidedly too small block, and set pointer somewhere in the middle
 	   to check how addinitrec will deal with the situation */
 	int dynhead = sizeof(struct config) + sizeof(struct scratch);
 	T(mmapblock(dynhead + 17));
-	nblock.ptr = dynhead + 10;
-	memset(nblock.addr, 0x00, nblock.len);
+	newblock.ptr = dynhead + 10;
+	memset(newblock.addr, 0x00, newblock.len);
 
 	T(addinitrec("foo", heapdup("S12"), heapdup("/bin/sh -c true"), 0));
 
@@ -33,9 +33,9 @@ int main(void)
 	A(SCR->inittab.count == 1);
 
 	nptr = newblockptr(SCR->inittab.head, struct ptrnode*);
-	B(nblock, nptr);
+	B(newblock, nptr);
 	pptr = newblockptr(SCR->inittab.head + sizeof(struct ptrnode), struct initrec*);
-	B(nblock, pptr);
+	B(newblock, pptr);
 
 	/* the structure itself should be initialized */
 	S(pptr->name, "foo");
@@ -54,9 +54,9 @@ int main(void)
 
 	/* Same stuff, now with .last instead of .head */
 	nptr = newblockptr(SCR->inittab.last, struct ptrnode*);
-	B(nblock, nptr);
+	B(newblock, nptr);
 	pptr = newblockptr(SCR->inittab.last + sizeof(struct ptrnode), struct initrec*);
-	B(nblock, pptr);
+	B(newblock, pptr);
 
 	/* the structure itself should be initialized */
 	S(pptr->name, "bar");

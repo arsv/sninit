@@ -4,7 +4,7 @@
 #include "../init_conf.h"
 #include "test.h"
 
-extern struct newblock nblock;
+extern struct nblock newblock;
 extern int mmapblock(int len);
 
 extern int addstaticargv(const char** args, int n);
@@ -20,11 +20,11 @@ int main(void)
 		return -1;
 
 	const char* arg[] = { "foo", "bar" };
-	int off = nblock.ptr;
+	int off = newblock.ptr;
 
 	int ret = addstaticargv(arg, 2);
 	A(ret == 0);
-	Eq(nblock.ptr, start + 3*sizeof(void*) + 8, "%i");
+	Eq(newblock.ptr, start + 3*sizeof(void*) + 8, "%i");
 
 	char** ptr = newblockptr(off, char**);
 	A(ptr[0] == NULL + off + (count(arg)+1)*sizeof(char*));

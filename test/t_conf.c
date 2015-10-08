@@ -12,7 +12,7 @@
 
 int currlevel = 0;
 struct config* cfg = NULL;
-extern struct newblock nblock;
+extern struct nblock newblock;
 
 extern void initcfgblocks(void);
 extern int finishinittab(void);
@@ -43,10 +43,10 @@ int parseinitline_(char* testline)
 
 int checkptr(void* ptr)
 {
-	return (ptr >= nblock.addr && ptr < nblock.addr + nblock.len);
+	return (ptr >= newblock.addr && ptr < newblock.addr + newblock.len);
 }
 
-#define blockoffset(ptr) ( (int)((void*)(ptr) - nblock.addr) )
+#define blockoffset(ptr) ( (int)((void*)(ptr) - newblock.addr) )
 
 void dumpenv(struct config* cfg)
 {

@@ -6,7 +6,7 @@
 
 #define RET 0xAB
 
-extern struct fileblock fblock;
+extern struct fblock fileblock;
 
 struct {
 	int called;
@@ -42,11 +42,11 @@ void test(input, rlvl, cmd, exe)
 	char* file = "/etc/rc/foo";
 	char* base = "foo";
 
-	fblock.buf = data;
-	fblock.len = strlen(data);
-	fblock.line = 0;
-	fblock.ls = NULL;
-	fblock.le = NULL;
+	fileblock.buf = data;
+	fileblock.len = strlen(data);
+	fileblock.line = 0;
+	fileblock.ls = NULL;
+	fileblock.le = NULL;
 
 	memset(&U, 0, sizeof(U));
 	A(parsesrvfile(file, base) == RET);
