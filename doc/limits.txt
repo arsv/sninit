@@ -52,9 +52,9 @@ Pros:
     * keeps init clean
     * loaded only when needed
     * can be used outside of init, incl. to test init-controlled
-      processes in the same conditions init will run them.
+      processes in the same conditions init will run them in.
     * similar to existing tools (su, nice, cgexec), common unix approach
-    * passwd is read late
+    * passwd access is delayed
     * simple code, read & apply immediately because everything
       happens in the child
     * limits can be set at any given point

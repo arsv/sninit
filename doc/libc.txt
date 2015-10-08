@@ -8,8 +8,8 @@ Reason for including libc:
 1. Tiered dependencies.
    Init is the first process to start, and thus should
    not rely on anything else to be available, including any libs.
-   This was extended to the build-time as well, so it can be built
-   without any libs available for the target system.
+   This was extended to build-time dependencies as well, in that
+   init can be built without any libs available for the target system.
 
 2. Clear set of dependencies.
    sninit depends on bunch of syscalls and a very small subset of libc.
@@ -55,11 +55,11 @@ the other hand, a change in on arch files does not affect others.
 No cpp / assembler-only files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Bundled libc uses .equ to define constants in assembler files.
-This is in contrast to dietlibc which uses C-preprocessed assembler
+This is in contrast with dietlibc which uses C-preprocessed assembler
 and musl which uses inline assembler in C files.
 
 Linux in general is assembler-unfriendly, with lots of stuff being
-declared in C headers. Atop of that, C preprocessor just does not play well
+declared in C headers. And C preprocessor just does not play well
 when paired with assembler, dropping (significant) newlines and producing
 ugly source listings in debugger.
 
