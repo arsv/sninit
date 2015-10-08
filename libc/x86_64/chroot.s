@@ -6,7 +6,7 @@
 
 chroot:
 	mov	$NR_chroot, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type chroot,@function
 .size chroot,.-chroot

@@ -6,7 +6,7 @@
 
 close:
 	mov	$NR_close, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type close,@function
 .size close,.-close

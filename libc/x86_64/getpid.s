@@ -6,7 +6,7 @@
 
 getpid:
 	mov	$NR_getpid, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type getpid,@function
 .size getpid,.-getpid

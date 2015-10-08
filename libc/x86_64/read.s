@@ -6,7 +6,7 @@
 
 read:
 	mov	$NR_read, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type read,@function
 .size read,.-read

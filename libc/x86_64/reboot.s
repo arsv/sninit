@@ -10,7 +10,7 @@ reboot:
 	mov	$LINUX_REBOOT_MAGIC1, %rdi
 	mov	$LINUX_REBOOT_MAGIC2, %rsi
 	mov	$NR_reboot, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type reboot,@function
 .size reboot,.-reboot

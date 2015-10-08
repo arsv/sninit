@@ -6,7 +6,7 @@
 
 getsockopt:
 	mov	$NR_getsockopt, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type getsockopt,@function
 .size getsockopt,.-getsockopt

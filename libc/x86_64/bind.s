@@ -6,7 +6,7 @@
 
 bind:
 	mov	$NR_bind, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type bind,@function
 .size bind,.-bind

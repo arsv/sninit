@@ -6,7 +6,7 @@
 
 setrlimit:
 	mov	$NR_setrlimit, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type setrlimit,@function
 .size setrlimit,.-setrlimit

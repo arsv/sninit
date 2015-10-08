@@ -6,7 +6,7 @@
 
 getuid:
 	mov	$NR_getuid, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type getuid,@function
 .size getuid,.-getuid
