@@ -65,8 +65,8 @@
 /* init will reject commands longer than this. */
 #define CMDBUF (NAMELEN + 2)
 
-/* Memory allocation granularity, for mmap(2). Should match OS page size */
-#define IRALLOC 4096
+/* Memory allocation granularity, for mmap(2). */
+#define PAGESIZE 4096
 
 /* File size limit for inittab and (non-script) service files. */
 /* Files larger than this will be loudly rejected */

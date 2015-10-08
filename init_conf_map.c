@@ -33,12 +33,6 @@ export int mmapfile(const char* filename, int maxlen);
 export int munmapfile(void);
 export char* nextline(void);
 
-/* Whenever possible, memory is mmaped in memblockalign increments
-   to reduce the number of calls. To make the whole thing testable,
-   int is used instead of placing IRALLOC in all relevant calls. */
-
-local int memblockalign = IRALLOC;
-
 /* The block is initially allocated to hold struct config and
    struct scratch. Initrecs are added later with extendblock.
 
@@ -53,7 +47,7 @@ local int memblockalign = IRALLOC;
 
 int mmapblock(int size)
 {
-	if(size > memblockalign)
+	if(size > PAGESIZE)
 		return -1;
 
 	if(newblock.addr) {
@@ -63,13 +57,13 @@ int mmapblock(int size)
 		const int prot = PROT_READ | PROT_WRITE;
 		const int flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-		void* addr = mmap(NULL, memblockalign, prot, flags, -1, 0);
+		void* addr = mmap(NULL, PAGESIZE, prot, flags, -1, 0);
 
 		if(addr == MAP_FAILED)
 			return -1;
 
 		newblock.addr = addr;
-		newblock.len = memblockalign;
+		newblock.len = PAGESIZE;
 	}
 
 	memset(newblock.addr, 0, newblock.len);
@@ -116,8 +110,8 @@ offset extendblock(int size)
 
 	if(add <= 0)
 		goto moveptr;
-	if(add % memblockalign)
-		add += (memblockalign - add % memblockalign);
+	if(add % PAGESIZE)
+		add += (PAGESIZE - add % PAGESIZE);
 	
 	int oldlen = newblock.len;
 	int newlen = oldlen + add;
