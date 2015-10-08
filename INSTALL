@@ -113,6 +113,8 @@ keyword for configure. It should work with any libc.
 LTO is generally harmless, but it requires support from cc/binutils, and its
 effects are usually minor. Because of this, it is not enabled by default.
 
+LTO does not work out-of-the-box with clang at this moment.
+
 
 Rebuilding
 ~~~~~~~~~~
