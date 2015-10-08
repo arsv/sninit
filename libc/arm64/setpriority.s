@@ -6,7 +6,7 @@
 
 setpriority:
 	mov	x8, NR_setpriority
-	b	unisys
+	b	_syscall
 
 .type setpriority,function
 .size setpriority,.-setpriority

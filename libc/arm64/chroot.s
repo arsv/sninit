@@ -6,7 +6,7 @@
 
 chroot:
 	mov	x8, NR_chroot
-	b	unisys
+	b	_syscall
 
 .type chroot,function
 .size chroot,.-chroot

@@ -7,7 +7,7 @@
 ppoll:
 	mov	x4, sizeof_sigset_t
 	mov	x8, NR_ppoll
-	b	unisys
+	b	_syscall
 
 .type ppoll,function
 .size ppoll,.-ppoll

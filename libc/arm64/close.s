@@ -6,7 +6,7 @@
 
 close:
 	mov	x8, NR_close
-	b	unisys
+	b	_syscall
 
 .type close,function
 .size close,.-close

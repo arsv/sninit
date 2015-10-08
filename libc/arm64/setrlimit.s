@@ -6,7 +6,7 @@
 
 setrlimit:
 	mov	x8, NR_setrlimit
-	b	unisys
+	b	_syscall
 
 .type setrlimit,function
 .size setrlimit,.-setrlimit

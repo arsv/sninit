@@ -6,7 +6,7 @@
 
 umask:
 	mov	x8, NR_umask
-	b	unisys
+	b	_syscall
 
 .type umask,function
 .size umask,.-umask

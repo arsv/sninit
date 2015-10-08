@@ -7,7 +7,7 @@ send:
 	mov	x4, #0
 	mov	x5, #0
 	ldr	x8, =NR_sendto
-	b	unisys
+	b	_syscall
 
 .type send,function
 .size send,.-send

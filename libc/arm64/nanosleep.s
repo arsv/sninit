@@ -6,7 +6,7 @@
 
 nanosleep:
 	mov	x8, NR_nanosleep
-	b	unisys
+	b	_syscall
 
 .type nanosleep,function
 .size nanosleep,.-nanosleep

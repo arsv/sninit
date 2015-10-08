@@ -6,7 +6,7 @@
 
 setfsuid:
 	mov	x8, NR_setfsuid
-	b	unisys
+	b	_syscall
 
 .type setfsuid,function
 .size setfsuid,.-setfsuid

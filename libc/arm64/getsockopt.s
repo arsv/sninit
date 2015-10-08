@@ -6,7 +6,7 @@
 
 getsockopt:
 	mov	x8, NR_getsockopt
-	b	unisys
+	b	_syscall
 
 .type getsockopt,function
 .size getsockopt,.-getsockopt

@@ -6,7 +6,7 @@
 
 setresgid:
 	mov	x8, NR_setresgid
-	b	unisys
+	b	_syscall
 
 .type setresgid,function
 .size setresgid,.-setresgid

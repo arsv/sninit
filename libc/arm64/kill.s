@@ -6,7 +6,7 @@
 
 kill:
 	mov	x8, NR_kill
-	b	unisys
+	b	_syscall
 
 .type kill,function
 .size kill,.-kill

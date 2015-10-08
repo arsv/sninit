@@ -6,7 +6,7 @@
 
 listen:
 	mov	x8, NR_listen
-	b	unisys
+	b	_syscall
 
 .type listen,function
 .size listen,.-listen

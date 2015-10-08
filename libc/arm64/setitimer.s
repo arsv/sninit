@@ -6,7 +6,7 @@
 
 setitimer:
 	mov	x8, NR_setitimer
-	b	unisys
+	b	_syscall
 
 .type setitimer,function
 .size setitimer,.-setitimer

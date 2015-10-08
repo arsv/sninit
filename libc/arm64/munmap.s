@@ -6,7 +6,7 @@
 
 munmap:
 	mov	x8, NR_munmap
-	b	unisys
+	b	_syscall
 
 .type munmap,function
 .size munmap,.-munmap

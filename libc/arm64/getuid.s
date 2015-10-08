@@ -6,7 +6,7 @@
 
 getuid:
 	mov	x8, NR_getuid
-	b	unisys
+	b	_syscall
 
 .type getuid,function
 .size getuid,.-getuid

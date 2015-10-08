@@ -6,7 +6,7 @@
 
 unshare:
 	mov	x8, NR_unshare
-	b	unisys
+	b	_syscall
 
 .type unshare,function
 .size unshare,.-unshare

@@ -6,7 +6,7 @@
 
 clock_gettime:
 	mov	x8, NR_clock_gettime
-	b	unisys
+	b	_syscall
 
 .type clock_gettime,function
 .size clock_gettime,.-clock_gettime

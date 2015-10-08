@@ -5,7 +5,7 @@
 
 mmap:
 	mov	x8, NR_mmap2
-	b	unisys
+	b	_syscall
 
 .type mmap,function
 .size mmap,.-mmap

@@ -6,7 +6,7 @@
 
 read:
 	mov	x8, NR_read
-	b	unisys
+	b	_syscall
 
 .type read,function
 .size read,.-read

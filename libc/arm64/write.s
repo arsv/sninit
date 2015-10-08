@@ -6,7 +6,7 @@
 
 write:
 	mov	x8, NR_write
-	b	unisys
+	b	_syscall
 
 .type write,function
 .size write,.-write

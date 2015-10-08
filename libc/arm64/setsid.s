@@ -6,7 +6,7 @@
 
 setsid:
 	mov	x8, NR_setsid
-	b	unisys
+	b	_syscall
 
 .type setsid,function
 .size setsid,.-setsid

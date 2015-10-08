@@ -26,7 +26,7 @@ cat <<END
 
 $syscall:
 	mov	x8, NR_$syscall
-	b	unisys
+	b	_syscall
 
 .type $syscall,function
 .size $syscall,.-$syscall

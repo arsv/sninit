@@ -6,7 +6,7 @@
 
 chdir:
 	mov	x8, NR_chdir
-	b	unisys
+	b	_syscall
 
 .type chdir,function
 .size chdir,.-chdir

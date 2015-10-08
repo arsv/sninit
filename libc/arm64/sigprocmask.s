@@ -7,7 +7,7 @@
 sigprocmask:
 	mov	x3, sizeof_sigset_t
 	mov	x8, NR_rt_sigprocmask
-	b	unisys
+	b	_syscall
 
 .type sigprocmask,function
 .size sigprocmask,.-sigprocmask

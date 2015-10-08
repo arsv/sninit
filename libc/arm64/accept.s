@@ -6,7 +6,7 @@
 
 accept:
 	mov	x8, NR_accept
-	b	unisys
+	b	_syscall
 
 .type accept,function
 .size accept,.-accept

@@ -11,7 +11,7 @@ fork:
 	mov	x3, 0		/* ctid */
 	mov	x4, 0		/* pt_regs */
 	mov	x8, NR_clone
-	b	unisys
+	b	_syscall
 
 .type fork,function
 .size fork,.-fork

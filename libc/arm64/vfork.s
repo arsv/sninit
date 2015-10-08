@@ -14,7 +14,7 @@ vfork:
 	mov	x3, 0		/* ctid */
 	mov	x4, 0		/* pt_regs */
 	mov	x8, NR_clone
-	b	unisys
+	b	_syscall
 
 .type vfork,function
 .size vfork,.-vfork

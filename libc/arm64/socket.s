@@ -6,7 +6,7 @@
 
 socket:
 	mov	x8, NR_socket
-	b	unisys
+	b	_syscall
 
 .type socket,function
 .size socket,.-socket

@@ -6,7 +6,7 @@
 
 getdents64:
 	mov	x8, NR_getdents64
-	b	unisys
+	b	_syscall
 
 .type getdents64,function
 .size getdents64,.-getdents64

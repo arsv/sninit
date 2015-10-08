@@ -6,7 +6,7 @@
 
 setfsgid:
 	mov	x8, NR_setfsgid
-	b	unisys
+	b	_syscall
 
 .type setfsgid,function
 .size setfsgid,.-setfsgid

@@ -11,6 +11,6 @@ stat:
 	mov	x0, AT_FDCWD
 	mov	x3, #0
 	mov	x8, NR_fstatat
-	b	unisys
+	b	_syscall
 
 .type stat,function

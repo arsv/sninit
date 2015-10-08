@@ -9,7 +9,7 @@
 sigaction:
 	mov	x8, NR_rt_sigaction
 	mov	x3, sizeof_sigset_t
-	b	unisys
+	b	_syscall
 
 .type sigaction,function
 .size sigaction,.-sigaction

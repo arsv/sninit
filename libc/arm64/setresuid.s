@@ -6,7 +6,7 @@
 
 setresuid:
 	mov	x8, NR_setresuid
-	b	unisys
+	b	_syscall
 
 .type setresuid,function
 .size setresuid,.-setresuid

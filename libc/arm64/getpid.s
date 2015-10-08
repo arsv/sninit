@@ -6,7 +6,7 @@
 
 getpid:
 	mov	x8, NR_getpid
-	b	unisys
+	b	_syscall
 
 .type getpid,function
 .size getpid,.-getpid

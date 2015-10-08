@@ -6,7 +6,7 @@
 
 mremap:
 	mov	x8, NR_mremap
-	b	unisys
+	b	_syscall
 
 .type mremap,function
 .size mremap,.-mremap

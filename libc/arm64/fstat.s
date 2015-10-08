@@ -6,7 +6,7 @@
 
 fstat:
 	mov	x8, NR_fstat
-	b	unisys
+	b	_syscall
 
 .type fstat,function
 .size fstat,.-fstat

@@ -10,9 +10,9 @@ errno:	.word 0
 .text
 .align 4
 
-.global unisys
+.global _syscall
 
-unisys:	
+_syscall:
 	svc	0
 
 	add	w1, w0, #0x1, lsl #12
@@ -26,5 +26,5 @@ unisys:
 	mov	x0, #-1
 	ret	/* error */
 
-.size unisys,.-unisys
-.type unisys,function
+.size _syscall,.-_syscall
+.type _syscall,function

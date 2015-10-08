@@ -6,7 +6,7 @@
 
 bind:
 	mov	x8, NR_bind
-	b	unisys
+	b	_syscall
 
 .type bind,function
 .size bind,.-bind

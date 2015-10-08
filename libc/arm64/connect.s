@@ -6,7 +6,7 @@
 
 connect:
 	mov	x8, NR_connect
-	b	unisys
+	b	_syscall
 
 .type connect,function
 .size connect,.-connect

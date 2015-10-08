@@ -10,7 +10,7 @@ reboot:
 	ldr	x0, =LINUX_REBOOT_MAGIC1
 	ldr	x1, =LINUX_REBOOT_MAGIC2
 	mov	x8, NR_reboot
-	b	unisys
+	b	_syscall
 
 .type reboot,function
 .size reboot,.-reboot

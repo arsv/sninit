@@ -6,7 +6,7 @@
 
 execve:
 	mov	x8, NR_execve
-	b	unisys
+	b	_syscall
 
 .type execve,function
 .size execve,.-execve

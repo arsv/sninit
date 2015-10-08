@@ -6,7 +6,7 @@
 dup2:
 	mov	x2, #0
 	ldr	x8, =NR_dup3
-	b	unisys
+	b	_syscall
 
 .type dup2,function
 .size dup2,.-dup2

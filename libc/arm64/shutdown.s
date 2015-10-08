@@ -6,7 +6,7 @@
 
 shutdown:
 	mov	x8, NR_shutdown
-	b	unisys
+	b	_syscall
 
 .type shutdown,function
 .size shutdown,.-shutdown
