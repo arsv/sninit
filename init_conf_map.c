@@ -40,35 +40,36 @@ export char* nextline(void);
 local int memblockalign = IRALLOC;
 
 /* The block is initially allocated to hold struct config and
-   struct scratch. Initrecs are added later with extendblock. */
+   struct scratch. Initrecs are added later with extendblock.
+
+   The only values of size ever used are sizeof(struct config) +
+   sizeof(struct scratch) in init_conf.c and 0 in tests, so there
+   is little point in check them.
+
+   There is a relatively unlikely case when a new reconfigure request
+   comes before newblock from the previous one is moved over to cfgblock.
+   In such a case, we re-use newblock without unmmaping it.
+   Again, it is always large enough, so the check is really redundant. */
 
 int mmapblock(int size)
 {
-	int aligned = size;
-
-	if(size % memblockalign)
-		aligned += (memblockalign - size % memblockalign);
+	if(size > memblockalign)
+		return -1;
 
 	if(nblock.addr) {
-		/* This is a relatively unlikely case when a new reconfigure
-		   request comes before newblock from the previous one
-		   is moved over to cfgblock. In such a case, try to re-use
-		   newblock without unmmaping it. Due to the way mextendblock
-		   works, the old block must be large enough; if it is not,
-		   it's a hard error. */
 		if(nblock.len < size)
 			return -1;
 	} else {
 		const int prot = PROT_READ | PROT_WRITE;
 		const int flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-		void* addr = mmap(NULL, aligned, prot, flags, -1, 0);
+		void* addr = mmap(NULL, memblockalign, prot, flags, -1, 0);
 
 		if(addr == MAP_FAILED)
 			return -1;
 
 		nblock.addr = addr;
-		nblock.len = aligned;
+		nblock.len = memblockalign;
 	}
 
 	memset(nblock.addr, 0, nblock.len);
@@ -87,7 +88,10 @@ static void* mremapnommu(void* oldaddr, size_t oldsize, size_t newsize, int flag
 	if(newaddr != MAP_FAILED)
 		return newaddr;
 
-	newaddr = mmap(NULL, newsize, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	const int prot = PROT_READ | PROT_WRITE;
+	const int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+
+	newaddr = mmap(NULL, newsize, prot, flags, -1, 0);
 
 	if(newaddr == MAP_FAILED)
 		return newaddr;
@@ -106,25 +110,28 @@ static void* mremapnommu(void* oldaddr, size_t oldsize, size_t newsize, int flag
 offset extendblock(int size)
 {
 	int ret = nblock.ptr;
-	int alloc = size;
 
-	if(nblock.len - nblock.ptr > size)
+	int rem = (nblock.len - nblock.ptr);	/* space remaining */
+	int add = size - rem;			/* space to be added */
+
+	if(add <= 0)
 		goto moveptr;
+	if(add % memblockalign)
+		add += (memblockalign - add % memblockalign);
 	
-	if(alloc % memblockalign)
-		alloc += (memblockalign - alloc % memblockalign);
+	int oldlen = nblock.len;
+	int newlen = oldlen + add;
 
-	/* size is just an int, overflows are possible (but very unlikely) */
-	if(alloc < 0 || nblock.len + alloc < 0)
+	if(newlen < oldlen)
+		return -1;	/* overflow? */
+
+	void* newaddr = mremap(nblock.addr, oldlen, newlen, MREMAP_MAYMOVE);
+
+	if(newaddr == MAP_FAILED)
 		return -1;
 
-	void* np = mremap(nblock.addr, nblock.len, nblock.len + alloc, MREMAP_MAYMOVE);
-
-	if(np == MAP_FAILED)
-		return -1;
-
-	nblock.addr = np;
-	nblock.len += alloc;
+	nblock.addr = newaddr;
+	nblock.len = newlen;
 moveptr:
 	nblock.ptr += size;
 
