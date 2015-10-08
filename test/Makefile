@@ -43,9 +43,9 @@ RUNS = $(patsubst %,%.run,$(TESTS))
 run: $(TESTS) $(OUTS)
 $(RUNS): %.run: %
 	$(RUN_)./$<
-$(OUTS): %.out: % | _test.sh
+$(OUTS): %.out: %
 	$(RUN_)./$< > $@
-	@./_test.sh $@
+	@grep -q '\<FAIL\>' $@ && cat $@ && false || true
 .PHONY: $(OUTS) $(RUNS)
 
 # Recompile init files in test/
