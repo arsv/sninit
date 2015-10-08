@@ -6,7 +6,7 @@
 
 clock_gettime:
 	mov	$NR_clock_gettime, %ax
-	jmp	unisysx
+	jmp	_syscallx
 
 .type clock_gettime,@function
 .size clock_gettime,.-clock_gettime

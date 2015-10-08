@@ -6,7 +6,7 @@
 
 umask:
 	mov	$NR_umask, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type umask,@function
 .size umask,.-umask

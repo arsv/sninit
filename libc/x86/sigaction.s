@@ -21,7 +21,7 @@ sigaction:
 	movl	7*4(%edi), %edx
 	movl	$sizeof_sigset_t, %esi
 
-	jmp	unisysc
+	jmp	_syscallc
 
 .type sigaction,@function
 .size sigaction,.-sigaction

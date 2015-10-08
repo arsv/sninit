@@ -6,7 +6,7 @@
 
 waitpid:
 	mov	$NR_waitpid, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type waitpid,@function
 .size waitpid,.-waitpid

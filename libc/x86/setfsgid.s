@@ -6,7 +6,7 @@
 
 setfsgid:
 	mov	$NR_setfsgid, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type setfsgid,@function
 .size setfsgid,.-setfsgid

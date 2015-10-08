@@ -17,13 +17,13 @@ vsyscall: .long sysint80h
 
 
 .text
-.global unisys
-.global unisysx
-.global unisysc
+.global _syscall
+.global _syscallx
+.global _syscallc
 
-unisys:
+_syscall:
 	mov	$0, %ah
-unisysx:
+_syscallx:
 	movzwl	%ax, %eax
 
 	push	%edi
@@ -39,7 +39,7 @@ unisysx:
 	movl   10*4(%edi), %ebp
 	movl	9*4(%edi), %edi
 
-unisysc:
+_syscallc:
 	call	*vsyscall
 
 	pop	%ebp
@@ -55,11 +55,11 @@ unisysc:
 	sbb	%eax, %eax
 ok:	ret
 
-.type unisysx,@function
-.size unisysx,.-unisysx
+.type _syscallx,@function
+.size _syscallx,.-_syscallx
 
-.type unisys,@function
-.size unisys,unisysx-unisys
+.type _syscall,@function
+.size _syscall,_syscallx-_syscall
 
 sysint80h:
 	int	$0x80

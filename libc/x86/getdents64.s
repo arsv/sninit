@@ -6,7 +6,7 @@
 
 getdents64:
 	mov	$NR_getdents64, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type getdents64,@function
 .size getdents64,.-getdents64

@@ -6,7 +6,7 @@
 
 ioctl:
 	mov	$NR_ioctl, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type ioctl,@function
 .size ioctl,.-ioctl

@@ -6,7 +6,7 @@
 
 munmap:
 	mov	$NR_munmap, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type munmap,@function
 .size munmap,.-munmap

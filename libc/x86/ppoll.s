@@ -20,7 +20,7 @@ ppoll:
 	movl	8*4(%edi), %esi
 	movl	$sizeof_sigset_t, %edi
 
-	jmp	unisysc
+	jmp	_syscallc
 
 .type ppoll,@function
 .size ppoll,.-ppoll

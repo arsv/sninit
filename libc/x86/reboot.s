@@ -26,7 +26,7 @@ reboot:
 	movl	$LINUX_REBOOT_MAGIC2, %ecx
 	movl	5*4(%esp), %edx
 
-	jmp	unisysc
+	jmp	_syscallc
 
 .type reboot,@function
 .size reboot,.-reboot

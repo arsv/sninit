@@ -19,10 +19,10 @@ test -z "$nr" && die "Can't find $syscall in bits/syscall.h"
 
 if [ "$nr" -ge 256 ]; then
 	reg=ax
-	unisys=unisysx
+	_syscall=_syscallx
 else
 	reg=al
-	unisys=unisys
+	_syscall=_syscall
 fi
 
 cat <<END
@@ -34,7 +34,7 @@ cat <<END
 
 $syscall:
 	mov	\$NR_$syscall, %$reg
-	jmp	$unisys
+	jmp	$_syscall
 
 .type $syscall,@function
 .size $syscall,.-$syscall

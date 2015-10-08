@@ -6,7 +6,7 @@
 
 open:
 	mov	$NR_open, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type open,@function
 .size open,.-open

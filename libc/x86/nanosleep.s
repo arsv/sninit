@@ -6,7 +6,7 @@
 
 nanosleep:
 	mov	$NR_nanosleep, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type nanosleep,@function
 .size nanosleep,.-nanosleep

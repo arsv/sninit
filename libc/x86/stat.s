@@ -6,7 +6,7 @@
 
 stat:
 	mov	$NR_stat, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type stat,@function
 .size stat,.-stat

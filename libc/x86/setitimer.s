@@ -6,7 +6,7 @@
 
 setitimer:
 	mov	$NR_setitimer, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type setitimer,@function
 .size setitimer,.-setitimer

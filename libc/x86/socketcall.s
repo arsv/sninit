@@ -9,7 +9,7 @@ socketcall:
 	movzbl %al,%eax
 	pushl %eax
 	movb $NR_socketcall, %al
-	call unisys
+	call _syscall
 	popl %ecx
 	popl %ecx
 	ret

@@ -7,9 +7,9 @@
 /* sigprocmask(how, set, old) := linux_sigprocmask(how, set, old, sizeof(sigset_t)) */
 /*             4sp  8sp 12sp                       4sp  8sp  12sp    16sp */
 
-/* To avoid messing with the stack to call unisys, we put a custom syscall preamble
-   here and jump to the point in unisys where arguments are already in their respective
-   registers. */
+/* To avoid messing with the stack to call _syscall, we put a custom syscall
+   preamble here and jump to the point in _syscall where arguments are already
+   in their respective registers. */
 
 sigprocmask:
 	xor	%eax, %eax
@@ -26,7 +26,7 @@ sigprocmask:
 	movl	7*4(%edi), %edx
 	movl	$sizeof_sigset_t, %esi
 
-	jmp	unisysc
+	jmp	_syscallc
 
 .type sigprocmask,@function
 .size sigprocmask,.-sigprocmask

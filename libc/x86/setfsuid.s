@@ -6,7 +6,7 @@
 
 setfsuid:
 	mov	$NR_setfsuid, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type setfsuid,@function
 .size setfsuid,.-setfsuid

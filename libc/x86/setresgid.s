@@ -6,7 +6,7 @@
 
 setresgid:
 	mov	$NR_setresgid, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type setresgid,@function
 .size setresgid,.-setresgid

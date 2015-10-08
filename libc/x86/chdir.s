@@ -6,7 +6,7 @@
 
 chdir:
 	mov	$NR_chdir, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type chdir,@function
 .size chdir,.-chdir

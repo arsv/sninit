@@ -6,7 +6,7 @@
 
 setresuid:
 	mov	$NR_setresuid, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type setresuid,@function
 .size setresuid,.-setresuid

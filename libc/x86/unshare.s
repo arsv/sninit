@@ -6,7 +6,7 @@
 
 unshare:
 	mov	$NR_unshare, %ax
-	jmp	unisysx
+	jmp	_syscallx
 
 .type unshare,@function
 .size unshare,.-unshare

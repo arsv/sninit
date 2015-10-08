@@ -6,7 +6,7 @@
 
 setsid:
 	mov	$NR_setsid, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type setsid,@function
 .size setsid,.-setsid

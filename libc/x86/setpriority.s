@@ -6,7 +6,7 @@
 
 setpriority:
 	mov	$NR_setpriority, %al
-	jmp	unisys
+	jmp	_syscall
 
 .type setpriority,@function
 .size setpriority,.-setpriority
