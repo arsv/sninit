@@ -10,8 +10,8 @@ extern offset extendblock(int size);
 export int addrecargv(struct initrec* entry, char* cmd, int exe);
 export char* strssep(char** str);
 
-local int addstrargarray(const char** args, int n);
-local int addstringarray(char* str);
+local int addstaticargv(const char** args, int n);
+local int addparsedargv(char* str);
 local int shellneeded(const char* cmd);
 local int isspace(int c);
 
@@ -48,13 +48,13 @@ int addrecargv(struct initrec* entry, char* cmd, int exe)
 
 	if(exe) {
 		const char* argv[] = { cmd };
-		return addstrargarray(argv, 1);
+		return addstaticargv(argv, 1);
 	} else if(shellneeded(cmd)) {
 		const char* argv[] = { "/bin/sh", "-c", cmd };
 		entry->flags |= C_SHELL;
-		return addstrargarray(argv, 3);
+		return addstaticargv(argv, 3);
 	} else {
-		return addstringarray(cmd);
+		return addparsedargv(cmd);
 	}
 }
 
@@ -76,7 +76,7 @@ int addstring(const char* s)
    array for (2) or (3). The array is not NULL-terminated, its size
    is always known statically. */
 
-int addstrargarray(const char** args, int n)
+int addstaticargv(const char** args, int n)
 {
 	int i;
 	offset argvo;	/* argv[] location in newblock */
@@ -104,7 +104,7 @@ int addstrargarray(const char** args, int n)
    over newly-built argv[] copies the strings themselves to newblock
    and replaces the pointers with offsets within newblock. */
 
-int addstringarray(char* str)
+int addparsedargv(char* str)
 {
 	int i;
 	int argc = 0;

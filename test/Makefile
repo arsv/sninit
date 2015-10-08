@@ -17,7 +17,7 @@ RUN_ := $(if $(RUN),$(RUN) ,)
 # Regular automated tests
 TESTS = t_mblocks t_parseinitline t_parsesrvfile t_strssep \
 	t_addinitrec t_conf t_addenviron t_itostr t_printf \
-	t_addstringarray t_addstrargarray t_fileblock t_tzinit \
+	t_addstaticargv t_addparsedargv t_fileblock t_tzinit \
 	t_initpass_pri t_initpass_sec t_initpass_wku t_initpass_rev \
 	t_readinitdir t_rewireptsarray t_linknode t_transferpids \
 	t_joincmd t_setrunflags t_findentry t_waitpids t_toofast \
@@ -91,9 +91,9 @@ t_itostr: t_itostr.o sys_printf.o test.o
 
 t_printf: t_printf.o sys_printf.o test.o
 
-t_addstringarray: t_addstringarray.o init_conf_map.o init_conf_arg.o test.o
+t_addstaticargv: t_addstaticargv.o init_conf_map.o init_conf_arg.o test.o
 
-t_addstrargarray: t_addstrargarray.o init_conf_map.o init_conf_arg.o test.o
+t_addparsedargv: t_addparsedargv.o init_conf_map.o init_conf_arg.o test.o
 
 t_linknode: t_linknode.o init_conf_rec.o init_conf_map.o init_conf_arg.o test.o
 

@@ -7,7 +7,7 @@
 extern struct newblock nblock;
 extern int mmapblock(int len);
 
-extern int addstrargarray(const char** args, int n);
+extern int addstaticargv(const char** args, int n);
 
 #define count(a) (sizeof(a)/sizeof(*a))
 #define to_offset(ptr) ((offset)((void*)ptr - NULL))
@@ -22,7 +22,7 @@ int main(void)
 	const char* arg[] = { "foo", "bar" };
 	int off = nblock.ptr;
 
-	int ret = addstrargarray(arg, 2);
+	int ret = addstaticargv(arg, 2);
 	A(ret == 0);
 	Eq(nblock.ptr, start + 3*sizeof(void*) + 8, "%i");
 

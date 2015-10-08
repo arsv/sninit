@@ -6,7 +6,7 @@
 
 extern struct newblock nblock;
 
-int addstringarray(char* str);
+int addparsedargv(char* str);
 extern int mmapblock(int len);
 
 #define count(a) (sizeof(a)/sizeof(*a))
@@ -22,7 +22,7 @@ int main(void)
 	char args[] = "blah  foo\tbar  ";
 	int off = nblock.ptr;
 
-	int ret = addstringarray(args);
+	int ret = addparsedargv(args);
 	A(ret == 0);
 	Eq(nblock.ptr, start + 4*sizeof(char*) + 13, "%i");
 
