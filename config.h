@@ -28,8 +28,7 @@
    this on non-MMU systems will build fine and fail at runtime. */
 //#define NOMMU
 
-/* Development mode: do not (attempt to) reboot,
-   and do not assume uid = euid = 0 */
+/* Development mode: do not assume uid = euid = 0 */
 //#define DEVMODE
 
 /* Timing constants, in seconds */
