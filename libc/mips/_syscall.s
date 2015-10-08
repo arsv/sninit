@@ -12,13 +12,13 @@ errno:	.word 0
 .align 2
 .set reorder
 
-.globl unisys
+.globl _syscall
 
-unisys:
+_syscall:
 	beq	$7, $0, ok
 	sw	$2, errno
 	li	$2, -1
 ok:	jr	$31
 
-.type unisys,function
-.size unisys,.-unisys
+.type _syscall,function
+.size _syscall,.-_syscall

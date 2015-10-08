@@ -21,7 +21,7 @@ reboot:
 	li	$a0, LINUX_REBOOT_MAGIC1
 	li	$a1, LINUX_REBOOT_MAGIC2
 	syscall
-	la	$t9, unisys
+	la	$t9, _syscall
 	jr	$t9
 
 .end reboot

@@ -9,7 +9,7 @@
 setitimer:
 	li	$2, NR_setitimer
 	syscall
-	la	$25, unisys
+	la	$25, _syscall
 	jr	$25
 
 .end setitimer

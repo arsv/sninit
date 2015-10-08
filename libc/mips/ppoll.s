@@ -20,7 +20,7 @@ ppoll:
 	sw	$t9, 16($sp)
 	syscall
 	addi	$sp, $sp, 4
-	la	$t9, unisys
+	la	$t9, _syscall
 	jr	$t9
 
 .end ppoll

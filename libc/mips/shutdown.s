@@ -9,7 +9,7 @@
 shutdown:
 	li	$2, NR_shutdown
 	syscall
-	la	$25, unisys
+	la	$25, _syscall
 	jr	$25
 
 .end shutdown

@@ -9,7 +9,7 @@
 read:
 	li	$2, NR_read
 	syscall
-	la	$25, unisys
+	la	$25, _syscall
 	jr	$25
 
 .end read

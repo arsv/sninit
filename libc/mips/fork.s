@@ -4,17 +4,12 @@
 .text
 .set reorder
 .global fork
-.global vfork
 .ent fork
 
-vfork:
 fork:
 	li	$2, NR_fork
 	syscall
-	la	$25, unisys
+	la	$25, _syscall
 	jr	$25
 
 .end fork
-
-.type vfork,function
-.size vfork,0

@@ -9,7 +9,7 @@
 clock_gettime:
 	li	$2, NR_clock_gettime
 	syscall
-	la	$25, unisys
+	la	$25, _syscall
 	jr	$25
 
 .end clock_gettime

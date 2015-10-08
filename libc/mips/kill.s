@@ -9,7 +9,7 @@
 kill:
 	li	$2, NR_kill
 	syscall
-	la	$25, unisys
+	la	$25, _syscall
 	jr	$25
 
 .end kill

@@ -9,7 +9,7 @@
 listen:
 	li	$2, NR_listen
 	syscall
-	la	$25, unisys
+	la	$25, _syscall
 	jr	$25
 
 .end listen
