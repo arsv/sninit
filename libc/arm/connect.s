@@ -7,7 +7,7 @@
 connect:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_connect
-	b	unisys
+	b	_syscall
 
 .type connect,function
 .size connect,.-connect

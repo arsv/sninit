@@ -7,7 +7,7 @@
 setfsgid:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_setfsgid
-	b	unisys
+	b	_syscall
 
 .type setfsgid,function
 .size setfsgid,.-setfsgid

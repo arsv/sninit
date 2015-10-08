@@ -7,7 +7,7 @@
 setresgid:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_setresgid
-	b	unisys
+	b	_syscall
 
 .type setresgid,function
 .size setresgid,.-setresgid

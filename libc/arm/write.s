@@ -7,7 +7,7 @@
 write:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_write
-	b	unisys
+	b	_syscall
 
 .type write,function
 .size write,.-write

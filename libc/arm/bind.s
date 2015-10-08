@@ -7,7 +7,7 @@
 bind:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_bind
-	b	unisys
+	b	_syscall
 
 .type bind,function
 .size bind,.-bind

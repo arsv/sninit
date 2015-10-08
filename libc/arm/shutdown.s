@@ -7,7 +7,7 @@
 shutdown:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_shutdown
-	b	unisys
+	b	_syscall
 
 .type shutdown,function
 .size shutdown,.-shutdown

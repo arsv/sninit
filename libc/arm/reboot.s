@@ -11,7 +11,7 @@ reboot:
 	ldr	r0, =LINUX_REBOOT_MAGIC1
 	ldr	r1, =LINUX_REBOOT_MAGIC2
 	ldr	r7, =NR_reboot
-	b	unisys
+	b	_syscall
 
 .type reboot,function
 .size reboot,.-reboot

@@ -12,7 +12,7 @@ ppoll:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r4, =sizeof_sigset_t
 	ldr	r7, =NR_ppoll
-	b	unisys
+	b	_syscall
 
 .type ppoll,function
 .size ppoll,.-ppoll

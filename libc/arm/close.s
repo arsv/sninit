@@ -7,7 +7,7 @@
 close:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_close
-	b	unisys
+	b	_syscall
 
 .type close,function
 .size close,.-close

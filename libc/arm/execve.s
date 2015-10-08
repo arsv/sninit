@@ -7,7 +7,7 @@
 execve:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_execve
-	b	unisys
+	b	_syscall
 
 .type execve,function
 .size execve,.-execve

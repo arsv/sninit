@@ -7,7 +7,7 @@
 dup2:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_dup2
-	b	unisys
+	b	_syscall
 
 .type dup2,function
 .size dup2,.-dup2

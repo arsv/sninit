@@ -16,7 +16,7 @@ waitpid:
 	ldr	r4, [sp,#16]
 	ldr	r5, [sp,#20]
         ldr     r7, =NR_wait4
-	b	unisys
+	b	_syscall
 
 .type waitpid,function
 .size waitpid,.-waitpid

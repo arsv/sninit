@@ -7,7 +7,7 @@
 unshare:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_unshare
-	b	unisys
+	b	_syscall
 
 .type unshare,function
 .size unshare,.-unshare

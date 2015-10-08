@@ -7,7 +7,7 @@
 getsockopt:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_getsockopt
-	b	unisys5
+	b	_syscall5
 
 .type getsockopt,function
 .size getsockopt,.-getsockopt

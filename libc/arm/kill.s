@@ -7,7 +7,7 @@
 kill:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_kill
-	b	unisys
+	b	_syscall
 
 .type kill,function
 .size kill,.-kill

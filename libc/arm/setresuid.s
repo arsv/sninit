@@ -7,7 +7,7 @@
 setresuid:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_setresuid
-	b	unisys
+	b	_syscall
 
 .type setresuid,function
 .size setresuid,.-setresuid

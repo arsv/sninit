@@ -28,7 +28,7 @@ cat <<END
 $syscall:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_$syscall
-	b	unisys$nargs
+	b	_syscall$nargs
 
 .type $syscall,function
 .size $syscall,.-$syscall

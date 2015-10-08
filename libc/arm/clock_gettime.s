@@ -7,7 +7,7 @@
 clock_gettime:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_clock_gettime
-	b	unisys
+	b	_syscall
 
 .type clock_gettime,function
 .size clock_gettime,.-clock_gettime

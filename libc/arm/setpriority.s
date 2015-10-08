@@ -7,7 +7,7 @@
 setpriority:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_setpriority
-	b	unisys
+	b	_syscall
 
 .type setpriority,function
 .size setpriority,.-setpriority

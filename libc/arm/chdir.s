@@ -7,7 +7,7 @@
 chdir:
 	stmfd	sp!,{r4,r5,r7,lr}
 	ldr	r7, =NR_chdir
-	b	unisys
+	b	_syscall
 
 .type chdir,function
 .size chdir,.-chdir

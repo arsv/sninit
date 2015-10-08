@@ -10,21 +10,21 @@ errno:	.word 0
 .text
 .align 4
 
-.global unisys
-.global unisys5
-.global unisys6
+.global _syscall
+.global _syscall5
+.global _syscall6
 .global errno
 
 # Each syscall does
 #	stmfd	sp!,{r4,r5,r7,lr}
-# before jumping to unisys*, that's 4*4=16 bytes, so the original stack
+# before jumping to _syscall*, that's 4*4=16 bytes, so the original stack
 # content starts at [sp,#16].
 
-unisys6:				/* 6-arg syscall */
+_syscall6:				/* 6-arg */
 	ldr	r5, [sp,#20]
-unisys5:				/* 5-arg syscall */
+_syscall5:				/* 5-arg */
 	ldr	r4, [sp,#16]
-unisys:					/* 4 or less args */
+_syscall:				/* 4 or less args */
 	swi	0
         cmn     r0, #4096
         rsbcs   r2, r0, #0
@@ -34,11 +34,11 @@ unisys:					/* 4 or less args */
         ldmfd   sp!,{r4,r5,r7,pc}
 	mov	pc, lr			/* return */
 
-.size unisys,.-unisys
-.type unisys,function
+.size _syscall,.-_syscall
+.type _syscall,function
 
-.size unisys5,unisys-unisys5
-.type unisys5,function
+.size _syscall5,_syscall-_syscall5
+.type _syscall5,function
 
-.size unisys6,unisys5-unisys6
-.type unisys6,function
+.size _syscall6,_syscall5-_syscall6
+.type _syscall6,function
