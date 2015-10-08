@@ -28,7 +28,7 @@ XTESTS = xprintf xhello xopen xvfork xsigprocmask xreboot xppoll
 
 # Default rule — build all tests but do not run them
 all: $(TESTS)
-
+tests: $(TESTS)
 # Do not build or run these unless explicitly requested
 xtests: $(XTESTS)
 
