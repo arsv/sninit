@@ -34,21 +34,6 @@ If you don't need man pages as well, use
 	make DESTDIR=(...) install-bin-stripped
 
 
-Which libc to use
-~~~~~~~~~~~~~~~~~
-In most cases sninit should be built with dietlibc.
-
-sninit does not need dynamic libc, and will not benefit from using one.
-The smallest sninit executable is the one linked statically against dietlibc.
-
-sninit also does not need anything other than basic syscalls and a handful
-of bog-standard string manipulation function from libc.
-It will not benefit from using anything fancier than dietlibc.
-
-Settings for other libc-s are only provided for completeness,
-for testing, and for unusual cases not considered here.
-
-
 Building with bundled libc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 sninit comes with a stripped-down, minimalistic subset of dietlibc
@@ -94,11 +79,12 @@ Size optimization (-Os) helps in most cases.
 
 Building with musl
 ~~~~~~~~~~~~~~~~~~
-Use CC = musl-gcc; no other settings should be necessary.
-
+Use CC = musl-gcc when building on non-musl system.
 If musl-gcc complains about linux/*.h, you probably have no linux headers
 in musl-gcc path. Symlink /usr/include/linux and /usr/include/asm to
 $MUSL/include/linux and $MUSL/include/asm respectively.
+
+For musl-based systems, no settings should be necessary.
 
 
 Building with glibc or uClibc
@@ -136,4 +122,4 @@ does not track dependencies on config.mk
 
 Use "make distclean" to remove all generated files including target executable.
 Note however that config.h and config.mk are modified in place, there are no
-autoconf-style config.h.in or config.mk.in, so distclean will not restore those.
+autoconf-style config.h.in or config.mk.in, so distclean will not restore them.
