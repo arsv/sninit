@@ -190,7 +190,8 @@ sbin = sbin/trap sbin/slogdg
 sbin: $(sbin)
 $(sbin): ; $(MAKE) -C sbin $(notdir $(sbin))
 
-clean: clean-test clean-sbin
+clean: clean-test
+distclean: clean-sbin	# does not depend on configuration
 
 clean-test:
 	$(MAKE) -C test clean
