@@ -56,7 +56,7 @@ void markdead(struct initrec* p, int status)
 {
 	if(WIFEXITED(status) && !WEXITSTATUS(status))
 		;    /* zero exits are ok */
-	else if(WIFSIGNALED(status) && (p->flags & (P_SIGTERM | P_SIGKILL)))
+	else if(p->flags & (P_SIGTERM | P_SIGKILL))
 		;    /* expected exit, init killed it */
 	else if(p->flags & C_HUSH)
 		;    /* should not be reported */
@@ -66,7 +66,7 @@ void markdead(struct initrec* p, int status)
 		;    /* no point in timing run-once entries */
 	else if(p->flags & C_FAST)
 		;    /* this entry is allowed to respawn fast */
-	else if(WIFSIGNALED(status) && (p->flags & (P_SIGTERM | P_SIGKILL)))
+	else if(p->flags & (P_SIGTERM | P_SIGKILL))
 		;    /* expected exits should not be checked */
 	else checktoofast(p, status);
 
