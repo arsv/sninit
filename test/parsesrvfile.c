@@ -1,27 +1,38 @@
 #include "../init.h"
 #include "../init_conf.h"
+#include "../config.h"
 #include "_test.h"
 
 #define RET 0xAB
 
 extern struct fblock fileblock;
 
+#define NAME 50
+#define RLVL 50
+#define CMD 1000
+
 struct {
 	int called;
-	char* name;
-	char* rlvl;
-	char* cmd;
+	char name[NAME];
+	char rlvl[RLVL];
+	char cmd[CMD];
 	int exe;
 } U;
 
 extern int parsesrvfile(char* fullname, char* basename);
 
+/* Fileblock lives long enough for us to copy pointer here,
+   but gcc somehow manages to optimize out SRDEFAULT, placing
+   it somewhere in the stack.
+
+   To avoid false negatives, just copy everything. */
+
 int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 {
 	U.called++;
-	U.name = name;
-	U.rlvl = rlvl;
-	U.cmd = cmd;
+	strncpy(U.name, name, NAME);
+	strncpy(U.rlvl, rlvl, RLVL);
+	strncpy(U.cmd, cmd, CMD);
 	U.exe = exe;
 	return RET;
 }
@@ -89,13 +100,13 @@ int main(void)
 	LOG("non-shebang, with comments");
 	TEST(	"# some comment goes here\n"
 		"/bin/echo -n foo\n",
-		"S3+", "/bin/echo -n foo", 0);
+		SRDEFAULT, "/bin/echo -n foo", 0);
 
 	LOG("non-shebang, with comments, empty line after");
 	TEST(	"# some comment goes here\n"
 		"\n"
 		"/bin/echo -n foo\n",
-		"S3+", "/bin/echo -n foo", 0);
+		SRDEFAULT, "/bin/echo -n foo", 0);
 
 	LOG("non-shebang, with comments, empty line in-between");
 	TEST(	"# some comment goes here\n"
@@ -103,7 +114,7 @@ int main(void)
 		"# some more comments\n"
 		"\n"
 		"/bin/echo -n foo\n",
-		"S3+", "/bin/echo -n foo", 0);
+		SRDEFAULT, "/bin/echo -n foo", 0);
 
 	return 0;
 }
