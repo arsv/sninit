@@ -44,7 +44,7 @@ $(RUNS): %.run: %
 	$(RUN_)./$<
 $(OUTS): %.out: %
 	$(RUN_)./$< > $@
-	@grep -q '\<FAIL\>' $@ && cat $@ && false || true
+	@if grep -q '\<FAIL\>' $@; then cat $@; false; fi
 .PHONY: $(OUTS) $(RUNS)
 
 # Recompile init files in test/
