@@ -15,7 +15,6 @@ The files are stored in misc/buildroot directory within sninit source tree.
 Prerequisites
 ~~~~~~~~~~~~~
 * buildroot-2015.08.1
-  With minor tweaks, other buildroot versions should work as well.
   Get it from http://buildroot.uclibc.org/
 
 * buildroot dependencies installed, see list here:
@@ -69,14 +68,56 @@ window if everything went well. Login as root and use telinit to communicate
 with the running sninit.
 
 
+Building without sninit defconfig
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using defconfigs supplied with sninit is not necessary. Buildroot comes with
+its own set of defconfigs, and it can be configured manually.
+
+To add sninit to arbitrary Buildroot configuration, run menuconfig with
+proper BR2_EXTERNAL value:
+
+	make qemu_arm_versatile_defconfig   # optional
+	make BR2_EXTERNAL=$SN/misc/buildroot menuconfig
+
+While in menuconfig, select System Configuration -> Init system -> None,
+then enable sninit under User-provided options.
+
+If you want to use inittab and/or qemu scripts provided with sninit, set
+
+	System configuration -> Root filesystem overlay:
+		$(BR2_EXTERNAL)/board/sninit/rootfs_overlay
+	System configuration -> Custom scripts to run before ...
+		$(BR2_EXTERNAL)/board/sninit/post_build.sh
+	System configuration -> Extra post-{build,image} arguments
+		<arch> $(BR2_EXTERNAL)
+
+Replace <arch> with your actual architecture; this is what will be tested
+in case statement in post_build.sh. Check sninit_*_defconfig to see how
+this values should look like.
+
+Do check post build scripts! See below on this.
+
+Buildroot does not allow multiple BR2_EXTERNAL values in the same build.
+If you want to use your own external tree, you'll need to copy sninit
+package over there and adjust SNINIT_SOURCE_DIR in sninit.mk.
+
+
+Troubleshooting version mismatch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Different Buildroot versions come with configs for different kernel versions.
+Sadly defconfigs do not allow settings like "use whatever you've got",
+instead there is something like board/qemu/arm-versatile/linux-4.1.config
+and build fails if there is only linux-4.2.config available.
+
+If this happens, ditch sninit defconfigs and use of defconfigs buildroot's
+own defconfigs. Check $BR/configs/qemu_* and the section above.
+
+
 Troubleshooting the build
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 In case the build fails before it gets to sninit, try building a clean
 Buildroot system without using supplied defconfigs to factor out possible
 bugs in defconfigs.
-Make sure to match target architecture and kernel configuration.
-Compare variable values in $SN/misc/buildroot/configs/sninit_(arch)_defconfig
-with what happens to be in $BR/.config after running menuconfig.
 
 In case sninit build fails, a quick way to re-try it (to get output and such):
 	rm -fr output/build/snint*
