@@ -120,5 +120,15 @@ int main(void)
 	ASSERT(I.pid == -1);
 	ASSERT(I.flags == (SLOWENTRY | P_WAS_OK));	/* XXX: maybe clear it here? */
 
+	/* expected exit does not count as a failure */
+	run(SLOWENTRY | P_SIGTERM | P_WAS_OK, FAST, KILL(SIGTERM));
+	ASSERT(I.flags == (SLOWENTRY | P_WAS_OK));
+	/* even if it's a different signal */
+	run(SLOWENTRY | P_SIGTERM | P_WAS_OK, FAST, KILL(SIGSEGV));
+	ASSERT(I.flags == (SLOWENTRY | P_WAS_OK));
+	/* even if it's an abnormal exit, not a kill */
+	run(SLOWENTRY | P_SIGTERM | P_WAS_OK, FAST, EXIT(1));
+	ASSERT(I.flags == (SLOWENTRY | P_WAS_OK));
+
 	return 0;
 }
