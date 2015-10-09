@@ -16,11 +16,11 @@ RUN_ := $(if $(RUN),$(RUN) ,)
 
 # Regular automated tests
 TESTS = addenviron addinitrec addparsedargv addstaticargv addstring \
-	conf dumprec dumpstate fileblock findentry itostr joincmd \
-	linknode newblock parseinitline parsesrvfile pass_pri pass_rev \
-	pass_sec pass_wku pintlen printf readinitdir rewireptsarray rlstr \
-	setrunflags shellneeded shouldbeshown strssep toofast transferpids \
-	tzinit waitpids warn
+	conf dumprec dumpstate fileblock findentry initpass_pri initpass_rev \
+	initpass_sec initpass_wku itostr joincmd linknode newblock \
+	parseinitline parsesrvfile pintlen printf readinitdir rewireptsarray \
+	rlstr setrunflags shellneeded shouldbeshown strssep toofast \
+	transferpids tzinit waitpids warn
 
 # Tests with manual check (for now)
 XTESTS = xhello xopen xprintf xvfork xsigprocmask xreboot xppoll
@@ -94,11 +94,11 @@ linknode: linknode.o init_conf_rec.o init_conf_map.o init_conf_arg.o _test.o
 rewireptsarray: rewireptsarray.o init_conf.o init_conf_map.o _test.o
 fileblock: fileblock.o init_conf_map.o _test.o
 tzinit: tzinit.o init_time_tz.o init_time_stamp.o _test.o
-pass_pri: pass_pri.o pass_.o init_pass.o _test.o
-pass_sec: pass_sec.o pass_.o init_pass.o _test.o
-pass_wku: pass_wku.o pass_.o init_pass.o _test.o
-pass_rev: pass_rev.o pass_.o init_pass.o _test.o
-pass_off: pass_off.o pass_.o init_pass.o _test.o
+initpass_pri: initpass_pri.o initpass_.o init_pass.o _test.o
+initpass_sec: initpass_sec.o initpass_.o init_pass.o _test.o
+initpass_wku: initpass_wku.o initpass_.o init_pass.o _test.o
+initpass_rev: initpass_rev.o initpass_.o init_pass.o _test.o
+initpass_off: initpass_off.o initpass_.o init_pass.o _test.o
 setrunflags: setrunflags.o init_conf_key.o _test.o
 readinitdir: readinitdir.o init_conf_dir.o init_conf_map.o _test.o
 transferpids: transferpids.o init_conf.o init_conf_map.o init_find.o _test.o
