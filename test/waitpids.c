@@ -1,3 +1,5 @@
+#include <stdarg.h>
+#include <signal.h>
 #include "../init.h"
 #include "_test.h"
 
@@ -7,91 +9,150 @@ time_t passtime;
 
 /* Startup: I1 * I2 * I3 I4 I5 * rlswitch */
 /* C_FAST to prevent DTF checks from messing up the results;
-   DTF logic test are in t_toofast. */
-struct initrec I0 = { .pid = 11, .flags = C_FAST };
-struct initrec I1 = { .pid = 22, .flags = C_FAST | P_SIGTERM };
-struct initrec I2 = { .pid = 33, .flags = C_FAST | P_SIGTERM | P_SIGKILL };
-struct initrec I3 = { .pid = 44, .flags = C_FAST };
-struct initrec I4 = { .pid = 55, .flags = C_FAST };
-struct initrec I5 = { .pid = 66, .flags = C_FAST };
+   For DTF logic tests see toofast.c */
+struct initrec I1 = { .name = "", .pid = 0 };
+struct initrec I2 = { .name = "", .pid = 0 };
+struct initrec I3 = { .name = "", .pid = 0 };
+struct initrec I4 = { .name = "", .pid = 0 };
+struct initrec I5 = { .name = "", .pid = 0 };
+struct initrec I6 = { .name = "", .pid = 0 };
 
-struct initrec* testinittab[] = { NULL, &I0, &I1, &I2, &I3, &I4, &I5, NULL };
-struct config testconfig = { .inittab = testinittab + 1, .initnum = sizeof(testinittab)/sizeof(void*) - 2 };
+struct initrec* testinittab[] = { NULL, &I1, &I2, &I3, &I4, &I5, &I6, NULL };
+struct config testconfig = {
+	.inittab = testinittab + 1,
+	.initnum = sizeof(testinittab)/sizeof(void*) - 2
+};
 
 struct config* cfg = &testconfig;
 
 /* return status: 0xAABB, AA = exit code, BB = signal */
 /* BB = 0x00 means exited, not killed */
 /* BB = 0x7F means stopped */
-struct waitret {
-	int pid;
-	int status;
-} waitret[] = {
-	{ 11, 0x0000 }, /* I0 died on its own */
-	{ 33, 0x0013 }, /* I2 got killed */
-	{ 22, 0x0014 }, /* I1 got killed as well */
-	/* 44 is not in the list */
-	{ 66, 0x1300 }, /* I5 exited abnormally */
-	{  0, 0 }
-};
+#define EXIT(n) ((n & 0xFF) << 8)
+#define KILL(n) (n & 0xFF)
 
-struct waitret* waitptr = waitret;
-int waitcnt = 0;
+int waitstatus = 0;
+
+/* pid < -1: child waiting to be reaped
+   pid = -1: child has been reaped and marked dead in waitpids()
+   pid = 0: ignore this child */
+
+int waitpid(int ignored, int* status, int flags)
+{
+	struct initrec *p, **pp;
+
+	for(pp = cfg->inittab; (p = *pp); pp++)
+		if(p->pid < -1) {
+			int ret = -p->pid;
+			*status = waitstatus;
+			p->pid = ret;
+			return ret;
+		}
+
+	return -1;
+}
+
+#define BUF 1000
+char warnbuf[BUF+1];
+
+void warn(const char* fmt, ...)
+{
+	va_list ap;
+	char* p = warnbuf + strlen(warnbuf);
+
+	va_start(ap, fmt);
+	int n = vsnprintf(p, BUF, fmt, ap);
+	va_end(ap);
+
+	p[n] = '\0';
+}
+
+void reset(void)
+{
+	struct initrec *p, **pp;
+	int i;
+
+	memset(warnbuf, 0, BUF);
+
+	for(i = 0, pp = cfg->inittab; (p = *pp); pp++, i++)
+		p->pid = 11*(i+1);
+};
 
 extern void waitpids(void);
 
-int waitpid(int pid, int* status, int flags)
+void run(struct initrec* p, int flags, int status)
 {
-	int ret = waitptr->pid;
-
-	if(!waitcnt)
-		return -1;
-	else
-		waitcnt--;
-
-	if(!ret)
-		return -1;
-
-	*status = waitptr->status;
-	waitptr++;
-
-	return ret;
+	reset();
+	waitstatus = status;
+	p->pid = -p->pid;
+	p->flags = flags;
+	waitpids();
 }
-
-#define R1 (1 << 1)
-#define R6 (1 << 6)
-#define Ra (1 << 10)
-#define Rb (1 << 11)
 
 int main(void)
 {
-	/* Simple common case, I0 and I2 die at the same time */
-	/* Make sure they get marked, and nothing else is changed */
-	waitcnt = 2;
+	/* Dry run */
+	reset();
 	waitpids();
-	ASSERT(I0.pid == -1);
-	ASSERT(I1.pid == 22);
-	ASSERT(I2.pid == -1);
-	ASSERT(I2.flags == C_FAST);
-	ASSERT(I3.pid == 44);
-	ASSERT(I4.pid == 55);
-	ASSERT(I5.pid == 66);
+	ASSERT(I1.pid > 0);
+	ASSERT(I2.pid > 0);
+	ASSERT(I3.pid > 0);
+	ASSERT(I4.pid > 0);
+	ASSERT(I5.pid > 0);
+	ASSERT(I6.pid > 0);
 
-	/* Are signal flags removed properly? */
-	waitcnt = 1;
+	/* Simple common case, I1 and I3 die at the same time.
+	   Make sure they get marked, and nothing else is changed.
+	   This is the only test for the loop, the rest are one pid at a time. */
+	reset();
+	I1.pid = -I1.pid;
+	I3.pid = -I3.pid;
+	waitstatus = EXIT(0);
 	waitpids();
 	ASSERT(I1.pid == -1);
-	ASSERT(I1.flags == C_FAST);
+	ASSERT(I2.pid > 0);
+	ASSERT(I3.pid == -1);
+	ASSERT(I4.pid > 0);
+	ASSERT(I5.pid > 0);
+	ASSERT(I6.pid > 0);
+	STREQUALS(warnbuf, "");
 
-	/* Just a simple abnormal exit */
-	waitcnt = 1;
-	waitpids();
+	/* Are signal flags removed properly? */
+	run(&I1, C_FAST | P_SIGTERM, KILL(SIGTERM));
+	ASSERT(I1.pid == -1);
+	ASSERT(I1.flags == C_FAST);
+	STREQUALS(warnbuf, "");
+
+	/* Abnormal exit should be reported */
+	run(&I3, C_FAST, EXIT(5));
+	ASSERT(I3.pid == -1);
+	ASSERT(I3.flags == C_FAST);
+	STREQUALS(warnbuf, "[33] abnormal exit 5");
+
+	/* Unexpected signal */
+	run(&I5, C_FAST, KILL(SIGABRT));
 	ASSERT(I5.pid == -1);
 	ASSERT(I5.flags == C_FAST);
+	STREQUALS(warnbuf, "[55] killed by SIGABRT");
 
-	/* Dry run */
-	waitcnt = 0;
-	waitpids();
+	/* Unknown signal */
+	run(&I4, C_FAST, KILL(100));
+	ASSERT(I4.pid == -1);
+	ASSERT(I4.flags == C_FAST);
+	STREQUALS(warnbuf, "[44] killed by signal 100");
+
+	/* Signal kills are ignored for entries with P_SIG*,
+	   even if it's not the expected signal. */
+	run(&I2, C_FAST | P_SIGTERM | P_SIGKILL, KILL(SIGBUS));
+	ASSERT(I2.pid == -1);
+	ASSERT(I2.flags == C_FAST);
+	STREQUALS(warnbuf, "");
+
+	/* C_HUSH entries are not reported */
+	run(&I4, C_FAST | C_HUSH, KILL(SIGSEGV));
+	ASSERT(I4.pid == -1);
+	ASSERT(I4.flags == (C_FAST | C_HUSH));
+	STREQUALS(warnbuf, "");
 
 	return 0;
 }

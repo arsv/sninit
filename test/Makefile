@@ -104,7 +104,7 @@ transferpids: transferpids.o init_conf.o init_conf_map.o init_find.o _test.o
 joincmd: joincmd.o init_dump.o _test.o
 rlstr: rlstr.o init_dump.o _test.o
 findentry: findentry.o init_find.o _test.o
-waitpids: waitpids.o init_wait.o _test.o
+waitpids: waitpids.o init_wait.o sys_printf.o _test.o
 toofast: toofast.o init_wait.o _test.o
 warn: warn.o init_warn.o sys_printf.o
 pintlen: pintlen.o init_dump.o _test.o
