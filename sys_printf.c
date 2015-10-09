@@ -117,15 +117,3 @@ refmt:			switch(*(fmt++)) {
 
 	return ret;
 }
-
-int snprintf(char* buf, size_t len, const char* fmt, ...)
-{
-	int ret;
-	va_list ap;
-
-	va_start(ap, fmt);
-	ret = vsnprintf(buf, len, fmt, ap);
-	va_end(ap);
-
-	return ret;
-}

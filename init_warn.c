@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <errno.h>
 #include "config.h"
@@ -26,7 +27,7 @@
 
    There is a lot of overlap between the cases, so the code calls warn()
    and everything else is decided within warn(). This also keeps nasty
-   snprintf stuff in a single location. */
+   vsnprintf stuff in a single location. */
 
 int warnfd = 0;
 
@@ -52,6 +53,8 @@ extern int timestamp(char* buf, int len);
 #define LOG_NOTICE	5
 #define LOG_DAEMON	3<<3
 
+local const char* hdr = "<29>";	/* = <LOG_NOTICE|LOG_DAEMON> */
+local const char* tag = "init: ";
 
 /* During telinit request, warnfd is the open telinit connection.
    In case connection fails, we set warnfd to -1 to "lock" warn,
@@ -76,26 +79,22 @@ void warn(const char* fmt, ...)
 {
 	va_list ap;
 	bss char buf[HDRBUF+MSGBUF+2];
-	int hdrlen;
-	int msglen;
-	int taglen;
 	int origerrno = errno;	/* timestamp() may overwrite it */
 
 	if(warnfd < 0)
 		return;
 
-	if(warnfd == 2) {
-		hdrlen = snprintf(buf, HDRBUF, "<%i>", LOG_DAEMON | LOG_NOTICE);
+	int hdrlen = strlen(hdr);
+	strncpy(buf, hdr, HDRBUF);
+	if(warnfd == 2)
 		hdrlen += timestamp(buf + hdrlen, HDRBUF - hdrlen);
-	} else {
-		hdrlen = 0;
-	}
 
-	taglen = snprintf(buf + hdrlen, HDRBUF - hdrlen, "init: ");
+	int taglen = strlen(tag);
+	strncpy(buf + hdrlen, tag, HDRBUF - hdrlen);
 
 	errno = origerrno;
 	va_start(ap, fmt);
-	msglen = vsnprintf(buf + hdrlen + taglen, MSGBUF, fmt, ap);
+	int msglen = vsnprintf(buf + hdrlen + taglen, MSGBUF, fmt, ap);
 	va_end(ap);
 
 	if(warnfd > 2) {
