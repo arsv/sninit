@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include "_test.h"
@@ -9,8 +10,17 @@
    Some format strings below are intentionally incorrect, gcc notices
    that and complains. */
 
+int wrap(char* buf, int len, const char* fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	int ret = vsnprintf(buf, len, fmt, ap);
+	va_end(ap);
+	return ret;
+}
+
 #define TEST(expected, ...) { \
-	ret = snprintf(data, DATA, __VA_ARGS__); \
+	ret = wrap(data, DATA, __VA_ARGS__); \
 	STREQUALS(data, expected); \
 	INTEQUALS(ret, strlen(data)); \
 }
