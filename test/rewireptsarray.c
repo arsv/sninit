@@ -20,7 +20,7 @@ extern void rewireptrsarray(void** a);
 
 int main(void)
 {
-	T(mmapblock(10));
+	ZERO(mmapblock(10));
 
 	/* First, construct required pointers structure */
 	int testargc = 3;
@@ -52,11 +52,11 @@ int main(void)
 	rewireptrsarray((void**) argv);
 
 	/* ..and check the results */
-	A(argv == newblockptr(argvoff, char**));
-	A(argv[0] == newblockptr(args[0], char*));
-	A(argv[1] == newblockptr(args[1], char*));
-	A(argv[2] == newblockptr(args[2], char*));
-	A(argv[3] == NULL);
+	ASSERT(argv == newblockptr(argvoff, char**));
+	ASSERT(argv[0] == newblockptr(args[0], char*));
+	ASSERT(argv[1] == newblockptr(args[1], char*));
+	ASSERT(argv[2] == newblockptr(args[2], char*));
+	ASSERT(argv[3] == NULL);
 
 	return 0;
 }

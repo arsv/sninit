@@ -55,7 +55,7 @@ const int pw = 4;
 
 #define TEST(rec, nw, pw, exp) {\
 	dumprec(&rec, nw, pw);\
-	S(warnbuf, exp);\
+	STREQUALS(warnbuf, exp);\
 }
 
 int main(void)

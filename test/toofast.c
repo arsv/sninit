@@ -65,60 +65,60 @@ int main(void)
 {
 	/* slow normal exit */
 	run(SLOWENTRY, SLOW, EXIT(0x00));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY | P_WAS_OK));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY | P_WAS_OK));
 
 	/* slow abnormal exit */
 	run(SLOWENTRY, SLOW, EXIT(0xFF));
-	A(I.pid == -1);
-	A(I.flags == SLOWENTRY);
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == SLOWENTRY);
 
 	/* 0-exits are always ok, even if fast */
 	run(SLOWENTRY, FAST, EXIT(0x00));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY | P_WAS_OK));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY | P_WAS_OK));
 
 	/* non-zero exit w/o P_WAS_OK, disable it */
 	run(SLOWENTRY, FAST, EXIT(0x01));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY | P_FAILED));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY | P_FAILED));
 
 	/* same, killed by a bad signal */
 	run(SLOWENTRY, FAST, KILL(SIGSEGV));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY | P_FAILED));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY | P_FAILED));
 
 	/* same, killed by a good signal */
 	run(SLOWENTRY, FAST, KILL(SIGTERM));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY | P_WAS_OK));	/* XXX: maybe skip P_WAS_OK here? */
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY | P_WAS_OK));	/* XXX: maybe skip P_WAS_OK here? */
 
 	/* non-zero exit w/o P_WAS_OK, if done slowly, is ok */
 	run(SLOWENTRY, SLOW, EXIT(0x01));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY));
 
 	/* non-zero exit w/ P_WAS_OK only clears that flag */
 	run(SLOWENTRY | P_WAS_OK, SLOW, EXIT(0x12));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY));
 
 	run(SLOWENTRY | P_WAS_OK, FAST, KILL(SIGSEGV));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY));
 
 	run(SLOWENTRY | P_WAS_OK, FAST, EXIT(0x13));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY));
 
 	run(SLOWENTRY | P_WAS_OK, FAST, KILL(SIGSEGV));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY));
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY));
 
 	/* killing entry with a good signal does not clear P_WAS_OK */
 	run(SLOWENTRY | P_WAS_OK, FAST, KILL(SIGTERM));
-	A(I.pid == -1);
-	A(I.flags == (SLOWENTRY | P_WAS_OK));	/* XXX: maybe clear it here? */
+	ASSERT(I.pid == -1);
+	ASSERT(I.flags == (SLOWENTRY | P_WAS_OK));	/* XXX: maybe clear it here? */
 
 	return 0;
 }

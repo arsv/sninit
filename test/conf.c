@@ -82,7 +82,7 @@ void dumpconfig(void)
 {
 	struct config* cfg = NCF;
 
-	A(checkptr(cfg));
+	ASSERT(checkptr(cfg));
 	printf("NCF: %p [%i]\n", cfg, blockoffset(cfg));
 
 	dumptab(cfg);
@@ -91,17 +91,17 @@ void dumpconfig(void)
 
 int main(void)
 {
-	T(mmapblock(sizeof(struct config) + sizeof(struct scratch)));
+	ZERO(mmapblock(sizeof(struct config) + sizeof(struct scratch)));
 
-	T(parseinitline_("# comment here"));
-	T(parseinitline_(""));
-	T(parseinitline_("FOO=something"));
-	T(parseinitline_("PATH=/bin:/sbin:/usr/bin"));
-	T(parseinitline_(""));
-	T(parseinitline_("time    W12345   /sbin/hwclock -s"));
-	T(parseinitline_("mount   W12345   /bin/mount -a"));
+	ZERO(parseinitline_("# comment here"));
+	ZERO(parseinitline_(""));
+	ZERO(parseinitline_("FOO=something"));
+	ZERO(parseinitline_("PATH=/bin:/sbin:/usr/bin"));
+	ZERO(parseinitline_(""));
+	ZERO(parseinitline_("time    W12345   /sbin/hwclock -s"));
+	ZERO(parseinitline_("mount   W12345   /bin/mount -a"));
 
-	T(finishinittab())
+	ZERO(finishinittab())
 	rewirepointers();
 
 	dumpconfig();

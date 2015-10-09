@@ -2,55 +2,65 @@
 #include <fcntl.h>
 #include "_test.h"
 
-void test(const char* result, const char* fmt, ...)
+/* We are testing vsnprintf whose paired snprintf is not used in init,
+   may not be available, or (even worse) may come from unrelated libc. */
+
+/* Beware of %m below: without sys_err_*, we are using full syserrlist
+   from libtest! */
+
+int wrap(char* buf, int len, const char* fmt, ...)
 {
-	int r;
-	int len = 1024;
-	char buf[len];
 	va_list ap;
-
 	va_start(ap, fmt);
-	r = vsnprintf(buf, len, fmt, ap);
+	int ret = vsnprintf(buf, len, fmt, ap);
 	va_end(ap);
-
-	int ret = strlen(result);
-	S(buf, result);
-	Ac(r == ret, "ret = %i", r);
+	return ret;
 }
+
+#define TEST(expected, ...) { \
+	ret = wrap(data, DATA, __VA_ARGS__); \
+	STREQUALS(data, expected); \
+	INTEQUALS(ret, strlen(data)); \
+}
+
+#define DATA 1000
+char data[DATA];
 
 int main(void)
 {
-	test("here comes string",
+	int ret;
+
+	TEST("here comes string",
 	     "here %s string", "comes");
-	test("two strings: one and another end",
+	TEST("two strings: one and another end",
 	     "two strings: %s and %s end", "one", "another");
-	test("a string and a number 123",
+	TEST("a string and a number 123",
 	     "a %s and a number %i", "string", 123);
 
 	/* handling NULLs */
-	test("string: (null)",
+	TEST("string: (null)",
 	     "string: %s", NULL);
 
 	/* unterminated sequence at the end of string */
-	test("bad case ",
+	TEST("bad case ",
 	     "bad case %");
 
 	/* unimplemented sequence */
-	test("bad ",
+	TEST("bad ",
 	     "bad %e case");
 
 	/* check %m */
 	/* this may very well fail if libc has something different for ENOENT */
 	open("/nonexistant", O_RDONLY);
-	test("error: No such file or directory",
+	TEST("error: No such file or directory",
 	     "error: %m");
 	
 	/* padding */
-	test("here >abc   < padded",
+	TEST("here >abc   < padded",
 	     "here >%-*s< padded", 6, "abc");
-	test("here >abc< padded",
+	TEST("here >abc< padded",
 	     "here >%-*s< padded", 0, "abc");
-	test("here >12   < padded",
+	TEST("here >12   < padded",
 	     "here >%-*i< padded", 5, 12);
 
 	return 0;

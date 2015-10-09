@@ -59,65 +59,65 @@ int main(void)
 	/* User mode test. The line should be sent, verbatim, to warnfd */
 	wrptr = 0;
 	warnfd = 3;
-	T(warn("some line here"));
-	A(warnfd == 3);
-	A(wrptr == 1);
-	S(wrlog[0].buf, "some line here");
-	Eq(wrlog[0].fd, warnfd, "%i");
+	ZERO(warn("some line here"));
+	ASSERT(warnfd == 3);
+	ASSERT(wrptr == 1);
+	STREQUALS(wrlog[0].buf, "some line here");
+	INTEQUALS(wrlog[0].fd, warnfd);
 
 	/* User mode test, now with some formatting */
 	wrptr = 0;
 	warnfd = 3;
-	T(warn("some line here: %i", 123));
-	A(warnfd == 3);
-	A(wrptr == 1);
-	S(wrlog[0].buf, "some line here: 123");
-	Eq(wrlog[0].fd, warnfd, "%i");
+	ZERO(warn("some line here: %i", 123));
+	ASSERT(warnfd == 3);
+	ASSERT(wrptr == 1);
+	STREQUALS(wrlog[0].buf, "some line here: 123");
+	INTEQUALS(wrlog[0].fd, warnfd);
 
 	/* Regular use, only syslog should be written to */
 	wrptr = 0;
 	warnfd = 2;
-	T(warn("general message"));
-	A(warnfd == 2);
-	A(wrptr == 1);
-	S(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
-	Eq(wrlog[0].fd, syslogfd, "%i");
+	ZERO(warn("general message"));
+	ASSERT(warnfd == 2);
+	ASSERT(wrptr == 1);
+	STREQUALS(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
+	INTEQUALS(wrlog[0].fd, syslogfd);
 
 	/* Failing syslog; the message should be sent to warnfd too */
 	wrptr = 0;
 	warnfd = 2;
 	flags = BREAKSYSLOG;
-	T(warn("general message"));
-	A(warnfd == 2);
-	A(wrptr == 2);
-	S(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
-	Eq(wrlog[0].fd, syslogfd, "%i");
-	S(wrlog[1].buf, "init: general message");
-	Eq(wrlog[1].fd, warnfd, "%i");
+	ZERO(warn("general message"));
+	ASSERT(warnfd == 2);
+	ASSERT(wrptr == 2);
+	STREQUALS(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
+	INTEQUALS(wrlog[0].fd, syslogfd);
+	STREQUALS(wrlog[1].buf, "init: general message");
+	INTEQUALS(wrlog[1].fd, warnfd);
 
 	/* Failing warnfd; close and seal it */
 	wrptr = 0;
 	warnfd = 3;
 	flags = BREAKWARNFD;
-	T(!warn("general message"));
-	A(warnfd == -1);
-	A(wrptr == 1);
-	S(wrlog[0].buf, "general message");
-	Eq(wrlog[0].fd, 3, "%i");
+	ZERO(!warn("general message"));
+	ASSERT(warnfd == -1);
+	ASSERT(wrptr == 1);
+	STREQUALS(wrlog[0].buf, "general message");
+	INTEQUALS(wrlog[0].fd, 3);
 
 	/* Very very long message */
 	char* p = "---*---++---++---*---"; /* 21 */
 	warnfd = 3;
 	flags = 0;
-	T(warn("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", p, p, p, p, p, p, p, p, p, p, p, p, p, p, p));
+	ZERO(warn("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", p, p, p, p, p, p, p, p, p, p, p, p, p, p, p));
 
 	/* Syslog-only message */
 	wrptr = 0;
 	warnfd = 3;
-	T(warn("#general message"));
-	A(wrptr == 1);
-	S(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
-	Eq(wrlog[0].fd, syslogfd, "%i");
+	ZERO(warn("#general message"));
+	ASSERT(wrptr == 1);
+	STREQUALS(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
+	INTEQUALS(wrlog[0].fd, syslogfd);
 
 	return 0;
 }

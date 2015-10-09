@@ -49,38 +49,35 @@ int setrunlevels(unsigned short* rlvl, char* runlevels)
 	return -1;
 }
 
-void test(input, name, rlvl, cmd)
-	const char *input;
-	const char *name, *rlvl, *cmd;
-{
-	char* data = alloca(strlen(input) + 1);
-	strcpy(data, input);
-
-	memset(&U, 0, sizeof(U));
-
-	A(parseinitline(data) == RET);
-
-	A(U.called == 1);
-	S(U.name, name);
-	S(U.rlvl, rlvl);
-	S(U.cmd, cmd);
-	A(U.exe == 0);
+#define TEST(i, n, r, c) { \
+	memset(data, 0, DATA); \
+	strcpy(data, i); \
+	memset(&U, 0, sizeof(U)); \
+	ASSERT(parseinitline(data) == RET); \
+	ASSERT(U.called == 1); \
+	STREQUALS(U.name, n); \
+	STREQUALS(U.rlvl, r); \
+	STREQUALS(U.cmd, c); \
+	ASSERT(U.exe == 0); \
 }
+
+#define DATA 1000
+char data[DATA];
 
 /* This whole test is a remnant of the times when initline format
    actually required testing. At present there is little to test. */
 int main(void)
 {
 	/* generic line */
-	test("echo\tW123\t/bin/echo -n foo",
+	TEST("echo\tW123\t/bin/echo -n foo",
 		"echo", "W123", "/bin/echo -n foo");
 
 	/* arbitrary spaces */
-	test("echo  W123 \t /bin/echo -n foo",
+	TEST("echo  W123 \t /bin/echo -n foo",
 		"echo", "W123", "/bin/echo -n foo");
 
 	/* sh */
-	test("W123  test  !/bin/test",
+	TEST("W123  test  !/bin/test",
 		"W123", "test", "!/bin/test");
 
 	return 0;

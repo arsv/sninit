@@ -75,17 +75,17 @@ extern void dumpstate(void);
 #define Eqi(val, exp) Eq(val, exp, "%i")
 
 #define TEST(i, tnm, tnw, tpw) { \
-	S(reclog[i].name, tnm); \
-	A(reclog[i].nw == tnw); \
-	A(reclog[i].pw == tpw); \
+	STREQUALS(reclog[i].name, tnm); \
+	ASSERT(reclog[i].nw == tnw); \
+	ASSERT(reclog[i].pw == tpw); \
 }
 
 int main(void)
 {
 	dumpstate();
 
-	S(warnbuf, "#Switching 2 to 3");
-	Eqi(recptr, 3);
+	STREQUALS(warnbuf, "#Switching 2 to 3");
+	INTEQUALS(recptr, 3);
 	TEST(0, "first",    8, 4);
 	TEST(1, "longrec2", 8, 4);
 	TEST(2, "last",     8, 4);

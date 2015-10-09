@@ -25,37 +25,37 @@ int main(void)
 
 	/* Sanity check, the list should be empty */
 	list = newblockptr(listoff, struct ptrlist*);
-	A(list->head == 0);
-	A(list->last == 0);
-	A(list->count == 0);
+	ASSERT(list->head == 0);
+	ASSERT(list->last == 0);
+	ASSERT(list->count == 0);
 
 	/* First pointer, head == last */
 	int node1ptr = extendblock(sizeof(struct ptrnode));
-	T(linknode(listoff, node1ptr));
+	ZERO(linknode(listoff, node1ptr));
 	list = newblockptr(listoff, struct ptrlist*);
-	Eq(list->head, node1ptr, "%i");
-	Eq(list->last, node1ptr, "%i");
-	Eq(list->count, 1, "%i");
-	A(list->last > listoff);
-	Eq(list->last, newblock.ptr - sizeof(struct ptrnode), "%i");
+	INTEQUALS(list->head, node1ptr);
+	INTEQUALS(list->last, node1ptr);
+	INTEQUALS(list->count, 1);
+	ASSERT(list->last > listoff);
+	INTEQUALS(list->last, newblock.ptr - sizeof(struct ptrnode));
 	node = newblockptr(list->last, struct ptrnode*);
-	A(node->next == 0);
+	ASSERT(node->next == 0);
 
 	/* Second pointer, head < last */
 	int node2ptr = extendblock(sizeof(struct ptrnode));
-	T(linknode(listoff, node2ptr));
+	ZERO(linknode(listoff, node2ptr));
 	list = newblockptr(listoff, struct ptrlist*);
-	A(list->head == node1ptr);
-	A(list->last == node2ptr);
-	A(list->count == 2);
-	A(list->last > node1ptr);
-	A(list->last == newblock.ptr - sizeof(struct ptrnode));
+	ASSERT(list->head == node1ptr);
+	ASSERT(list->last == node2ptr);
+	ASSERT(list->count == 2);
+	ASSERT(list->last > node1ptr);
+	ASSERT(list->last == newblock.ptr - sizeof(struct ptrnode));
 	node = newblockptr(list->last, struct ptrnode*);
-	A(node->next == 0);
+	ASSERT(node->next == 0);
 
 	/* Make sure nodes have been linked properly */
 	node = newblockptr(node1ptr, struct ptrnode*);
-	A(node->next == node2ptr);
+	ASSERT(node->next == node2ptr);
 
 	return 0;
 }

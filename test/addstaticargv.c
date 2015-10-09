@@ -21,16 +21,16 @@ int main(void)
 	int off = newblock.ptr;
 
 	int ret = addstaticargv(arg, 2);
-	A(ret == 0);
-	Eq(newblock.ptr, start + 3*sizeof(void*) + 8, "%i");
+	ASSERT(ret == 0);
+	INTEQUALS(newblock.ptr, start + 3*sizeof(void*) + 8);
 
 	char** ptr = newblockptr(off, char**);
-	A(ptr[0] == NULL + off + (count(arg)+1)*sizeof(char*));
+	ASSERT(ptr[0] == NULL + off + (count(arg)+1)*sizeof(char*));
 	char* s1 = newblockptr(to_offset(ptr[0]), char*);
 	char* s2 = newblockptr(to_offset(ptr[1]), char*);
-	S(s1, "foo");
-	S(s2, "bar");
-	A(to_offset(ptr[2]) == 0);
+	STREQUALS(s1, "foo");
+	STREQUALS(s2, "bar");
+	ASSERT(to_offset(ptr[2]) == 0);
 
 	return 0;
 }

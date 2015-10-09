@@ -29,13 +29,13 @@ extern struct initrec* findentry(const char* name);
 int main(void)
 {
 	cfg = &CF0;
-	A(findentry("procps") == &I1);
-	A(findentry("httpd") == &I4);
-	A(findentry("blargh") == NULL);
+	ASSERT(findentry("procps") == &I1);
+	ASSERT(findentry("httpd") == &I4);
+	ASSERT(findentry("blargh") == NULL);
 
 	/* empty inittab; not likely to affect anything, but who knows */
 	cfg = &CF1;
-	A(findentry("httpd") == NULL);
+	ASSERT(findentry("httpd") == NULL);
 
 	/* findentry is allowed to segfault if cfg->inittab == NULL */
 

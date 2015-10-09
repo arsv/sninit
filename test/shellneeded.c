@@ -8,9 +8,9 @@ extern int shellneeded(const char* cmd);
 NOCALL(extendblock);
 
 #define shell(s) \
-	A(shellneeded(s))
+	ASSERT(shellneeded(s))
 #define notshell(s) \
-	A(!shellneeded(s))
+	ASSERT(!shellneeded(s))
 
 int main(void)
 {

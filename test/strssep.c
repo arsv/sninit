@@ -13,14 +13,14 @@ int main(void)
 	char* ptr = str;
 	char* res;
 
-	res = strssep(&ptr); S(res, "Some");
-	res = strssep(&ptr); S(res, "words");
-	res = strssep(&ptr); S(res, "go");
-	res = strssep(&ptr); S(res, "here");
-	res = strssep(&ptr); S(res, NULL);
-	A(ptr == NULL);
-	res = strssep(&ptr); S(res, NULL);
-	A(ptr == NULL);
+	res = strssep(&ptr); STREQUALS(res, "Some");
+	res = strssep(&ptr); STREQUALS(res, "words");
+	res = strssep(&ptr); STREQUALS(res, "go");
+	res = strssep(&ptr); STREQUALS(res, "here");
+	res = strssep(&ptr); STREQUALS(res, NULL);
+	ASSERT(ptr == NULL);
+	res = strssep(&ptr); STREQUALS(res, NULL);
+	ASSERT(ptr == NULL);
 
 	return 0;
 }

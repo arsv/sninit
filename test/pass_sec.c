@@ -26,7 +26,8 @@ struct initrec* testinittab[] = { NULL, &I0, &I1, &I2, &I3, &I4, NULL };
 struct config testconfig = { .inittab = testinittab + 1, .initnum = sizeof(testinittab)/sizeof(void*)-2 };
 struct config* cfg = &testconfig;
 
-#define Q(t) { reset(); initpass(); S(passlog, t); }
+#define A(e) ASSERT(e)
+#define Q(t) { reset(); initpass(); STREQUALS(passlog, t); }
 #define Qq(t) Q(t); Q("")
 #define D(i) died(&i)
 #define K(i) killed(&i)

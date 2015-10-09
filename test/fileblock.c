@@ -24,31 +24,31 @@ int main(void)
 	int testlen = filelen(testtxt);
 	char* s;
 
-	T(mmapfile(testtxt, 1024));
-	S(fileblock.name, testtxt);
-	A(fileblock.len == testlen);
-	A(fileblock.ls == NULL);
-	A(fileblock.le == NULL);
-	A(fileblock.line == 0);
+	ZERO(mmapfile(testtxt, 1024));
+	STREQUALS(fileblock.name, testtxt);
+	ASSERT(fileblock.len == testlen);
+	ASSERT(fileblock.ls == NULL);
+	ASSERT(fileblock.le == NULL);
+	ASSERT(fileblock.line == 0);
 
-	A((s = nextline()));
-	S(s, "line 1");
-	A((s = nextline()));
-	S(s, "line 2");
-	A((s = nextline()));
-	S(s, "");
-	A((s = nextline()));
-	S(s, "somewhat longer line 4");
-	A((s = nextline()) == NULL);
+	ASSERT((s = nextline()));
+	STREQUALS(s, "line 1");
+	ASSERT((s = nextline()));
+	STREQUALS(s, "line 2");
+	ASSERT((s = nextline()));
+	STREQUALS(s, "");
+	ASSERT((s = nextline()));
+	STREQUALS(s, "somewhat longer line 4");
+	ASSERT((s = nextline()) == NULL);
 
-	T(munmapfile());
+	ZERO(munmapfile());
 
 	int shortlen = testlen / 2;
-	A(shortlen > 0);
-	A(mmapfile(testtxt, -shortlen) < 0);
-	A(mmapfile(testtxt,  shortlen) == 0);
-	A(fileblock.len == shortlen);
-	T(munmapfile());
+	ASSERT(shortlen > 0);
+	ASSERT(mmapfile(testtxt, -shortlen) < 0);
+	ASSERT(mmapfile(testtxt,  shortlen) == 0);
+	ASSERT(fileblock.len == shortlen);
+	ZERO(munmapfile());
 
 	return 0;
 }

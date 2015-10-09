@@ -47,11 +47,11 @@ int main(void)
 {
 	transferpids();
 
-	A(n0.pid == 0);		/* unrelated C_ONCE */
-	A(n1.pid == -1);	/* effectively transferred from the old entry */
-	A(n2.pid == -1);	/* current RL rule */
-	A(n3.pid == 4);		/* named service has been transferred */
-	A(n5.pid == 0);		/* new service, no pid change */
+	ASSERT(n0.pid == 0);	/* unrelated C_ONCE */
+	ASSERT(n1.pid == -1);	/* effectively transferred from the old entry */
+	ASSERT(n2.pid == -1);	/* current RL rule */
+	ASSERT(n3.pid == 4);	/* named service has been transferred */
+	ASSERT(n5.pid == 0);	/* new service, no pid change */
 
 	return 0;
 }

@@ -38,23 +38,23 @@ struct initrec rec = {
 };
 
 #define right(str) \
-	T(setrunflags(&rec, heapdup(str)))
+	ZERO(setrunflags(&rec, heapdup(str)))
 
 #define wrong(str) \
-	T(!setrunflags(&rec, heapdup(str)))
+	ZERO(!setrunflags(&rec, heapdup(str)))
 
 #define levels(str, exp) \
 	right(str);\
-	Eq(rec.rlvl, exp, "%04X")
+	HEXEQUALS(rec.rlvl, exp)
 
 #define flags(str, exp) \
 	right(str);\
-	Eq(rec.flags, exp, "%04X")
+	HEXEQUALS(rec.flags, exp)
 
 #define both(str, ef, er) \
 	right(str);\
-	Eq(rec.rlvl, er, "%04X");\
-	Eq(rec.flags, ef, "%04X")
+	HEXEQUALS(rec.rlvl, er);\
+	HEXEQUALS(rec.flags, ef)
 
 int main(void)
 {

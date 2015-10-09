@@ -69,25 +69,25 @@ int main(void)
 	/* Make sure they get marked, and nothing else is changed */
 	waitcnt = 2;
 	waitpids();
-	A(I0.pid == -1);
-	A(I1.pid == 22);
-	A(I2.pid == -1);
-	A(I2.flags == C_FAST);
-	A(I3.pid == 44);
-	A(I4.pid == 55);
-	A(I5.pid == 66);
+	ASSERT(I0.pid == -1);
+	ASSERT(I1.pid == 22);
+	ASSERT(I2.pid == -1);
+	ASSERT(I2.flags == C_FAST);
+	ASSERT(I3.pid == 44);
+	ASSERT(I4.pid == 55);
+	ASSERT(I5.pid == 66);
 
 	/* Are signal flags removed properly? */
 	waitcnt = 1;
 	waitpids();
-	A(I1.pid == -1);
-	A(I1.flags == C_FAST);
+	ASSERT(I1.pid == -1);
+	ASSERT(I1.flags == C_FAST);
 
 	/* Just a simple abnormal exit */
 	waitcnt = 1;
 	waitpids();
-	A(I5.pid == -1);
-	A(I5.flags == C_FAST);
+	ASSERT(I5.pid == -1);
+	ASSERT(I5.flags == C_FAST);
 
 	/* Dry run */
 	waitcnt = 0;

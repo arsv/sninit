@@ -19,9 +19,9 @@ extern int parsesrvfile(char* fullname, char* basename);
 int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 {
 	U.called++;
-	U.name = heapdupnull(name);
-	U.rlvl = heapdupnull(rlvl);
-	U.cmd = heapdupnull(cmd);
+	U.name = name;
+	U.rlvl = rlvl;
+	U.cmd = cmd;
 	U.exe = exe;
 	return RET;
 }
@@ -31,46 +31,47 @@ int addenviron(const char* env)
 	return 0;
 }
 
-void test(input, rlvl, cmd, exe)
-	const char *input;
-	const char *rlvl, *cmd;
-	int exe;
-{
-	char* data = heapdup(input);
-	char* file = "/etc/rc/foo";
-	char* base = "foo";
-
-	fileblock.buf = data;
-	fileblock.len = strlen(data);
-	fileblock.line = 0;
-	fileblock.ls = NULL;
-	fileblock.le = NULL;
-
-	memset(&U, 0, sizeof(U));
-	A(parsesrvfile(file, base) == RET);
-	A(U.called == 1);
-	S(U.name, base);
-	S(U.rlvl, rlvl);
-	S(U.cmd, cmd);
-	A(U.exe == exe);
+#define TEST(i, r, c, x) { \
+	char* file = "/etc/rc/foo"; \
+	char* base = "foo"; \
+	\
+	memset(data, 0, DATA); \
+	strcpy(data, i); \
+	\
+	fileblock.buf = data; \
+	fileblock.len = strlen(data); \
+	fileblock.line = 0; \
+	fileblock.ls = NULL; \
+	fileblock.le = NULL; \
+	\
+	memset(&U, 0, sizeof(U)); \
+	ASSERT(parsesrvfile(file, base) == RET); \
+	ASSERT(U.called == 1); \
+	STREQUALS(U.name, base); \
+	STREQUALS(U.rlvl, r); \
+	STREQUALS(U.cmd, c); \
+	ASSERT(U.exe == x); \
 }
+
+#define DATA 1000
+char data[DATA];
 
 int main(void)
 {
 	/* The following assumes SRDEFAULT is "S3+"! */
 
-	L("non-shebang, runlevels, no flags");
-	test(	"#:123\n"
+	LOG("non-shebang, runlevels, no flags");
+	TEST(	"#:123\n"
 		"/bin/echo -n foo\n",
 		"S123", "/bin/echo -n foo", 0);
 
-	L("non-shebang, shell, with flags");
-	test(	"#:123a\n"
+	LOG("non-shebang, shell, with flags");
+	TEST(	"#:123a\n"
 		"! echo -n foo\n",
 		"S123a", "! echo -n foo", 0);
 
-	L("non-shebang, runlevels followed by comments");
-	test(	"#:123\n"
+	LOG("non-shebang, runlevels followed by comments");
+	TEST(	"#:123\n"
 		"# something goes here\n"
 		"\n"
 		"# one more comment line\n"
@@ -79,25 +80,25 @@ int main(void)
 
 		"S123", "/bin/echo -n foo", 0);
 
-	L("shebang, runlevels, flags");
-	test(	"#!/bin/sh\n"
+	LOG("shebang, runlevels, flags");
+	TEST(	"#!/bin/sh\n"
 		"#:123\n"
 		"echo -n foo\n",
 		"S123", "/etc/rc/foo", 1);
 
-	L("non-shebang, with comments");
-	test(	"# some comment goes here\n"
+	LOG("non-shebang, with comments");
+	TEST(	"# some comment goes here\n"
 		"/bin/echo -n foo\n",
 		"S3+", "/bin/echo -n foo", 0);
 
-	L("non-shebang, with comments, empty line after");
-	test(	"# some comment goes here\n"
+	LOG("non-shebang, with comments, empty line after");
+	TEST(	"# some comment goes here\n"
 		"\n"
 		"/bin/echo -n foo\n",
 		"S3+", "/bin/echo -n foo", 0);
 
-	L("non-shebang, with comments, empty line in-between");
-	test(	"# some comment goes here\n"
+	LOG("non-shebang, with comments, empty line in-between");
+	TEST(	"# some comment goes here\n"
 		"  \n"
 		"# some more comments\n"
 		"\n"
