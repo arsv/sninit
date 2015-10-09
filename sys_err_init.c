@@ -22,27 +22,42 @@
    dietlibc printf can't handle NULL return properly, and neither glibc
    nor musl printfs use strerror internally. */
 
-#define r(sym) case sym: return #sym
+/* For a long time this has been a switch(err), but it turns out gcc generates
+   relatively large jump table here. The same does not seem to happen with telinit
+   and run errlists, strange. */
+
+struct errlist {
+	unsigned char err;
+	char name[11];	/* EADDRINUSE is 10+1 bytes long */
+} errlist[] = {
+#define r(e) { e, #e }
+	r(ENOENT),	/* open */
+	r(ELOOP),	/* open, unlikely */
+	r(EADDRINUSE),	/* bind */
+	r(ENFILE),	/* open, socket, accept */
+	r(ENOSPC),	/* open(..., O_CREAT) for process logging */
+	r(EPIPE),	/* sendmsg */
+	r(ENOMEM),	/* mmap and a buch of other calls */
+	r(EINTR),	/* poll, unlikely for other syscalls */
+	r(EINVAL),	/* generic, unlikely */
+	r(EAGAIN),	/* fork */
+	r(EACCES),	/* execve */
+	r(ENOEXEC),	/* execve */
+	r(ENOTDIR),	/* execve */
+	r(E2BIG),	/* execve, very large service file */
+	r(EIO),		/* unlikely, bad news */
+	r(EPERM)	/* reboot and some other calls */
+};
+
+#define endof(a) (a + sizeof(a)/sizeof(*a))
 
 char* strerror(int err)
 {
-	switch(err) {
-		r(ENOENT);	/* open */
-		r(ELOOP);	/* open, unlikely */
-		r(EADDRINUSE);	/* bind */
-		r(ENFILE);	/* open, socket, accept */
-		r(ENOSPC);	/* open(..., O_CREAT) for process logging */
-		r(EPIPE);	/* sendmsg */
-		r(ENOMEM);	/* mmap and a buch of other calls */
-		r(EINTR);	/* poll; unlikely for other syscalls */
-		r(EINVAL);	/* generic, unlikely */
-		r(EAGAIN);	/* fork */
-		r(EACCES);	/* execve */
-		r(ENOEXEC);	/* execve */
-		r(ENOTDIR);	/* execve */
-		r(E2BIG);	/* execve, very large service file */
-		r(EIO);		/* unlikely, bad news */
-		r(EPERM);	/* reboot and some other calls */
-		default: return NULL;
-	}
+	struct errlist* p;
+
+	for(p = errlist; p < endof(errlist); p++)
+		if((int)p->err == err)
+			return p->name;
+
+	return NULL;
 }
