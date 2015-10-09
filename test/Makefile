@@ -19,7 +19,7 @@ TESTS = addenviron addinitrec addparsedargv addstaticargv addstring \
 	conf dumprec dumpstate fileblock findentry initpass_pri initpass_rev \
 	initpass_sec initpass_wku itostr joincmd linknode newblock \
 	parseinitline parsesrvfile pintlen printf readinitdir rewireptsarray \
-	rlstr setrunflags shellneeded shouldbeshown strssep toofast \
+	rlstr setrunflags shellneeded shouldbeshown strerror strssep toofast \
 	transferpids tzinit waitpids warn
 
 # Tests with manual check (for now)
@@ -113,6 +113,7 @@ dumpstate: dumpstate.o init_dump.o sys_printf.o _test.o
 shouldbeshown: shouldbeshown.o init_dump.o
 addstring: addstring.o init_conf_arg.o init_conf_map.o _test.o
 shellneeded: shellneeded.o init_conf_arg.o _test.o
+strerror: strerror.o sys_err_init.o
 
 strssep: strssep.o init_conf_arg.o _test.o
 strssep.o: CFLAGS += -Wno-format
