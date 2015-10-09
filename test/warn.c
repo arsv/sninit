@@ -111,13 +111,5 @@ int main(void)
 	flags = 0;
 	ZERO(warn("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", p, p, p, p, p, p, p, p, p, p, p, p, p, p, p));
 
-	/* Syslog-only message */
-	wrptr = 0;
-	warnfd = 3;
-	ZERO(warn("#general message"));
-	ASSERT(wrptr == 1);
-	STREQUALS(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
-	INTEQUALS(wrlog[0].fd, syslogfd);
-
 	return 0;
 }
