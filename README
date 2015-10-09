@@ -16,12 +16,13 @@ dependencies on supported architectures — not even libc.
 
 Key features:
 
-+ Runlevels for process management
-+ Starting/stopping individual processes manually
-  ("telinit stop httpd" and so on)
-+ Sleep/suspend/hibernate as runlevels
-+ Support for initdirs in addition to sysvinit inittab
++ SysV-style sequential inittab
++ SysV-style runlevels for process management
++ Support for initdir in addition to inittab
   (one file per process vs one line per process)
++ Sleep/suspend/hibernate as runlevels
++ Telinit commands to start/stop individual processes
+  ("telinit stop httpd" and so on)
 + Small size and static linkage
 + Simplified memory management;
   no malloc, memory allocation only while reconfiguring
@@ -32,7 +33,7 @@ Missing features:
 - inter-process dependencies, systemd-style
 - support for kernels other than linux-2.6+
 - dbus, xml and other bloat
-- wall(8), shutdown(8) and some other sysvinit-style utilities
+- wall(8), shutdown(8) and some other sysvinit utilities
 - in-place restarting a-la sysvinit
 
 Features sninit has that are not in any way exceptional:
@@ -72,6 +73,7 @@ To try sninit without configuring a VM or installing anything:
 	./telinit list
 	./telinit stop srv1
 	./telinit sleep
+	(feel free to change things in ./etc at this point)
 	./telinit reload
 	./telinit poweroff
 
