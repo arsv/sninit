@@ -37,7 +37,7 @@ weak struct config* cfg;
    Check shouldberunning() on how entries are matched against current
    runlevel, and initpass() for level-switching code.
 
-   Init starts at runlevel 0, so 0~ entries are not spawned during boot.
+   Init starts at runlevel 0, so X0 entries are not spawned during boot.
    When shutting down, we first switch back to level 0 = (1<<0) and then
    to "no-level" which is value 0, making sure all entries get killed. */
 
@@ -50,7 +50,7 @@ int nextlevel = INITDEFAULT;
    This is done by setting timetowait, which is later used for ppoll timeout.
 
    Default value here is -1, which means "sleep indefinitely".
-   main sets that before each initpass() */
+   main resets the timer before each initpass(). */
 
 int timetowait;
 
@@ -77,8 +77,8 @@ int rbcode = RB_HALT_SYSTEM;
 extern int initctlfd;
 extern int warnfd;
 
-/* Init blocks all most signals when not in ppoll. This is the orignal
-   pre-block signal mask, used for ppoll and passed to spawned children. */
+/* Init blocks most signals when not in ppoll. This is the orignal pre-block
+   signal mask, used for ppoll and passed to spawned children. */
 
 sigset_t defsigset;
 
@@ -95,20 +95,19 @@ local int setup(int argc, char** argv);		/* initialization */
 local int setsignals(void);
 local void setargs(int argc, char** argv);
 local int setpasstime(void);
-local void pollctl(void);		/* telinit communication */
 
 extern int configure(int);		/* inittab parsing */
 extern void setnewconf(void);
 
-extern void initpass(void);		/* the core: process (re)spawning */
-extern void waitpids(void);
+extern void initpass(void);		/* the core: process-respawning */
+extern void waitpids(void);		/* and child-reaping            */
 
-extern int setinitctl(void);
+local void pollctl(void);		/* watching for incoming signals */
+extern int setinitctl(void);		/* and telinit requests          */
 extern void acceptctl(void);
 
 local void sighandler(int sig);		/* global singnal handler */
 local void forkreboot(void);		/* reboot(rbcode) */
-
 
 /* main(), the entry point also the main loop.
 
@@ -396,12 +395,14 @@ void pollctl(void)
 	}
 }
 
-/* Linux kernel treats reboot() a lot like _exit(), including, quite
-   surprisingly, panic when it's init who calls it. So we've got to fork
-   here and call reboot for the child process. Since vfork may not be
-   available, or may in fact be fork, it's better to wait for the child
-   before returning. Simply returning here means _exit from init
-   and immediate panic. */
+/* Linux kernel treats reboot() a lot like _exit(), including panic()
+   when it's init who calls it.
+
+   So we've got to fork here and call reboot for the child process.
+   Since vfork may not be available, or may in fact be fork, it's better
+   to wait for the child before returning.
+
+   Any return here means _exit from init and immediate panic. */
 
 #ifdef NOMMU
 #define fork() vfork()
