@@ -2,23 +2,15 @@
 #include <fcntl.h>
 #include "_test.h"
 
-/* We are testing vsnprintf whose paired snprintf is not used in init,
-   may not be available, or (even worse) may come from unrelated libc. */
+/* Beware of %m below: without sys_err_*, full syserrlist with long
+   readable messages is linked from libtest!
 
-/* Beware of %m below: without sys_err_*, we are using full syserrlist
-   from libtest! */
-
-int wrap(char* buf, int len, const char* fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	int ret = vsnprintf(buf, len, fmt, ap);
-	va_end(ap);
-	return ret;
-}
+   And this should be compiled with -Wno-printf.
+   Some format strings below are intentionally incorrect, gcc notices
+   that and complains. */
 
 #define TEST(expected, ...) { \
-	ret = wrap(data, DATA, __VA_ARGS__); \
+	ret = snprintf(data, DATA, __VA_ARGS__); \
 	STREQUALS(data, expected); \
 	INTEQUALS(ret, strlen(data)); \
 }

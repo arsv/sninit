@@ -87,7 +87,6 @@ conf: conf.o init_find.o init_conf.o init_conf_map.o init_conf_arg.o \
 addenviron: addenviron.o init_conf.o init_conf_arg.o init_conf_map.o \
 	init_conf_rec.o init_find.o _test.o $(SYS)
 itostr: itostr.o sys_printf.o _test.o
-printf: printf.o sys_printf.o _test.o
 addstaticargv: addstaticargv.o init_conf_map.o init_conf_arg.o _test.o
 addparsedargv: addparsedargv.o init_conf_map.o init_conf_arg.o _test.o
 linknode: linknode.o init_conf_rec.o init_conf_map.o init_conf_arg.o _test.o
@@ -117,6 +116,9 @@ shellneeded: shellneeded.o init_conf_arg.o _test.o
 
 strssep: strssep.o init_conf_arg.o _test.o
 strssep.o: CFLAGS += -Wno-format
+
+printf: printf.o sys_printf.o _test.o
+printf.o: CFLAGS += -Wno-format
 
 # Libc tests
 xopenread: xopenread.o _test.o
