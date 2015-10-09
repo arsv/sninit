@@ -148,6 +148,12 @@ int main(void)
 	ASSERT(I2.flags == C_FAST);
 	STREQUALS(warnbuf, "");
 
+	/* Non-signal exits are ignored for entries with P_SIG*, too */
+	run(&I2, C_FAST | P_SIGTERM, EXIT(1));	/* pretend it's dropbear */
+	ASSERT(I2.pid == -1);
+	ASSERT(I2.flags == C_FAST);
+	STREQUALS(warnbuf, "");
+
 	/* C_HUSH entries are not reported */
 	run(&I4, C_FAST | C_HUSH, KILL(SIGSEGV));
 	ASSERT(I4.pid == -1);
