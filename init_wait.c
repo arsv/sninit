@@ -62,9 +62,11 @@ void markdead(struct initrec* p, int status)
 		WIFEXITED(status) ? WEXITSTATUS(status) : -WTERMSIG(status));
 
 	if(p->flags & C_ONCE)
-		;  /* no point in timing run-once entries */
+		;    /* no point in timing run-once entries */
 	else if(p->flags & C_FAST)
-		;
+		;    /* this entry is allowed to respawn fast */
+	else if(WIFSIGNALED(status) && (p->flags & (P_SIGTERM | P_SIGKILL)))
+		;    /* expected exits should not be checked */
 	else checktoofast(p, status);
 
 	p->pid = -1;
