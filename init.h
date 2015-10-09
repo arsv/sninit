@@ -65,4 +65,4 @@ struct config {
 };
 
 /* Diagnostics; note this may go to syslog. */
-int warn(const char* fmt, ...);
+void warn(const char* fmt, ...);

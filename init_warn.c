@@ -30,7 +30,7 @@
 
 int warnfd = 0;
 
-export int warn(const char* fmt, ...);
+export void warn(const char* fmt, ...);
 
 /* warn() essentially includes a simple syslog() implementation.
    Full syslog() is not needed here, and neither are redundant sigprocmask()
@@ -52,39 +52,39 @@ extern int timestamp(char* buf, int len);
 #define LOG_NOTICE	5
 #define LOG_DAEMON	3<<3
 
-local int warnmode(const char* fmt);
 
-#define W_WARNFD	1<<0
-#define W_SYSLOG	1<<1
-#define W_STDERR	1<<2
-#define W_SKIP		1<<3
+/* During telinit request, warnfd is the open telinit connection.
+   In case connection fails, we set warnfd to -1 to "lock" warn,
+   preventing further attempts to write anything until current telinit
+   session is over.
 
-/* Stderr output needs "init:" prefixed to the message,
-   and syslog needs its own prefix in addition to that.
+   Without active telinit connection init output should be sent to syslog
+   if possible. Generally we should try to contact syslog to check that,
+   but during early boot and late shutdown it is clear syslogd is not running,
+   so we skip that by setting warnfd = 0.
+
+   Stderr output needs "init:" prefixed to the message, and syslog needs
+   its own prefix in addition to that.
 
         |--------hdr--------|-tag-|-----------msg------------||
         <29>Jan 10 12:34:56 init: crond[123] abnormal exit 67↵₀
 
-   The final message is formed with all prefixes needed for a given
-   mode mask (W_SYSLOG and/or W_STDERR).
-   If it comes down to a less demanding modes, extra prefixes are skipped
-   by passing (buf + prefixlen) to respective write* function. */
+   Extra prefixes are skipped by passing (buf + ...) to respective
+   write* function. */
 
-int warn(const char* fmt, ...)
+void warn(const char* fmt, ...)
 {
 	va_list ap;
 	bss char buf[HDRBUF+MSGBUF+2];
 	int hdrlen;
 	int msglen;
 	int taglen;
-
 	int origerrno = errno;	/* timestamp() may overwrite it */
-	short mode = warnmode(fmt);
 
-	if(!mode) return -1;
-	if(mode & W_SKIP) fmt++;
+	if(warnfd < 0)
+		return;
 
-	if(mode & W_SYSLOG) {
+	if(warnfd == 2) {
 		hdrlen = snprintf(buf, HDRBUF, "<%i>", LOG_DAEMON | LOG_NOTICE);
 		hdrlen += timestamp(buf + hdrlen, HDRBUF - hdrlen);
 	} else {
@@ -98,50 +98,19 @@ int warn(const char* fmt, ...)
 	msglen = vsnprintf(buf + hdrlen + taglen, MSGBUF, fmt, ap);
 	va_end(ap);
 
-	/* buf has one more byte at the end, for line end in case of console/socket output,
-	   and possibly for record terminator in case of syslog;
-	   writefullnl and writesyslog take care of it */
-
-	if(mode & W_WARNFD)
+	if(warnfd > 2) {
+		/* telinit connection */
 		if(writefullnl(warnfd, buf + hdrlen + taglen, msglen))
-			return (warnfd = -1); /* socket connection lost */
+			warnfd = -1; /* socket connection lost */
+		return;
+	}
 
-	if(mode & W_SYSLOG)
-		if(!writesyslog(buf, hdrlen + taglen + msglen))
-			return 0;
-
-	if(mode & W_STDERR)
-		return writefullnl(2, buf + hdrlen, taglen + msglen);
-	
-	return 0;
-}
-
-/* During telinit request, warnfd is the open telinit connection.
-   In case connection fails, we set warnfd to -1 to "lock" warn,
-   preventing further attempts to write anything until current telinit
-   session is over.
-
-   Without active telinit connection init output should be sent to syslog
-   if possible. Generally we should try to contact syslog to check that,
-   but during early boot and late shutdown it is clear syslogd is not running,
-   so we skip that by setting warnfd = 0.
-
-   Finally, ! at the start of fmt indicates the message should go to stderr,
-   skipping syslog. This is for debugging only. There is also # prefix which
-   is *not* handled here and must be passed to telinit. */
-
-int warnmode(const char* fmt)
-{
-	if(*fmt == '!')
-		return W_STDERR | W_SKIP;
-	if(warnfd > 2)
-		return W_WARNFD;
 	if(warnfd == 2)
-		return W_SYSLOG | W_STDERR;
-	if(warnfd < 0)
-		return 0;		/* warn locked */
-	else
-		return W_STDERR;	/* do not even try syslog */
+		/* try syslog, fall back to stderr */
+		if(!writesyslog(buf, hdrlen + taglen + msglen))
+			return;
+
+	writefullnl(2, buf + hdrlen, taglen + msglen);
 }
 
 /* Syslog socket may be either STREAM or DGRAM, and warnfd may happen to be
