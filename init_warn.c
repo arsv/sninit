@@ -53,7 +53,7 @@ extern int timestamp(char* buf, int len);
 #define LOG_NOTICE	5
 #define LOG_DAEMON	3<<3
 
-local const char* hdr = "<29>";	/* = <LOG_NOTICE|LOG_DAEMON> */
+local const char* hdt = "<29>";	/* = <LOG_NOTICE|LOG_DAEMON> */
 local const char* tag = "init: ";
 
 /* During telinit request, warnfd is the open telinit connection.
@@ -71,6 +71,7 @@ local const char* tag = "init: ";
 
         |--------hdr--------|-tag-|-----------msg------------||
         <29>Jan 10 12:34:56 init: crond[123] abnormal exit 67↵₀
+	|hdt|
 
    Extra prefixes are skipped by passing (buf + ...) to respective
    write* function. */
@@ -84,8 +85,8 @@ void warn(const char* fmt, ...)
 	if(warnfd < 0)
 		return;
 
-	int hdrlen = strlen(hdr);
-	strncpy(buf, hdr, HDRBUF);
+	int hdrlen = strlen(hdt);
+	strncpy(buf, hdt, HDRBUF);
 	if(warnfd == 2)
 		hdrlen += timestamp(buf + hdrlen, HDRBUF - hdrlen);
 
@@ -120,7 +121,7 @@ int writefullnl(int fd, char *buf, size_t count)
 {
 	int r = 0;
 
-	*(buf + count++) = '\n'; /* terminate the line, see comments in warn() */
+	*(buf + count++) = '\n'; /* terminate the line */
 	while(count > 0) {
 		r = write(fd, buf + r, count - r);
 		if(r < 0)
