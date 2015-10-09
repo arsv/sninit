@@ -5,7 +5,7 @@
 extern struct nblock newblock;
 extern struct fblock fileblock;
 
-extern int addinitrec(char* name, char* rlvl, char* cmd, int exe);
+extern int addinitrec(const char* name, const char* rlvl, char* cmd, int exe);
 extern int mmapblock(int length);
 
 int main(void)

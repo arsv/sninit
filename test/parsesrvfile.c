@@ -13,26 +13,20 @@ extern struct fblock fileblock;
 
 struct {
 	int called;
-	char name[NAME];
-	char rlvl[RLVL];
-	char cmd[CMD];
+	const char* name;
+	const char* rlvl;
+	const char* cmd;
 	int exe;
 } U;
 
 extern int parsesrvfile(char* fullname, char* basename);
 
-/* Fileblock lives long enough for us to copy pointer here,
-   but gcc somehow manages to optimize out SRDEFAULT, placing
-   it somewhere in the stack.
-
-   To avoid false negatives, just copy everything. */
-
-int addinitrec(char* name, char* rlvl, char* cmd, int exe)
+int addinitrec(const char* name, const char* rlvl, char* cmd, int exe)
 {
 	U.called++;
-	strncpy(U.name, name, NAME);
-	strncpy(U.rlvl, rlvl, RLVL);
-	strncpy(U.cmd, cmd, CMD);
+	U.name = name;
+	U.rlvl = rlvl;
+	U.cmd = cmd;
 	U.exe = exe;
 	return RET;
 }

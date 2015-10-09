@@ -6,9 +6,9 @@
 
 struct {
 	int called;
-	char* name;
-	char* rlvl;
-	char* cmd;
+	const char* name;
+	const char* rlvl;
+	const char* cmd;
 	int exe;
 } U;
 
@@ -24,7 +24,7 @@ int readinitdir(char* dir, int strict)
 	return str ? strdup(str) : NULL;
 }*/
 
-int addinitrec(char* name, char* rlvl, char* cmd, int exe)
+int addinitrec(const char* name, const char* rlvl, char* cmd, int exe)
 {
 	U.called++;
 	U.name = name;

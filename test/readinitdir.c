@@ -50,7 +50,7 @@ int parsesrvfile(char* fullname, char* basename)
 	return 0;
 }
 
-int addinitrec(char* name, char* rlvl, char* cmd, int exe)
+int addinitrec(const char* name, const char* rlvl, char* cmd, int exe)
 {
 	return 0;
 }
