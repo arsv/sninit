@@ -14,7 +14,9 @@ export void waitpids(void);
 
 local void markdead(struct initrec* p, int status);
 local void checktoofast(struct initrec* p, int failed);
+local void reportdeath(struct initrec* p, int status);
 local int badsignal(int sig);
+local const char* signalname(int sig);
 
 /* So we were signalled SIGCHLD and got to check what's up with
    the children. And because we care about killing paused (as in SIGSTOP)
@@ -58,8 +60,7 @@ void markdead(struct initrec* p, int status)
 		;    /* expected exit, init killed it */
 	else if(p->flags & C_HUSH)
 		;    /* should not be reported */
-	else warn("%s[%i] abnormal exit %i", p->name, p->pid,
-		WIFEXITED(status) ? WEXITSTATUS(status) : -WTERMSIG(status));
+	else reportdeath(p, status);
 
 	if(p->flags & C_ONCE)
 		;    /* no point in timing run-once entries */
@@ -121,4 +122,59 @@ void checktoofast(struct initrec* p, int status)
 		warn("%s[%i] respawning too fast, disabling", p->name, p->pid);
 		p->flags |= P_FAILED;
 	}
+}
+
+/* For entries killed by a singal, let's report readable singal name.
+   This is probably one of the least important things in init, given
+   how unlikely signal kills are normally.
+   But we do report errno values, and it's about the same level of verbosity.
+
+   We are only interested in signals capable of terminating
+   the process. That's Term or Core in signal(7). */
+
+struct signame {
+	short sig;
+	char name[6];
+} signames[] = {
+#define SIG(s) { SIG##s, #s }
+	SIG(HUP),
+	SIG(INT),
+	SIG(QUIT),
+	SIG(ILL),
+	SIG(ABRT),
+	SIG(FPE),
+	SIG(PIPE),
+	SIG(ALRM),
+	SIG(TERM),
+	SIG(USR1),
+	SIG(USR2),
+	SIG(BUS),
+	SIG(XCPU),
+	SIG(XFSZ)
+};
+
+const char* signalname(int sig)
+{
+	struct signame* p;
+	struct signame* e = signames + sizeof(signames)/sizeof(*signames);
+
+	for(p = signames; p < e; p++)
+		if((int)p->sig == sig)
+			return p->name;
+
+	return NULL;
+}
+
+void reportdeath(struct initrec* p, int status)
+{
+	const char* signame;
+
+	if(WIFEXITED(status))
+		warn("%s[%i] abnormal exit %i", p->name, p->pid, WEXITSTATUS(status));
+	else if(!WIFSIGNALED(status))
+		return;
+	else if((signame = signalname(WTERMSIG(status))))
+		warn("%s[%i] killed by SIG%s", p->name, p->pid, signame);
+	else
+		warn("%s[%i] killed by signal %i", p->name, p->pid, WTERMSIG(status));
 }
