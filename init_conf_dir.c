@@ -12,7 +12,7 @@
 
 export int readinitdir(const char* dir, int strict);
 
-extern int addinitrec(char* name, char* rlvl, char* cmd, int exe);
+extern int addinitrec(const char* name, const char* rlvl, char* cmd, int exe);
 
 extern struct fblock fileblock;
 extern int mmapfile(const char* name, int maxlen);
@@ -144,8 +144,8 @@ int parsesrvfile(char* fullname, char* basename)
 {
 	int shebang;
 	char* cmd;
-	char* rlvls;
-	char srdefault[] = SRDEFAULT; /* TODO: should be const */
+	const char* rlvls;
+	const char* srdefault = SRDEFAULT;
 	char* ls;
 
 	if(!(ls = nextline()))

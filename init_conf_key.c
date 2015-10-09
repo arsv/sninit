@@ -40,9 +40,9 @@ static struct entrytype {
 	{ 0, 0 }
 };
 
-export int setrunflags(struct initrec* entry, char* type)
+export int setrunflags(struct initrec* entry, const char* type)
 {
-	char* p;
+	const char* p;
 	int rlvl = 0;
 	int last = 0;
 

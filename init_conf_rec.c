@@ -12,10 +12,10 @@ extern struct nblock newblock;
 extern struct fblock fileblock;
 
 export int addenviron(const char* def);
-export int addinitrec(char* name, char* flags, char* cmd, int exe);
+export int addinitrec(const char* name, const char* flags, char* cmd, int exe);
 
 extern int addrecargv(struct initrec* entry, char* cmd, int exe);
-extern int setrunflags(struct initrec* entry, char* flags);
+extern int setrunflags(struct initrec* entry, const char* flags);
 extern offset extendblock(int size);
 
 local int linknode(offset listptr, offset nodeptr);
@@ -34,7 +34,7 @@ local int checkdupname(const char* name);
 
    Non-zero exe means cmd is the name of the script to run. See addrecargv(). */
 
-int addinitrec(char* name, char* rlvl, char* cmd, int exe)
+int addinitrec(const char* name, const char* rlvl, char* cmd, int exe)
 {
 	offset nodeoff;
 	offset entryoff;
@@ -44,7 +44,7 @@ int addinitrec(char* name, char* rlvl, char* cmd, int exe)
 	/* This can (and should) be done early, since it's easier to do when the new
 	   initrec is not yet linked to the list. */
 	if(name[0] == '-' && !name[1])
-		name[0] = '\0';
+		name = "";
 	else if(checkdupname(name))
 		retwarn(-1, "%s:%i: duplicate name %s", FBN, FBL, name);
 

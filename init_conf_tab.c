@@ -5,7 +5,7 @@
 
 export int readinittab(const char* file, int strict);
 
-extern int addinitrec(char* code, char* name, char* cmd, int exe);
+extern int addinitrec(const char* code, const char* name, char* cmd, int exe);
 extern int addenviron(const char* string);
 
 extern struct fblock fileblock;
