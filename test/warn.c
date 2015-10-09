@@ -59,7 +59,7 @@ int main(void)
 	/* User mode test. The line should be sent, verbatim, to warnfd */
 	wrptr = 0;
 	warnfd = 3;
-	ZERO(warn("some line here"));
+	warn("some line here");
 	ASSERT(warnfd == 3);
 	ASSERT(wrptr == 1);
 	STREQUALS(wrlog[0].buf, "some line here");
@@ -68,7 +68,7 @@ int main(void)
 	/* User mode test, now with some formatting */
 	wrptr = 0;
 	warnfd = 3;
-	ZERO(warn("some line here: %i", 123));
+	warn("some line here: %i", 123);
 	ASSERT(warnfd == 3);
 	ASSERT(wrptr == 1);
 	STREQUALS(wrlog[0].buf, "some line here: 123");
@@ -77,7 +77,7 @@ int main(void)
 	/* Regular use, only syslog should be written to */
 	wrptr = 0;
 	warnfd = 2;
-	ZERO(warn("general message"));
+	warn("general message");
 	ASSERT(warnfd == 2);
 	ASSERT(wrptr == 1);
 	STREQUALS(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
@@ -87,7 +87,7 @@ int main(void)
 	wrptr = 0;
 	warnfd = 2;
 	flags = BREAKSYSLOG;
-	ZERO(warn("general message"));
+	warn("general message");
 	ASSERT(warnfd == 2);
 	ASSERT(wrptr == 2);
 	STREQUALS(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
@@ -99,7 +99,7 @@ int main(void)
 	wrptr = 0;
 	warnfd = 3;
 	flags = BREAKWARNFD;
-	ZERO(!warn("general message"));
+	warn("general message");
 	ASSERT(warnfd == -1);
 	ASSERT(wrptr == 1);
 	STREQUALS(wrlog[0].buf, "general message");
@@ -109,7 +109,7 @@ int main(void)
 	char* p = "---*---++---++---*---"; /* 21 */
 	warnfd = 3;
 	flags = 0;
-	ZERO(warn("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", p, p, p, p, p, p, p, p, p, p, p, p, p, p, p));
+	warn("%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s", p, p, p, p, p, p, p, p, p, p, p, p, p, p, p);
 
 	return 0;
 }
