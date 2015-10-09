@@ -86,9 +86,9 @@ Just how small exactly?
 Typical size of statically-linked, stripped executables:
 
                      init     telinit    run
-        x86          14KB       3KB      5KB
-        x86_64       15KB       3KB      6KB
-        arm          17KB       4KB      7KB
+        x86          14KB       3KB      6KB
+        x86_64       14KB       3KB      6KB
+        arm          17KB       3KB      7KB
         arm64        17KB       3KB      6KB
         mips         25KB       4KB     10KB
 
