@@ -35,9 +35,8 @@ int levelmatch(struct initrec* p, int level)
 	return (p->rlvl & level);
 }
 
-int warn(const char* fmt, ...)
+void warn(const char* fmt, ...)
 {
-	return 0;
 }
 
 int main(void)

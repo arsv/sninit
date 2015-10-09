@@ -12,13 +12,12 @@ extern int vsnprintf(char* buf, size_t len, const char* fmt, va_list ap);
 #define BUFLEN 1024
 char warnbuf[BUFLEN];
 
-int warn(const char* fmt, ...)
+void warn(const char* fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
 	vsnprintf(warnbuf, BUFLEN, fmt, ap);
 	va_end(ap);
-	return 0;
 }
 
 int levelmatch(struct initrec* p, int level)
