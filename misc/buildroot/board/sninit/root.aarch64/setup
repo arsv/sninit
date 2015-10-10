@@ -1,0 +1,4 @@
+#!/bin/sh
+/bin/mount -t devtmpfs devtmpfs /dev
+/sbin/ifconfig eth0 10.0.2.15 up
+/sbin/route add default gw 10.0.2.2 dev eth0
