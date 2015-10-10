@@ -48,12 +48,7 @@ local int writefullnl(int fd, char *buf, size_t count);
 local int writesyslog(const char* buf, int count);
 extern int timestamp(char* buf, int len);
 
-/* it's in RFC 3164 and we're not going to include syslog.h
-   just because of two puny constants */
-#define LOG_NOTICE	5
-#define LOG_DAEMON	3<<3
-
-local const char* pri = WARNPRIORITY;
+local const char* pri = WARNPRIO;
 local const char* tag = WARNTAG;
 
 /* During telinit request, warnfd is the open telinit connection.

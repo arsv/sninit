@@ -57,6 +57,12 @@
 /* (this is a string parsed just like the 2nd inittab field) */
 #define SRDEFAULT "S3+"
 
+/* Syslog priority tag (1st argument of syslog(3), as a string,
+   wraped in < > brackets). Default value "<29>" = LOG_NOTICE | LOG_DAEMON. */
+#define WARNPRIO "<29>"
+/* All warn messages to syslog and stderr have this tag prepended */
+#define WARNTAG "init: "
+
 /* Do not change the following values unless you know what you are doing.
    Wide range of values will work here. */
 
@@ -90,9 +96,3 @@
    See comments in init_poll.c on why this is necessary. */
 #define THROTTLETIME 2
 #define THROTTLECOUNT 50
-
-/* Syslog priority tag (1st argument of syslog(3), as a string,
-   wraped in < > brackets). Default value "<29>" = LOG_NOTICE | LOG_DAEMON. */
-#define WARNPRIORITY "<29>"
-/* All warn messages to syslog and stderr have this tag prepended */
-#define WARNTAG "init: "
