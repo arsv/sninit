@@ -2,9 +2,9 @@
 #include "../init.h"
 #include "_test.h"
 
-int state;
 extern const char* tzfile;
 
+extern int tzlock;
 extern void tzinit(time_t base);
 extern void tzparse(unsigned char* buf, int len, time_t t0);
 
@@ -25,7 +25,7 @@ int main(void)
 	tzfile = "tzinit_1.bin";
 	tztime = 1407707612;
 	tzinit(tztime);
-	ASSERT(state & S_TZSET);
+	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 1396141200);
        	ASSERT(tzinfo.te == 1414285200);
 	ASSERT(tzinfo.dt == 10800);
@@ -35,7 +35,7 @@ int main(void)
 	tztime = 2140045300;
 	tzinfo.set = 0;
 	tzinit(tztime);
-	ASSERT(state & S_TZSET);
+	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 2140045200);
 	ASSERT(tzinfo.te == 0);
 	ASSERT(tzinfo.dt == 7200);
@@ -45,7 +45,7 @@ int main(void)
 	tztime = -1441159324; /* (May 1924, really?) */
 	tzinfo.set = 0;
 	tzinit(tztime);
-	ASSERT(state & S_TZSET);
+	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 0);
 	ASSERT(tzinfo.te == -1441159324);
 	ASSERT(tzinfo.dt == 7324);
@@ -57,7 +57,7 @@ int main(void)
 	tzfile = "tzinit_0.bin";
 	tztime = 1407707612;
 	tzinit(tztime);
-	ASSERT(state & S_TZSET);
+	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 1234);	/* the correct behavior is not to change ts/te/dt in case tzparse fails */
        	ASSERT(tzinfo.te == 5678);	/* (ok more like implemented behavior, not necessary correct) */
 	ASSERT(tzinfo.dt == 1122);
@@ -69,7 +69,7 @@ int main(void)
 	tzfile = "tzinit_2.bin";
 	tztime = 1407707612;
 	tzinit(tztime);
-	ASSERT(state & S_TZSET);
+	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 1234);	/* again, should keep the values */
        	ASSERT(tzinfo.te == 5678);
 	ASSERT(tzinfo.dt == 1122);
