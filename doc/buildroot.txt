@@ -185,6 +185,19 @@ Beware -nographic does a lot more than -display none, and will require
 additional setup.
 
 
+Aarch64 issues
+~~~~~~~~~~~~~~
+The only arch to use initramdisk, it needs rdinit=/bin/sh instead of
+init=/bin/sh. Make sure to check /init script, and mount devtmpfs
+if you need it.
+
+Buildroot has host-gdb disabled for aarch64. Edit package/gdb/Config.in.host
+to enable it.
+
+There is no graphical console, and only one serial interface.
+Use tcp transport for gdb communication instead.
+
+
 Post-build scripts
 ~~~~~~~~~~~~~~~~~~
 Before attempting to reconfigure qemu, take a look at
