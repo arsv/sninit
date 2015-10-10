@@ -155,7 +155,7 @@ void tzparse(unsigned char* buf, int len, time_t t)
 		+ tzh_timecnt*4			/* tzh_times */
 		+ tzh_timecnt*1			/* tzh_ttype */
 		+ (4 + 1 + 1)*tzh_typecnt;	/* tzh_types */
-	if(expfilelen > len)
+	if(expfilelen > len || expfilelen < 0)
 		return;
 
 	unsigned char* tzh_times = buf + 20 + 6*4;
