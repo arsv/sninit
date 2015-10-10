@@ -301,6 +301,7 @@ void sighandler(int sig)
 			if(initctlfd >= 0)
 				close(initctlfd);
 			initctlfd = -1;
+			state &= ~S_TZSET;
 			state |= S_REOPEN;
 			break;
 

@@ -23,6 +23,8 @@
 #include "config.h"
 #include "scope.h"
 
+extern int state;
+
 export int timestamp(char* buf, int len);
 extern int mktimestamp(char* p, int l, time_t ts);
 
@@ -33,7 +35,6 @@ local struct {
 	int ts;
 	int te;
 	int dt;
-	char set;
 } tzinfo; /* assumed to be zero-initialized */
 
 local void tzinit(time_t base);
@@ -53,7 +54,7 @@ int timestamp(char* buf, int len)
 	
 	clock_gettime(CLOCK_REALTIME, &tp);
 
-	if(!tzinfo.set
+	if(!(state & S_TZSET)
 	|| (tzinfo.ts && tp.tv_sec < tzinfo.ts)
 	|| (tzinfo.te && tp.tv_sec < tzinfo.te))
 		tzinit(tp.tv_sec);
@@ -70,7 +71,10 @@ void tzinit(time_t base)
 	struct stat st;
 	unsigned char* buf;
 
-	/* Error handling here is just to bail out, leaving tzinfo unchanged. */
+	/* Do not try to re-load timezone after a failure. */
+	state |= S_TZSET;
+
+	/* Errors here are not reported, we just bail out */
 
 	if((fd = open(tzfile, O_RDONLY)) < 0)
 		return;
@@ -133,9 +137,6 @@ struct tzfile
 void tzparse(unsigned char* buf, int len, time_t t)
 {
 	int i;
-
-	/* Do not try to re-load timezone after a failure. */
-	tzinfo.set = 1; 
 
 	if(len < 50 || memcmp((char*)buf, "TZif", 4))
 		return;

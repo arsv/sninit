@@ -7,6 +7,7 @@
 #define S_INITCTL	(1<<1)		/* telinit connection on initctlfd is waiting to be accept()ed */
 #define S_RECONFIG	(1<<2)		/* new configuration is ready in newblock */
 #define S_REOPEN	(1<<3)		/* re-open initctl socket at the first opportunity */
+#define S_TZSET		(1<<4)		/* timezone loading attempt has been made */
 
 /* Per-process flags (struct initrec.flags) */
 #define C_INVERT	(1<<0)		/* invert runlevel mask */
