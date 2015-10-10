@@ -89,6 +89,9 @@ Should be used for wakeup scripts.
 .IP "\fBL\fR" 4
 Like \fBS\fR, but wait for other processes die before stopping this one.
 This may be useful for syslogd and klogd.
+.IP "\fBT\fR" 4
+Fast-respawning \fBgetty\fR(1)-like entry. SIGABRT is used to kill it,
+as gettys tend to ignore SIGTERM, and abnormal exits are never logged.
 .P
 Runlevel mask is any subset of \fB0123456789\fR characters.
 The entry will be started only if current runlevel is in entry's runlevel
