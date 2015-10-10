@@ -414,11 +414,12 @@ void forkreboot(void)
 	int status;
 
 	if((pid = fork()) == 0)
-		_exit(reboot(rbcode));
-	else if(pid < 0)
-		return;
-	if(waitpid(pid, &status, 0) < 0)
-		return;
-	if(!WIFEXITED(status) || WEXITSTATUS(status))
-		warn("still here, reboot failed, time to panic");
+		return _exit(reboot(rbcode));
+	else if(pid > 0)
+		waitpid(pid, &status, 0);
+
+	/* By this point, it does not really matter what exactly failed,
+	   fork() or wait() or reboot() */
+
+	warn("still here, reboot failed, time to panic");
 }
