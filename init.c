@@ -87,6 +87,12 @@ sigset_t defsigset;
 
 int state = 0;
 
+/* This is only used to request timezone reload. It does not really belong
+   here, it's from init_time_tz, but we may be linking against _notz or _nots
+   which do not provide it. */
+
+weak int tzlock;
+
 /* Short outline of the code: */
 
 export int main(int argc, char** argv);		/* main loop */
@@ -301,8 +307,8 @@ void sighandler(int sig)
 			if(initctlfd >= 0)
 				close(initctlfd);
 			initctlfd = -1;
-			state &= ~S_TZSET;
 			state |= S_REOPEN;
+			tzlock = 0;
 			break;
 
 		/* SIGPIPE and SIGALRM may arrive here */

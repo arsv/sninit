@@ -23,13 +23,13 @@
 #include "config.h"
 #include "scope.h"
 
-extern int state;
-
 export int timestamp(char* buf, int len);
 extern int mktimestamp(char* p, int l, time_t ts);
 
 /* To redefine it for testing */
 local const char* tzfile = LOCALTIME;
+
+int tzlock = 0;
 
 local struct {
 	int ts;
@@ -54,7 +54,7 @@ int timestamp(char* buf, int len)
 	
 	clock_gettime(CLOCK_REALTIME, &tp);
 
-	if(!(state & S_TZSET)
+	if(!tzlock
 	|| (tzinfo.ts && tp.tv_sec < tzinfo.ts)
 	|| (tzinfo.te && tp.tv_sec < tzinfo.te))
 		tzinit(tp.tv_sec);
@@ -72,7 +72,7 @@ void tzinit(time_t base)
 	unsigned char* buf;
 
 	/* Do not try to re-load timezone after a failure. */
-	state |= S_TZSET;
+	tzlock = 1;
 
 	/* Errors here are not reported, we just bail out */
 
