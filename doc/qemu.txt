@@ -147,6 +147,33 @@ Serial link is typically the easiest one to set up in qemu, but in some cases
 tcp may be a viable option. See qemu(1), especially on -net and -serial.
 
 
+Debugging over a tcp connection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This may be easier to use than a PTY, but requires several things (qemu,
+guest kernel and guest userspace network setup) to work properly.
+
+Set up emulated network device and forward some port, say 1234, from host
+to guest system. Check by running
+
+	nc -v -l -p 1234	# guest side
+	nc -v localhost 1234	# host side
+
+The connection should work. If it does, use :1234 instead of serial device
+in gdb commands:
+
+	# guest side
+	gdbserver :1234 /sbin/init
+	# host side
+	.../TARGET-gdb -ex "target remote :1234" ./init
+
+Check
+
+	misc/buildroot/board/sninit/qemu_aarch
+	misc/buildroot/board/sninit/root.aarch/etc/setup
+
+for sample configuration.
+
+
 Debugging pid 1 specific features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Running init under gdbserver means it won't get pid 1.
