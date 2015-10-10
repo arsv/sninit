@@ -28,20 +28,21 @@ config BR2_PACKAGE_SNINIT_BUNDLED_LIBC
 	  libc has been chosen for the whole system (uClibc, musl etc).
 
 config BR2_PACKAGE_SNINIT_DEBUG
-	bool "Enable debug mode"
+	bool "Debug mode"
 	default y
 	help
-	  Debug mode disables optimization and enables debugging symbols.
+	  Disable optimization and enable debugging symbols.
+
 	  Buildroot strips target executables, but those in output/build/
-	  retain their symbols, stripped init can be run under gdbserver
-	  in qemu and non-stripped one can be loaded into target-gdb
-	  for a remote debugging session.
+	  retain their symbols. The target executable can be run under
+	  gdbserver in qemu and non-stripped one can be loaded into
+	  target-gdb for a remote debugging session.
 
 config BR2_PACKAGE_SNINIT_BUILTIN_INITTAB
 	string "Built-in inittab name"
 	default ""
 	help
-	  A fallback inittab to use if /etc/inittab on the target system
+	  Fallback inittab to use if /etc/inittab on the target system
 	  can not be read. This is compile-time option, and the file name
 	  should be relative to buildroot directory.
 
