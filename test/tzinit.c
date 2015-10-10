@@ -12,7 +12,6 @@ extern struct {
 	int ts;
 	int te;
 	int dt;
-	char set;
 } tzinfo;
 
 time_t tztime;
@@ -24,6 +23,7 @@ int main(void)
 	/* Regular entry */
 	tzfile = "tzinit_1.bin";
 	tztime = 1407707612;
+	tzlock = 0;
 	tzinit(tztime);
 	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 1396141200);
@@ -33,17 +33,18 @@ int main(void)
 	/* Final entry in that file, let's see how it handles unbounded interval */
 	/* Relevant interval is last-transition to +inf */
 	tztime = 2140045300;
-	tzinfo.set = 0;
+	tzlock = 0;
 	tzinit(tztime);
 	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 2140045200);
 	ASSERT(tzinfo.te == 0);
 	ASSERT(tzinfo.dt == 7200);
+	tzlock = 0;
 
 	/* First entry in the file, got to select types[0] */
 	/* Relevant inverval is -inf to the first transition time */
 	tztime = -1441159324; /* (May 1924, really?) */
-	tzinfo.set = 0;
+	tzlock = 0;
 	tzinit(tztime);
 	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 0);
@@ -56,6 +57,7 @@ int main(void)
 	tzinfo.dt = 1122;
 	tzfile = "tzinit_0.bin";
 	tztime = 1407707612;
+	tzlock = 0;
 	tzinit(tztime);
 	ASSERT(tzlock);
 	ASSERT(tzinfo.ts == 1234);	/* the correct behavior is not to change ts/te/dt in case tzparse fails */
