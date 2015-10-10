@@ -29,7 +29,7 @@ Prerequisites
   buildroot will download ~250MB of source tarballs
 
 * lots of patience and up to 5GB of free disk space
-  (all that to test a couple of executable totalling ~20KB, yeah)
+  (all that to test two tiny executables, yeah)
 
 
 Building and running
