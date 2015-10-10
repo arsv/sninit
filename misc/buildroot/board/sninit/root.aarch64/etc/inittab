@@ -5,13 +5,11 @@ dev	W3	/bin/mount -t devtmpfs none /dev
 pts	R3	/bin/mkdir -p /dev/pts
 shm	R3	/bin/mkdir -p /dev/shm
 host	R3	/bin/hostname -F /etc/hostname
-ifup	R3	/sbin/ifconfig eth0 10.0.2.15 up
-gw	R3	/sbin/route add default gw 10.0.2.2
 
-syslog	L	/sbin/syslogd -n
+syslog	L3	/sbin/syslogd -n -O /var/log/messages
+klogd	S3	/sbin/klogd -nc1
+dhcp	L3	/sbin/run -n /sbin/udhcpc -fRS eth0
 
 ttyS	T3	/sbin/getty -L ttyAMA0 115200 vt100
-
-ifdown	R0	/bin/ifconfig eth0 down
 
 # vim: ft=conf:

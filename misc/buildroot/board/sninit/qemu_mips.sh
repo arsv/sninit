@@ -10,4 +10,4 @@ qemu-system-mips \
 	-hda output/images/rootfs.ext2 \
 	-append "root=/dev/hda" \
 	-net nic,model=pcnet \
-	-net user
+	-net user,id=eth0,hostfwd=tcp:127.0.0.1:1234-:1234

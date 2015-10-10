@@ -1,16 +1,17 @@
 PATH=/bin:/sbin
 
 proc	R3	/bin/mount -t proc proc /proc
+dev	W3	/bin/mount -t devtmpfs none /dev
 pts	R3	/bin/mkdir -p /dev/pts
 shm	R3	/bin/mkdir -p /dev/shm
-mount	W3	/bin/mount -o remount,rw /
+mount	R3	/bin/mount -o remount,rw /
 host	R3	/bin/hostname -F /etc/hostname
 
 syslog	L3	/sbin/syslogd -n -O /var/log/messages
 klogd	S3	/sbin/klogd -nc1
 dhcp	L3	/sbin/run -n /sbin/udhcpc -fRS eth0
 
-ttyS	T3	/sbin/getty -L ttyS0 115200 vt100
+tty1	T3	/sbin/getty -L tty1 115200 vt100
 
 umount	R0	/bin/umount -ar
 
