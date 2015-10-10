@@ -88,7 +88,12 @@ int configure(int strict)
 		goto unmap;
 
 	rewirepointers();
-	return 0;
+
+	/* check if there are any entries at all */
+	if(NCF->initnum)
+		return 0;	/* ok, we're good */
+
+	warn("no entries found in inittab");
 
 unmap:	munmapblock();
 nomap:	return -1;
