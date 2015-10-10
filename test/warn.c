@@ -51,8 +51,14 @@ int timestamp(char* buf, int len)
 	return slen;
 }
 
-#define LOG_NOTICE	5
-#define LOG_DAEMON	3<<3
+/* The following will only pass if
+
+   	WARNPRIO = "<29>"
+	WARNTAG = "init: "
+
+   It's easy to change test strings below to use the constants,
+   but that would make the tests less readable. Few people are going
+   to change those values anyway, so why bother. */
 
 int main(void)
 {
