@@ -147,6 +147,16 @@ void tzparse(unsigned char* buf, int len, time_t t)
 	/* No data (?!) */
 	if(!tzh_timecnt)
 		return;
+	/* Bogus length? */
+	if(tzh_timecnt < 0 || tzh_typecnt < 0)
+		return;
+	/* expected length, given *count values so far */
+	int expfilelen = 20 + 6*4 		/* header and counters */
+		+ tzh_timecnt*4			/* tzh_times */
+		+ tzh_timecnt*1			/* tzh_ttype */
+		+ (4 + 1 + 1)*tzh_typecnt;	/* tzh_types */
+	if(expfilelen > len)
+		return;
 
 	unsigned char* tzh_times = buf + 20 + 6*4;
 	for(i = 0; i < tzh_timecnt; i++)
