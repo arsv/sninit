@@ -56,7 +56,7 @@ void initpass(void)
 	struct initrec* p;
 
 	if(!cfg->inittab || cfg->initnum <= 0)
-		return;	/* should never happen, but who knows */
+		goto done; /* should never happen, but who knows */
 
 	struct initrec** inittab = cfg->inittab;
 	struct initrec** initend = cfg->inittab + cfg->initnum - 1;
@@ -104,7 +104,7 @@ void initpass(void)
 	if(waitfor)
 		return;
 
-	if(nextlevel == (1<<0)) {
+done:	if(nextlevel == (1<<0)) {
 		/* level 0 is slippery in its own particular way */
 		currlevel = nextlevel;
 		nextlevel = 0;
