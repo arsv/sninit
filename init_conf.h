@@ -18,6 +18,10 @@ struct scratch {
 	struct ptrlist env;
 };
 
+/* The three mmaped blocks. See init_conf_map.c.
+   These should have been anonymous structures, but they are declared
+   extern in several files. */
+
 struct cblock {
 	void* addr;
 	int len;

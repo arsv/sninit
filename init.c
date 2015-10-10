@@ -246,8 +246,8 @@ int setsignals(void)
 	};
 	/* The stuff below *can* fail. Regardless of whether it's sigprocmask
 	   or sigaction, it means there is something really wrong with libc,
-	   so there is no point in determining which one failed, or trying
-	   to recover for that matter. */
+	   so there is no point in determining which one failed.
+	   Or trying to recover for that matter. */
 	int ret = 0;
 
 	sigemptyset(&sa.sa_mask);
@@ -268,8 +268,9 @@ int setsignals(void)
 	ret |= sigaction(SIGCHLD, &sa, NULL);
 
 	/* These *should* interrupt write() calls, which is the opposite
-	   of SA_RESTART; sighandler must be set here, because SIG_IGN
-	   prevents syscall interruption. */
+	   of SA_RESTART. There is no handler code for these, but SIG_IGN
+	   prevents syscall interruption, so we have to leave &sighandler
+	   in sa_handler. */
 	ret |= sigaction(SIGPIPE, &sa, NULL);
 	ret |= sigaction(SIGALRM, &sa, NULL);
 

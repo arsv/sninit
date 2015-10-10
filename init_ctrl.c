@@ -158,8 +158,8 @@ int checkuser(int fd)
 
 /* Initctl is closed once there are more than N failed attempts
    in the last M seconds. To reopen the socket, root can kill -HUP 1
-   at any point, preferably after checking syslog and kicking perpetrator
-   out of the system.  */
+   at any point, preferably after checking syslog and kicking
+   the abuser out of the system. */
 
 int checkthrottle(void)
 {
