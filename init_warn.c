@@ -53,8 +53,8 @@ extern int timestamp(char* buf, int len);
 #define LOG_NOTICE	5
 #define LOG_DAEMON	3<<3
 
-local const char* hdt = "<29>";	/* = <LOG_NOTICE|LOG_DAEMON> */
-local const char* tag = "init: ";
+local const char* pri = WARNPRIORITY;
+local const char* tag = WARNTAG;
 
 /* During telinit request, warnfd is the open telinit connection.
    In case connection fails, we set warnfd to -1 to "lock" warn,
@@ -71,7 +71,7 @@ local const char* tag = "init: ";
 
         |--------hdr--------|-tag-|-----------msg------------||
         <29>Jan 10 12:34:56 init: crond[123] abnormal exit 67↵₀
-	|hdt|
+        |pri|
 
    Extra prefixes are skipped by passing (buf + ...) to respective
    write* function. */
@@ -85,8 +85,8 @@ void warn(const char* fmt, ...)
 	if(warnfd < 0)
 		return;
 
-	int hdrlen = strlen(hdt);
-	strncpy(buf, hdt, HDRBUF);
+	int hdrlen = strlen(pri);
+	strncpy(buf, pri, HDRBUF);
 	if(warnfd == 2)
 		hdrlen += timestamp(buf + hdrlen, HDRBUF - hdrlen);
 
