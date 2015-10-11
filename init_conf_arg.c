@@ -182,7 +182,7 @@ char* strssep(char** str)
 	return ret;
 }
 
-/* gcc has built-in prototype for this, with int argument */
+/* gcc has built-in prototype for this, with an int argument */
 
 int isspace(int c)
 {
