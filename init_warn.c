@@ -48,9 +48,6 @@ local int writefullnl(int fd, char *buf, size_t count);
 local int writesyslog(const char* buf, int count);
 extern int timestamp(char* buf, int len);
 
-local const char* pri = WARNPRIO;
-local const char* tag = WARNTAG;
-
 /* During telinit request, warnfd is the open telinit connection.
    In case connection fails, we set warnfd to -1 to "lock" warn,
    preventing further attempts to write anything until current telinit
@@ -80,11 +77,13 @@ void warn(const char* fmt, ...)
 	if(warnfd < 0)
 		return;
 
+	const char* pri = WARNPRIO;
 	int hdrlen = strlen(pri);
 	strncpy(buf, pri, HDRBUF);
 	if(warnfd == 2)
 		hdrlen += timestamp(buf + hdrlen, HDRBUF - hdrlen);
 
+	const char* tag = WARNTAG;
 	int taglen = strlen(tag);
 	strncpy(buf + hdrlen, tag, HDRBUF - hdrlen);
 
