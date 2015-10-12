@@ -108,6 +108,8 @@ though in rockbox itself it was done in a different way.
 Small size and static linkage are mostly due to dietlibc and busybox.
 See "Writing Small and Fast Software" by Felix von Leitner.
 
+See also doc/others.txt for a list of other init implementations.
+
 
 Licensing
 ~~~~~~~~~

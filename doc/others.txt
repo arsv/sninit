@@ -1,0 +1,50 @@
+Other projects of similar scope and intent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+A lot of minimalistic init implementations are loosed based
+on David J. Bernsteins's daemontools.
+
+Their shared feature is a dedicated respawner with uniform, unordered
+S-entries and lack of runlevels. Handling of sequential W-entries is
+typically delegated to some kind of shell scripts.
+
+    http://cr.yp.to/daemontools.html (the original)
+    http://untroubled.org/daemontools-encore/
+    http://smarden.org/runit/
+    http://skarnet.org/software/s6/
+
+A number of inits (including sninit) are based on the original sysvinit.
+These tend to have sequential list with S-entries and W-entries intermixed,
+and optionally runlevels.
+
+    http://savannah.nongnu.org/projects/sysvinit (the original)
+    http://www.busybox.net/ busybox init
+    https://github.com/troglobit/finit
+    https://github.com/arsv/sninit
+
+Dependency-based init systems manage a tree of implicitly-ordered entries. 
+The order in which the entries are started is determined at runtime,
+similar to how make orders targets to be rebuilt.
+
+    http://www.freedesktop.org/wiki/Software/systemd/ (the original?)
+    http://upstart.ubuntu.com/
+    https://wiki.gentoo.org/wiki/Project:OpenRC
+    http://uselessd.darknedgy.net/ (attempt to reimplement systemd)
+
+Another approach to init design is to drop respawner altogether,
+with the assumption that the daemons are truly immortal.
+PID files and daemon(3) originate from this branch of design.
+
+    SysV-style initscripts, several implementations, for instance:
+        https://git.fedorahosted.org/git/initscripts.git
+    BSD rc scripts, see intro here:
+        https://www.freebsd.org/doc/en/books/porters-handbook/rc-scripts.html
+    https://gist.github.com/rofl0r/6168719 (minit aka minimal init)
+    http://git.suckless.org/sinit 
+
+Both SysV and BSD scripts need a dedicated reaper process. The common approach
+back at the time was to use sysvinit, which also handled few S-entries like
+gettys. Another approach is to use a dedicated minimalistic reaper like minit
+or suckless init.
+
+Yet another option is "wait" shell built-in, which allows making init into
+a single sh script. With no respawner, it is in fact possible.
