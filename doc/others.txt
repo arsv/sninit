@@ -25,8 +25,8 @@ Dependency-based init systems manage a tree of implicitly-ordered entries.
 The order in which the entries are started is determined at runtime,
 similar to how make orders targets to be rebuilt.
 
-    http://www.freedesktop.org/wiki/Software/systemd/ (the original?)
     http://upstart.ubuntu.com/
+    http://www.freedesktop.org/wiki/Software/systemd/
     https://wiki.gentoo.org/wiki/Project:OpenRC
     http://uselessd.darknedgy.net/ (attempt to reimplement systemd)
 
