@@ -1,7 +1,6 @@
 PATH=/bin:/sbin
 
 proc	R3	/bin/mount -t proc proc /proc
-dev	W3	/bin/mount -t devtmpfs none /dev
 pts	R3	/bin/mkdir -p /dev/pts
 shm	R3	/bin/mkdir -p /dev/shm
 host	R3	/bin/hostname -F /etc/hostname
