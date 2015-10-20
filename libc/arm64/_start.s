@@ -2,7 +2,7 @@
 
 .data
 
-environ: .dword 0
+environ: .quad 0
 
 .type environ,object
 .size environ,.-environ
@@ -23,7 +23,7 @@ _start:
 	add	x1, sp, #8		/* argv */
 	ldr	x3, =environ
 	add	x2, x1, x0, lsl #3	/* &argv[argc] */
-	add	x2, x2, #4		/* envp	 */
+	add	x2, x2, #8		/* envp	 */
 	str	x2, [x3, #0]		/* environ = envp */
 
 	bl	main
