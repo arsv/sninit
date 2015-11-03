@@ -1,5 +1,5 @@
 The files here are stub executables intended to be used with ../etc/inittab
-for test runs in source directory.
+for test runs in the source directory.
 
 Proper (non-script) executables are set to be host-compiled.
 This is because qemu-(arch) ./init passes syscalls to the underlying
