@@ -11,7 +11,7 @@ direct4 += munmap clock_gettime nanosleep setfsuid setfsgid umask
 direct4 += socket bind connect listen accept shutdown
 direct4 += setresgid setresuid setsid setrlimit
 direct4 += send sigaction sigprocmask setpriority
-direct4 += getuid unshare
+direct4 += getuid unshare fcntl
 direct5 = mremap getsockopt
 
 direct = $(direct4) $(direct5)

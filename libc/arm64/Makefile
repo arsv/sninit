@@ -8,7 +8,7 @@ direct += munmap clock_gettime nanosleep
 direct += socket bind connect listen accept shutdown
 direct += setresgid setresuid setsid setrlimit
 direct += setpriority setfsuid setfsgid umask
-direct += mremap getsockopt getuid unshare
+direct += mremap getsockopt getuid unshare fcntl
 
 directs = $(patsubst %,%.s,$(direct))
 directr = $(patsubst %,x-%,$(direct))
