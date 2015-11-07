@@ -5,6 +5,7 @@
 #include <sys/reboot.h>
 #include <sys/wait.h>
 #include <poll.h>
+#include <fcntl.h>
 #include <time.h>
 #include <errno.h>
 
@@ -100,6 +101,7 @@ export int main(int argc, char** argv);		/* main loop */
 local int setup(int argc, char** argv);		/* initialization */
 local int setsignals(void);
 local void setargs(int argc, char** argv);
+local int setstdfds(void);
 local int setpasstime(void);
 
 extern int configure(int);		/* inittab parsing */
@@ -196,6 +198,11 @@ reboot:
 
 int setup(int argc, char** argv)
 {
+	setargs(argc, argv);
+
+	if(setstdfds())
+		retwarn(-1, "cannot set initial fds 0, 1, 2");
+
 	if(setinitctl())
 		/* Not having telinit is bad, but aborting system startup
 		   for this mere reason is likely even worse. */
@@ -203,7 +210,6 @@ int setup(int argc, char** argv)
 
 	if(setsignals())
 		retwarn(-1, "failed to set signal handlers");
-	setargs(argc, argv);
 
 	if(!configure(NONSTRICT))
 		setnewconf();
@@ -228,6 +234,44 @@ void setargs(int argc, char** argv)
 			nextlevel = (1 << 1);
 		else if(**argi >= '1' && **argi <= '9' && !*(*argi+1))
 			nextlevel = (1 << (**argi - '0'));
+}
+
+/* Most applications (sninit included) expect fds 0, 1, 2 to be open.
+   Kernel tries to fulfill that, opening and duping /dev/console just
+   before spawning init. However it does not check the results, and opening
+   /dev/console can fail, in particular if there are no console configured.
+
+   To avoid really nasty situations with stuff written to stderr ending
+   up in some explicitly opened file somewhere with the spawned children,
+   let's try to find out whether we've got something on fds 0-2 and if not,
+   stub them with whatever we'll be able to open.
+
+   See kernel/init/main.c kernel_init(), kernel_init_freeable() and also
+   busybox/init/init.c console_init() around bb_sanitize_stdio() following to
+   bb_daemonize_or_rexec() from libb/vfork_daemon_rexec.c. */
+
+int setstdfds(void)
+{
+	int fd;
+
+	if(fcntl(2, F_GETFD) >= 0)
+		return 0; /* if 2 is ok, then 0 and 1 must be valid as well */
+
+	if((fd = open("/dev/null", O_RDWR)) >= 0)
+		goto gotfd;
+	if((fd = open("/", O_RDONLY)) >= 0)
+		goto gotfd;
+	/* Not being able to open / read-only is weird enough to panic */
+	return -1;
+
+gotfd:
+	if(fd < 1)
+		dup2(fd, 1);
+	if(fd < 2)
+		dup2(fd, 2);
+	if(fd > 2)
+		close(fd);
+	return 0;
 }
 
 /* Outside of ppoll, we only block SIGCHLD; inside ppoll, default sigmask
