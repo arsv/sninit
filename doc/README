@@ -3,6 +3,7 @@ Files in this directory are meant primarily for developers.
 -- Why sninit was written the way it is written
 
 builtin.txt	  What is builtin inittab, and why it is needed
+console.txt	  Initial console issues
 dependencies.txt  On systemd-style dependencies
 failure.txt	  Reboot on failure: why and why not
 initdir.txt	  What is initdir

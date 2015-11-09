@@ -1,0 +1,104 @@
+Initial console issues
+~~~~~~~~~~~~~~~~~~~~~~
+Most unix applications expect fds 0, 1 and 2 (stdin, stdout, stderr
+respectively) to be open by the time their _start code is invoked.
+
+Typically these fds are inherited as is from the parent process,
+which in turn gets them from its parent and so on.
+
+Some processes may choose to open or dup something explicitly onto
+fds 0-2, but some just as well may not. This way it may come up to
+init to make sure the fds are in fact open.
+
+
+Why is this important
+~~~~~~~~~~~~~~~~~~~~~
+An unsuspecting process may end up opening something unrelated into
+fd 2 and then messing it up by writing to stderr:
+
+	int fd = open("some/important/file", O_WRONLY);
+	/* fd happens to be 2 here */
+
+	if(unrelatedsyscall(...) < 0)
+		perror("unrelatedsyscall");
+		/* ^ writes to some/important/file */
+
+Writes to stderr may occur in unexpected places, and in practice any
+application is should be treated as capable of writing to fd 2.
+The problem is less severe with fd 1 and non-existant for read-only fd 0.
+
+True (forking) daemons are expected to close their fds 0-2 around
+the time they fork to cut their ties to the controlling terminal,
+and only use syslog past that point.
+However, the use of fd 2 is not restricted before the fork point.
+
+
+Kernel side of the problem
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+What exactly does process #1 get on fds 0-2 when it's started?
+The answer is, quite surprisignly, "it depends".
+
+When booting without the use of initramfs, the kernel does
+
+	fd = open("/dev/console", O_RDWR);
+	dup(fd);
+	dup(fd);
+
+which, _if_successful_, provides init with /dev/console open on all three fds.
+The kernel however does not check whether open succeeds. And there are at least
+two ways in which it can fail:
+
+1. /dev/console (the file) is missing (ENOENT)
+2. console is not configured (ENODEV, ENXIO etc)
+
+If this happens, init gets nothing on fds 0-2.
+
+When booting with initramfs, the code above is *skipped* altogether,
+and init unconditionally gets no open fds.
+Initramfs is expected to contain an intermediate init that opens /dev/console
+and spawns the real one among other things.
+
+
+How to handle it
+~~~~~~~~~~~~~~~~
+At present sninit attempts to keep fds unchanges if they happen to be open.
+This is checked by calling fcntl(F_GETFD) on fd 2 only, partially because
+the kernel opens either all three or none, and partially because fd 2
+is the only one sninit itself depends on.
+
+An alternative is to close 0, 1, 2 and proceed to open /dev/console as if
+nothing has been supplied by the kernel. This however requires more syscalls
+and needs special treatment for devel builds, as non-priviledged users are
+not allowed to open it.
+
+No fds open fds in non-initramfs case mean /dev/console cannot be opened
+for whatever reason. In this case, a desperate attempt to open at least
+something is made, said "something" being /dev/null or / (the root directory).
+Having something non-writable on fds 1 and 2 is enough to prevent undesired
+effects, and since the console is not available anyway it's probably ok
+to drop any actual writes to fd 2.
+
+The last trick is to try /dev/console before /dev/null and /.
+Normally it should fail, because that's what kernel did just before spawning
+init, but if sninit happens to be started from within initramfs, it may be
+the right thing to do.
+
+This allows using sninit from initramfs without any special provisions,
+at the price of a single syscall which is not even likely to be issued
+during normal startup.
+
+
+Runnig without initial console
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+There are at least two ways to make open(/dev/console) fail with ENODEV:
+not configuring a console at all (no CONFIG_VT_CONSOLE for instance)
+and passing "console=" with no value to the kernel command line.
+
+The latter is exactly what Chromebook u-boot does.
+
+It's not bad per se, and actually it's a pretty straighforward way
+to hide console output. Which is why Chromebook does it.
+So what init needs to do is to comply, letting any output from its
+children sink into /dev/null.
+
+Inability to open /dev/console is not a reason to abort system startup.
