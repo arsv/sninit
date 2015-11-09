@@ -357,7 +357,7 @@ void sighandler(int sig)
 			tzlock = 0;
 			break;
 
-		/* SIGPIPE and SIGALRM may arrive here */
+		/* SIGPIPE and SIGALRM need no handling */
 	}
 }
 
