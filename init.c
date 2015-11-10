@@ -257,8 +257,6 @@ int setstdfds(void)
 	if(fcntl(2, F_GETFD) >= 0)
 		return 0; /* if 2 is ok, then 0 and 1 must be valid as well */
 
-	if((fd = open("/dev/console", O_RDWR)) >= 0)
-		goto gotfd;
 	if((fd = open("/dev/null", O_RDWR)) >= 0)
 		goto gotfd;
 	if((fd = open("/", O_RDONLY)) >= 0)

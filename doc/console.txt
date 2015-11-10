@@ -78,14 +78,19 @@ Having something non-writable on fds 1 and 2 is enough to prevent undesired
 effects, and since the console is not available anyway it's probably ok
 to drop any actual writes to fd 2.
 
-The last trick is to try /dev/console before /dev/null and /.
-Normally it should fail, because that's what kernel did just before spawning
-init, but if sninit happens to be started from within initramfs, it may be
-the right thing to do.
+It is probably never a good idea to try opening /dev/console:
 
-This allows using sninit from initramfs without any special provisions,
-at the price of a single syscall which is not even likely to be issued
-during normal startup.
+	* If we're not booting into initramfs, the kernel has already tried
+	  that, and failed. No point in trying it again.
+
+	* If we are, initramfs /init will have to set it up, among other things,
+	  handling the fine distinction between initramfs:/dev/console and
+	  realroot:/dev/console so that switch_root would do its job properly.
+
+With initramfs, the pre-init executable initramfs:/init should be a dedicated
+executable, as its job is nothing like what a proper init does. What it should
+do is brining the system close to non-initramfs-boot state, and exec into
+the real init.
 
 
 Runnig without initial console
