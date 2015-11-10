@@ -61,6 +61,9 @@ export int setrunflags(struct initrec* entry, const char* type)
 			case '+':
 				rlvl |= (PRIMASK << last) & PRIMASK;
 				break;
+			case '-':
+				rlvl |= SLIPPERY;
+				break;
 			default:
 				retwarn(-1, "%s:%i: bad runlevel specifier", FBN, FBL);
 		}

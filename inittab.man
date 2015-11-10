@@ -97,7 +97,7 @@ Runlevel mask is any subset of \fB0123456789\fR characters.
 The entry will be started only if current runlevel is in entry's runlevel
 mask (except for \fBX\fR-entries, which do the opposite). The \fB+\fR sign
 extends the last runlevell all the way to \fB9\fR, so \fB3+\fR is the same
-as \fB3456789\fR.
+as \fB3456789\fR. The \fB-\fR sign is a short-hand for slippery runlevels.
 .P
 Runlevel mask may also include a subset of secondary runlevels, \fBabcdef\fR.
 If it does, it will only be started if current primary runlevel is in its
