@@ -72,8 +72,8 @@ and needs special treatment for devel builds, as non-priviledged users are
 not allowed to open it.
 
 No fds open fds in non-initramfs case mean /dev/console cannot be opened
-for whatever reason. In this case, a desperate attempt to open at least
-something is made, said "something" being /dev/null or / (the root directory).
+for whatever reason. In this case, an attempt to open at least something
+is made, said "something" being /dev/null or / (the root directory).
 Having something non-writable on fds 1 and 2 is enough to prevent undesired
 effects, and since the console is not available anyway it's probably ok
 to drop any actual writes to fd 2.
