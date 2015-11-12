@@ -46,9 +46,9 @@ export void setnewconf(void);
 extern int readinittab(const char* file, int strict);
 extern int readinitdir(const char* dir, int strict);
 
-local int finishinittab(void);		/* copy the contents of newenviron to newblock */
-local void rewirepointers(void);	/* turn offsets into actual pointers in newblock,
-					   assuming it won't be mremapped anymore */
+local int finishinittab(void);
+local void rewirepointers(void);
+
 local void transferpids(void);
 extern struct initrec* findentry(const char* name);
 extern int levelmatch(struct initrec* p, int lmask);
@@ -256,7 +256,8 @@ int addptrsarray(offset listoff, int terminate)
 
 	ptrs = newblockptr(ptrsoff, void**);
 
-	/* leading NULL pointer is used as terminator when traversing inittab backwards */
+	/* leading NULL pointer is used as terminator
+	   when traversing inittab backwards */
 	if(terminate & NULL_FRONT) {
 		*(ptrs++) = NULL;
 		ptrsoff += sizeof(void*);
@@ -268,7 +269,8 @@ int addptrsarray(offset listoff, int terminate)
 		*(ptrs++) = NULL + nodeoff + sizeof(struct ptrnode);
 		nodeoff = node->next;
 	} if(rem)
-		/* less elements than expected; this may break initpass, so let's not take chances */
+		/* less elements than expected; this may break initpass,
+		   so let's not take chances */
 		return -1;
 
 	if(terminate & NULL_BACK)

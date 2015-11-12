@@ -96,9 +96,9 @@ void initpass(void)
 			spawn(p);
 
 			if(ewtype(p))
-				waitfor |= RUNNING;	/* we're not in nextlevel yet */
+				waitfor |= RUNNING;
 			if(wtype(p))
-				return;			/* off to wait for this process */
+				return;
 		}
 
 	if(waitfor)
@@ -147,9 +147,9 @@ local void switchtonextlevel(void)
    set for sublevels, at least one of them matches a bit
    in nextlevel.
 
-   Note (p->rlvl & SUBMASK == 0) means "disregard sublevels",
-   but (p->rlvl & SUBMASK == SUBMASK) means "run in *any* sublevel" and excludes
-   no-active-sublevels case. */
+   Note (p->rlvl & SUBMASK == 0) means "disregard sublevels", but
+   (p->rlvl & SUBMASK == SUBMASK) means "run in *any* sublevel"
+   and excludes no-active-sublevels case. */
 
 int shouldberunning(struct initrec* p)
 {

@@ -136,12 +136,13 @@ void setrunlevel(const char* p)
 		next &= ~SUBMASK;
 		if(*(++p))
 			retwarn_("no runlevels allowed past trailing -");
-	} else for(; *p; p++)
+	} else for(; *p; p++) {
 		/* "4abc", or "+abc", or "-abc" */
 		if(*p >= 'a' && *p <= 'f')
 			mask |= (1 << (*p - 'a' + 0xa));
 		else
 			retwarn_("bad runlevel %c", *p);
+	}
 
 	switch(op) {
 		default: if(mask) next &= ~SUBMASK;

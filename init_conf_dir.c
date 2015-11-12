@@ -110,7 +110,7 @@ int skipdirent(struct dirent64* de)
 	if(len > 0 && de->d_name[0] >= 'A' && de->d_name[0] <= 'Z')
 		return 1;
 
-	/* skip non-regular files early if the kernel was kind enough to warn us */
+	/* skip non-files early if the kernel was kind enough to warn us */
 	if((dt = de->d_type) && dt != DT_LNK && dt != DT_REG)
 		return 1;
 
@@ -172,8 +172,8 @@ int parsesrvfile(char* fullname, char* basename)
 
 	if(shebang) {
 		/* No need to parse anything anymore, it's a script. */
-		/* Note: for an initdir entry, fb->name is in readinitdir() stack
-		   and thus writable */
+		/* Note that for an initdir entry, fb->name is
+		   in readinitdir() stack and thus writable */
 		cmd = fullname;
 	} else {
 		/* Get to first non-comment line, and that's it, the rest

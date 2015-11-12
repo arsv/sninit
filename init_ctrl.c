@@ -51,7 +51,8 @@ int setinitctl(void)
 
 	/* we're not going to block for connections, just accept whatever
 	   is already there; so it's SOCK_NONBLOCK */
-	if((initctlfd = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0)) < 0)
+	const int flags = SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC;
+	if((initctlfd = socket(AF_UNIX, flags, 0)) < 0)
 		retwarn(-1, "Can't create control socket: %m");
 
 	if(bind(initctlfd, (struct sockaddr*)&addr, sizeof(addr)))

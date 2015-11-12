@@ -67,13 +67,13 @@ void stop(struct initrec* p)
 		return;
 
 	if(p->pid <= 0)
-		/* This can only happen on telinit stop ..., so let the user know */
+		/* This can only happen on telinit stop, so let the user know */
 		retwarn_("%s: attempted to stop process that's not running", p->name);
 
 	if(p->flags & P_SIGKILL) {
-		/* The process has been sent SIGKILL, still refuses to kick the bucket.
-		   Just forget about it then, reset p->pid and let the next initpass
-		   restart the entry. */
+		/* The process has been sent SIGKILL, still refuses
+		   to kick the bucket. Just forget about it then,
+		   reset p->pid and let the next initpass restart the entry. */
 		if(waitneeded(&p->lastsig, TIME_TO_SKIP))
 			return;
 		warn("%s[%i] process refuses to die after SIGKILL, skipping", p->name, p->pid);
@@ -89,7 +89,6 @@ void stop(struct initrec* p)
 		/* Regular stop() invocation, gently ask the process to leave
 		   the kernel process table */
 
-		/* Now there is not waitneeded here, so we've got to reset lastsig. */
 		p->lastsig = passtime;
 
 		int sig = p->flags & C_KILL ? SIGKILL : SIGTERM;
@@ -117,7 +116,7 @@ void stop(struct initrec* p)
 
 int waitneeded(time_t* last, time_t wait)
 {
-	time_t curtime = passtime;	/* start of current initpass, see main() */
+	time_t curtime = passtime; /* start of current initpass, see main() */
 	time_t endtime = *last + wait;
 
 	if(endtime <= curtime) {

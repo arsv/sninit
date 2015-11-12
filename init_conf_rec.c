@@ -41,8 +41,8 @@ int addinitrec(const char* name, const char* rlvl, char* cmd, int exe)
 	struct initrec* entry;
 	int ret;
 
-	/* This can (and should) be done early, since it's easier to do when the new
-	   initrec is not yet linked to the list. */
+	/* This can (and should) be done early, since it's easier to do
+	   when the new initrec is not yet linked to the list. */
 	if(name[0] == '-' && !name[1])
 		name = "";
 	else if(checkdupname(name))
