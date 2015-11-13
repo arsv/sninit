@@ -25,7 +25,8 @@ attempt at writing a reliable init system, which spawned a bunch of
 descendant implementations.
 
 Their shared feature is a dedicated respawner with uniform, unordered
-list of S-entries. Handling of sequential W-entries is typically delegated
+list of S-entries, and often a dedicated supervisor process for each
+spawned entry. Handling of sequential W-entries is typically delegated
 to some kind of shell scripts.
 
     http://cr.yp.to/daemontools.html (the original)
