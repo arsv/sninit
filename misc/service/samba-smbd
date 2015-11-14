@@ -1,0 +1,3 @@
+# Samba SMB daemon
+
+/usr/sbin/smbd -F

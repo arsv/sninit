@@ -1,0 +1,3 @@
+# ptpd version 2.x
+
+/usr/sbin/ptpd2 -C -s

@@ -1,0 +1,7 @@
+This directory contains initdir files for various daemons.
+
+Do check commands and paths before using any of them!
+These files were made for Buildroot, other distributions may have
+executables and/or config files installed in different locations.
+
+To use, copy to target system's initdir (/etc/rc or /etc/initdir).

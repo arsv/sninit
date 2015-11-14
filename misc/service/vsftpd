@@ -1,0 +1,1 @@
+/usr/bin/vsftpd /etc/vsftpd.conf -obackground=NO

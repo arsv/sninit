@@ -1,0 +1,1 @@
+/usr/sbin/ntpd -g -n

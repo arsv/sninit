@@ -1,0 +1,5 @@
+#!/bin/sh
+# PostgreSQL database server
+
+test -f /var/lib/pgsql/PG_VERSION || /usr/bin/initdb -D /var/lib/pgsql
+exec /sbin/run -upostgres -gpostgres /usr/bin/postmaster -D /var/lib/pgsql

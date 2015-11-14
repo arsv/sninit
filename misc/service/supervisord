@@ -1,0 +1,1 @@
+/usr/bin/supervisord -n

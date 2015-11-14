@@ -1,0 +1,3 @@
+# ptpd version 1.x
+
+/usr/sbin/ptpd -c -S

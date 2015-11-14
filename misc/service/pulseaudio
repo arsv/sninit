@@ -1,0 +1,1 @@
+/sbin/run -m077 /usr/bin/pulseaudio --system

@@ -1,0 +1,1 @@
+/usr/sbin/haveged -w 1024 -r 0 -F

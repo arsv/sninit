@@ -1,0 +1,5 @@
+#!/bin/sh
+# OpenSSH server daemon
+
+/usr/bin/ssh-keygen -A
+exec /usr/sbin/sshd -D -e

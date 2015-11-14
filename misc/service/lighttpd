@@ -1,0 +1,1 @@
+/usr/sbin/lighttpd-angel -f /etc/lighttpd/lighttpd.conf -D

@@ -1,0 +1,3 @@
+# ntpd from openntpd package
+
+/usr/sbin/ntpd -s -d
