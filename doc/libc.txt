@@ -1,12 +1,12 @@
 Bundled libc
 ~~~~~~~~~~~~
 sninit comes with a stripped-down subset of dietlibc providing minimal
-startup code, syscalls and standard libc routines sninit needs.
+startup code, syscalls and standard libc routines.
 
-Reason for including libc:
+Reasons for including libc:
 
 1. Tiered dependencies.
-   Init is the first process to start, and thus should
+   Init is the first process to start, and thus should better
    not rely on anything else to be available, including any libs.
    This was extended to build-time dependencies as well, in that
    init can be built without any libs available for the target system.
@@ -63,7 +63,7 @@ declared in C headers. And C preprocessor just does not play well
 when paired with assembler, dropping (significant) newlines and producing
 ugly source listings in debugger.
 
-So the decision was to put everything in clean .s files.
+So the decision was to put everything in nice and clean .s files.
 
 Declaring constants in assembler leads to some code duplication,
 and requires checks to ensure they stay in sync with bits/syscall.h
