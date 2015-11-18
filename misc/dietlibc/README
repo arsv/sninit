@@ -1,0 +1,7 @@
+Patches for dietlibc-0.33 adding/fixing some stuff needed for sninit.
+Dietlibc with these pathes applied is called dietlibc-fixed in configure.
+
+The patches have been merged into https://github.com/ensc/dietlibc
+and some of the issues are now also fixed in the mainline CVS.
+
+All this barely make sense now with the bundled libc available.

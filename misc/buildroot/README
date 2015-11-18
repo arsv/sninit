@@ -1,0 +1,2 @@
+Buildroot external configuration (BR2_EXTERNAL) for sninit-based
+bootable qemu images. See ../../doc/buildroot.txt for more info.
