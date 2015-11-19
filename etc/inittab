@@ -4,19 +4,19 @@ PATH=/bin
 VAR=value
 
 # System boot
-mount	W1+	sbin/mount -o remount,rw /
-hwc	R1+	sbin/hwclock
-	W1+	sbin/net up
+mount	W	sbin/mount -o remount,rw /
+hwc	R	sbin/hwclock
+	W	sbin/net up
 
 # System shutdown
-	W0	sbin/net down
-	W0	sbin/umount -a
+	X	sbin/net down
+	X	sbin/umount -a
 
 # Respawning services (see also initdir/)
-syslog	L3+	sbin/slogdg sbin/devlog sbin/daemon.log
-srv1	S3+	sbin/trap srv1 10
-srv2	S3+	sbin/trap srv2 23
-srv3	S3+	sbin/trap srv3
+syslog	L	sbin/slogdg sbin/devlog sbin/daemon.log
+srv1	S	sbin/trap srv1 10
+srv2	S	sbin/trap srv2 23
+srv3	S	sbin/trap srv3
 
 # Sleep modes
 	R789	sbin/net down
