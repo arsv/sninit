@@ -1,14 +1,14 @@
 PATH=/bin:/sbin
 
-proc	R3	/bin/mount -t proc proc /proc
-pts	R3	/bin/mkdir -p /dev/pts
-shm	R3	/bin/mkdir -p /dev/shm
-host	R3	/bin/hostname -F /etc/hostname
+proc	R	/bin/mount -t proc proc /proc
+pts	R	/bin/mkdir -p /dev/pts
+shm	R	/bin/mkdir -p /dev/shm
+host	R	/bin/hostname -F /etc/hostname
 
-syslog	L3	/sbin/syslogd -n -O /var/log/messages
-klogd	S3	/sbin/klogd -nc1
-dhcp	L3	/sbin/run -n /sbin/udhcpc -fRS eth0
+syslog	L	/sbin/syslogd -n -O /var/log/messages
+klogd	S	/sbin/klogd -nc1
+dhcp	L	/sbin/run -n /sbin/udhcpc -fRS eth0
 
-ttyS	T3	/sbin/getty -L ttyAMA0 115200 vt100
+ttyS	T	/sbin/getty -L ttyAMA0 115200 vt100
 
 # vim: ft=conf:
