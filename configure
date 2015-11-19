@@ -380,7 +380,7 @@ case "${libc:-syslibc}" in
 		dieifnot "$arch" "Target architecture must be specified for bundled libc (--arch)"
 		test -d "libc/$arch" || die "bundled libc: target $arch is not supported"
 		blocks="$blocks sys"
-		tsdefault=tz
+		tsdefault=nots
 		test "$cctype" = "gcc" && libs=-lgcc
 		;;
 	musl)
@@ -393,13 +393,13 @@ case "${libc:-syslibc}" in
 	dietlibc-fixed)
 		cc="$diet $cc"
 		blocks="$blocks sys"
-		tsdefault=tz
+		tsdefault=nots
 		;;
 	dietlibc)
 		cc="$diet $cc"
 		libs=-lcompat
 		blocks="$blocks sys ppoll"
-		tsdefault=tz
+		tsdefault=nots
 		;;
 	*)
 		die "Unknown libc type $libc"
@@ -410,7 +410,7 @@ case "${tstype:-$tsdefault}" in
 	libc)
 		blocks="$blocks libcts"
 		;;
-	null)
+	nots)
 		blocks="$blocks nots"
 		;;
 	tz)
