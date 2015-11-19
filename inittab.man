@@ -63,8 +63,8 @@ relevant for respawning entries.
 '''
 .SS Entry mode
 The second field, \fImode\fR, describes how the entry should be handled by init. 
-Its format is \fIM\fB[\fI123\fB][\fI+\fB]\fR, with \fIM\fR (mode) determining
-how the entry should be (re)started, and \fI123+\fR setting runlevel mask.
+Its format is \fIM\fB[\fI123\fB][\fI*\fB]\fR, with \fIM\fR (mode) determining
+how the entry should be (re)started, and \fI123*\fR setting runlevel mask.
 Possible modes are:
 .IP "\fBS\fR" 4
 Service (foreground daemon). The entry will be respawned, unless it respawns
@@ -95,9 +95,9 @@ as gettys tend to ignore SIGTERM, and abnormal exits are never logged.
 .P
 Runlevel mask is any subset of \fB0123456789\fR characters.
 The entry will be started only if current runlevel is in entry's runlevel
-mask (except for \fBX\fR-entries, which do the opposite). The \fB+\fR sign
-extends the last runlevell all the way to \fB9\fR, so \fB3+\fR is the same
-as \fB3456789\fR. The \fB-\fR sign is a short-hand for slippery runlevels.
+mask (except for \fBX\fR-entries, which do the opposite). The \fB*\fR sign
+extends the last runlevell all the way to \fB9\fR, so \fB3*\fR is the same
+as \fB3456789\fR.
 .P
 Runlevel mask may also include a subset of secondary runlevels, \fBabcdef\fR.
 If it does, it will only be started if current primary runlevel is in its
@@ -105,7 +105,7 @@ mask and all its secondary runlevels are active. Example: \fBS3ac\fR entry
 will be started on runlevel \fB3\fR only if both \fBa\fR and \fBc\fR sublevels
 are active. See \fBtelinit\fR(8) on how to activate or deactivate sublevels.
 .P
-Leaving out runlevels completely is the same as using \fB123456789\fR.
+Leaving out runlevels completely is the same as using \fB23456789\fR.
 '''
 .SS Commands
 The last field, \fIcommand\fR, is the command to run. The field is parsed and
@@ -115,9 +115,9 @@ Wherever necessary, init calls /bin/sh -c to execute the command.
 .P
 .EX
     # Regular command, execve("/sbin/agetty", ...) will be used
-    tty1   F3+    /sbin/agetty --noclear -8 -s 38400 tty1 linux
+    tty1   F    /sbin/agetty --noclear -8 -s 38400 tty1 linux
     # Shell command, execve("/bin/sh", "-c", "echo 1 > /proc/...")
-           R3+    echo 1 > /proc/sys/net/ipv4/ip_forward
+           R    echo 1 > /proc/sys/net/ipv4/ip_forward
 .EE
 '''
 .SH USAGE
@@ -151,17 +151,17 @@ of inittab either \fBW\fR-entries or \fBR\fR-entries; \fBW\fR should
 be used commands that affect common environment like mount root while
 \fBR\fR is enough for independent commands.
 .P
-Most startup commands should have \fB3+\fR runlevel mask.
-Commands common for normal and recovery startup, if any, need \fB1+\fR.
-Recovery-only commands should be \fBR1\fR or \fBW1\fR.
+Most startup commands should have empty runlevel mask, which translates
+to \fB23456789\fR. Commands common for normal and recovery startup, if any,
+need single \fB*\fR. Recovery-only commands should be \fBR1\fR or \fBW1\fR.
 .P
 Shutdown commands should be \fBR0\fR or \fBW0\fR.
 .P
 .EX
     # System initialization
-    mount       W3+     /sbin/mount -o remount,rw /
-    hwclock     R3+     /sbin/hwclock -s
-    umount      W0      /sbin/umount -a
+    mount       W     /sbin/mount -o remount,rw /
+    hwclock     R     /sbin/hwclock -s
+    umount      X     /sbin/umount -a
 .EE
 '''
 .SS Foreground daemons
@@ -174,9 +174,9 @@ Most daemons allow this; check relevant man pages.
 .P
 .EX
     # Start some foreground services
-    syslogd     L3+     /usr/sbin/syslogd -n
-    ntpd        S3+     /usr/sbin/ntpd -g -n
-    vsftpd      S3+     /usr/bin/vsftpd /etc/vsftpd.conf -obackground=NO
+    syslogd     L     /usr/sbin/syslogd -n
+    ntpd        S     /usr/sbin/ntpd -g -n
+    vsftpd      S     /usr/bin/vsftpd /etc/vsftpd.conf -obackground=NO
 .EE
 .P
 In case \fBinitdir\fR(5) is used, most \fBS\fR-type entries should

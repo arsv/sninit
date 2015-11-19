@@ -20,7 +20,6 @@ The \fIcommand\fR is either the contents of the file, or (in case of
 executable shell scripts) the full file path.
 .P
 Initdir entries are always \fBS\fR-type.
-If no runlevel mask is specified, default value of \fB3+\fR is used.
 See \fBinittab\fR(5) for detailed description of entry types and runlevels.
 '''
 .SH SYNTAX

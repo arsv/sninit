@@ -53,9 +53,9 @@
 /* Slippery runlevels. See doc/slippery.txt for explanation. */
 #define SLIPPERY ((1 << 7) | (1 << 8) | (1 << 9))
 
-/* Default mode for initdir entries */
-/* (this is a string parsed just like the 2nd inittab field) */
-#define SRDEFAULT "S3+"
+/* Default mask for entries without runlevel spec
+   ("R", "S" and so on, also initdir entries) */
+#define DEFAULTMASK (PRIMASK & ~((1<<0) | (1<<1)))
 
 /* Syslog priority tag (1st argument of syslog(3), as a string,
    wraped in < > brackets). Default value "<29>" = LOG_NOTICE | LOG_DAEMON. */

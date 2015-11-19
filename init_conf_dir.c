@@ -145,7 +145,6 @@ int parsesrvfile(char* fullname, char* basename)
 	int shebang;
 	char* cmd;
 	const char* rlvls;
-	const char* srdefault = SRDEFAULT;
 	char* ls;
 
 	if(!(ls = nextline()))
@@ -162,12 +161,12 @@ int parsesrvfile(char* fullname, char* basename)
 
 	/* Do we have #: line? If so, note runlevels and flags */
 	if(ls[0] == '#' && ls[1] == ':') {
-		ls[1] = srdefault[0];
+		ls[1] = 'S';
 		rlvls = ls + 1;
 		if(!(ls = nextline()))
 			retwarn(-1, "%s: no command found", FBN);
 	} else {
-		rlvls = srdefault;
+		rlvls = "S";
 	}
 
 	if(shebang) {
