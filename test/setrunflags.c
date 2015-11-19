@@ -70,26 +70,25 @@ int main(void)
 	levels("R0",	R0);
 
 	/* the + sign */
-	levels("R3+",	R3 | R4 | R5 | R6 | R7 | R8 | R9);
-	levels("R5+",	R5 | R6 | R7 | R8 | R9);
+	levels("R3*",	R3 | R4 | R5 | R6 | R7 | R8 | R9);
+	levels("R5*",	R5 | R6 | R7 | R8 | R9);
 
 	/* mix of pri and sub levels */
 	levels("L12a",	R1 | R2 | Ra);
 	levels("S12af",	R1 | R2 | Ra | Rf);
 
 	/* mix of pri, sub levels with + */
-	levels("R7ab+",	R7 | R8 | R9 | Ra | Rb);
-	levels("R7+ab",	R7 | R8 | R9 | Ra | Rb);
+	levels("R7ab*",	R7 | R8 | R9 | Ra | Rb);
 
 	/* missing levels */
-	levels("R",	R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9);
-	levels("R+",	R0 | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9);
+	levels("R",	DEFAULTMASK);
+	levels("R*",	R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9);
 
 	/* Runlevels and flags together */
-	both("R3+",	C_ONCE, R3 | R4 | R5 | R6 | R7 | R8 | R9);
-	both("X3+",	C_ONCE | C_INVERT, R3 | R4 | R5 | R6 | R7 | R8 | R9);
+	both("R3*",	C_ONCE, R3 | R4 | R5 | R6 | R7 | R8 | R9);
+	both("X3*",	C_ONCE | C_INVERT, R3 | R4 | R5 | R6 | R7 | R8 | R9);
 	/* only the primary levels are inverted by X */
-	both("X3a+",	C_ONCE | C_INVERT, R3 | R4 | R5 | R6 | R7 | R8 | R9 | Ra);
+	both("X3a*",	C_ONCE | C_INVERT, R3 | R4 | R5 | R6 | R7 | R8 | R9 | Ra);
 
 	/* Incorrect strings that should fail */
 	wrong("");	/* no empty strings */

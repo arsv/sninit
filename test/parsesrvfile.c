@@ -94,13 +94,13 @@ int main(void)
 	LOG("non-shebang, with comments");
 	TEST(	"# some comment goes here\n"
 		"/bin/echo -n foo\n",
-		SRDEFAULT, "/bin/echo -n foo", 0);
+		"S", "/bin/echo -n foo", 0);
 
 	LOG("non-shebang, with comments, empty line after");
 	TEST(	"# some comment goes here\n"
 		"\n"
 		"/bin/echo -n foo\n",
-		SRDEFAULT, "/bin/echo -n foo", 0);
+		"S", "/bin/echo -n foo", 0);
 
 	LOG("non-shebang, with comments, empty line in-between");
 	TEST(	"# some comment goes here\n"
@@ -108,7 +108,7 @@ int main(void)
 		"# some more comments\n"
 		"\n"
 		"/bin/echo -n foo\n",
-		SRDEFAULT, "/bin/echo -n foo", 0);
+		"S", "/bin/echo -n foo", 0);
 
 	return 0;
 }
