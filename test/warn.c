@@ -42,24 +42,6 @@ int writesyslog(const char* buf, int count)
 	return (flags & BREAKSYSLOG ? -1 : 0);
 }
 
-int timestamp(char* buf, int len)
-{
-	char* stamp = "Jan 12 12:34:56 ";
-	int slen = strlen(stamp);
-	if(len < slen) slen = len;
-	memcpy(buf, stamp, slen);
-	return slen;
-}
-
-/* The following will only pass if
-
-   	WARNPRIO = "<29>"
-	WARNTAG = "init: "
-
-   It's easy to change test strings below to use the constants,
-   but that would make the tests less readable. Few people are going
-   to change those values anyway, so why bother. */
-
 int main(void)
 {
 	/* User mode test. The line should be sent, verbatim, to warnfd */
@@ -86,7 +68,7 @@ int main(void)
 	warn("general message");
 	ASSERT(warnfd == 2);
 	ASSERT(wrptr == 1);
-	STREQUALS(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
+	STREQUALS(wrlog[0].buf, "<29> init: general message");
 	INTEQUALS(wrlog[0].fd, syslogfd);
 
 	/* Failing syslog; the message should be sent to warnfd too */
@@ -96,7 +78,7 @@ int main(void)
 	warn("general message");
 	ASSERT(warnfd == 2);
 	ASSERT(wrptr == 2);
-	STREQUALS(wrlog[0].buf, "<29>Jan 12 12:34:56 init: general message");
+	STREQUALS(wrlog[0].buf, "<29> init: general message");
 	INTEQUALS(wrlog[0].fd, syslogfd);
 	STREQUALS(wrlog[1].buf, "init: general message");
 	INTEQUALS(wrlog[1].fd, warnfd);

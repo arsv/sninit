@@ -20,7 +20,7 @@ TESTS = addenviron addinitrec addparsedargv addstaticargv addstring \
 	initpass_sec initpass_wku itostr joincmd linknode newblock \
 	parseinitline parsesrvfile pintlen printf readinitdir rewireptsarray \
 	rlstr setrunflags shellneeded shouldbeshown strerror strssep toofast \
-	transferpids tzinit waitpids warn
+	transferpids waitpids warn
 
 # Tests with manual check (for now)
 XTESTS = xhello xopen xprintf xvfork xsigprocmask xreboot xppoll
@@ -92,7 +92,6 @@ addparsedargv: addparsedargv.o init_conf_map.o init_conf_arg.o _test.o
 linknode: linknode.o init_conf_rec.o init_conf_map.o init_conf_arg.o _test.o
 rewireptsarray: rewireptsarray.o init_conf.o init_conf_map.o _test.o
 fileblock: fileblock.o init_conf_map.o _test.o
-tzinit: tzinit.o init_time_tz.o init_time_stamp.o _test.o
 initpass_pri: initpass_pri.o initpass_.o init_pass.o _test.o
 initpass_sec: initpass_sec.o initpass_.o init_pass.o _test.o
 initpass_wku: initpass_wku.o initpass_.o init_pass.o _test.o
