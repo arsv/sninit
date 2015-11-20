@@ -3,7 +3,7 @@ PATH=/bin:/sbin
 proc	R	/bin/mount -t proc proc /proc
 pts	R	/bin/mkdir -p /dev/pts
 shm	R	/bin/mkdir -p /dev/shm
-mount	R	/bin/mount -o remount,rw /
+mount	W	/bin/mount -o remount,rw /
 host	R	/bin/hostname -F /etc/hostname
 
 syslog	L	/sbin/syslogd -n
