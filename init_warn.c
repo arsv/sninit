@@ -8,9 +8,6 @@
 #include "init.h"
 #include "scope.h"
 
-#define MSGBUF 120
-#define HDRBUF 50
-
 /* Most of the output generated withint init is conditional with regard
    to where it actually goes.
 
@@ -46,7 +43,6 @@ local struct sockaddr syslogaddr = {
 
 local int writefullnl(int fd, char *buf, size_t count);
 local int writesyslog(const char* buf, int count);
-extern int timestamp(char* buf, int len);
 
 /* During telinit request, warnfd is the open telinit connection.
    In case connection fails, we set warnfd to -1 to "lock" warn,
@@ -61,50 +57,53 @@ extern int timestamp(char* buf, int len);
    Stderr output needs "init:" prefixed to the message, and syslog needs
    its own prefix in addition to that.
 
-        |--------hdr--------|-tag-|-----------msg------------||
-        <29>Jan 10 12:34:56 init: crond[123] abnormal exit 67↵₀
-        |pri|
+        |hdr-|-tag-|-----------msg------------||
+        <29> init: crond[123] abnormal exit 67↵₀
 
    Extra prefixes are skipped by passing (buf + ...) to respective
-   write* function. */
+   write* function.
+
+   Priority code 29 means (LOG_DAEMON | LOG_NOTICE), see RFC 3164.
+   Init never logs anything that is not NOTICE.
+
+   Note current implementation does NOT include timestamp in the hdr part.
+   See doc/syslog.txt on this. */
+
+#define MSGBUF 120
+#define HDRBUF 12
 
 void warn(const char* fmt, ...)
 {
 	va_list ap;
 	bss char buf[HDRBUF+MSGBUF+2];
-	int origerrno = errno;	/* timestamp() may overwrite it */
 
-	if(warnfd < 0)
-		return;
+	if(warnfd < 0) return;
 
-	const char* pri = WARNPRIO;
-	int hdrlen = strlen(pri);
+	const char* pri = "<29> ";    /* prefix for syslog only */
+	int prilen = strlen(pri);
 	strncpy(buf, pri, HDRBUF);
-	if(warnfd == 2)
-		hdrlen += timestamp(buf + hdrlen, HDRBUF - hdrlen);
 
-	const char* tag = WARNTAG;
+	const char* tag = "init: ";  /* prefix for syslog and stderr*/
 	int taglen = strlen(tag);
-	strncpy(buf + hdrlen, tag, HDRBUF - hdrlen);
+	strncpy(buf + prilen, tag, HDRBUF - prilen);
 
-	errno = origerrno;
 	va_start(ap, fmt);
-	int msglen = vsnprintf(buf + hdrlen + taglen, MSGBUF, fmt, ap);
+	int msglen = vsnprintf(buf + prilen + taglen, MSGBUF, fmt, ap);
 	va_end(ap);
 
 	if(warnfd > 2) {
 		/* telinit connection */
-		if(writefullnl(warnfd, buf + hdrlen + taglen, msglen))
+		if(writefullnl(warnfd, buf + prilen + taglen, msglen))
 			warnfd = -1; /* socket connection lost */
 		return;
 	}
 
 	if(warnfd == 2)
 		/* try syslog, fall back to stderr */
-		if(!writesyslog(buf, hdrlen + taglen + msglen))
+		if(!writesyslog(buf, prilen + taglen + msglen))
 			return;
 
-	writefullnl(2, buf + hdrlen, taglen + msglen);
+	writefullnl(2, buf + prilen, taglen + msglen);
 }
 
 /* Syslog socket may be either STREAM or DGRAM, and warnfd may happen to be

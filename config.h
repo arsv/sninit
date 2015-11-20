@@ -57,12 +57,6 @@
    ("R", "S" and so on, also initdir entries) */
 #define DEFAULTMASK (PRIMASK & ~((1<<0) | (1<<1)))
 
-/* Syslog priority tag (1st argument of syslog(3), as a string,
-   wraped in < > brackets). Default value "<29>" = LOG_NOTICE | LOG_DAEMON. */
-#define WARNPRIO "<29>"
-/* All warn messages to syslog and stderr have this tag prepended */
-#define WARNTAG "init: "
-
 /* Do not change the following values unless you know what you are doing.
    Wide range of values will work here. */
 
