@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "../config.h"
 #include "../init.h"
 #include "_test.h"

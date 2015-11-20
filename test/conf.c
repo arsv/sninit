@@ -1,5 +1,6 @@
 #include <signal.h>
 #include <unistd.h>
+#include <stdarg.h>
 #include "../config.h"
 #include "../init.h"
 #include "../init_conf.h"

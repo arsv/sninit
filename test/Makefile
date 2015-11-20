@@ -72,6 +72,9 @@ proto.c: ../init*.[ch] ../sys.h | protocheck.px
 clean:
 	rm -f *.o *.d *.out proto.c $(TESTS) $(XTESTS)
 
+# Optional dependencies
+sys_getdents = $(if $(filter dents,$(initblocks)),sys_getdents.o)
+
 # Ok, now the tests themselves
 
 newblock: newblock.o init_conf_map.o _test.o
@@ -80,12 +83,12 @@ addinitrec: addinitrec.o init_conf_map.o init_conf_rec.o \
 parseinitline: parseinitline.o \
 	init_conf_map.o init_conf_tab.o init_conf_arg.o _test.o
 parsesrvfile: parsesrvfile.o init_conf_dir.o init_conf_map.o \
-	_test.o $(SYS)
+	_test.o $(sys_getdents)
 conf: conf.o init_find.o init_conf.o init_conf_map.o init_conf_arg.o \
 	init_conf_tab.o init_conf_dir.o init_conf_rec.o init_conf_key.o \
-	_test.o $(SYS)
+	_test.o $(sys_getdents)
 addenviron: addenviron.o init_conf.o init_conf_arg.o init_conf_map.o \
-	init_conf_rec.o init_find.o _test.o $(SYS)
+	init_conf_rec.o init_find.o _test.o
 itostr: itostr.o sys_printf.o _test.o
 addstaticargv: addstaticargv.o init_conf_map.o init_conf_arg.o _test.o
 addparsedargv: addparsedargv.o init_conf_map.o init_conf_arg.o _test.o
@@ -98,7 +101,8 @@ initpass_wku: initpass_wku.o initpass_.o init_pass.o _test.o
 initpass_rev: initpass_rev.o initpass_.o init_pass.o _test.o
 initpass_off: initpass_off.o initpass_.o init_pass.o _test.o
 setrunflags: setrunflags.o init_conf_key.o _test.o
-readinitdir: readinitdir.o init_conf_dir.o init_conf_map.o _test.o
+readinitdir: readinitdir.o init_conf_dir.o init_conf_map.o \
+	_test.o $(sys_getdents)
 transferpids: transferpids.o init_conf.o init_conf_map.o init_find.o _test.o
 joincmd: joincmd.o init_dump.o _test.o
 rlstr: rlstr.o init_dump.o _test.o
