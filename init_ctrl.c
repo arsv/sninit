@@ -9,6 +9,7 @@
 #include <errno.h>
 
 #include "config.h"
+#include "sys.h"
 #include "init.h"
 #include "scope.h"
 
