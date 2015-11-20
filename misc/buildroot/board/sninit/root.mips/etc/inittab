@@ -6,7 +6,7 @@ shm	R	/bin/mkdir -p /dev/shm
 mount	W	/bin/mount -o remount,rw /
 host	R	/bin/hostname -F /etc/hostname
 
-syslog	L	/sbin/syslogd -n -O /var/log/messages
+syslog	L	/sbin/syslogd -n
 klogd	S	/sbin/klogd -nc1
 dhcp	L	/sbin/run -n /sbin/udhcpc -fRS eth0
 
