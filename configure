@@ -13,8 +13,8 @@ unset prefix sbindir mandir man5dir man8dir sysconfdir
 # while resp. upper-case variables are used for unconditional overrides
 unset cc ar as strip cflags asflags ldflags
 unset hostcc hostcflags
-unset target build host diet
-unset cctype libc libs null
+unset target host diet
+unset usecc libc libs null
 
 optimize=auto
 unset nommu lto debug depend builtin quiet devmode
@@ -73,9 +73,11 @@ Target configuration:
 Libc selection (see INSTALL for explaination):
 	arch=L		use bundled libc for target arch \$L
 			possible L values: arm mips x86 x86_64 x86_32
-	syslibc		use whatever libc target toolchain was configured with
-	dietlibc	build with dietlibc (cc="diet gcc")
-	musl		build with musl (cc="musl-gcc")
+	dietlibc	build with diet gcc
+	musl-gcc	build with musl-gcc
+	musl		use system libc, assume it to be musl
+	glibc		use system libc, assume it to be GNU libc
+	uclibc		use system libc, assume it to be uClibc
 
 Init configuration:
 	builtin=F	parse and compile \$F as built-in inittab
@@ -103,10 +105,10 @@ while [ $# -gt 0 ]; do
 	# so "--with-dietlibc" is allowed along with much more logical "dietlibc"
 	# There will be some "extra" options like "with-dietlibc" but that's ok.
 	#
-	# Different name to produce correct error messages,
-	# i.e. --foo not foo where --foo was used.
+	# Dedicated variable is used to produce correct error messages,
+	# i.e. "--foo: argument needed" not "foo: argument needed".
 
-	arq=`echo "$arg" | sed -e 's/^--//'`
+	arq=`echo "$arg" | sed -e 's/^--//' | sed -e 's/^with-//'`
 
 	case "$arq" in
 		help) usage ;;
@@ -121,110 +123,54 @@ while [ $# -gt 0 ]; do
 		cgbase) cgbase=$val ;;
 		exec-prefix) ;;
 
-		program-prefix) s=$val ;;
-		with-s|s) s=s ;;
-		with-sn|sn) s=sn ;;
+		s) s=s ;;
+		sn|sn) s=sn ;;
 
-		initctl) argreq
-			initctl=$val
-			;;
-		inittab)
-			inittab=${val:--}
-			;;
-		initdir)
-			initdir=${val:--}
-			;;
-		builtin|with-builtin)
-			builtin="$val"
-			;;
-		target|host) argreq
-			target=$val
-			cross=$target-
-			;;
-		build) argreq
-			build=$val
-			hostcc=$val-gcc
-			;;
-		with-cc|cc)
-			cc=${val:-cc}
-			;;
-		with-as|as) argreq
-			as=$val
-			;;
-		with-ar|ar) argreq
-			ar=$val
-			;;
-		with-strip|strip) argreq
-			strip=$val
-			;;
-		with-gcc|gcc)
-			cc=${val:-gcc}
-			cctype=gcc
-			;;
-		with-clang|clang)
-			cc=${val:-clang}
-			cctype=clang
-			;;
-		with-hostcc|hostcc) argreq
-			hostcc="$val"
-			;;
-		cflags|asflags|hostcflags|ldflags)
-			eval "$arq='$val'"
-			;;
-		bundled|with-bundled|with-bundled-libc)
-			libc=bundled
-			;;
-		arch) argreq
-			libc=bundled
-			arch="$val"
-			;;
-		with-musl|musl)
-			cctype=musl
-			libc=musl
-			;;
-		with-dietlibc|dietlibc) argreq
-			diet=${val:-diet}
-			libc=dietlibc
-			;;
-		with-dietlibc-fixed|dietlibc-fixed)
-			# fixed = with ppoll(2) support
-			diet=${val:-diet}
-			libc=dietlibc-fixed
-			;;
-		with-libc|libc)
-			libc=${val:-syslibc}
-			;;
-		with-syslibc|with-glibc|syslibc|glibc|libc|uclibc)
-			libc=syslibc
-			;;
-		disable-inittab|no-inittab)
-			inittab=-
-			;;
-		disable-initdir|no-initdir)
-			initdir=-
-			;;
-		enable-debug|debug)
-			debug=${val:-"-Wall -g"}
-			;;
-		enable-lto|lto)
-			lto=${val:-"-flto"}
-			;;
-		disable-optimization|no-O)
-			optimize=
-			lto=
-			;;
-		with-optimization|O|optimize)
-			optimize=${val:-$optimize}
-			;;
-		with-mmu|mmu)
-			nommu=
-			;;
-		without-mmu|nommu)
-			nommu=1
-			;;
-		depend)
-			depend=${val:--MD}
-			;;
+		initctl) argreq; initctl=$val ;;
+		inittab) argreq; inittab=$val ;;
+		initdir) argreq; initdir=$val ;;
+		builtin) argreq; builtin=$val ;;
+
+		target)     argreq; target=$val; cross=$target- ;;
+		build|host) argreq; hostcc=$val-gcc ;;
+		hostcc)     argreq; hostcc=$val ;;
+
+		cc) argreq; cc=${val:-cc} ;;
+		as) argreq; as=$val ;;
+		ar) argreq; ar=$val ;;
+		strip) argreq; strip=$val ;;
+
+		gcc)   usecc=gcc ;;
+		clang) usecc=clang ;;
+
+		cflags) cflags=$val ;;
+		asflags) asflags=$val ;;
+		ldflags) ldflags=$val ;;
+		hostcflags) hostcflags=$val ;;
+
+		musl-gcc) cc=musl-gcc; libc=musl ;;
+		diet) diet=${val:-diet}; libc=dietlibc ;;
+
+		bundled) libc=$arg ;; # arch will be decided later
+		arch) argreq; libc=bundled; arch="$val" ;;
+
+		glibc|uclibc|musl|dietlibc) libc=$arg ;;
+		dietlibc-fixed|fixed) libc=diet-fixed ;;
+
+		disable-inittab|no-inittab) inittab=- ;;
+		disable-initdir|no-initdir) initdir=- ;;
+
+		enable-debug|debug) debug=${val:-"-Wall -g"} ;;
+		enable-lto|lto) lto=${val:-"-flto"} ;;
+		optimization|O|optimize) optimize=${val:-$optimize} ;;
+		disable-optimization|no-O) optimize= ; lto= ;;
+		mmu) nommu= ;;
+		without-mmu|nommu) nommu=1 ;;
+		depend) depend=${val:--MD} ;;
+		quiet) quiet=1 ;;
+		run) argreq; run="$val" ;;
+		qemu) test -n "$val" && run="qemu-$val" || run="auto" ;;
+
 		devel)
 			s=
 			inittab=etc/inittab
@@ -238,15 +184,7 @@ while [ $# -gt 0 ]; do
 			devmode=1
 			extra=sbin
 			;;
-		quiet)
-			quiet=1
-			;;
-		run) argreq
-			run="$val"
-			;;
-		qemu)
-			test -n "$val" && run="qemu-$val" || run="auto"
-			;;
+
 		with-*|without-*|enable-*|disable-*)
 			# autoconf compatibility; buildroot supplies a lot of generic options
 			# to configure, expecting unsupported ones to be ignored
@@ -267,21 +205,14 @@ done
 # The following could be done in the loop above, if not for option order issues.
 # i.e. --with-clang --with-dietlibc vs --with-dietlibc --with-clang
 
-# Decide which cc to use
-case "$cc:${cctype:-gcc}" in
-	# gcc handles target with prefixed executables, like arm-linux-eabi-gcc
-	:gcc)	cc=${cross}gcc ;;
+# Decide which compiler to use if we were left with the choice
+case "$cc:${usecc:-gcc}" in
 	:cc)	cc=${cross}cc ;;
-	# clang makes no difference between native and cross-compilation, and only needs
-	# an option to select desired arch.
-	:clang)	cc=clang; test -n "$target" && cc="$cc -arch $target" ;;
-	# Unlike dietlibc, musl replaces compiler.
-	# No idea how they handle cross-builds, perhaps with different musl-executables?
-	:musl)	cc=musl-gcc
-		test -n "$target" && die -e "Can't use --target with musl\n"\
-			"Use --with-musl=ARCH-musl-gcc or something similar instead."
-		;;
+	:gcc)	cc=${cross}gcc ;;
+	:clang)	cc=clang${target:+ -arch $target} ;;
 esac
+
+test -n "$diet" && cc="$diet $cc"
 
 # Decide which binutils to use
 ar=${ar:-${cross}ar}
@@ -292,13 +223,6 @@ strip=${strip:-${cross}strip}
 # This should be done *after* deciding $CC of course
 ccarch=`${CC:-$cc} -dumpmachine 2>/dev/null`
 test -z "$ccarch" -a -n "$target" && ccarch="$target"
-
-# GCC has a bad habit of skipping libgcc with -nostdlib,
-# which must be accounted for.
-ccver=`${CC:-$cc} --version 2>/dev/null | head -1`
-case "$cctype:$ccver" in
-	:*GCC*|:*gcc*) cctype=gcc ;;
-esac
 
 # Check if we're trying to build x86 on an x86_64 host
 case "$arch:$ccarch" in
@@ -325,9 +249,20 @@ if [ -z "$libc" -o "$libc" = 'bundled' ]; then
 	esac
 fi; if [ "$libc" = 'bundled' -a -z "$arch" ]; then
 	die "Can't guess target architecture, use arch= option"
+elif [ -n "$arch" -a ! -d "libc/$arch" ]; then
+	die "Target $arch is not supported by the bundled libc"
 elif [ -z "$libc" -a -n "$arch" ]; then
 	libc=bundled
+elif [ -z "$libc" ]; then
+	libc=glibc
 fi
+
+# GCC has a bad habit of skipping libgcc with -nostdlib,
+# which must be accounted for.
+cckind=`${CC:-$cc} --version 2>/dev/null | head -1`
+case "$libc:$cckind" in
+	bundled:*gcc*) libs="-lgcc" ;;
+esac
 
 # Handle optimization
 if [ "$optimize" = 'auto' ]; then
@@ -359,34 +294,15 @@ fi
 
 # Check which blocks init needs
 
-if [ "$inittab" != "-" ]; then
-	blocks="conf"
-else
-	blocks="null"
-fi
-
-case "${libc:-syslibc}" in
-	bundled)
-		dieifnot "$arch" "Target architecture must be specified for bundled libc (--arch)"
-		test -d "libc/$arch" || die "bundled libc: target $arch is not supported"
-		blocks="$blocks sys"
-		test "$cctype" = "gcc" && libs=-lgcc
-		;;
-	syslibc)
-		blocks="$blocks dents"
-		;;
-	dietlibc-fixed)
-		cc="$diet $cc"
-		blocks="$blocks sys"
-		;;
-	dietlibc)
-		cc="$diet $cc"
-		libs=-lcompat
-		blocks="$blocks sys ppoll"
-		;;
-	*)
-		die "Unknown libc type $libc"
-		;;
+case "$inittab" in
+	-) blocks="null" ;;
+	*) blocks="conf" ;;
+esac
+case "$libc" in
+	bundled)      blocks="$blocks sys" ;;
+	glibc|uclibc) blocks="$blocks dents" ;;
+	diet-fixed)   blocks="$blocks sys" ;;
+	dietlibc)     blocks="$blocks sys ppoll" ;;
 esac
 
 # Try to guess which qemu to use if this was requested

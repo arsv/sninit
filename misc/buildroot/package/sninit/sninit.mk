@@ -15,8 +15,6 @@ ifeq ($(BR2_PACKAGE_SNINIT_BUNDLED_LIBC),y)
 SNINIT_CONF_OPTS += bundled
 else ifeq ($(BR2_TOOLCHAIN_USES_MUSL),y)
 SNINIT_CONF_OPTS += musl
-else
-SNINIT_CONF_OPTS += syslibc
 endif
 
 ifeq ($(BR2_PACKAGE_SNINIT_DEBUG),y)

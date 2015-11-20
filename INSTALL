@@ -66,11 +66,10 @@ Recommended settings:
 	CC = diet gcc
 or
 	CC = diet clang
+Use "configure diet gcc" or "configure diet clang" respectively.
 
 Dietlibc up to and including 0.33 does not provide ppoll(2) system call.
 Either use sys_ppoll.c (indirect syscall, via syscall(2)), or patch dietlibc.
-Note syscall(2) is in libcompat.a, so you'll need
-	LIBS = -lcompat
 
 Because dietlibc implies static linkage and small executable size,
 consider using sys_printf.c and sys_strerror.c. See comments in those files.
@@ -80,11 +79,14 @@ Size optimization (-Os) helps in most cases.
 Building with musl
 ~~~~~~~~~~~~~~~~~~
 Use CC = musl-gcc when building on non-musl system.
+
 If musl-gcc complains about linux/*.h, you probably have no linux headers
 in musl-gcc path. Symlink /usr/include/linux and /usr/include/asm to
 $MUSL/include/linux and $MUSL/include/asm respectively.
 
 For musl-based systems, no settings should be necessary.
+
+Configure options: "musl-gcc" for non-native builds, "musl" for musl toolchains.
 
 
 Building with glibc or uClibc
