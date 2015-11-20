@@ -93,18 +93,6 @@ Both glibc and uclibc lack getdents(2), even thought it is a linux system call.
 Use sys_getdents.c instead.
 
 
-Choosing timezone module
-~~~~~~~~~~~~~~~~~~~~~~~~
-This only makes sense with bundled libc or dietlibc, and only affects
-the messages sent to syslog.
-
-The standard (also default) option is "tz", but "notz" will work just
-as well with most, if not all, syslogd implementations.
-
-When building with bundled libc for a musl-based system, prefer "utc"
-instead of "tz" because that's what musl syslog(3) uses.
-
-
 Link-time optimization
 ~~~~~~~~~~~~~~~~~~~~~~
 To enable LTO, add -flto to CFLAGS and LDFLAGS, or alternatively use "lto"

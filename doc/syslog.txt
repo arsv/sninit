@@ -1,0 +1,99 @@
+Timestamps in syslog messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The messages sent to syslogd by individual applications are generally
+expected to include a timestamps:
+
+	<29> Jan 18 00:11:22 init: something happened
+
+This timestamp is also expected to be in *local* time zone.
+Supporting that results in some really ugly code, as init needs parse
+(pretty complex) timezone file, which in turn may change.
+
+At some point, it was decided to drop timestamp support completely.
+In BSD syslog (RFC 3164) it is in fact optional, and most (all?) syslogd
+implementations can handle messages without timestamps.
+Now the messages produced by init look like this:
+
+	<29> init: something happened
+
+This shifts the timezone-keeping duty and timestamp-formatting into
+non-critical, restartable syslogd process and out of init, without
+sacrificing much in terms of functionality.
+
+
+How and why it works
+~~~~~~~~~~~~~~~~~~~~
+RFC 3164 defines timestamp as optional, and requires syslogd to insert
+its current time in case no timestamp has been supplied by the sender.
+
+To tell whether the timestamp is there, syslogd looks for certain
+characters in the message:
+                v  v  v  v
+	<29> Jan 18 00:11:22 init: something happened
+	<29> init: something happened
+                ^
+Busybox syslogd only checks for the spacing characters (marked),
+syslog-ng also checks whether hh:mm:ss part contains digits.
+There is also newer RFC 5424 / 3339 date format which looks like this:
+                 v  v  v  v  v
+	<29> 2015-01-18T00:11:22...
+	<29> init: something happened
+	         ^
+In both cases, the leading "init:" part makes sure the check fails.
+
+Note that doing so without the init: prefix would be dangerous, as the
+message may happen to start with something that looks like a date.
+Especially if we're talking to busybox syslogd.
+
+
+Why sender-side timestamps
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Timestamps added by syslog(3) track the time when message is generated.
+Timestamps added by syslogd(8) track the time the message is received.
+There's a fine difference between the two, but it's not exactly clear
+whether it makes any sense in practice.
+
+Init (and pretty much anything else using syslog(3)) should be talking
+to a local syslogd process, running on the same machine. So the difference
+between the time the message is generated and the time it is received
+is about what it takes to pass the message through a local unix socket,
+plus rescheduling time.
+
+The situation is different if remote logging in considered.
+However, it is never syslog(3) that sends remote messages, it is always
+a local syslogd acting as a relay.
+
+
+The problem with RFC 3164 timestamps
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Locatime stamps make it really hard to tell when the message was actually
+sent. Localtime means system clock + timezone offset. The offset is not
+stored in the logs, and may not be easy to recover.
+
+RFC 5424 attempts to address this by storing timezone offset within
+the timestamps, in the form of RFC 3339 datetime.
+The result is ugly, and busybox for instance does not support it at all.
+
+In either case, localtime-dependent syslog(3) means a simple logging
+request requires loading and parsing not-so-simple timezone file.
+
+musl takes a radical approach and always stores UTC time.
+
+
+Why it is better to do timestamps in syslogd
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Syslogd is a single place where configuring timestamp format makes sense.
+Especially for local log files. And neither RFC 3164 timestamps nor
+RFC 5424 ones are particulary good for the purpose; using numeric stamps,
+either from CLOCK_REALTIME like httpd or CLOCK_BOOTTIME like the kernel
+does would arguably be a better idea.
+
+
+How it was implemented in sninit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Timestamping warn() was last seen in abc117e211a98199e56975a285647aff1c324ef1.
+TZ was loaded on-demand, so any warn() call could cause a mmap() and a bunch
+of non-trivial parsing.
+
+This was one of the weakest points in init, serving one of its least-important
+features. Good riddance.
