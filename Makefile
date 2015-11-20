@@ -19,10 +19,6 @@ init telinit run: $(if $(ARCH),libc.a)
 init_conf = init_conf.o init_conf_map.o init_conf_arg.o init_conf_tab.o \
 	init_conf_dir.o init_conf_rec.o init_conf_key.o
 init_null = init_null.o
-init_tz = init_time_tz.o init_time_stamp.o
-init_notz = init_time_notz.o init_time_stamp.o
-init_nots = init_time_null.o
-init_libcts = init_time_libc.o
 init_err = sys_err_init.o
 init_sys = sys_printf.o sys_err_init.o
 init_dents = sys_getdents.o

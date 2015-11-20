@@ -14,7 +14,7 @@ unset prefix sbindir mandir man5dir man8dir sysconfdir
 unset cc ar as strip cflags asflags ldflags
 unset hostcc hostcflags
 unset target build host diet
-unset cctype libc libs tstype null
+unset cctype libc libs null
 
 optimize=auto
 unset nommu lto debug depend builtin quiet devmode
@@ -77,13 +77,9 @@ Libc selection (see INSTALL for explaination):
 	dietlibc	build with dietlibc (cc="diet gcc")
 	musl		build with musl (cc="musl-gcc")
 
-Init features:
+Init configuration:
 	builtin=F	parse and compile \$F as built-in inittab
 			(see doc/builtin.txt)
-
-	tz		put localtime stamps in syslog messages
-	utc		put utc timestamps in syslog messages
-	nots		do not put any timestamps, rely on syslogd to add them
 
 If not sure about configure usage, check comments in config.mk and config.h,
 then edit those files directly.
@@ -200,12 +196,6 @@ while [ $# -gt 0 ]; do
 			;;
 		with-syslibc|with-glibc|syslibc|glibc|libc|uclibc)
 			libc=syslibc
-			;;
-		with-timestamps|ts) argreq
-			tstype=$val
-			;;
-		tz|notz|libcts|nots)
-			tstype=$arq
 			;;
 		disable-inittab|no-inittab)
 			inittab=-
@@ -380,44 +370,22 @@ case "${libc:-syslibc}" in
 		dieifnot "$arch" "Target architecture must be specified for bundled libc (--arch)"
 		test -d "libc/$arch" || die "bundled libc: target $arch is not supported"
 		blocks="$blocks sys"
-		tsdefault=nots
 		test "$cctype" = "gcc" && libs=-lgcc
-		;;
-	musl)
-		tsdefault=libc
 		;;
 	syslibc)
 		blocks="$blocks dents"
-		tsdefault=libc
 		;;
 	dietlibc-fixed)
 		cc="$diet $cc"
 		blocks="$blocks sys"
-		tsdefault=nots
 		;;
 	dietlibc)
 		cc="$diet $cc"
 		libs=-lcompat
 		blocks="$blocks sys ppoll"
-		tsdefault=nots
 		;;
 	*)
 		die "Unknown libc type $libc"
-		;;
-esac
-
-case "${tstype:-$tsdefault}" in
-	libc)
-		blocks="$blocks libcts"
-		;;
-	nots)
-		blocks="$blocks nots"
-		;;
-	tz)
-		blocks="$blocks tz"
-		;;
-	notz|utc)
-		blocks="$blocks notz"
 		;;
 esac
 
