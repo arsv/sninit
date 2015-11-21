@@ -232,7 +232,7 @@ void setargs(int argc, char** argv)
 /* Most applications (sninit included) expect fds 0, 1, 2 to be open.
    Kernel tries to fulfill that, opening and duping /dev/console just
    before spawning init. However it does not check the results, and opening
-   /dev/console can fail, in particular if there are no console configured.
+   /dev/console can fail, in particular if there is no console configured.
 
    To avoid really nasty situations with stuff written to stderr ending
    up in some explicitly opened file somewhere with the spawned children,
