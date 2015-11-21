@@ -7,7 +7,7 @@ extern struct nblock newblock;
 int addparsedargv(char* str);
 extern int mmapblock(int len);
 
-#define to_offset(ptr) ((offset)((void*)ptr - NULL))
+#define asoffset(ptr) ((offset)((void*)ptr - NULL))
 
 int main(void)
 {
@@ -25,13 +25,13 @@ int main(void)
 
 	char** ptr = newblockptr(off, char**);
 	ASSERT(ptr[0] == NULL + off + 4*sizeof(char*));
-	char* s1 = newblockptr(to_offset(ptr[0]), char*);
-	char* s2 = newblockptr(to_offset(ptr[1]), char*);
-	char* s3 = newblockptr(to_offset(ptr[2]), char*);
+	char* s1 = newblockptr(asoffset(ptr[0]), char*);
+	char* s2 = newblockptr(asoffset(ptr[1]), char*);
+	char* s3 = newblockptr(asoffset(ptr[2]), char*);
 	STREQUALS(s1, "blah");
 	STREQUALS(s2, "foo");
 	STREQUALS(s3, "bar");
-	ASSERT(to_offset(ptr[3]) == 0);
+	ASSERT(asoffset(ptr[3]) == 0);
 
 	return 0;
 }
