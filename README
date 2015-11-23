@@ -38,15 +38,16 @@ Missing features:
 
 Features sninit has that are not in any way exceptional:
 
+* proper process supervision
 * parallel startups
-  (busybox init allows it, never mind sysvinit)
+  (busybox init does both, never mind sysvinit)
 
 
 What is init
 ~~~~~~~~~~~~
 init is process 1 in Linux and other Unix-like systems.
 
-Upon booting itself, kernel only starts one process, typically /sbin/init.
+Upon booting itself, linux kernel only starts one process, /sbin/init.
 This process is expected to initialize the system and start everything else,
 including user interface.
 This process is not expected to exit; in case it does, kernel panic happens.
@@ -80,7 +81,7 @@ To try sninit without configuring a VM or installing anything:
 In this configuration, init uses ./etc/inittab, ./etc/initdir
 and stub executables from ./sbin.
 
-For further trials, check doc/buildroot.txt.
+For more involved testing, check doc/buildroot.txt.
 
 
 Just how small exactly?
