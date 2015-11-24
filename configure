@@ -302,7 +302,7 @@ case "$libc" in
 	bundled)      blocks="$blocks sys" ;;
 	glibc|uclibc) blocks="$blocks dents" ;;
 	diet-fixed)   blocks="$blocks sys" ;;
-	dietlibc)     blocks="$blocks sys ppoll" ;;
+	dietlibc)     blocks="$blocks sys ppoll unshare"; libs="-lcompat" ;;
 esac
 
 # Try to guess which qemu to use if this was requested

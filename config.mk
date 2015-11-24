@@ -27,7 +27,7 @@ builtin :=
 # Needed for $(builtin) parse tool
 HOSTCC := gcc
 
-# Init block configuration: {conf|null} [sys|err] [dents,ppoll]
+# Init block configuration: {conf|null} [sys|err] [dents,ppoll,unshare]
 #
 # runtime configuration
 #	conf	configurable init (can/does read /etc/inittab)
@@ -37,6 +37,7 @@ HOSTCC := gcc
 #	err	strerror() (implied by sys)
 #	dents	getdents64() (only needed when linking against glibc)
 #	ppoll	ppoll via syscall() (only needed with unpatched dietlibc)
+#	unshare	unsahre via syscall (only needed with unpatched dietlibc)
 initblocks := conf sys dents
 
 # Extra targets to build on "make all". Only used for sbin atm.
