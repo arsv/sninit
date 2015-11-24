@@ -171,8 +171,6 @@ int parsesrvfile(char* fullname, char* basename)
 
 	if(shebang) {
 		/* No need to parse anything anymore, it's a script. */
-		/* Note that for an initdir entry, fb->name is
-		   in readinitdir() stack and thus writable */
 		cmd = fullname;
 	} else {
 		/* Get to first non-comment line, and that's it, the rest
