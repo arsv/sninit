@@ -142,31 +142,24 @@ int comment(const char* s)
 
 int parsesrvfile(char* fullname, char* basename)
 {
-	int shebang;
+	int shebang = 0;
 	char* cmd;
-	const char* rlvls;
+	const char* rlvls = "S";
 	char* ls;
 
-	if(!(ls = nextline()))
-		retwarn(-1, "%s: empty file", FBN);
+	ls = nextline();
 
 	/* Check for, and skip #! line if present */
-	if(ls[0] == '#' && ls[1] == '!') {
+	if(ls && ls[0] == '#' && ls[1] == '!') {
 		shebang = 1;
-		if(!(ls = nextline()))
-			retwarn(-1, "%s: empty script", FBN);
-	} else {
-		shebang = 0;
+		ls = nextline();
 	}
 
-	/* Do we have #: line? If so, note runlevels and flags */
-	if(ls[0] == '#' && ls[1] == ':') {
-		ls[1] = 'S';
+	/* Same for #: runlevels line */
+	if(ls && ls[0] == '#' && ls[1] == ':') {
+		ls[1] = *rlvls;
 		rlvls = ls + 1;
-		if(!(ls = nextline()))
-			retwarn(-1, "%s: no command found", FBN);
-	} else {
-		rlvls = "S";
+		ls = nextline();
 	}
 
 	if(shebang) {
@@ -175,11 +168,13 @@ int parsesrvfile(char* fullname, char* basename)
 	} else {
 		/* Get to first non-comment line, and that's it, the rest
 		   will be done in addinitrec. */
-		while(comment(ls))
-			if(!(ls = nextline()))
-				retwarn(-1, "%s: no command found", FBN);
+		while(ls && comment(ls))
+			ls = nextline();
 		cmd = ls;
 	}
+
+	if(!ls) /* could be just cmd, but empty scripts are not ok */
+		retwarn(-1, "%s: no command found", FBN);
 
 	return addinitrec(basename, rlvls, cmd, shebang);
 }
