@@ -11,6 +11,8 @@ klogd	S	/sbin/klogd -nc1
 dhcp	L	/sbin/run -n /sbin/udhcpc -fRS eth0
 
 tty1	T	/sbin/getty -L tty1 115200 linux
+tty2	T	/sbin/getty -L tty2 115200 linux
+tty3	T	/sbin/getty -L tty3 115200 linux
 
 umount	X	/bin/umount -ar
 
