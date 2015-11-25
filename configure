@@ -162,7 +162,7 @@ while [ $# -gt 0 ]; do
 
 		enable-debug|debug) debug=${val:-"-Wall -g"} ;;
 		enable-lto|lto) lto=${val:-"-flto"} ;;
-		optimization|O|optimize) optimize=${val:-$optimize} ;;
+		optimization|O|optimize) optimize=${val:-auto} ;;
 		disable-optimization|no-O) optimize= ; lto= ;;
 		mmu) nommu= ;;
 		without-mmu|nommu) nommu=1 ;;
