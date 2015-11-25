@@ -10,7 +10,7 @@ syslog	L	/sbin/syslogd -n
 klogd	S	/sbin/klogd -nc1
 dhcp	L	/sbin/run -n /sbin/udhcpc -fRS eth0
 
-tty1	T	/sbin/getty -L tty1 115200 vt100
+tty1	T	/sbin/getty -L tty1 115200 linux
 
 umount	X	/bin/umount -ar
 
