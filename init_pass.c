@@ -42,10 +42,9 @@ local void switchtonextlevel(void);
    Note to have pid reset to 0, and thus allow re-run, at least one pass
    must be completed with !shouldberunning(p) for the entry. */
 
-#define wtype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE | C_WAIT))
-#define htype(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
-#define ewtype(p)  ((p->flags & C_ONCE))
-#define hstype(p) (!(p->flags & C_ONCE))
+#define once(p) (p->flags & C_ONCE)
+#define onceonly(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
+#define oncewait(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE | C_WAIT))
 
 #define slippery(rlvl) (SLIPPERY & rlvl)
 
@@ -69,7 +68,7 @@ void initpass(void)
 
 			waitfor |= DYING;
 
-			if(htype(p))
+			if(onceonly(p))
 				return;
 		}
 
@@ -78,26 +77,26 @@ void initpass(void)
 		if(shouldberunning(p))
 		{
 			if(p->pid > 0) {
-				if(wtype(p))
+				if(oncewait(p))
 					return;
-				else if(ewtype(p))
+				else if(once(p))
 					waitfor |= RUNNING;
 				continue;
 			}
 
-			if(p->pid < 0 && ewtype(p))
+			if(p->pid < 0 && once(p))
 				continue; /* has been run already */
-			if(waitfor && wtype(p))
+			if(waitfor && oncewait(p))
 				return;
 
-			if(hstype(p) && slippery(nextlevel))
+			if(!once(p) && slippery(nextlevel))
 				continue; /* these will be killed anyway */
 
 			spawn(p);
 
-			if(ewtype(p))
+			if(once(p))
 				waitfor |= RUNNING;
-			if(wtype(p))
+			if(oncewait(p))
 				return;
 		}
 
@@ -122,7 +121,7 @@ local void switchtonextlevel(void)
 	/* One we're here, reset pid for r-type entries, to run them when
 	   entering another runlevel with shouldberunning(p) true. */
 	for(pp = inittab; (p = *pp); pp++)
-		if(!shouldberunning(p) && ewtype(p) && (p->pid < 0))
+		if(!shouldberunning(p) && once(p) && (p->pid < 0))
 			p->pid = 0;
 
 	if(slippery(nextlevel) && !slippery(currlevel)) {
