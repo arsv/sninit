@@ -72,7 +72,7 @@ Target configuration:
 
 Libc selection (see INSTALL for explaination):
 	arch=L		use bundled libc for target arch \$L
-			possible L values: arm mips x86 x86_64 x86_32
+			possible L values: arm arm64 mips x86 x86_64 x86_32
 	dietlibc	build with diet gcc
 	musl-gcc	build with musl-gcc
 	musl		use system libc, assume it to be musl
