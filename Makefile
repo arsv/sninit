@@ -158,7 +158,7 @@ libc/$(ARCH)/%.o libc/libtest/%.o libc/%.o: CFLAGS := $(filter-out -flto, $(CFLA
 # So instead let's keep the objects around.
 #
 libc.a: $(libc)
-	$(AR) cru $@ $?
+	$(AR) cr $@ $?
 
 clean: clean-libc
 
