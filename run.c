@@ -234,16 +234,24 @@ static void rcrewind(struct rcfile* f)
 
 static char* rcnextline(struct rcfile* f)
 {
-	if(f->le)
-		*(f->le) = '\n';
-	f->ls = (f->le ? f->le + 1 : f->buf);
-	if(f->ls >= f->buf + f->len)
+	char* buf = f->buf;
+	char* end = f->buf + f->len;
+	char* ls = f->ls;
+	char* le = f->le;
+
+	if(le) *le = '\n';
+
+	if((ls = (le ? le + 1 : buf)) >= end)
 		return NULL;
 	
-	for(f->le = f->ls; *(f->le) && *(f->le) != '\n'; f->le++);
-	*(f->le) = '\0';
+	for(le = ls; *le && *le != '\n'; le++)
+		;
+	*le = '\0';
 
-	return f->ls;
+	f->ls = ls;
+	f->le = le;
+
+	return ls;
 };
 
 static int isnumeric(char* s)
