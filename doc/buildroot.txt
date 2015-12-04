@@ -14,7 +14,7 @@ The files are stored in misc/buildroot directory within sninit source tree.
 
 Prerequisites
 ~~~~~~~~~~~~~
-* buildroot-2015.08.1
+* buildroot-2015.11
   Get it from http://buildroot.uclibc.org/
 
 * buildroot dependencies installed, see list here:
@@ -34,7 +34,7 @@ Prerequisites
 
 Building and running
 ~~~~~~~~~~~~~~~~~~~~
-Unpack Buildroot-2015.08.1 somewhere outside of sninit directory.
+Unpack Buildroot-2015.11 somewhere outside of sninit directory.
 
 For convenience, set the following variables:
 
