@@ -276,7 +276,7 @@ gotfd:
    and should accept whatever the default action is.
 
    SIGPIPE and SIGALRM do not need handlers, as their only job is to make
-   blocking read(telinitfd) return with EINTR, which telinit code interprets
+   blocking read(telinitfd) return with EINTR, which initctl code interprets
    as end-of-communication.
    SIGCHLD must interrupt the only syscall it may be delivered in, ppoll.
    All the other signals need SA_RESTART. */

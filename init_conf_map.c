@@ -140,7 +140,9 @@ void munmapblock(void)
 	newblock.len = 0;
 };
 
-/* cfgblock is empty if builtin config is used */
+/* Normally the old block in unmmaped and the new one takes its place.
+   However, cfgblock may happen be empty on the first reconfig attempt
+   if the old config is in fact builtin config. */
 
 void exchangeblocks(void)
 {
