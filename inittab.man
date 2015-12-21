@@ -6,22 +6,18 @@
 .SH DESCRIPTION
 Inittab is a list of commands init should run.
 .P
-Each relevant line in inittab describes a single entry
-containing a command to run and a pid of the process. For each entry,
-init spawns a child process, which in turn executes the command.
-Init records the pids of the child processes and keeps tracking them
-until processes die, so that each entry either holds a pid of a running
-process, or an indication that the process is not running.
+Each relevant line in inittab describes a single process (an entry)
+to be run by init. Init records the pids of the processes it spawns
+and tracks them until processes die.
 .P
 At any point, init is in one of runlevels 0, 1, ... 9, with zero or more
 sublevels a, b, ..., f activated. Each entry has its own runlevel mask,
 with zero or more runlevels and zero or more sublevels.
 .P
-When processing an entry, init decides whether it should be running
-or not using current runlevel and entry's runlevel mask.
-Subsequentry the entry is either spawned, killed or skipped.
-Entries are always started in top-to-bottom order, and killed
-bottom-to-top.
+Init decides whether an entry should be running or not using current
+runlevel and entry's runlevel mask.  Subsequentry the entry is either
+spawned, killed or skipped. Entries are always started in top-to-bottom
+order, and killed bottom-to-top.
 .P
 In case a tracked process dies, init attempts to respawn the relevant entry
 unless the entry is explicitly marked as run-once. A typical configuration
