@@ -1,9 +1,9 @@
-/* runcap is a companion utility to sninit, in the sense it does what
+/* run is a companion utility to sninit, in the sense it does what
    could have been implemented in sninit (but wasn't).
    See doc/limits.txt for discussion of the problem.
 
-   Yet even with background like this, runcap is completely independent from
-   sninit. It could easily be packaged and distributed as a standalone utility.
+   Yet even with background like this, run is completely independent from sninit.
+   It could easily be packaged and distributed as a standalone utility.
 
    This perfect separation of functions was actually one of the main reasons
    to make it standalone, vs. having all this built into init. */
@@ -11,7 +11,7 @@
 /* The original name for this tool was "runcap", and it could set capabilities
    among other things. However, it turned out capabilities are badly broken
    in Linux at least as far as impose-restrictions-upon-child approach is
-   considered, so all support for them was dropped and the tool was renamed
+   considered, so the -cap part was dropped and the tool's name was change
    to just "run". */
 
 #define _GNU_SOURCE
