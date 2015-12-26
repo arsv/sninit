@@ -7,8 +7,16 @@
 \fBrun\fR [\fIoptions\fR] \fIcommand\fR \fIargs\fR ...
 '''
 .SH DESCRIPTION
-\fBrun\fR executes specified command, possibly setting effective uid/gid,
-priority, ulimits, redirecting output and adding its pid to cgroups.
+\fBrun\fR allows configuring process atributes of a newly spawned
+command. All requested changes are applied before \fIcommand\fR is
+started.
+.P
+\fBrun\fR is intended for priviledged users, as one of its main uses
+is spawning commands with limited priviledges. Some of the options
+may work for regular users, but most will not.
+.P
+Another use for \fBrun\fR is searching $PATH and doing output redirects
+without calling \fBsh\fR(1) or some other shell.
 '''
 .SH USAGE
 The following options are accepted:
