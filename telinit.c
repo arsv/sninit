@@ -13,7 +13,7 @@
 /* Telinit sends commands to init via its control socket and reads init's
    output back. One command is sent per connection. In case there are
    multiple arguments, telinit sends one at a time and reconnects between
-   sending them. There is no multiplexing of any sort, it's write-all and
+   sending them. There is no multiplexing of any sort, it's write-all
    followed by read-all for each command. */
 
 static int runcmd(const char* cmd);
@@ -28,22 +28,27 @@ static struct cmdrec {
 	char arg;
 	char name[10];
 } cmdtbl[] = {
-	{ 'c', 0, "reload",	},
-	{ 'r', 1, "restart",	},
+	/* halt */
+	{ 'H', 0, "halt",	},
+	{ 'P', 0, "poweroff",	},
+	{ 'R', 0, "reboot",	},
+	/* process ops */
+	{ 'p', 1, "pause",	},
+	{ 'w', 1, "resume",	},
+	{ 'h', 1, "hup",	},
 	{ 's', 1, "start",	},
+	{ 'r', 1, "restart",	},
 	{ 't', 1, "stop",	},
 	{ 'u', 1, "unstop",	},
-	{ 'p', 1, "pause",	},
-	{ 'h', 1, "hup",	},
+	/* state query */
+	{ '?', 0, "list",	},
 	{ 'i', 1, "pidof",	},
-	{ 'w', 1, "resume",	},
-	{ 'P', 0, "poweroff",	},
-	{ 'H', 0, "halt",	},
-	{ 'R', 0, "reboot",	},
+	/* reconfigure */
+	{ 'c', 0, "reload",	},
+	/* slippery levels */
 	{ '7', 0, "doze",	},
 	{ '8', 0, "sleep",	},
 	{ '9', 0, "suspend",	},
-	{ '?', 0, "list",	},
 	{  0  }
 };
 
