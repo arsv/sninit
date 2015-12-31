@@ -23,7 +23,7 @@ Initdir entries are always \fBS\fR-type.
 See \fBinittab\fR(5) for detailed description of entry types and runlevels.
 '''
 .SH SYNTAX
-There are two slighly different flavors of service files.
+There are two slightly different flavors of service files.
 The first one is a plain file:
 .P
 .EX
@@ -49,20 +49,19 @@ Files or this kind must be executable, and init will use the full file
 path as the command to run. Only \fIrunlevels\fR are parsed by init in this
 case, the rest is left to \fIinterpreter\fR.
 .P
-In both cases, \fB#:\fIrunlevels\fR line may be omited.
+In both cases, \fB#:\fIrunlevels\fR line may be omitted.
 '''
 .SH USAGE
 Service files are meant primarily for package-managed systems as a easy
-way to add managed init entries, vs.  modifying inittab each time
+way to add managed init entries, as opposed to modifying inittab each time
 a package is installed or uninstalled.
 .P
-Scripts may also be useful for daemons that need external initialization code,
-like creating/purging cache directories for squid.
+Scripts may also be useful for daemons that need external initialization code.
 .P
 Whenever a script is used, it should typically end with an \fBexec\fR(3) call
 or some equivalent thereof to replace \fIinterpreter\fR with the actual daemon
 process. Leaving \fIinterpreter\fR running only makes sense if there is some
-cleanup to do after the deamon dies.
+cleanup to do after the daemon dies.
 '''
 .SH COMPATIBILITY
 Service files used by {INIT} are not compatible with SysV \fBinitscript\fR(5)s.

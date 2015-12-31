@@ -80,7 +80,7 @@ exiting, and will show all configuration errors.
 '''
 .SH NOTES
 This page describes {telinit} from \fB{INIT}\fR package.
-Telinits from other init implementations may behave differently.
+Other init implementations may behave differently.
 .P
 In particular, this version of {telinit} is not compatible with sysvinit.
 Most sysvinit options are not supported. Runlevel change and configuration

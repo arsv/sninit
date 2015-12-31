@@ -12,7 +12,7 @@ The system remains running for as long as init process is alive.
 .P
 The primary role of init is to start other processes. Init keeps
 a list of commands to spawn, which it executes sequentially.
-Init tracks pids of the spawned processes and, if configured so,
+Init tracks ids of the spawned processes and, if configured so,
 respawns those that have died.
 .P
 Init also adopts all orphaned processes in the system,

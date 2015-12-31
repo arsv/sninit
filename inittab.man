@@ -7,7 +7,7 @@
 Inittab is a list of commands init should run.
 .P
 Each relevant line in inittab describes a single process (an entry)
-to be run by init. Init records the pids of the processes it spawns
+to be run by init. Init records the ids of the processes it spawns
 and tracks them until processes die.
 .P
 At any point, init is in one of runlevels 0, 1, ... 9, with zero or more
@@ -15,7 +15,7 @@ sublevels a, b, ..., f activated. Each entry has its own runlevel mask,
 with zero or more runlevels and zero or more sublevels.
 .P
 Init decides whether an entry should be running or not using current
-runlevel and entry's runlevel mask.  Subsequentry the entry is either
+runlevel and entry's runlevel mask.  Subsequently the entry is either
 spawned, killed or skipped. Entries are always started in top-to-bottom
 order, and killed bottom-to-top.
 .P
@@ -28,7 +28,7 @@ Along with the entries itself, inittab may also contain environment
 variables to be passed to the spawned processes via \fBexecve\fR(2).
 '''
 .SH SYNTAX
-Inittab is a text file parsed in linewise manner.
+Inittab is a text file parsed in line wise manner.
 .IP "# \fIcomment\fR" 4
 Lines starting with # are ignored by init
 .IP "\fIvariable\fR=\fIvalue\fR" 4
@@ -53,9 +53,9 @@ messages. To make a unnamed entry, start a line with any whitespace character.
 Non-empty names should be unique.
 .P
 During reconfiguration, init matches entries with the same name, and transfers
-pids from the old configuration. For un-named entries, and in case names do not
-match, the old process gets killed and the new one started. This is mostly
-relevant for respawning entries.
+process ids from the old configuration. For un-named entries, and in case names
+do not match, the old process gets killed and the new one started.
+This is mostly relevant for respawning entries.
 '''
 .SS Entry mode
 The second field, \fImode\fR, describes how the entry should be handled by init. 
@@ -76,7 +76,7 @@ initialization entries, like sysctl or non-root mounts or early network setup.
 .IP "\fBW\fR" 4
 Run once and wait for this process. Do not restart it, and do not proceed
 further until it dies. Use this for critical initialization entries, like
-mounting root. \fBW\fR-process will not be started until all preceeding
+mounting root. \fBW\fR-process will not be started until all preceding
 \fBR\fR-entries have exited, and no subsequent entries will be started until
 it exits.
 .IP "\fBX\fR" 4
@@ -119,7 +119,7 @@ Wherever necessary, init calls /bin/sh -c to execute the command.
 .SH USAGE
 The primary role of inittab is listing commands needed to bring the system up
 after booting the kernel. Typically this involves run-once entries performing
-runtime kernel configuration (filesystems, network) and respawning entries
+runtime kernel configuration (file systems, network) and respawning entries
 for system daemons and user interface.
 .P
 Transition to other system states (reboot, shutdown, sleep) may be described
@@ -165,7 +165,7 @@ Any process doing \fBdaemon\fR(3) style startup will confuse init if configured
 as an \fBS\fR-type entry, since init has no way to track the daemonized child
 process and will attemp to take action immediately after the parent exits.
 .P
-Whenever possible, processes must be intructed to run in foreground mode.
+Whenever possible, processes must be instructed to run in foreground mode.
 Most daemons allow this; check relevant man pages.
 .P
 .EX
@@ -181,7 +181,7 @@ services, must remain in inittab.
 '''
 .SS Slippery runlevels
 Reaching any of runlevels \fB7\fR, \fB8\fR, \fB9\fR initiates immediate
-switch back to preceeding non-slippery runlevel.
+switch back to the original non-slippery runlevel.
 For instance, running \fBtelinit 8\fR while on runlevel \fB3\fR makes
 init switch \fB3\fR to \fB8\fR and back to \fB3\fR.
 .P
@@ -198,20 +198,20 @@ and make post-sleep recovery \fBX\fR-entries:
 .P
 In case respawning processes that should be stopped when entering sleep mode,
 remove relevant runlevels from their respective masks (\fBS3456\fR instead
-of \fBS3+\fR).
+of \fBS3*\fR).
 '''
 .SH COMPATIBILITY
 This page describes inittab format for \fB{INIT}\fR package.
-It is not compatible with the traditional SysVinit format.
+It is not compatible with the traditional System V init format.
 .P
-Most features of SysV-style inittab features translate easily into those
-understood by sninit. However, SysVinit-compatible implementations tend
+Most features of System V style inittab features translate easily into those
+understood by sninit. However, SysV-compatible implementations tend
 to use initscripts system instead of \fBinitdir\fR(5), making automated
 translation between two formats pointless.
 Shutdown/reboot handling differs as well, and sleep modes are not typically
 supported.
 .P
-Because of this, translating SysV-style inittab for use with {INIT}
+Because of this, translating traditional inittab for use with {INIT}
 rarely makes sense.
 '''
 .SH SEE ALSO
