@@ -38,3 +38,4 @@ init.txt	  What is init?
 direct.txt	  Direct configuration
 mininit.txt	  On minimalistic init
 daemons.txt	  Background and foreground daemons
+runsrv.txt        Why not runsrv?

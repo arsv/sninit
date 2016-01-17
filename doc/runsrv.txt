@@ -1,0 +1,110 @@
+Why not runsvdir?
+~~~~~~~~~~~~~~~~~
+A major design decision in sninit is its use of mixed s-/w-entries list.
+Another approach, implemented in daemontools and derivatives, is to use
+non-ordered list of s-entries only, leaving w-entries out of init.
+
+The tool that runs the list of s-entries is called runsvdir in runit,
+hence the title.
+
+The reason for this decision may be non-obvious at first: it is difficult
+to implement sleep modes with a uniform list of s-entries.
+
+
+Startup with runsvdir
+~~~~~~~~~~~~~~~~~~~~~
+The idea behind the daemontools approach is that the system is always in one
+of only three modes: booting, "flight mode", and shutting down.
+
+All w-entries are run during either boot or shutdown. The "flight mode" is
+where all of the services are running:
+
+	# boot
+	exec(init.sh)
+	w-entry ...
+	w-entry ...
+	w-entry ...
+
+	# boot done, entering flight mode
+	exec(runsvdir, ...)
+	start s-entry s-entry ...
+	wait-respawn-loop
+
+	^C    # shutdown signal
+	wait
+	# once all s-entries are dead, flight mode is over
+	exec(fini.sh)
+
+	# shutdown
+	w-entry ...
+	w-entry ...
+	w-entry ...
+
+The perfect separation of w- and s-entries allows chain-exec()ing
+relevant code only when it's needed.
+
+The supervisor process (runsvdir) is also very simple and reliable,
+as it only needs to react to a bunch of signals, and only asynchronously.
+The only synchronous action the supervisor does is dying.
+
+
+The problem with sleep modes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sleep is assumed to be a partial shutdown: we stop some but not all of the
+services, run some w-type commands, wait for them to exit, and restart
+the stopped services.
+
+It is the partial shutdown part that makes it difficult.
+The supervisor may not exit at this point, as it still has some processes
+that must be kept running.
+
+At the same time, it must do a bunch of effectively synchronous actions:
+wait-until-stopped, then wait-until-woken-up.
+
+The synchronous actions may be implemented within the supervisor.
+That's sninit with its mixed list of w- and s-entries.
+
+Alternatively, the synchronization may be external, something similar
+to a blocking telinit. That is, "telinit stop S" must block until S dies.
+This inherently compromises reliability of the supervisor, as it has
+either to block itself, or to deal with lingering, possibly multiple
+control connections.
+
+Both daemontools derivatives and sninit are designed to be completely
+asynchronous. It is not clear whether a reliable externally-synchronized
+supervisor is possible at all, but if it is, it won't be simple.
+
+
+Single w-entry vs a mixed list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Are there any intermediate options between uniform s-entry list
+and abritrary mix of w-/s-entries?
+
+In other words, can we augment runsvdir with a *single* special case
+for a sleep mode? Some kind of a dedicated w-entry?
+
+The answer is apparently no. There is almost no difference in waiting
+for a dedicated entry and waiting for an arbitrary number of w-entries
+placed at arbitrary locations in the list.
+
+Once the waiting code is there, separating init.sh and fini.sh becomes
+pointless. Having a clean s-entry only supervisor means it's possible
+to drop the (dead) waiting code while in flight mode, and that's what
+exec()s are for. A mixed-list supervisor cannot drop any code, so it
+makes sense to pull startup and shutdown w-entries into init as well.
+
+
+Non-intrusive sleep
+~~~~~~~~~~~~~~~~~~~
+The above assumes that the sleep modes do need attention from the init.
+This is not always true. Within a typical non-realtime Linux system
+sleep should not be detectable and should not affect well-written
+processes.
+
+It's only the external (networking) entities presumably living on
+real-world time that may need to be notified, and even then, only
+in some cases.
+
+For systems that can be reliably put to sleep by writing to
+/sys/power/state without any interaction with the init, a clean
+s-entry only supervisor remains a valid option.
