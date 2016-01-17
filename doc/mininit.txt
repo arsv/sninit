@@ -18,7 +18,7 @@ How many child processes should init respawn?
 The real minimum is one, but then that one must be a dying sub-respawner,
 or the system must be degenerate (running a single non-init process), which
 is not particulary interesting.
-So let's assume an reasonably long list of processes to respawn.
+So let's assume a reasonably long list of processes to respawn.
 
 How many system states?
 Minimalistic init could clearly do with a single system state aka runlevel.
