@@ -46,4 +46,10 @@ config BR2_PACKAGE_SNINIT_BUILTIN_INITTAB
 	  can not be read. This is compile-time option, and the file name
 	  should be relative to buildroot directory.
 
+config BR2_PACKAGE_SNINIT_SERVICES
+	bool "Install sninit service files"
+	default y
+	help
+	  Startup files for configured daemons.
+
 endif
