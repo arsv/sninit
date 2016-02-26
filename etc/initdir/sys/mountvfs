@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# This will not be run unless referenced explicitly in inittab!
+
+/bin/mount -t proc proc /proc
+/bin/mkdir -p /dev/pts
+/bin/mkdir -p /dev/shm

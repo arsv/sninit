@@ -1,17 +1,21 @@
 This a sample initdir both possible formats of service files. 
 
-    xinetd
-	A simple service file. The command in the file will
-	be parsed and stored the same way with lines in inittab.
-
-    httpd	
+    xftp
 	A shell script (interpreted executable) used as a service
 	file. Note #! on the first line and #: on the second.
 
+    xinetd~
+	A simple service file. The command in the file would
+	be parsed and stored the same way with lines in inittab.
+	Tilde means it is disabled and will not be executed.
+
     README
 	Just a text file that is neither a script nor a service
-	file; init will ignore it. 
+	file. Its name starts with [A-Z] so init will ignore it
+	(see skipdirent() in ../../init_conf_dir.c)
 
-    sys/	
+    sys/
 	An unrelated directory. This, too, will be ignored by init.
-	In particular, init will read anything in that directory.
+	In particular, init will not read any files in that directory.
+
+Note all these files will be executed in ../.. (top source dir)
