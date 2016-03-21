@@ -13,14 +13,14 @@
    Empty runlevel mask makes no sense, so instead "R" = "R23456789"
    (see DEFAULTMASK) and "R*" = "R123456789".
 
-   Initdir entries here always have a proper string, even if none
-   was specified in the file. */
+   Initdir entries here always have a proper type string.
+   In case none was specified in the file, a default one is used. */
 
 /* The idea behind entry keys is that entypes[] should list all useful
    flag combos. Which is less that just all combos: FAST make no difference
-   with ONCE, for instance, FAST implies HUSH, and there may be others.
+   with ONCE, FAST implies HUSH, and so on.
 
-   X inverts its runlevel mask. It looks better than having a separate
+   X inverts its runlevel mask. This looks better than having a separate
    invert-mask sign. Inverting ONCE|WAIT and inverting non-ONCE are not
    likely to be useful, so they are not implemented. */
 
