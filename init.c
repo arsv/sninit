@@ -298,10 +298,12 @@ int setsignals(void)
 	ret |= sigprocmask(SIG_BLOCK, &sa.sa_mask, &defsigset);
 
 	sigaddset(&sa.sa_mask, SIGINT);
+	sigaddset(&sa.sa_mask, SIGPWR);
 	sigaddset(&sa.sa_mask, SIGTERM);
 	sigaddset(&sa.sa_mask, SIGHUP);
 
 	ret |= sigaction(SIGINT,  &sa, NULL);
+	ret |= sigaction(SIGPWR,  &sa, NULL);
 	ret |= sigaction(SIGTERM, &sa, NULL);
 	ret |= sigaction(SIGHUP,  &sa, NULL);
 
@@ -335,6 +337,11 @@ void sighandler(int sig)
 		case SIGTERM:	/* C-c when testing */
 		case SIGINT:	/* C-A-Del */
 			rbcode = RB_AUTOBOOT;
+			nextlevel = (1<<0);
+			break;
+
+		case SIGPWR:	/* Shutdown request */
+			rbcode = RB_POWER_OFF;
 			nextlevel = (1<<0);
 			break;
 
