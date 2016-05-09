@@ -137,7 +137,8 @@ int skipdirent(struct dirent64* de)
 
 int comment(const char* s)
 {
-	while(*s == ' ' || *s == '\t') s++; return !*s || *s == '#';
+	while(*s == ' ' || *s == '\t') s++;
+	return !*s || *s == '#';
 }
 
 int parsesrvfile(char* fullname, char* basename)
