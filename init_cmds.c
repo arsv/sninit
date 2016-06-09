@@ -27,7 +27,7 @@ local void clearts(struct initrec* p);
 
 /* Here we have a single command (cmd) sent by telinit, stored in some
    buffer in readcmd(). And we've got to parse it and take action.
-   The actual command is always cmd[0], while cmd[1:] is the (optional) argument.
+   The actual command is always cmd[0], while cmd[1:] is the argument.
    Examples:
 	"c"		reconfigure
 	"9"		switch to runlevel 9
@@ -36,7 +36,8 @@ local void clearts(struct initrec* p);
    With exception of kill() calls, all parsecmd does is setting flags,
    either per-process or global. The next initpass() is where the rest
    happens. Telinit connection is closed right after parsecmd() returns;
-   this way initpass remains async and simple.
+   this makes it impossible to report entry start success, but keeps
+   initpass async and simple.
 
    Within parsecmd, warnfd is the open telinit connection, so we send
    the text back to telinit using warn(). */
@@ -129,7 +130,8 @@ void setrunlevel(const char* p)
 
 	if(op >= '0' && op <= '9')
 		next = (next & SUBMASK) | (1 << (op - '0'));
-	/* should have checked for +/- here, but it's done in parsecmd before calling setrunlevel */
+	/* should have checked for +/- here, but it's done in parsecmd
+	   before calling setrunlevel */
 
 	if(*p == '-') {
 		/* "4-" or similar */
@@ -218,7 +220,9 @@ void dodisable(struct initrec* p, int v)
    With SIGSTOP/SIGCONT however, targeting the whole group makes more sense
    (but may break programs that use SIGSTOP internally, hm)
 
-   The state of the process after SIGSTOP/SIGCONT will be tracked in waitpids(). */
+   The effects of SIGSTOP/SIGCONT are tracked in waitpids(). Init is not
+   the only entity that can sent SIGSTOP, and it needs to know for sure
+   whether the process is stopped or not. */
 
 void killrec(struct initrec* p, int sig)
 {

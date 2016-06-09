@@ -179,8 +179,8 @@ reboot:
 	return 0xFE;
 };
 
-/* During startup no user interaction is possible, so init must somehow
-   cope with what it has got, or just bail out.
+/* During startup no user interaction is possible, so init has to cope
+   somehow with what it has got.
 
    When inittab is read for the first time, most errors are ignored,
    and incorrect entries are dropped. The idea is that incomplete
@@ -216,7 +216,7 @@ int setup(int argc, char** argv)
    parse. Among those, the only thing that concerns init is possible initial
    runlevel indication, either a (single-digit) number or a word "single".
 
-   Init does not pass its argv to any of the children. */
+   Unlike sysvinit, sninit does not pass its argv to any of its children. */
 
 void setargs(int argc, char** argv)
 {
@@ -234,10 +234,12 @@ void setargs(int argc, char** argv)
    before spawning init. However it does not check the results, and opening
    /dev/console can fail, in particular if there is no console configured.
 
-   To avoid really nasty situations with stuff written to stderr ending
-   up in some explicitly opened file somewhere with the spawned children,
-   let's try to find out whether we've got something on fds 0-2 and if not,
-   stub them with whatever we'll be able to open.
+   In case this happens, unused fds remain available and may be reused later
+   by regular open() calls, potentially leading to really nasty situations
+   with stuff written to stderr ending up in unrelated files.
+
+   To avoid that, the code below makes sure fds 0-2 are open and safe
+   for writing.
 
    See kernel/init/main.c kernel_init(), kernel_init_freeable() and also
    busybox/init/init.c console_init() around bb_sanitize_stdio() following to
@@ -270,16 +272,8 @@ gotfd:
 /* Outside of ppoll, we only block SIGCHLD; inside ppoll, default sigmask
    is used. This should be ok since linux blocks signals to init from other
    processes, and blocking kernel-generated signals rarely makes sense.
-   Normally init shouldn't be getting them, aside from SIGCHLD and maybe
-   SIGPIPE/SIGALARM during telinit communication. If anything else is sent
-   (SIGSEGV?), then we're already well out of normal operation range
-   and should accept whatever the default action is.
 
-   SIGPIPE and SIGALRM do not need handlers, as their only job is to make
-   blocking read(telinitfd) return with EINTR, which initctl code interprets
-   as end-of-communication.
-   SIGCHLD must interrupt the only syscall it may be delivered in, ppoll.
-   All the other signals need SA_RESTART. */
+   SIGCHLD must interrupt the only syscall it may be delivered in, ppoll. */
 
 int setsignals(void)
 {
@@ -287,10 +281,8 @@ int setsignals(void)
 		.sa_handler = sighandler,
 		.sa_flags = SA_RESTART,
 	};
-	/* The stuff below *can* fail. Regardless of whether it's sigprocmask
-	   or sigaction, it means there is something really wrong with libc,
-	   so there is no point in determining which one failed.
-	   Or trying to recover for that matter. */
+	/* The stuff below *can* fail due to broken libc, but that is so bad
+	   by itself that there is no point in reporting it properly. */
 	int ret = 0;
 
 	sigemptyset(&sa.sa_mask);
@@ -322,9 +314,7 @@ int setsignals(void)
 	return ret;
 }
 
-/* A single handler for all four signals we care about.
-   SIGALARM is not handled, as its only function is to make
-   write() return EINTR. */
+/* A single handler for all signals we care about. */
 
 void sighandler(int sig)
 {
@@ -354,7 +344,9 @@ void sighandler(int sig)
 			state |= S_REOPEN;
 			break;
 
-		/* SIGPIPE and SIGALRM need no handling */
+		/* SIGPIPE and SIGALRM need no handling, as their only job
+		   is to make blocking read(telinitfd) return with EINTR,
+		   which initctl code interprets as end-of-communication. */
 	}
 }
 
@@ -447,11 +439,8 @@ void pollctl(void)
 }
 
 /* Linux kernel treats reboot() a lot like _exit(), including panic()
-   when it's init who calls it.
-
-   So we've got to fork here and call reboot for the child process.
-   Since vfork may not be available, or may in fact be fork, it's better
-   to wait for the child before returning.
+   when it's init who calls it. To prevent panic, reboot() is called
+   in its own process.
 
    Any return here means _exit from init and immediate panic. */
 
