@@ -108,7 +108,7 @@ extern int setinitctl(void);		/* and telinit requests          */
 extern void acceptctl(void);
 
 local void sighandler(int sig);		/* global singnal handler */
-local void forkreboot(void);		/* reboot(rbcode) */
+local int forkreboot(void);		/* reboot(rbcode) */
 
 /* main(), the entry point also the main loop.
 
@@ -175,8 +175,7 @@ reboot:
 	if(getpid() != 1)	/* not running as *the* init */
 		return 0;
 
-	forkreboot();
-	return 0xFE;
+	return forkreboot();
 };
 
 /* During startup no user interaction is possible, so init has to cope
@@ -442,19 +441,22 @@ void pollctl(void)
    when it's init who calls it. To prevent panic, reboot() is called
    in its own process.
 
-   Any return here means _exit from init and immediate panic. */
+   Any return here means _exit from init and immediate panic.
+
+   Both the parent and the child return, expecting the caller
+   to proceed to _exit immediately. */
 
 #ifdef NOMMU
 #define fork() vfork()
 #endif
 
-void forkreboot(void)
+int forkreboot(void)
 {
 	int pid;
 	int status;
 
 	if((pid = fork()) == 0)
-		return _exit(reboot(rbcode));
+		return reboot(rbcode);
 	else if(pid > 0)
 		waitpid(pid, &status, 0);
 
@@ -462,4 +464,5 @@ void forkreboot(void)
 	   fork() or wait() or reboot() */
 
 	warn("still here, reboot failed, time to panic");
+	return 0xFE;
 }
