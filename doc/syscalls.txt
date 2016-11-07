@@ -48,6 +48,10 @@ Target cc does not support inline asm? Well bad for you.
 And atop of that, it turns out executable size reduction
 due to lack of argument-moving code is negligible.
 
+UPDATE: minitools have since been built using inlined syscalls,
+Not as bad as one would imagine, *however* rewriting init with
+lib-s from minitools does NOT reduce its size significantly.
+
 
 Common syscall code
 ~~~~~~~~~~~~~~~~~~~
