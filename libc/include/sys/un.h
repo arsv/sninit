@@ -2,6 +2,7 @@
 #define UN_H
 
 #include <sys/cdefs.h>
+#include <bits/socket.h>
 
 #define UNIX_PATH_MAX	108
 

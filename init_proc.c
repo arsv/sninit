@@ -1,7 +1,11 @@
-#define _GNU_SOURCE
-#include <unistd.h>
-#include <signal.h>
+#include <sigset.h>
 #include <time.h>
+#include <bits/time.h>
+#include <sys/fork.h>
+#include <sys/kill.h>
+#include <sys/execve.h>
+#include <sys/setsid.h>
+#include <sys/getpid.h>
 #include "init.h"
 #include "config.h"
 #include "scope.h"
@@ -24,9 +28,7 @@ local int waitneeded(time_t* last, time_t wait);
    Non-MMU targets must use vfork, and some MMU targets (ARM?) have troubles
    with vfork implementation, so it's fork for MMU and vfork for NOMMU. */
 
-#ifdef NOMMU
-#define fork() vfork()
-#endif
+extern void _exit(int);
 
 void spawn(struct initrec* p)
 {
@@ -38,7 +40,7 @@ void spawn(struct initrec* p)
 	if(waitneeded(&p->lastrun, TIME_TO_RESTART))
 		return;
 
-	pid_t pid = fork();
+	pid_t pid = sysfork();
 
 	if(pid < 0) {
 		retwarn_("%s[*] can't fork: %m", p->name);
@@ -50,12 +52,12 @@ void spawn(struct initrec* p)
 	} else {
 		/* ok, we're in the child process */
 
-		setsid();	/* become session *and* pgroup leader */
+		syssetsid();	/* become session *and* pgroup leader */
 		/* pgroup is needed to kill(-pid), and session is important
 		   for spawned shells and gettys (busybox ones at least) */
 
-		execve(p->argv[0], p->argv, cfg->env);
-		warn("%s[%i] exec(%s) failed: %m", p->name, getpid(), p->argv[0]);
+		sysexecve(p->argv[0], p->argv, cfg->env);
+		warn("%s[%i] exec(%s) failed: %m", p->name, sysgetpid(), p->argv[0]);
 		_exit(-1);
 	}
 }
@@ -83,7 +85,7 @@ void stop(struct initrec* p)
 		if(waitneeded(&p->lastsig, TIME_TO_SIGKILL))
 			return;
 		warn("%s[%i] process refuses to die, sending SIGKILL", p->name, p->pid);
-		kill(-p->pid, SIGKILL);
+		syskill(-p->pid, SIGKILL);
 		p->flags |= P_SIGKILL;
 	} else {
 		/* Regular stop() invocation, gently ask the process to leave
@@ -93,14 +95,14 @@ void stop(struct initrec* p)
 
 		int sig = p->flags & C_KILL ? SIGKILL : SIGTERM;
 		int flg = p->flags & C_KILL ? P_SIGKILL : P_SIGTERM;
-		kill(-p->pid, sig);
+		syskill(-p->pid, sig);
 		p->flags |= flg;
 
 		/* Attempt to wake the process up to recieve SIGTERM. */
 		/* This must be done *after* sending the killing signal
 		   to ensure SIGCONT does not arrive first. */
 		if(p->flags & P_SIGSTOP)
-			kill(-p->pid, SIGCONT);
+			syskill(-p->pid, SIGCONT);
 
 		/* make sure we'll get initpass to send SIGKILL if necessary */
 		if(timetowait < 0 || timetowait > TIME_TO_SIGKILL)

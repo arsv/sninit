@@ -1,8 +1,11 @@
-#define	_GNU_SOURCE
-#include <unistd.h>
 #include <fcntl.h>
-#include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/read.h>
+#include <sys/write.h>
+#include <sys/close.h>
+#include <sys/socket.h>
+#include <sys/connect.h>
+#include <sys/shutdown.h>
 #include <string.h>
 #include <errno.h>
 
@@ -18,6 +21,7 @@
 
 static int runcmd(const char* cmd);
 static void die(const char* msg, const char* arg);
+extern void _exit(int);
 
 /* For convenience, one-letter init command codes (cc's) are given readable
    names within telinit. These should be kept in sync with init_cmds.c.
@@ -106,10 +110,10 @@ static int opensocket(void)
 	if(addr.sun_path[0] == '@')
 		addr.sun_path[0] = '\0';
 
-	fd = socket(AF_UNIX, SOCK_STREAM, 0);	
+	fd = syssocket(AF_UNIX, SOCK_STREAM, 0);	
 	if(fd < 0)
 		die("Can't create socket: ", ERR);
-	if(connect(fd, (struct sockaddr*)&addr, sizeof(addr)))
+	if(sysconnect(fd, (struct sockaddr*)&addr, sizeof(addr)))
 		die("Can't connect to " INITCTL ": ", ERR);
 
 	return fd;
@@ -124,7 +128,7 @@ static int sendcmd(int fd, const char* cmd)
 {
 	int len = strlen(cmd);
 
-	if(write(fd, cmd, len) < 0)
+	if(syswrite(fd, cmd, len) < 0)
 		die("write failed: ", ERR);
 	
 	return 0;
@@ -150,7 +154,7 @@ static int recvreply(int fd)
 	int ret = 0;
 	int off = 0;
 
-	while((rr = read(fd, buf, sizeof(buf))) > 0) {
+	while((rr = sysread(fd, buf, sizeof(buf))) > 0) {
 		if(!out) {
 			if(buf[0] == '#') {
 				off = 1;
@@ -161,7 +165,7 @@ static int recvreply(int fd)
 			}
 		} else if(off) off = 0;
 
-		write(out, buf + off, rr - off);
+		syswrite(out, buf + off, rr - off);
 	}
 
 	return ret;
@@ -174,9 +178,9 @@ static int runcmd(const char* cmd)
 
 	fd = opensocket();
 	sendcmd(fd, cmd);
-	shutdown(fd, SHUT_WR);
+	sysshutdown(fd, SHUT_WR);
 	r = recvreply(fd);
-	close(fd);
+	sysclose(fd);
 
 	return r;
 };
@@ -190,13 +194,13 @@ static void die(const char* msg, const char* arg)
 	strncpy(buf, msg, max);
 
 	if(arg == ERR)
-		arg = strerror(errno);
+		arg = NULL;
 	if(arg)
 		strncpy(buf + len, arg, max - len);
 
 	len = strlen(buf);
 	buf[len++] = '\n';
 
-	write(2, buf, len);
+	syswrite(2, buf, len);
 	_exit(-1);
 }

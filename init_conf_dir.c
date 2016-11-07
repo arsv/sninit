@@ -1,9 +1,11 @@
 #define _GNU_SOURCE
 #include <string.h>
 #include <dirent.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/open.h>
+#include <sys/close.h>
+#include <sys/getdents.h>
 #include "config.h"
 #include "init.h"
 #include "init_conf.h"
@@ -61,14 +63,14 @@ int readinitdir(const char* dir, int strict)
 	fname[bnoff++] = '/';
 	bnlen = fnlen - bnoff;
 
-	if((dirfd = open(dir, O_RDONLY | O_DIRECTORY)) < 0) {
-		if(errno == ENOENT)
+	if((dirfd = sysopen(dir, O_RDONLY | O_DIRECTORY)) < 0) {
+		if(dirfd == -ENOENT)
 			return 0;
 		else
 			retwarn(ret, "Can't open %s", dir);
 	}
 
-	while((nr = getdents64(dirfd, (void*)debuf, delen)) > 0) {
+	while((nr = sysgetdents64(dirfd, (void*)debuf, delen)) > 0) {
 		for(ni = 0; ni < nr; ni += de->d_reclen) {
 			de = (struct dirent64*)(debuf + ni);
 
@@ -88,7 +90,7 @@ int readinitdir(const char* dir, int strict)
 	}
 
 	ret = 0;
-out:	close(dirfd);
+out:	sysclose(dirfd);
 	return ret;
 }
 

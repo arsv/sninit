@@ -1,4 +1,4 @@
-#include <signal.h>
+#include <sigset.h>
 
 int sigaddset(sigset_t *set, int sig)
 {

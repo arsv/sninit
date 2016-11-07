@@ -1,8 +1,10 @@
-#include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/write.h>
+#include <sys/close.h>
+#include <sys/connect.h>
 #include <errno.h>
 #include "config.h"
 #include "init.h"
@@ -116,7 +118,7 @@ int writefullnl(int fd, char *buf, size_t count)
 
 	*(buf + count++) = '\n'; /* terminate the line */
 	while(count > 0) {
-		r = write(fd, buf + r, count - r);
+		r = syswrite(fd, buf + r, count - r);
 		if(r < 0)
 			return r;
 		count -= r;
@@ -131,10 +133,10 @@ int writefullnl(int fd, char *buf, size_t count)
 
 int tryconnectsyslog(int type)
 {
-	if((syslogfd = socket(AF_UNIX, type, 0)) < 0)
+	if((syslogfd = syssocket(AF_UNIX, type, 0)) < 0)
 		return -1;
-	if(connect(syslogfd, &syslogaddr, sizeof(syslogaddr))) {
-		close(syslogfd);
+	if(sysconnect(syslogfd, &syslogaddr, sizeof(syslogaddr))) {
+		sysclose(syslogfd);
 		syslogfd = -1;
 		return -1;
 	} else {
@@ -156,5 +158,5 @@ send:
 	if(syslogtype == SOCK_STREAM)
 		count++;	/* include terminating \0 */
 
-	return (write(syslogfd, buf, count) < 0);
+	return (syswrite(syslogfd, buf, count) < 0);
 }

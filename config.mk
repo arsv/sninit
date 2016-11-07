@@ -1,31 +1,31 @@
 # Target architecture for bundled libc. Leave empty to use system libc.
-ARCH :=
+ARCH := x86_64
 
 # Building
-CC := cc
+CC := gcc
 AS := $(CC) -c
 AR := ar
 STRIP := strip
-CFLAGS := -Os
-ASFLAGS :=
-LDFLAGS :=
-LIBS :=
+CFLAGS := -Os -fno-asynchronous-unwind-tables -mno-sse
+ASFLAGS := 
+LDFLAGS := 
+LIBS := -lgcc
 # for compatibility with GNU make built-in rules
 LDLIBS = $(LIBS)
 # Emulator to run tests on non-native platform
-RUN :=
+RUN := 
 
 # Installation directories; check config.h for runtime paths
 sbindir := /sbin
 man5dir := /usr/share/man/man5
 man8dir := /usr/share/man/man8
 # Installation basename prefix (as in {,s,sn}init)
-s :=
+s := 
 
 # Built-in inittab
-builtin :=
+builtin := 
 # Needed for $(builtin) parse tool
-HOSTCC := gcc
+HOSTCC := 
 
 # Init block configuration: {conf|null} [sys|err] [dents,ppoll,unshare]
 #
@@ -38,15 +38,15 @@ HOSTCC := gcc
 #	dents	getdents64() (only needed when linking against glibc)
 #	ppoll	ppoll via syscall() (only needed with unpatched dietlibc)
 #	unshare	unsahre via syscall (only needed with unpatched dietlibc)
-initblocks := conf sys dents
+initblocks := conf sys
 
 # Extra targets to build on "make all". Only used for sbin atm.
-extra :=
+extra := 
 
 # Set up bundled libc stuff
 # Note $/ here expands to the top-level directory
 ifneq ($(ARCH),)
-override CFLAGS += -nostdinc -I$/libc/include -I$/libc/$(ARCH)
+override CFLAGS += -nostdinc -I$/libc -I$/libc/include -I$/libc/arch/$(ARCH)
 override LDFLAGS += -nostdlib
 override LIBS := $(LIBS) $/libc.a
 endif

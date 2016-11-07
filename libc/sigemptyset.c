@@ -1,4 +1,4 @@
-#include <signal.h>
+#include <sigset.h>
 
 int sigemptyset(sigset_t *set)
 {

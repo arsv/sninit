@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <bits/time.h>
 #include <time.h>
 
 int sleep(int sec)

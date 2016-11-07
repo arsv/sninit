@@ -1,3 +1,4 @@
+#include <bits/time.h>
 #include <time.h>
 
 /* seconds per day */

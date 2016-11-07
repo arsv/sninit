@@ -1,7 +1,11 @@
 #define _GNU_SOURCE
-#include <unistd.h>
-#include <sys/mman.h>
+#include <sys/mmap.h>
+#include <sys/munmap.h>
+#include <sys/mremap.h>
 #include <sys/stat.h>
+#include <sys/open.h>
+#include <sys/fstat.h>
+#include <sys/close.h>
 #include <string.h>
 #include <fcntl.h>
 #include "init.h"
@@ -57,7 +61,7 @@ int mmapblock(int size)
 		const int prot = PROT_READ | PROT_WRITE;
 		const int flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-		void* addr = mmap(NULL, PAGESIZE, prot, flags, -1, 0);
+		void* addr = (void*)sysmmap(NULL, PAGESIZE, prot, flags, -1, 0);
 
 		if(addr == MAP_FAILED)
 			return -1;
@@ -71,32 +75,6 @@ int mmapblock(int size)
 
 	return 0;
 }
-
-#ifdef NOMMU
-/* On non-MMU targets, MREMAP_MAYMOVE does not really work,
-   so we've got to emulate it explicitly. */
-static void* mremapnommu(void* oldaddr, size_t oldsize, size_t newsize, int flags)
-{
-	void* newaddr = mremap(oldaddr, oldsize, newsize, flags);
-
-	if(newaddr != MAP_FAILED)
-		return newaddr;
-
-	const int prot = PROT_READ | PROT_WRITE;
-	const int flags = MAP_PRIVATE | MAP_ANONYMOUS;
-
-	newaddr = mmap(NULL, newsize, prot, flags, -1, 0);
-
-	if(newaddr == MAP_FAILED)
-		return newaddr;
-
-	memcpy(newaddr, oldaddr, oldsize);
-	munmap(oldaddr, oldsize);
-
-	return newaddr;
-}
-#define mremap(oa, os, ns, fl) mremapnommu(oa, os, ns, fl)
-#endif
 
 /* newblock.ptr tracks the start of empty space in newblock.
    We make sure there is enough space, and allocate it by moving ptr over. */
@@ -119,7 +97,7 @@ offset extendblock(int size)
 	if(newlen < oldlen)
 		return -1;	/* overflow? */
 
-	void* newaddr = mremap(newblock.addr, oldlen, newlen, MREMAP_MAYMOVE);
+	void* newaddr = (void*)sysmremap(newblock.addr, oldlen, newlen, MREMAP_MAYMOVE);
 
 	if(newaddr == MAP_FAILED)
 		return -1;
@@ -134,7 +112,7 @@ moveptr:
 
 void munmapblock(void)
 {
-	munmap(newblock.addr, newblock.len);
+	sysmunmap(newblock.addr, newblock.len);
 
 	newblock.addr = 0;
 	newblock.len = 0;
@@ -147,7 +125,7 @@ void munmapblock(void)
 void exchangeblocks(void)
 {
 	if(cfgblock.addr)
-		munmap(cfgblock.addr, cfgblock.len);
+		sysmunmap(cfgblock.addr, cfgblock.len);
 
 	cfgblock.addr = newblock.addr;
 	cfgblock.len = newblock.len;
@@ -170,11 +148,11 @@ int mmapfile(const char* filename, int maxlen)
 {
 	struct stat st;
 
-	int fd = open(filename, O_RDONLY);
+	int fd = sysopen(filename, O_RDONLY);
 	if(fd < 0)
 		retwarn(-1, "can't open %s: %m", filename);
 
-	if(fstat(fd, &st) < 0)
+	if(sysfstat(fd, &st) < 0)
 		gotowarn(out, "can't stat %s: %m", filename);
 
 	if(!S_ISREG(st.st_mode))
@@ -191,7 +169,7 @@ int mmapfile(const char* filename, int maxlen)
 	/* with one guard byte at the end, to hold \0 */
 	const int prot = PROT_READ | PROT_WRITE;
 	const int flags = MAP_PRIVATE;
-	char* addr = mmap(NULL, stm + 1, prot, flags, fd, 0);
+	char* addr = (char*)sysmmap(NULL, stm + 1, prot, flags, fd, 0);
 
 	if(addr == MAP_FAILED)
 		gotowarn(out, "%s: mmap failed: %m", filename);
@@ -205,16 +183,16 @@ int mmapfile(const char* filename, int maxlen)
 	fileblock.name = filename;
 	fileblock.line = 0;
 
-	close(fd);
+	sysclose(fd);
 	return 0;
 
-out:	close(fd);
+out:	sysclose(fd);
 	return -1;
 }
 
 int munmapfile(void)
 {
-	return munmap(fileblock.buf, fileblock.len);
+	return sysmunmap(fileblock.buf, fileblock.len);
 }
 
 /* The file is mmaped rw and private. We place the pointers

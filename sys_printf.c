@@ -16,6 +16,8 @@
 #include <errno.h>
 #include "scope.h"
 
+int errno = 0;
+
 export int snprintf(char* buf, size_t len, const char* fmt, ...);
 export int vsnprintf(char* buf, size_t len, const char* fmt, va_list ap);
 

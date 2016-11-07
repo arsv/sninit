@@ -1,13 +1,24 @@
-#define _GNU_SOURCE
-#include <unistd.h>
-#include <signal.h>
-#include <string.h>
+#include <bits/time.h>
+#include <sys/fork.h>
+#include <sys/waitpid.h>
 #include <sys/reboot.h>
-#include <sys/wait.h>
-#include <poll.h>
-#include <fcntl.h>
+#include <sys/fcntl.h>
+#include <sys/getpid.h>
+#include <sys/dup2.h>
+#include <sys/close.h>
+#include <sys/ppoll.h>
+#include <sys/open.h>
+#include <sys/nanosleep.h>
+#include <sys/clock_gettime.h>
+#include <sys/sigaction.h>
+#include <sys/sigprocmask.h>
+
+#include <bits/errno.h>
+#include <bits/ppoll.h>
+#include <sigset.h>
+#include <string.h>
+#include <string.h>
 #include <time.h>
-#include <errno.h>
 
 #include "config.h"
 #include "init.h"
@@ -172,7 +183,7 @@ int main(int argc, char** argv)
 reboot:
 	warnfd = 0;		/* stderr only, do not try syslog */
 
-	if(getpid() != 1)	/* not running as *the* init */
+	if(sysgetpid() != 1)	/* not running as *the* init */
 		return 0;
 
 	return forkreboot();
@@ -248,23 +259,23 @@ int setstdfds(void)
 {
 	int fd;
 
-	if(fcntl(2, F_GETFD) >= 0)
+	if(sysfcntl(2, F_GETFD) >= 0)
 		return 0; /* if 2 is ok, then 0 and 1 must be valid as well */
 
-	if((fd = open("/dev/null", O_RDWR)) >= 0)
+	if((fd = sysopen("/dev/null", O_RDWR)) >= 0)
 		goto gotfd;
-	if((fd = open("/", O_RDONLY)) >= 0)
+	if((fd = sysopen("/", O_RDONLY)) >= 0)
 		goto gotfd;
 	/* Not being able to open / read-only is weird enough to panic */
 	return -1;
 
 gotfd:
 	if(fd < 1)
-		dup2(fd, 1);
+		sysdup2(fd, 1);
 	if(fd < 2)
-		dup2(fd, 2);
+		sysdup2(fd, 2);
 	if(fd > 2)
-		close(fd);
+		sysclose(fd);
 	return 0;
 }
 
@@ -286,29 +297,29 @@ int setsignals(void)
 
 	sigemptyset(&sa.sa_mask);
 	sigaddset(&sa.sa_mask, SIGCHLD);
-	ret |= sigprocmask(SIG_BLOCK, &sa.sa_mask, &defsigset);
+	ret |= syssigprocmask(SIG_BLOCK, &sa.sa_mask, &defsigset);
 
 	sigaddset(&sa.sa_mask, SIGINT);
 	sigaddset(&sa.sa_mask, SIGPWR);
 	sigaddset(&sa.sa_mask, SIGTERM);
 	sigaddset(&sa.sa_mask, SIGHUP);
 
-	ret |= sigaction(SIGINT,  &sa, NULL);
-	ret |= sigaction(SIGPWR,  &sa, NULL);
-	ret |= sigaction(SIGTERM, &sa, NULL);
-	ret |= sigaction(SIGHUP,  &sa, NULL);
+	ret |= syssigaction(SIGINT,  &sa, NULL);
+	ret |= syssigaction(SIGPWR,  &sa, NULL);
+	ret |= syssigaction(SIGTERM, &sa, NULL);
+	ret |= syssigaction(SIGHUP,  &sa, NULL);
 
 	/* SIGCHLD is only allowed to arrive in ppoll,
 	   so SA_RESTART just does not make sense. */
 	sa.sa_flags = 0;
-	ret |= sigaction(SIGCHLD, &sa, NULL);
+	ret |= syssigaction(SIGCHLD, &sa, NULL);
 
 	/* These *should* interrupt write() calls, which is the opposite
 	   of SA_RESTART. There is no handler code for these, but SIG_IGN
 	   prevents syscall interruption, so we have to leave &sighandler
 	   in sa_handler. */
-	ret |= sigaction(SIGPIPE, &sa, NULL);
-	ret |= sigaction(SIGALRM, &sa, NULL);
+	ret |= syssigaction(SIGPIPE, &sa, NULL);
+	ret |= syssigaction(SIGALRM, &sa, NULL);
 
 	return ret;
 }
@@ -338,7 +349,7 @@ void sighandler(int sig)
 			/* close the socket here but defer reopening,
 			   that's way too much to do in singhandler */
 			if(initctlfd >= 0)
-				close(initctlfd);
+				sysclose(initctlfd);
 			initctlfd = -1;
 			state |= S_REOPEN;
 			break;
@@ -381,7 +392,7 @@ int setpasstime(void)
 {
 	struct timespec tp;
 
-	if(clock_gettime(CLOCK_MONOTONIC, &tp))
+	if(sysclock_gettime(CLOCK_MONOTONIC, &tp))
 		retwarn(-1, "clock failed: %m");
 
 	passtime = tp.tv_sec + BOOTCLOCKOFFSET;
@@ -413,9 +424,9 @@ void pollctl(void)
 		ppts = NULL;
 	}
 
-	r = ppoll(&pfd, 1, ppts, &defsigset);
+	r = sysppoll(&pfd, 1, ppts, &defsigset);
 
-	if(r < 0 && errno != EINTR) {
+	if(r < 0 && r != -EINTR) {
 		/* Failed ppoll means the main loop becomes unconstrained,
 		   making init uncontrollable and wasting cpu cycles.
 		   To avoid that, let's try to slow things down a bit. */
@@ -426,9 +437,9 @@ void pollctl(void)
 		pts.tv_nsec = 0;
 
 		/* ppoll also handles sigmask-lifting, try to work around that */
-		sigprocmask(SIG_SETMASK, &defsigset, &cursigset);
-		nanosleep(&pts, NULL);
-		sigprocmask(SIG_SETMASK, &cursigset, NULL);
+		syssigprocmask(SIG_SETMASK, &defsigset, &cursigset);
+		sysnanosleep(&pts, NULL);
+		syssigprocmask(SIG_SETMASK, &cursigset, NULL);
 
 		/* EINTR, on the other hand, is totally ok (SIGCHLD etc) */
 	} else if(r > 0) {
@@ -455,10 +466,10 @@ int forkreboot(void)
 	int pid;
 	int status;
 
-	if((pid = fork()) == 0)
-		return reboot(rbcode);
+	if((pid = sysfork()) == 0)
+		return sysreboot(rbcode);
 	else if(pid > 0)
-		waitpid(pid, &status, 0);
+		syswaitpid(pid, &status, 0);
 
 	/* By this point, it does not really matter what exactly failed,
 	   fork() or wait() or reboot() */

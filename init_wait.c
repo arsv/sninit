@@ -1,6 +1,7 @@
-#include <unistd.h>
 #include <sys/wait.h>
-#include <signal.h>
+#include <sys/waitpid.h>
+#include <sigset.h>
+#include <null.h>
 #include "init.h"
 #include "scope.h"
 #include "sys.h"
@@ -30,7 +31,7 @@ void waitpids(void)
 	struct initrec *p, **pp;
 	const int flags = WNOHANG | WUNTRACED | WCONTINUED;
 
-	while((pid = waitpid(-1, &status, flags)) > 0)
+	while((pid = syswaitpid(-1, &status, flags)) > 0)
 	{
 		for(pp = cfg->inittab; (p = *pp); pp++)
 			if(p->pid == pid)

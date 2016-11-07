@@ -13,8 +13,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/write.h>
 #include <stdarg.h>
-#include <unistd.h>
 #include <errno.h>
 
 static inline int skiptofmt(const char* s)
@@ -117,7 +117,7 @@ infmt:			c = *(++fmt);
 			len = skiptofmt(out = (char*)fmt);
 			fmt += len;
 		} if(len) {
-			if((wrt = write(1, out, len)) < 0)
+			if((wrt = syswrite(1, out, len)) < 0)
 				return -1;
 			else
 				ret += wrt;

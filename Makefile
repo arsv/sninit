@@ -8,7 +8,7 @@
 
 include config.mk
 
-all: init telinit run init.8 telinit.8 inittab.5 initdir.5 run.8 $(extra)
+all: init telinit init.8 telinit.8 inittab.5 initdir.5 run.8 $(extra)
 
 # Force early libc build
 init telinit run: $(if $(ARCH),libc.a)
@@ -133,11 +133,11 @@ ifneq ($(ARCH),)
 # The smell of lisp is strong here
 libf := $(sort $(basename $(notdir\
 		$(wildcard libc/*.[cs])\
-		$(wildcard libc/$(ARCH)/*.[cs])\
+		$(wildcard libc/arch/$(ARCH)/*.[cs])\
 		$(wildcard libc/libtest/*.[cs]) )))
 libs := $(foreach s, $(libf), $(basename $(firstword\
 		$(wildcard libc/$s.[cs])\
-		$(wildcard libc/$(ARCH)/$s.[cs])\
+		$(wildcard libc/arch/$(ARCH)/$s.[cs])\
 		$(wildcard libc/libtest/$s.[cs]) )))
 libc := $(patsubst %,%.o,$(libs))
 # Yes this can be done with a single variable. No I won't do that.

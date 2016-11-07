@@ -1,10 +1,16 @@
-#define _GNU_SOURCE
+#include <bits/time.h>
 #include <time.h>
-#include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/time.h>
-#include <signal.h>
-#include <unistd.h>
+#include <sys/close.h>
+#include <sys/write.h>
+#include <sys/read.h>
+#include <sys/socket.h>
+#include <sys/bind.h>
+#include <sys/listen.h>
+#include <sys/accept.h>
+#include <sys/getsockopt.h>
+#include <sys/setitimer.h>
 #include <string.h>
 #include <errno.h>
 
@@ -53,18 +59,18 @@ int setinitctl(void)
 	/* we're not going to block for connections, just accept whatever
 	   is already there; so it's SOCK_NONBLOCK */
 	const int flags = SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC;
-	if((initctlfd = socket(AF_UNIX, flags, 0)) < 0)
+	if((initctlfd = syssocket(AF_UNIX, flags, 0)) < 0)
 		retwarn(-1, "Can't create control socket: %m");
 
-	if(bind(initctlfd, (struct sockaddr*)&addr, sizeof(addr)))
+	if(sysbind(initctlfd, (struct sockaddr*)&addr, sizeof(addr)))
 		gotowarn(close, "Can't bind %s: %m", INITCTL)
-	else if(listen(initctlfd, 1))
+	else if(syslisten(initctlfd, 1))
 		gotowarn(close, "listen() failed: %m");
 
 	return 0;
 
 close:
-	close(initctlfd);
+	sysclose(initctlfd);
 	initctlfd = -1;
 	return -1;
 }
@@ -97,31 +103,31 @@ void acceptctl(void)
 	};
 
 	/* initctlfd is SOCK_NONBLOCK */
-	while((fd = accept(initctlfd, (struct sockaddr*)&addr, &addr_len)) > 0)
+	while((fd = sysaccept(initctlfd, (struct sockaddr*)&addr, &addr_len)) > 0)
 	{
 		int nonroot = checkuser(fd);
 
 		if(nonroot) {
 			/* no need to bother with warnfd here */
 			const char* denied = "Access denied\n";
-			write(fd, denied, strlen(denied));
+			syswrite(fd, denied, strlen(denied));
 		} else {
 			gotcmd = 1;
-			setitimer(ITIMER_REAL, &it, NULL);
+			syssetitimer(ITIMER_REAL, &it, NULL);
 			readcmd(fd);
 		}
 
-		close(fd);
+		sysclose(fd);
 
 		if(nonroot && checkthrottle()) {
-			close(initctlfd);
+			sysclose(initctlfd);
 			initctlfd = -1;
 			break;
 		}
 	} if(gotcmd) {
 		/* disable the timer in case it has been set */
 		it.it_value.tv_sec = 0;
-		setitimer(ITIMER_REAL, &it, NULL);
+		syssetitimer(ITIMER_REAL, &it, NULL);
 	}
 }
 
@@ -146,7 +152,7 @@ int checkuser(int fd)
 	struct ucred cred;
 	socklen_t credlen = sizeof(cred);
 
-	if(getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &credlen))
+	if(sysgetsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &credlen))
 		retwarn(-1, "cannot get peer credentials");
 #ifdef DEVMODE
 	if(cred.uid != getuid())
@@ -179,7 +185,7 @@ void readcmd(int fd)
 	int rb;
 	bss char cbuf[CMDBUF];
 
-	if((rb = read(fd, cbuf, CMDBUF-1)) < 0)
+	if((rb = sysread(fd, cbuf, CMDBUF-1)) < 0)
 		retwarn_("recvmsg failed: %m");
 	if(rb >= CMDBUF)
 		retwarn_("recvmsg returned bogus data");

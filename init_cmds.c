@@ -1,6 +1,9 @@
+#include <bits/reboot.h>
+#include <sys/kill.h>
+
 #include <string.h>
-#include <signal.h>
-#include <sys/reboot.h>
+#include <sigset.h>
+
 #include "init.h"
 #include "scope.h"
 
@@ -236,6 +239,6 @@ void killrec(struct initrec* p, int sig)
 		sig = -sig;
 	}
 
-	if(kill(pid, sig))
+	if(syskill(pid, sig))
 		retwarn_("%s[%i]: kill failed: %e", p->name, p->pid);
 }
