@@ -8,9 +8,6 @@
    and their task is to copy stuff from the fileblock being parsed
    over to newblock. */
 
-extern struct nblock newblock;
-extern struct fblock fileblock;
-
 export int addenviron(const char* def);
 export int addinitrec(const char* name, const char* flags, char* cmd, int exe);
 

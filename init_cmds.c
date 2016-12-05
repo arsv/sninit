@@ -4,10 +4,6 @@
 #include "init.h"
 #include "scope.h"
 
-extern int state;
-extern int nextlevel;
-extern int rbcode;
-
 export void parsecmd(char* cmd);
 
 extern int configure(int strict);

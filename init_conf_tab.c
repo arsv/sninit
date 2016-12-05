@@ -8,7 +8,6 @@ export int readinittab(const char* file, int strict);
 extern int addinitrec(const char* code, const char* name, char* cmd, int exe);
 extern int addenviron(const char* string);
 
-extern struct fblock fileblock;
 extern int mmapfile(const char* filename, int maxlen);
 extern int munmapfile(void);
 extern char* nextline(void);

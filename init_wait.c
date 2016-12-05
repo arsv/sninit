@@ -5,11 +5,6 @@
 #include "scope.h"
 #include "sys.h"
 
-extern int state;
-extern int nextlevel;
-extern struct config* cfg;
-extern time_t passtime;
-
 export void waitpids(void);
 
 local void markdead(struct initrec* p, int status);

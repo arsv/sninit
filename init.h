@@ -66,3 +66,13 @@ struct config {
 
 /* Diagnostics; note this may go to syslog. */
 void warn(const char* fmt, ...);
+
+/* Globals */
+extern struct config* cfg;
+extern int state;
+extern int currlevel;
+extern int nextlevel;
+extern int timetowait;
+extern int rbcode;
+extern int warnfd;
+time_t passtime;

@@ -29,12 +29,6 @@
    offsets from the start of newblock. This is to avoid a lot of hassle
    in case mremap changes the block address. */
 
-extern int state;
-extern int currlevel;
-extern struct config* cfg;
-
-extern struct nblock newblock;
-
 /* default/built-in stuff */
 const char* inittab = INITTAB;
 const char* initdir = INITDIR;

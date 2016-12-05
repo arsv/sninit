@@ -21,8 +21,6 @@
    here only receives them. */
 
 int initctlfd;
-extern int state;
-extern int warnfd;
 
 export int setinitctl(void);
 export void acceptctl(void);

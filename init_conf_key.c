@@ -24,8 +24,6 @@
    invert-mask sign. Inverting ONCE|WAIT and inverting non-ONCE are not
    likely to be useful, so they are not implemented. */
 
-extern struct fblock fileblock;
-
 static struct entrytype {
 	char key;
 	short flags;

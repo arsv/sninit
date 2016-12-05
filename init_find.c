@@ -10,8 +10,6 @@
    This function looks for an entry from the primary inittab, cfg->inittab,
    the one that initpass() uses. Not the one being assembled in newblock. */
 
-extern struct config* cfg;
-
 struct initrec* findentry(const char* name)
 {
 	struct initrec *p, **pp;

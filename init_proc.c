@@ -6,11 +6,6 @@
 #include "config.h"
 #include "scope.h"
 
-extern struct config* cfg;
-extern int initctlfd;
-extern int timetowait;
-extern time_t passtime;
-
 export void spawn(struct initrec* p);
 export void stop(struct initrec* p);
 

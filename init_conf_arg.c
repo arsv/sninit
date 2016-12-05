@@ -4,7 +4,6 @@
 #include "init_conf.h"
 #include "scope.h"
 
-extern struct nblock newblock;
 extern offset extendblock(int size);
 
 export int addrecargv(struct initrec* entry, char* cmd, int exe);

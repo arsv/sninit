@@ -7,12 +7,6 @@
 #define DYING		(1<<0)
 #define RUNNING		(1<<1)
 
-extern int state;
-extern int currlevel;
-extern int nextlevel;
-extern int timetowait;
-extern struct config* cfg;
-
 export void initpass(void);
 export int levelmatch(struct initrec* p, int level);
 

@@ -87,3 +87,6 @@ struct fblock {
 #undef NULL
 #endif
 #define NULL ((void*)0)
+
+extern struct nblock newblock;
+extern struct fblock fileblock;

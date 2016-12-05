@@ -3,10 +3,6 @@
 #include "init.h"
 #include "scope.h"
 
-extern int currlevel;
-extern int nextlevel;
-extern struct config* cfg;
-
 extern int levelmatch(struct initrec* p, int level);
 local void dumprec(struct initrec* p, int namewidth, int pidwidth);
 local void joincmd(char* buf, int len, char** argv);
