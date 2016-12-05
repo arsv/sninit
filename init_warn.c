@@ -28,21 +28,69 @@
 
 int warnfd = 0;
 
-export void warn(const char* fmt, ...);
-
 /* warn() essentially includes a simple syslog() implementation.
    Full syslog() is not needed here, and neither are redundant sigprocmask()
    calls. Also, using library syslog(3) with sys_printf.c is a bad idea. */
 
-local int syslogfd = -1;	/* not yet opened */
-local int syslogtype;
-local struct sockaddr syslogaddr = {
+static int syslogfd = -1;	/* not yet opened */
+static int syslogtype;
+static struct sockaddr syslogaddr = {
 	.sa_family = AF_UNIX,
 	.sa_data = SYSLOG
 };
 
-local int writefullnl(int fd, char *buf, size_t count);
-local int writesyslog(const char* buf, int count);
+/* Syslog socket may be either STREAM or DGRAM, and warnfd may happen to be
+   a stream socket as well. With sockets, incomplete write()s are possible
+   and must be handled. */
+
+static int writefullnl(int fd, char *buf, size_t count)
+{
+	int r = 0;
+
+	*(buf + count++) = '\n'; /* terminate the line */
+	while(count > 0) {
+		r = write(fd, buf + r, count - r);
+		if(r < 0)
+			return r;
+		count -= r;
+	}
+
+	return 0;
+}
+
+/* Syslog connection is reused whenever possible, otherwise attempts
+   to open it are repeated on each warn() call. This way init can handle
+   dying/respawning syslog gracefully and spare some extra syscalls. */
+
+static int tryconnectsyslog(int type)
+{
+	if((syslogfd = socket(AF_UNIX, type, 0)) < 0)
+		return -1;
+	if(connect(syslogfd, &syslogaddr, sizeof(syslogaddr))) {
+		close(syslogfd);
+		syslogfd = -1;
+		return -1;
+	} else {
+		syslogtype = type;
+		return 0;
+	}
+}
+
+static int writesyslog(const char* buf, int count)
+{
+	if(syslogfd >= 0)
+		goto send;
+	if(!tryconnectsyslog(SOCK_DGRAM))
+		goto send;
+	if(!tryconnectsyslog(SOCK_STREAM))
+		goto send;
+	return -1;
+send:
+	if(syslogtype == SOCK_STREAM)
+		count++;	/* include terminating \0 */
+
+	return (write(syslogfd, buf, count) < 0);
+}
 
 /* During telinit request, warnfd is the open telinit connection.
    In case connection fails, we set warnfd to -1 to "lock" warn,
@@ -104,57 +152,4 @@ void warn(const char* fmt, ...)
 			return;
 
 	writefullnl(2, buf + prilen, taglen + msglen);
-}
-
-/* Syslog socket may be either STREAM or DGRAM, and warnfd may happen to be
-   a stream socket as well. With sockets, incomplete write()s are possible
-   and must be handled. */
-
-int writefullnl(int fd, char *buf, size_t count)
-{
-	int r = 0;
-
-	*(buf + count++) = '\n'; /* terminate the line */
-	while(count > 0) {
-		r = write(fd, buf + r, count - r);
-		if(r < 0)
-			return r;
-		count -= r;
-	}
-
-	return 0;
-}
-
-/* Syslog connection is reused whenever possible, otherwise attempts
-   to open it are repeated on each warn() call. This way init can handle
-   dying/respawning syslog gracefully and spare some extra syscalls. */
-
-int tryconnectsyslog(int type)
-{
-	if((syslogfd = socket(AF_UNIX, type, 0)) < 0)
-		return -1;
-	if(connect(syslogfd, &syslogaddr, sizeof(syslogaddr))) {
-		close(syslogfd);
-		syslogfd = -1;
-		return -1;
-	} else {
-		syslogtype = type;
-		return 0;
-	}
-}
-
-int writesyslog(const char* buf, int count)
-{
-	if(syslogfd >= 0)
-		goto send;
-	if(!tryconnectsyslog(SOCK_DGRAM))
-		goto send;
-	if(!tryconnectsyslog(SOCK_STREAM))
-		goto send;
-	return -1;
-send:
-	if(syslogtype == SOCK_STREAM)
-		count++;	/* include terminating \0 */
-
-	return (write(syslogfd, buf, count) < 0);
 }
