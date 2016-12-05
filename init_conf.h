@@ -90,3 +90,13 @@ struct fblock {
 
 extern struct nblock newblock;
 extern struct fblock fileblock;
+
+/* top-level functions handling configuration */
+extern int readinittab(const char* file, int strict);
+extern int readinitdir(const char* dir, int strict);
+
+extern int mmapblock(int size);
+extern void munmapblock(void);
+extern offset extendblock(int size);
+
+extern void exchangeblocks(void);
