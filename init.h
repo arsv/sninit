@@ -88,3 +88,9 @@ extern void acceptctl(void);
 
 extern void stop(struct initrec* p);
 extern int levelmatch(struct initrec* p, int lmask);
+
+extern void parsecmd(char* cmd);
+extern void dumpstate(void);
+extern void dumpidof(struct initrec* p);
+
+extern struct initrec* findentry(const char* name);
