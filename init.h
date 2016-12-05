@@ -76,3 +76,15 @@ extern int timetowait;
 extern int rbcode;
 extern int warnfd;
 time_t passtime;
+
+extern int configure(int);
+extern void setnewconf(void);
+
+extern void initpass(void);
+extern void waitpids(void);
+
+extern int setinitctl(void);
+extern void acceptctl(void);
+
+extern void stop(struct initrec* p);
+extern int levelmatch(struct initrec* p, int lmask);
