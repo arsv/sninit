@@ -4,21 +4,65 @@
 #include "init_conf.h"
 #include "scope.h"
 
+/* Both initrecs and environment lines are initially placed in their
+   respective linked lists (struct scratch), with the list nodes scattered
+   between initrecs. The lists are only used to create inittab[] and env[]
+   in struct config, but they are left in place anyway, since recovering
+   the space is more trouble than it's worth.
+
+   Why not use the lists directly?
+   Well execve(2) takes envp[], and initpass iterates over initrecs in both
+   directions, which turns out to be easier with inittab[] vs some kind
+   of doubly-linked list. */
+
+static int linknode(offset listptr, offset nodeptr)
+{
+	struct ptrnode* node = newblockptr(nodeptr, struct ptrnode*);
+	struct ptrlist* list = newblockptr(listptr, struct ptrlist*);
+
+	if(!list->head)
+		list->head = nodeptr;
+	if(list->last)
+		newblockptr(list->last, struct ptrnode*)->next = nodeptr;
+
+	node->next = 0;
+
+	list->last = nodeptr;
+	list->count++;
+
+	return 0;
+}
+
+/* It's an error to have two entries with the same (non-empty) name
+   as it makes telinit commands ambiguous, so dupes are checked and
+   reported at parsing stage.
+
+   This is called during initrec parsing, way before NCF->inittab array
+   is formed. So it can't use NCF->inittab. Instead, it should use
+   SCR->inittab (the offset list) to find location of entries added so far. */
+
+static int checkdupname(const char* name)
+{
+	offset po = SCR->inittab.head;
+	struct ptrnode* n;
+	struct initrec* p;
+
+	while(po) {
+		n = newblockptr(po, struct ptrnode*);
+		p = newblockptr(po + sizeof(struct ptrnode), struct initrec*);
+
+		if(p->name[0] && !strcmp(p->name, name))
+			return -1;
+
+		po = n->next;
+	}
+
+	return 0;
+}
+
 /* addinitrec() and addenviron() are called for each parsed inittab line
    and their task is to copy stuff from the fileblock being parsed
-   over to newblock. */
-
-export int addenviron(const char* def);
-export int addinitrec(const char* name, const char* flags, char* cmd, int exe);
-
-extern int addrecargv(struct initrec* entry, char* cmd, int exe);
-extern int setrunflags(struct initrec* entry, const char* flags);
-extern offset extendblock(int size);
-
-local int linknode(offset listptr, offset nodeptr);
-local int checkdupname(const char* name);
-
-/* Context:
+   over to newblock.
 
    [fb: /etc/inittab]
    	name="tty" rlvl="fast" cmd=[/sbin/getty, 115200, /dev/ttyS0] exe=0
@@ -51,7 +95,7 @@ int addinitrec(const char* name, const char* rlvl, char* cmd, int exe)
 		return -1;
 	entryoff = nodeoff + sizeof(struct ptrnode);
 
-	entry = newblockptr(entryoff, struct initrec*); 
+	entry = newblockptr(entryoff, struct initrec*);
 
 	memset(entry->name, 0, NAMELEN);
 	strncpy(entry->name, name, NAMELEN - 1);
@@ -103,58 +147,3 @@ int addenviron(const char* def)
 	return 0;
 }
 
-/* Both initrecs and environment lines are initially placed in their
-   respective linked lists (struct scratch), with the list nodes scattered
-   between initrecs. The lists are only used to create inittab[] and env[]
-   in struct config, but they are left in place anyway, since recovering
-   the space is more trouble than it's worth.
-   
-   Why not use the lists directly?
-   Well execve(2) takes envp[], and initpass iterates over initrecs in both
-   directions, which turns out to be easier with inittab[] vs some kind
-   of doubly-linked list. */
-
-int linknode(offset listptr, offset nodeptr)
-{
-	struct ptrnode* node = newblockptr(nodeptr, struct ptrnode*);
-	struct ptrlist* list = newblockptr(listptr, struct ptrlist*);
-
-	if(!list->head)
-		list->head = nodeptr;
-	if(list->last)
-		newblockptr(list->last, struct ptrnode*)->next = nodeptr;
-
-	node->next = 0;
-
-	list->last = nodeptr;
-	list->count++;
-
-	return 0;
-}
-
-/* It's an error to have two entries with the same (non-empty) name
-   as it makes telinit commands ambiguous, so dupes are checked and
-   reported at parsing stage.
-
-   This is called during initrec parsing, way before NCF->inittab array
-   is formed. So it can't use NCF->inittab. Instead, it should use
-   SCR->inittab (the offset list) to find location of entries added so far. */
-
-int checkdupname(const char* name)
-{
-	offset po = SCR->inittab.head;
-	struct ptrnode* n;
-	struct initrec* p;
-
-	while(po) {
-		n = newblockptr(po, struct ptrnode*);
-		p = newblockptr(po + sizeof(struct ptrnode), struct initrec*);
-
-		if(p->name[0] && !strcmp(p->name, name))
-			return -1;
-
-		po = n->next;
-	}
-
-	return 0;
-}

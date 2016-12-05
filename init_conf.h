@@ -95,8 +95,18 @@ extern struct fblock fileblock;
 extern int readinittab(const char* file, int strict);
 extern int readinitdir(const char* dir, int strict);
 
+extern int addinitrec(const char* name, const char* rlvl, char* cmd, int exe);
+extern int addrecargv(struct initrec* entry, char* cmd, int exe);
+extern int setrunflags(struct initrec* entry, const char* type);
+extern int addenviron(const char* def);
+extern int addinitrec(const char* name, const char* flags, char* cmd, int exe);
+
 extern int mmapblock(int size);
 extern void munmapblock(void);
+extern int mmapfile(const char* filename, int maxlen);
+extern int munmapfile(void);
 extern offset extendblock(int size);
-
 extern void exchangeblocks(void);
+
+extern char* nextline(void);
+extern char* strssep(char** str);

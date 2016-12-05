@@ -4,16 +4,6 @@
 #include "init_conf.h"
 #include "scope.h"
 
-extern offset extendblock(int size);
-
-export int addrecargv(struct initrec* entry, char* cmd, int exe);
-export char* strssep(char** str);
-
-local int addstaticargv(const char** args, int n);
-local int addparsedargv(char* str);
-local int shellneeded(const char* cmd);
-local int isspace(int c);
-
 /* Once the static part of initrec structure has been placed within
    newblock by addinitrec, we've got append a proper argv[] array.
 
@@ -41,23 +31,7 @@ local int isspace(int c);
    itself. The pointer is only needed to make dumpstate() output pretty,
    so why bother. See addinitrec(). */
 
-int addrecargv(struct initrec* entry, char* cmd, int exe)
-{
-	while(*cmd && isspace(*cmd)) cmd++;
-
-	if(exe) {
-		const char* argv[] = { cmd };
-		return addstaticargv(argv, 1);
-	} else if(shellneeded(cmd)) {
-		const char* argv[] = { "/bin/sh", "-c", cmd };
-		entry->flags |= C_SHELL;
-		return addstaticargv(argv, 3);
-	} else {
-		return addparsedargv(cmd);
-	}
-}
-
-int addstring(const char* s)
+static int addstring(const char* s)
 {
 	int l = strlen(s);
 	int o = extendblock(l + 1);
@@ -75,7 +49,7 @@ int addstring(const char* s)
    array for (2) or (3). The array is not NULL-terminated, its size
    is always known statically. */
 
-int addstaticargv(const char** args, int n)
+static int addstaticargv(const char** args, int n)
 {
 	int i;
 	offset argvo;	/* argv[] location in newblock */
@@ -103,7 +77,7 @@ int addstaticargv(const char** args, int n)
    over newly-built argv[] copies the strings themselves to newblock
    and replaces the pointers with offsets within newblock. */
 
-int addparsedargv(char* str)
+static int addparsedargv(char* str)
 {
 	int i;
 	int argc = 0;
@@ -144,14 +118,25 @@ int addparsedargv(char* str)
    Contents from initdir files ends up here as well, so cmd
    may happen to contain newlines. */
 
-int shellneeded(const char* cmd)
+static int shellneeded(const char* cmd)
 {
-	/* Command name has no slashes, must be shell cmd */
 	char* p = strpbrk(cmd, "/ \t\n");
 	if(!*p || *p != '/')
 		return 1;
 
 	return strpbrk(cmd, "'\"$;|><&{}\n") ? 1 : 0;
+}
+
+/* gcc has built-in prototype for this, with an int argument */
+
+static int isspace(int c)
+{
+	switch(c) {
+		case ' ':
+		case '\t':
+		case '\n': return 1;
+		default: return 0;
+	}
 }
 
 /* Like strsep(), but using /\s+/ for delimiter.
@@ -181,14 +166,18 @@ char* strssep(char** str)
 	return ret;
 }
 
-/* gcc has built-in prototype for this, with an int argument */
-
-int isspace(int c)
+int addrecargv(struct initrec* entry, char* cmd, int exe)
 {
-	switch(c) {
-		case ' ':
-		case '\t':
-		case '\n': return 1;
-		default: return 0;
+	while(*cmd && isspace(*cmd)) cmd++;
+
+	if(exe) {
+		const char* argv[] = { cmd };
+		return addstaticargv(argv, 1);
+	} else if(shellneeded(cmd)) {
+		const char* argv[] = { "/bin/sh", "-c", cmd };
+		entry->flags |= C_SHELL;
+		return addstaticargv(argv, 3);
+	} else {
+		return addparsedargv(cmd);
 	}
 }

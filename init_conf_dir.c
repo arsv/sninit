@@ -10,18 +10,94 @@
 #include "scope.h"
 #include "sys.h"
 
-export int readinitdir(const char* dir, int strict);
+/* Some direntries in initdir should be silently ignored */
 
-extern int addinitrec(const char* name, const char* rlvl, char* cmd, int exe);
+static int skipdirent(struct dirent64* de)
+{
+	char dt;
+	int len = strlen(de->d_name);
 
-extern struct fblock fileblock;
-extern int mmapfile(const char* name, int maxlen);
-extern int munmapfile(void);
-extern char* nextline(void);
+	/* skip hidden files */
+	if(de->d_name[0] == '.')
+		return 1;
 
-local int skipdirent(struct dirent64* de);
-local int parsesrvfile(char* fullname, char* basename);
-local int comment(const char* s);
+	/* skip temp files */
+	if(len > 0 && de->d_name[len - 1] == '~')
+		return 1;
+
+	/* skip uppercase files (this is bad but keeps README out for now) */
+	if(len > 0 && de->d_name[0] >= 'A' && de->d_name[0] <= 'Z')
+		return 1;
+
+	/* skip non-files early if the kernel was kind enough to warn us */
+	if((dt = de->d_type) && dt != DT_LNK && dt != DT_REG)
+		return 1;
+
+	return 0;
+}
+
+/* The default values for flags and runlevels are chosen so that
+   the most typical respawning entries would not need to specify
+   either explicitly. For initdir entries, flags are optional.
+
+   With initdir entries, there is also the special case of executable
+   scripts. Regular entries are compiled like this:
+        cmd = `cat INITDIR/somefile`
+   but with executable scripts, we do
+        cmd = INITDIR/somescript
+   instead, leaving the parsing job mostly to the shebang interpreter.
+
+   This makes it possible to use regular shell scripts as init entries
+   directly, without the need for extra shims to call them.
+
+   Whenever explicit flags are needed, the go in a #-comment line,
+   which must be line 1 for raw entries and line 2 for script
+   (scripts have shebang for line 1). */
+
+static int comment(const char* s)
+{
+	while(*s == ' ' || *s == '\t') s++;
+	return !*s || *s == '#';
+}
+
+static int parsesrvfile(char* fullname, char* basename)
+{
+	int shebang = 0;
+	char* cmd;
+	const char* rlvls = "S";
+	char* ls;
+
+	ls = nextline();
+
+	/* Check for, and skip #! line if present */
+	if(ls && ls[0] == '#' && ls[1] == '!') {
+		shebang = 1;
+		ls = nextline();
+	}
+
+	/* Same for #: runlevels line */
+	if(ls && ls[0] == '#' && ls[1] == ':') {
+		ls[1] = *rlvls;
+		rlvls = ls + 1;
+		ls = nextline();
+	}
+
+	if(shebang) {
+		/* No need to parse anything anymore, it's a script. */
+		cmd = fullname;
+	} else {
+		/* Get to first non-comment line, and that's it, the rest
+		   will be done in addinitrec. */
+		while(ls && comment(ls))
+			ls = nextline();
+		cmd = ls;
+	}
+
+	if(!ls) /* could be just cmd, but empty scripts are not ok */
+		retwarn(-1, "%s: no command found", FBN);
+
+	return addinitrec(basename, rlvls, cmd, shebang);
+}
 
 /* Initdir is one-file-per-entry structure, while inittab is
    one-line-per-entry. Other than that, they are very similar.
@@ -90,92 +166,4 @@ int readinitdir(const char* dir, int strict)
 	ret = 0;
 out:	close(dirfd);
 	return ret;
-}
-
-/* Some direntries in initdir should be silently ignored */
-int skipdirent(struct dirent64* de)
-{
-	char dt;
-	int len = strlen(de->d_name);
-
-	/* skip hidden files */
-	if(de->d_name[0] == '.')
-		return 1;
-
-	/* skip temp files */
-	if(len > 0 && de->d_name[len - 1] == '~')
-		return 1;
-
-	/* skip uppercase files (this is bad but keeps README out for now) */
-	if(len > 0 && de->d_name[0] >= 'A' && de->d_name[0] <= 'Z')
-		return 1;
-
-	/* skip non-files early if the kernel was kind enough to warn us */
-	if((dt = de->d_type) && dt != DT_LNK && dt != DT_REG)
-		return 1;
-
-	return 0;
-}
-
-/* The default values for flags and runlevels are chosen so that
-   the most typical respawning entries would not need to specify
-   either explicitly. For initdir entries, flags are optional.
-
-   With initdir entries, there is also the special case of executable
-   scripts. Regular entries are compiled like this:
-        cmd = `cat INITDIR/somefile`
-   but with executable scripts, we do
-        cmd = INITDIR/somescript
-   instead, leaving the parsing job mostly to the shebang interpreter.
-
-   This makes it possible to use regular shell scripts as init entries
-   directly, without the need for extra shims to call them.
-
-   Whenever explicit flags are needed, the go in a #-comment line,
-   which must be line 1 for raw entries and line 2 for script
-   (scripts have shebang for line 1). */
-
-int comment(const char* s)
-{
-	while(*s == ' ' || *s == '\t') s++;
-	return !*s || *s == '#';
-}
-
-int parsesrvfile(char* fullname, char* basename)
-{
-	int shebang = 0;
-	char* cmd;
-	const char* rlvls = "S";
-	char* ls;
-
-	ls = nextline();
-
-	/* Check for, and skip #! line if present */
-	if(ls && ls[0] == '#' && ls[1] == '!') {
-		shebang = 1;
-		ls = nextline();
-	}
-
-	/* Same for #: runlevels line */
-	if(ls && ls[0] == '#' && ls[1] == ':') {
-		ls[1] = *rlvls;
-		rlvls = ls + 1;
-		ls = nextline();
-	}
-
-	if(shebang) {
-		/* No need to parse anything anymore, it's a script. */
-		cmd = fullname;
-	} else {
-		/* Get to first non-comment line, and that's it, the rest
-		   will be done in addinitrec. */
-		while(ls && comment(ls))
-			ls = nextline();
-		cmd = ls;
-	}
-
-	if(!ls) /* could be just cmd, but empty scripts are not ok */
-		retwarn(-1, "%s: no command found", FBN);
-
-	return addinitrec(basename, rlvls, cmd, shebang);
 }

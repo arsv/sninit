@@ -20,31 +20,6 @@ struct fblock fileblock;        /* the file being parsed */
    old cfgblock gets unmmaped and newblock becomes cfgblock.
    In case configuration fails, we just unmmap newblock. */
 
-export int mmapblock(int size);
-export offset extendblock(int size);
-export void exchangeblocks(void);
-export void munmapblock(void);
-
-/* The file block is used to parse inittab or service files linewise.
-   Filename is stored in the structure for error reporting.
-   The pointer must be usable up until munmapfile is called. */
-
-export int mmapfile(const char* filename, int maxlen);
-export int munmapfile(void);
-export char* nextline(void);
-
-/* The block is initially allocated to hold struct config and
-   struct scratch. Initrecs are added later with extendblock.
-
-   The only values of size ever used are sizeof(struct config) +
-   sizeof(struct scratch) in init_conf.c and 0 in tests, so there
-   is little point in check them.
-
-   There is a relatively unlikely case when a new reconfigure request
-   comes before newblock from the previous one is moved over to cfgblock.
-   In such a case, we re-use newblock without unmmaping it.
-   Again, it is always large enough, so the check is really redundant. */
-
 int mmapblock(int size)
 {
 	if(size > PAGESIZE)
@@ -156,7 +131,23 @@ void exchangeblocks(void)
 	newblock.len = 0;
 };
 
-/* Due to average inittab being about 1-2k, it is always read whole;
+/* The file block is used to parse inittab or service files linewise.
+   Filename is stored in the structure for error reporting.
+   The pointer must be usable up until munmapfile is called.
+
+   The block is initially allocated to hold struct config and
+   struct scratch. Initrecs are added later with extendblock.
+
+   The only values of size ever used are sizeof(struct config) +
+   sizeof(struct scratch) in init_conf.c and 0 in tests, so there
+   is little point in check them.
+
+   There is a relatively unlikely case when a new reconfigure request
+   comes before newblock from the previous one is moved over to cfgblock.
+   In such a case, we re-use newblock without unmmaping it.
+   Again, it is always large enough, so the check is really redundant.
+
+   Due to average inittab being about 1-2k, it is always read whole;
    for service files, only the head is mmaped.
    Init makes no distinction between mmap failure and open failure,
    both mean the new inittab won't be used.

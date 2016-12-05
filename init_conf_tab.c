@@ -3,18 +3,6 @@
 #include "init_conf.h"
 #include "scope.h"
 
-export int readinittab(const char* file, int strict);
-
-extern int addinitrec(const char* code, const char* name, char* cmd, int exe);
-extern int addenviron(const char* string);
-
-extern int mmapfile(const char* filename, int maxlen);
-extern int munmapfile(void);
-extern char* nextline(void);
-
-local int parseinitline(char* line);
-extern char* strssep(char** str);
-
 /* Typical lines:
 
 	# comment
@@ -28,24 +16,7 @@ extern char* strssep(char** str);
    strict=1: bail out on errors immediately
    strict=0: ignore errors, used during startup */
 
-int readinittab(const char* file, int strict)
-{
-	int ret = -1;
-	char* ls;
-
-	if(mmapfile(file, -MAXFILE))
-		return -1;
-
-	while((ls = nextline()))
-		if((ret = parseinitline(ls)) && strict)
-			break;
-
-	munmapfile();
-
-	return strict ? ret : 0;
-}
-
-int parseinitline(char* l)
+static int parseinitline(char* l)
 {
 	char* p;
 
@@ -67,4 +38,21 @@ int parseinitline(char* l)
 		return addinitrec(name, rlvl, l, 0);
 
 bad:	retwarn(-1, "%s:%i: bad line", FBN, FBL);
+}
+
+int readinittab(const char* file, int strict)
+{
+	int ret = -1;
+	char* ls;
+
+	if(mmapfile(file, -MAXFILE))
+		return -1;
+
+	while((ls = nextline()))
+		if((ret = parseinitline(ls)) && strict)
+			break;
+
+	munmapfile();
+
+	return strict ? ret : 0;
 }
