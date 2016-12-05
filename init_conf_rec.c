@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include "init.h"
 #include "init_conf.h"
-#include "scope.h"
 
 /* Both initrecs and environment lines are initially placed in their
    respective linked lists (struct scratch), with the list nodes scattered

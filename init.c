@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "init.h"
-#include "scope.h"
 
 /* Init compiles inittab (and/or initdir) into struct config and uses
    it to keep all per-process data. The struct is essentially static,

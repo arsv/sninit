@@ -11,7 +11,6 @@
 #include "config.h"
 #include "sys.h"
 #include "init.h"
-#include "scope.h"
 
 /* Init keeps an open unix(7) socket for telinit to connect to.
    The socket is SOCK_STREAM, to allow bi-directional communication

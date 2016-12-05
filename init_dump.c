@@ -1,7 +1,6 @@
 #include <string.h>
 #include "config.h"
 #include "init.h"
-#include "scope.h"
 
 static char cmdbuf[MAXREPORTCMD];
 static char currstr[16];

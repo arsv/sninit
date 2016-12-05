@@ -2,7 +2,6 @@
 #include <signal.h>
 #include <sys/reboot.h>
 #include "init.h"
-#include "scope.h"
 
 /* Possible runlevel change commands here:
 

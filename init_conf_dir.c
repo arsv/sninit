@@ -7,7 +7,6 @@
 #include "config.h"
 #include "init.h"
 #include "init_conf.h"
-#include "scope.h"
 #include "sys.h"
 
 static char debuf[DENTBUFSIZE];

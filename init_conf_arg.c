@@ -2,7 +2,6 @@
 #include <stddef.h>
 #include "init.h"
 #include "init_conf.h"
-#include "scope.h"
 
 /* Once the static part of initrec structure has been placed within
    newblock by addinitrec, we've got append a proper argv[] array.

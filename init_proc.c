@@ -4,7 +4,6 @@
 #include <time.h>
 #include "init.h"
 #include "config.h"
-#include "scope.h"
 
 /* Both spawn() and stop() should check relevant timeouts, do their resp.
    actions if that's ok to do, or update timetowait via waitneeded call

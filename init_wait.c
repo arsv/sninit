@@ -2,7 +2,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include "init.h"
-#include "scope.h"
 #include "sys.h"
 
 /* Termination by certain signals is not considered a failure,

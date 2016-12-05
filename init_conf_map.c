@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include "init.h"
 #include "init_conf.h"
-#include "scope.h"
 
 /* Init uses mmap to allocate memory *and* to read files.
    At any given point, there are at most three mmaped areas: */

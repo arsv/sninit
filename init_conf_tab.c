@@ -1,7 +1,6 @@
 #include <string.h>
 #include "init.h"
 #include "init_conf.h"
-#include "scope.h"
 
 /* Typical lines:
 

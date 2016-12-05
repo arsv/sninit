@@ -1,7 +1,6 @@
 #define _GNU_SOURCE
 #include "init.h"
 #include "config.h"
-#include "scope.h"
 
 /* bits for waitfor */
 #define DYING		(1<<0)

@@ -6,7 +6,6 @@
 #include <errno.h>
 #include "config.h"
 #include "init.h"
-#include "scope.h"
 
 /* Most of the output generated withint init is conditional with regard
    to where it actually goes.
