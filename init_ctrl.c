@@ -21,8 +21,11 @@
    here only receives them. */
 
 int initctlfd = 0;
+
 static int ctltime = 0;
 static int ctlcount = 0;
+
+static char ctlbuf[CMDBUF];
 
 /* Telinit socket, especially ANS socket, lacks any protection against
    non-root access. Which allows a simple kind-of-DoS attack: flooding
@@ -76,16 +79,15 @@ static int checkthrottle(void)
 static void readcmd(int fd)
 {
 	int rb;
-	bss char cbuf[CMDBUF];
 
-	if((rb = read(fd, cbuf, CMDBUF-1)) < 0)
+	if((rb = read(fd, ctlbuf, CMDBUF-1)) < 0)
 		retwarn_("recvmsg failed: %m");
 	if(rb >= CMDBUF)
 		retwarn_("recvmsg returned bogus data");
-	cbuf[rb] = '\0';
+	ctlbuf[rb] = '\0';
 
 	warnfd = fd;
-	parsecmd(cbuf);
+	parsecmd(ctlbuf);
 	warnfd = 2;
 }
 

@@ -10,6 +10,9 @@
 #include "scope.h"
 #include "sys.h"
 
+static char debuf[DENTBUFSIZE];
+static char fname[FULLNAMEMAX];
+
 /* Some direntries in initdir should be silently ignored */
 
 static int skipdirent(struct dirent64* de)
@@ -122,8 +125,6 @@ int readinitdir(const char* dir, int strict)
 	int nr, ni;		/* getdents ret and index */
 	int ret = -1;
 
-	bss char debuf[DENTBUFSIZE];
-	bss char fname[FULLNAMEMAX];
 	const int delen = sizeof(debuf);
 	const int fnlen = sizeof(fname);
 	int bnoff;		/* basename offset in fname */

@@ -28,6 +28,11 @@
 
 int warnfd = 0;
 
+#define MSGBUF 120
+#define HDRBUF 12
+
+static char warnbuf[HDRBUF+MSGBUF+2];
+
 /* warn() essentially includes a simple syslog() implementation.
    Full syslog() is not needed here, and neither are redundant sigprocmask()
    calls. Also, using library syslog(3) with sys_printf.c is a bad idea. */
@@ -117,13 +122,10 @@ send:
    Note current implementation does NOT include timestamp in the hdr part.
    See doc/syslog.txt on this. */
 
-#define MSGBUF 120
-#define HDRBUF 12
-
 void warn(const char* fmt, ...)
 {
 	va_list ap;
-	bss char buf[HDRBUF+MSGBUF+2];
+	char* buf = warnbuf;
 
 	if(warnfd < 0) return;
 

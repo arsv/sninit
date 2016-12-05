@@ -3,6 +3,10 @@
 #include "init.h"
 #include "scope.h"
 
+static char cmdbuf[MAXREPORTCMD];
+static char currstr[16];
+static char nextstr[16];
+
 /* Run-once entries should only be shown when the init is switching
    runlevels, as it may help determining what's going on and why we're not
    on the target runlevel yet.
@@ -124,7 +128,6 @@ out:	*ptr = '\0';
 static void dumprec(struct initrec* p, int namewidth, int pidwidth)
 {
 	char tag = rectag(p);
-	bss char cmdbuf[MAXREPORTCMD];
 
 	if(p->flags & C_SHELL)
 		/* C_SHELL implies argv = [ /bin/sh, -c, command, NULL ] */
@@ -173,8 +176,6 @@ void dumpidof(struct initrec* p)
 void dumpstate(void)
 {
 	struct initrec *p, **pp;
-	bss char currstr[16];
-	bss char nextstr[16];
 
 	rlstr(currstr, 16, currlevel);
 	rlstr(nextstr, 16, nextlevel);
