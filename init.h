@@ -86,6 +86,7 @@ extern void waitpids(void);
 extern int setinitctl(void);
 extern void acceptctl(void);
 
+extern void spawn(struct initrec* p);
 extern void stop(struct initrec* p);
 extern int levelmatch(struct initrec* p, int lmask);
 

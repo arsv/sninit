@@ -7,15 +7,82 @@
 #define DYING		(1<<0)
 #define RUNNING		(1<<1)
 
-export void initpass(void);
-export int levelmatch(struct initrec* p, int level);
+#define once(p) (p->flags & C_ONCE)
+#define onceonly(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
+#define oncewait(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE | C_WAIT))
 
-extern void spawn(struct initrec* p);
-extern void stop(struct initrec* p);
+#define slippery(rlvl) (SLIPPERY & rlvl)
 
-local void swapi(int* a, int* b);
-local int shouldberunning(struct initrec* p);
-local void switchtonextlevel(void);
+/* Should we start $p for nextlevel?
+
+        PRIMASK:              xxxxxxxxxx
+        nextlevel:      --dc--------3---
+        p->rlvl:        ---c-a----5432--
+        SUBMASK:        xxxxxx
+
+   To say yes, we need to make sure there'a a bit for
+   current primary runlevel, and that if there are bits
+   set for sublevels, at least one of them matches a bit
+   in nextlevel.
+
+   Note (p->rlvl & SUBMASK == 0) means "disregard sublevels", but
+   (p->rlvl & SUBMASK == SUBMASK) means "run in *any* sublevel"
+   and excludes no-active-sublevels case. */
+
+static int shouldberunning(struct initrec* p)
+{
+	if(p->flags & (P_MANUAL | P_FAILED))
+		return 0; /* disabled (telinit or respawning too fast) */
+	else
+		return levelmatch(p, nextlevel);
+}
+
+/* transferpids() needs to call this as well, but using currlevel
+   instead of nextlevel, so there is shouldberunning() for local
+   use and levelmatch there. */
+
+int levelmatch(struct initrec* p, int level)
+{
+	int go = (p->flags & C_INVERT ? 0 : 1);
+
+	if(!(p->rlvl & level & PRIMASK))
+		/* not in this primary level */
+		return !go;
+	if(!(p->rlvl & SUBMASK))
+		/* sublevels not defined = run in all sublevels */
+		return go;
+	if(!(p->rlvl & level & SUBMASK))
+		return !go;
+
+	return go;
+}
+
+static void swapi(int* a, int* b)
+{
+	int t = *b; *b = *a; *a = t;
+}
+
+static void switchtonextlevel(void)
+{
+	struct initrec** inittab = cfg->inittab;
+	struct initrec** pp;
+	struct initrec* p;
+
+	/* One we're here, reset pid for r-type entries, to run them when
+	   entering another runlevel with shouldberunning(p) true. */
+	for(pp = inittab; (p = *pp); pp++)
+		if(!shouldberunning(p) && once(p) && (p->pid < 0))
+			p->pid = 0;
+
+	if(slippery(nextlevel) && !slippery(currlevel)) {
+		/* nextlevel is slippery, turn back to currlevel */
+		swapi(&currlevel, &nextlevel);
+		/* We've got to make sure pollfds will return immediately. */
+		timetowait = 0;
+	} else {
+		currlevel = nextlevel;
+	}
+}
 
 /* Initpass: go through inittab, (re)starting entries
    that need to be (re)started and killing entries that should be killed.
@@ -35,12 +102,6 @@ local void switchtonextlevel(void);
    several times but should only be run once.
    Note to have pid reset to 0, and thus allow re-run, at least one pass
    must be completed with !shouldberunning(p) for the entry. */
-
-#define once(p) (p->flags & C_ONCE)
-#define onceonly(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE))
-#define oncewait(p) ((p->flags & (C_ONCE | C_WAIT)) == (C_ONCE | C_WAIT))
-
-#define slippery(rlvl) (SLIPPERY & rlvl)
 
 void initpass(void)
 {
@@ -104,75 +165,4 @@ done:	if(nextlevel == (1<<0)) {
 		timetowait = 0;
 	} else if(currlevel != nextlevel)
 		switchtonextlevel();
-}
-
-local void switchtonextlevel(void)
-{
-	struct initrec** inittab = cfg->inittab;
-	struct initrec** pp;
-	struct initrec* p;
-
-	/* One we're here, reset pid for r-type entries, to run them when
-	   entering another runlevel with shouldberunning(p) true. */
-	for(pp = inittab; (p = *pp); pp++)
-		if(!shouldberunning(p) && once(p) && (p->pid < 0))
-			p->pid = 0;
-
-	if(slippery(nextlevel) && !slippery(currlevel)) {
-		/* nextlevel is slippery, turn back to currlevel */
-		swapi(&currlevel, &nextlevel);
-		/* We've got to make sure pollfds will return immediately. */
-		timetowait = 0;
-	} else {
-		currlevel = nextlevel;
-	}
-}
-
-/* Should we start $p for nextlevel?
-
-        PRIMASK:	      xxxxxxxxxx
-	nextlevel:	--dc--------3---
-   	p->rlvl:	---c-a----5432--
-	SUBMASK:        xxxxxx
-
-   To say yes, we need to make sure there'a a bit for
-   current primary runlevel, and that if there are bits
-   set for sublevels, at least one of them matches a bit
-   in nextlevel.
-
-   Note (p->rlvl & SUBMASK == 0) means "disregard sublevels", but
-   (p->rlvl & SUBMASK == SUBMASK) means "run in *any* sublevel"
-   and excludes no-active-sublevels case. */
-
-int shouldberunning(struct initrec* p)
-{
-	if(p->flags & (P_MANUAL | P_FAILED))
-		return 0; /* disabled (telinit or respawning too fast) */
-	else
-		return levelmatch(p, nextlevel);
-}
-
-/* transferpids() needs to call this as well, but using currlevel
-   instead of nextlevel, so there is shouldberunning() for local
-   use and levelmatch there. */
-
-int levelmatch(struct initrec* p, int level)
-{
-	int go = (p->flags & C_INVERT ? 0 : 1);
-
-	if(!(p->rlvl & level & PRIMASK))
-		/* not in this primary level */
-		return !go;
-	if(!(p->rlvl & SUBMASK))
-		/* sublevels not defined = run in all sublevels */
-		return go;
-	if(!(p->rlvl & level & SUBMASK))
-		return !go;
-
-	return go;
-}
-
-void swapi(int* a, int* b)
-{
-	int t = *b; *b = *a; *a = t;
 }
