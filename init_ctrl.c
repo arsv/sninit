@@ -20,19 +20,74 @@
    The actual command processing happens in init_cmds.c, the code
    here only receives them. */
 
-int initctlfd;
+int initctlfd = 0;
+static int ctltime = 0;
+static int ctlcount = 0;
 
-export int setinitctl(void);
-export void acceptctl(void);
+/* Telinit socket, especially ANS socket, lacks any protection against
+   non-root access. Which allows a simple kind-of-DoS attack: flooding
+   the socket with connect() requests.
+   It takes more effort for init to reply than it does for the attacker
+   to connect, so it's init who suffers.
 
-extern time_t passtime;
-local int ctltime = 0;
-local int ctlcount = 0;
+   A simple solution could be replying as fast as possible, but it's not
+   possible. Even in the best case it's going to take more syscalls than
+   a connection attempt.
 
-extern void parsecmd(char* cmd);
-local int checkuser(int fd);
-local int checkthrottle(void);
-local void readcmd(int fd);
+   The only real protection is closing the listening socket.
+
+   Which means, there's no point in trying to reply fast. We can safely
+   log the attempt in warn(), and we can even send "Access denied" back
+   instead of just closing the socket. */
+
+static int checkuser(int fd)
+{
+	struct ucred cred;
+	socklen_t credlen = sizeof(cred);
+
+	if(getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &credlen))
+		retwarn(-1, "cannot get peer credentials");
+#ifdef DEVMODE
+	if(cred.uid != getuid())
+		retwarn(-1, "non-owner access, uid %i", cred.uid);
+#else
+	if(cred.uid)
+		retwarn(-1, "non-root access, uid %i", cred.uid);
+#endif
+	return 0;
+}
+
+/* Initctl is closed once there are more than N failed attempts
+   in the last M seconds. To reopen the socket, root can kill -HUP 1
+   at any point, preferably after checking syslog and kicking
+   the abuser out of the system. */
+
+static int checkthrottle(void)
+{
+	if(ctltime + THROTTLETIME < passtime) {
+		ctlcount = 0;
+		ctltime = passtime;
+	}
+	return (++ctlcount > THROTTLECOUNT);
+}
+
+/* Typical command length here is *way* below atomic send limit. */
+
+static void readcmd(int fd)
+{
+	int rb;
+	bss char cbuf[CMDBUF];
+
+	if((rb = read(fd, cbuf, CMDBUF-1)) < 0)
+		retwarn_("recvmsg failed: %m");
+	if(rb >= CMDBUF)
+		retwarn_("recvmsg returned bogus data");
+	cbuf[rb] = '\0';
+
+	warnfd = fd;
+	parsecmd(cbuf);
+	warnfd = 2;
+}
 
 /* This gets called during startup, and also in case init gets SIGHUP. */
 
@@ -121,69 +176,4 @@ void acceptctl(void)
 		it.it_value.tv_sec = 0;
 		setitimer(ITIMER_REAL, &it, NULL);
 	}
-}
-
-/* Telinit socket, especially ANS socket, lacks any protection against
-   non-root access. Which allows a simple kind-of-DoS attack: flooding
-   the socket with connect() requests.
-   It takes more effort for init to reply than it does for the attacker
-   to connect, so it's init who suffers.
-
-   A simple solution could be replying as fast as possible, but it's not
-   possible. Even in the best case it's going to take more syscalls than
-   a connection attempt.
-
-   The only real protection is closing the listening socket.
-
-   Which means, there's no point in trying to reply fast. We can safely
-   log the attempt in warn(), and we can even send "Access denied" back
-   instead of just closing the socket. */
-
-int checkuser(int fd)
-{
-	struct ucred cred;
-	socklen_t credlen = sizeof(cred);
-
-	if(getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &credlen))
-		retwarn(-1, "cannot get peer credentials");
-#ifdef DEVMODE
-	if(cred.uid != getuid())
-		retwarn(-1, "non-owner access, uid %i", cred.uid);
-#else
-	if(cred.uid)
-		retwarn(-1, "non-root access, uid %i", cred.uid);
-#endif
-	return 0;
-}
-
-/* Initctl is closed once there are more than N failed attempts
-   in the last M seconds. To reopen the socket, root can kill -HUP 1
-   at any point, preferably after checking syslog and kicking
-   the abuser out of the system. */
-
-int checkthrottle(void)
-{
-	if(ctltime + THROTTLETIME < passtime) {
-		ctlcount = 0;
-		ctltime = passtime;
-	}
-	return (++ctlcount > THROTTLECOUNT);
-}
-
-/* Typical command length here is *way* below atomic send limit. */
-
-void readcmd(int fd)
-{
-	int rb;
-	bss char cbuf[CMDBUF];
-
-	if((rb = read(fd, cbuf, CMDBUF-1)) < 0)
-		retwarn_("recvmsg failed: %m");
-	if(rb >= CMDBUF)
-		retwarn_("recvmsg returned bogus data");
-	cbuf[rb] = '\0';
-
-	warnfd = fd;
-	parsecmd(cbuf);
-	warnfd = 2;
 }

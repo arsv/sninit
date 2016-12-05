@@ -6,14 +6,25 @@
 #include "config.h"
 #include "scope.h"
 
-export void spawn(struct initrec* p);
-export void stop(struct initrec* p);
-
-local int waitneeded(time_t* last, time_t wait);
-
 /* Both spawn() and stop() should check relevant timeouts, do their resp.
    actions if that's ok to do, or update timetowait via waitneeded call
    to ensure initpass() will be performed once the timeout expires. */
+
+static int waitneeded(time_t* last, time_t wait)
+{
+	time_t curtime = passtime; /* start of current initpass, see main() */
+	time_t endtime = *last + wait;
+
+	if(endtime <= curtime) {
+		*last = passtime;
+		return 0;
+	} else {
+		int ttw = endtime - curtime;
+		if(timetowait < 0 || timetowait > ttw)
+			timetowait = ttw;
+		return 1;
+	}
+}
 
 /* The code below is valid with either fork or vfork.
    Non-MMU targets must use vfork, and some MMU targets (ARM?) have troubles
@@ -100,27 +111,5 @@ void stop(struct initrec* p)
 		/* make sure we'll get initpass to send SIGKILL if necessary */
 		if(timetowait < 0 || timetowait > TIME_TO_SIGKILL)
 			timetowait = TIME_TO_SIGKILL;
-	}
-}
-
-/* start() and stop() are called on each initpass for entries that should
-   be started/stopped, and initpass may be triggered sooner than expected
-   for unrelated reasons. So the idea is to take a look at passtime, and
-   only act if the time is up, otherwise just set ppoll timer so that
-   another initpass would be triggered when necessary. */
-
-int waitneeded(time_t* last, time_t wait)
-{
-	time_t curtime = passtime; /* start of current initpass, see main() */
-	time_t endtime = *last + wait;
-
-	if(endtime <= curtime) {
-		*last = passtime;
-		return 0;
-	} else {
-		int ttw = endtime - curtime;
-		if(timetowait < 0 || timetowait > ttw)
-			timetowait = ttw;
-		return 1;
 	}
 }
