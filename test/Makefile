@@ -59,14 +59,6 @@ ini%.o: ../ini%.c
 sys_%.o: ../sys_%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-# Prototype checks
-
-protocheck: proto.c
-	$(CC) $(CFLAGS) -fsyntax-only -c $<
-
-proto.c: ../init*.[ch] ../sys.h | protocheck.px
-	./protocheck.px $^ > $@
-
 # Cleanup
 
 clean:
