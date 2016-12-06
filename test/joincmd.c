@@ -5,8 +5,6 @@ int nextlevel;
 int currlevel;
 struct config* cfg;
 
-extern void joincmd(char* buf, int len, char** argv);
-
 #define CHECK(argv, len, expected) { \
 	memset(buf, '-', 100); \
 	joincmd(ptr, len, argv); \

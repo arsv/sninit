@@ -40,8 +40,6 @@ int waitpid(int p, int* status, int flags)
 	return ret;
 }
 
-extern void waitpids(void);
-
 /* start and stop times */
 #define START 1000
 #define FAST (START + MINIMUM_RUNTIME/2)

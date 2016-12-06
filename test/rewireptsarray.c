@@ -2,11 +2,7 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-struct nblock newblock;
-
 int currlevel;
-
-extern void rewireptrsarray(void** a);
 
 int main(void)
 {

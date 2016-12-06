@@ -15,6 +15,10 @@
 #include <stdarg.h>
 #include <errno.h>
 
+#ifdef exportall
+#define static
+#endif
+
 int snprintf(char* buf, size_t len, const char* fmt, ...);
 int vsnprintf(char* buf, size_t len, const char* fmt, va_list ap);
 

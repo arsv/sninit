@@ -24,7 +24,6 @@ struct config CF1 = {
 };
 
 struct config* cfg;
-extern struct initrec* findentry(const char* name);
 
 int main(void)
 {

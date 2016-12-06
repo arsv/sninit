@@ -2,12 +2,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-extern struct nblock newblock;
-
-extern int mmapblock(int size);
-extern offset extendblock(int size);
-extern void munmapblock(void);
-
 int main(void)
 {
 	ZERO(mmapblock(17));

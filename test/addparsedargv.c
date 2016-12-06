@@ -2,8 +2,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-int addparsedargv(char* str);
-
 #define asoffset(ptr) ((offset)((void*)ptr - NULL))
 
 int main(void)

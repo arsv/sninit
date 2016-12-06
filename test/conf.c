@@ -11,10 +11,6 @@
 struct config* cfg = NULL;
 int currlevel = 0;
 
-extern int finishinittab(void);
-extern int parseinitline(char* line, int strict);
-extern void rewirepointers(void);
-
 #define HEAP 1024
 char heap[HEAP];
 
@@ -31,7 +27,7 @@ struct initrec* findentry(const char* name)
 int parseinitline_(char* testline)
 {
 	char* line = strncpy(heap, testline, HEAP);
-	return parseinitline(line, 1);
+	return parseinitline(line);
 }
 
 int checkptr(void* ptr)

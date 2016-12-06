@@ -4,9 +4,6 @@
 
 #define RLVL 4
 
-extern struct fblock fileblock;
-extern int readinitdir(const char* dir, int strict);
-
 int seen;
 
 struct test {

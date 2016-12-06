@@ -12,8 +12,6 @@ struct {
 	int exe;
 } U;
 
-extern int parseinitline(char* l);
-
 int readinitdir(const char* dir, int strict)
 {
 	return -1;

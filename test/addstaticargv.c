@@ -2,8 +2,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-extern int addstaticargv(const char** args, int n);
-
 #define count(a) (sizeof(a)/sizeof(*a))
 #define asoffset(ptr) ((offset)((void*)ptr - NULL))
 

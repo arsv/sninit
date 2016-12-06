@@ -2,8 +2,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-extern int linknode(offset listptr, offset ptr);
-
 int main(void)
 {
 	int listoff = 17;

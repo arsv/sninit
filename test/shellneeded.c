@@ -4,8 +4,6 @@
 
 struct nblock newblock;
 
-extern int shellneeded(const char* cmd);
-
 #define shell(s) \
 	ASSERT(shellneeded(s))
 #define notshell(s) \

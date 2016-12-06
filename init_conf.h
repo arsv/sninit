@@ -90,6 +90,7 @@ struct fblock {
 
 extern struct nblock newblock;
 extern struct fblock fileblock;
+/* cfgblock is never used cross-file */
 
 /* top-level functions handling configuration */
 extern int readinittab(const char* file, int strict);
@@ -110,3 +111,18 @@ extern void exchangeblocks(void);
 
 extern char* nextline(void);
 extern char* strssep(char** str);
+
+#ifdef exportall
+int finishinittab(void);
+void rewirepointers();
+void rewireptrsarray(void** a);
+int parseinitline(char* line);
+int addparsedargv(char* str);
+int addstaticargv(const char** args, int n);
+int addstring(const char* s);
+int linknode(offset listptr, offset ptr);
+int parsesrvfile(char* fullname, char* basename);
+int readinitdir(const char* dir, int strict);
+int shellneeded(const char* cmd);
+void transferpids(void);
+#endif

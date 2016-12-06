@@ -9,8 +9,6 @@ struct config* cfg;
    with a fixed-width, way-too-long buffer, so the tests are
    here just in case. */
 
-extern void rlstr(char* str, int len, int mask);
-
 void check(const char* file, int line, int len, const char* exp, int mask)
 {
 	int buflen = len + 10;

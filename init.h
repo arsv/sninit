@@ -38,6 +38,12 @@
 #define retwarn_(...) { warn(__VA_ARGS__); return; }
 #define gotowarn(r, ...) { warn(__VA_ARGS__); goto r; }
 
+/* This is only used from drop-in initial configuration override.
+   Default value is hard-coded into init.c, but adding builtin.c
+   replaces that with a pre-compiled struct config. */
+
+#define weak __attribute__((weak))
+
 /* Each initrec represents a single process to be spawned.
    Initrecs are kept in an argv-style structure in struct config.inittab */
 struct initrec {
@@ -77,27 +83,32 @@ extern int rbcode;
 extern int warnfd;
 time_t passtime;
 
-extern int configure(int);
-extern void setnewconf(void);
+/* Cross-referenced function prototypes */
+int configure(int);
+void setnewconf(void);
 
-extern void initpass(void);
-extern void waitpids(void);
+void initpass(void);
+void waitpids(void);
 
-extern int setinitctl(void);
-extern void acceptctl(void);
+int setinitctl(void);
+void acceptctl(void);
 
-extern void spawn(struct initrec* p);
-extern void stop(struct initrec* p);
-extern int levelmatch(struct initrec* p, int lmask);
+void spawn(struct initrec* p);
+void stop(struct initrec* p);
+int levelmatch(struct initrec* p, int lmask);
 
-extern void parsecmd(char* cmd);
-extern void dumpstate(void);
-extern void dumpidof(struct initrec* p);
+void parsecmd(char* cmd);
+void dumpstate(void);
+void dumpidof(struct initrec* p);
 
-extern struct initrec* findentry(const char* name);
+struct initrec* findentry(const char* name);
 
-/* This is only used from drop-in initial configuration override.
-   Default value is hard-coded into init.c, but adding builtin.c
-   replaces that with a pre-compiled struct config. */
-
-#define weak __attribute__((weak))
+/* Functions only exported for testing */
+#ifdef exportall
+#define static
+void joincmd(char* buf, int len, char** argv);
+int pintlen(int n);
+void rlstr(char* str, int len, int mask);
+int shouldbeshown(struct initrec* p);
+void waitpids(void);
+#endif

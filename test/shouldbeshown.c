@@ -6,8 +6,6 @@ int currlevel;
 int nextlevel;
 struct config* cfg = NULL;
 
-extern int shouldbeshown(struct initrec* p);
-
 #define SHOW(fl, rl) {\
 	struct initrec ir = { .flags = fl, .rlvl = rl, .pid = 0 };\
 	if(shouldbeshown(&ir))\

@@ -5,8 +5,6 @@
 
 #define RET 0xAB
 
-extern struct fblock fileblock;
-
 #define NAME 50
 #define RLVL 50
 #define CMD 1000
@@ -18,8 +16,6 @@ struct {
 	const char* cmd;
 	int exe;
 } U;
-
-extern int parsesrvfile(char* fullname, char* basename);
 
 int addinitrec(const char* name, const char* rlvl, char* cmd, int exe)
 {

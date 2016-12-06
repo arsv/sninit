@@ -2,9 +2,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-extern int finishinittab(void);
-extern void rewirepointers();
-
 char* test_env[] = {
 	"PATH=/bin",
 	"LANG=C",

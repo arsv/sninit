@@ -78,8 +78,6 @@ void reset(void)
 		p->pid = 11*(i+1);
 };
 
-extern void waitpids(void);
-
 void run(struct initrec* p, int flags, int status)
 {
 	reset();

@@ -1,10 +1,9 @@
+#include "../init.h"
 #include "_test.h"
 
 int currlevel;
 int nextlevel;
 struct config* cfg;
-
-extern int pintlen(int n);
 
 int main(void)
 {

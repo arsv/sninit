@@ -35,8 +35,6 @@ struct config* ncf = &ncf_struct;
 
 struct nblock newblock = { .addr = &ncf_struct, .len = 0, .ptr = 0 };
 
-extern void transferpids(void);
-
 int levelmatch(struct initrec* p, int level) { return (p->rlvl & level); };
 
 int main(void)
