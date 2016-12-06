@@ -6,9 +6,6 @@ struct config* cfg;
 
 extern int pintlen(int n);
 
-NOCALL(warn);
-NOCALL(levelmatch);
-
 int main(void)
 {
 	INTEQUALS(pintlen(1),     1);

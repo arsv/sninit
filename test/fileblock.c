@@ -6,11 +6,6 @@
 
 const char* testtxt = "fileblock.txt";
 
-extern struct fblock fileblock;
-int mmapfile(const char* name, int maxlen);
-int munmapfile(void);
-char* nextline(void);
-
 int filelen(const char* file)
 {
 	struct stat st;

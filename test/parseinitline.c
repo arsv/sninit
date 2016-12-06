@@ -14,15 +14,10 @@ struct {
 
 extern int parseinitline(char* l);
 
-int readinitdir(char* dir, int strict)
+int readinitdir(const char* dir, int strict)
 {
 	return -1;
 }
-
-/*char* strdupnull(const char* str)
-{
-	return str ? strdup(str) : NULL;
-}*/
 
 int addinitrec(const char* name, const char* rlvl, char* cmd, int exe)
 {

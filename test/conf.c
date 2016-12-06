@@ -8,17 +8,12 @@
 
 /* Run (almost) full config sequence and check whether newblock is being formed properly */
 
-int currlevel = 0;
 struct config* cfg = NULL;
-extern struct nblock newblock;
+int currlevel = 0;
 
-extern void initcfgblocks(void);
 extern int finishinittab(void);
 extern int parseinitline(char* line, int strict);
 extern void rewirepointers(void);
-extern int mmapblock(int size);
-
-void die(const char* fmt, ...) __attribute__((format(printf, 1, 2))) __attribute__((noreturn));
 
 #define HEAP 1024
 char heap[HEAP];

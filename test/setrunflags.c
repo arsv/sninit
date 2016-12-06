@@ -3,15 +3,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-/* Empty symbols to keep the linker happy */
-NOCALL(addstrargarray);
-NOCALL(addstringarray);
-NOCALL(mextendblock);
-NOCALL(checkdupname);
-NOCALL(scratchptr);
-
-extern int setrunflags(struct initrec* entry, char* flagstring);
-
 #define R0 (1<<0)
 #define R1 (1<<1)
 #define R2 (1<<2)

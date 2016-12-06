@@ -2,9 +2,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-extern struct nblock newblock;
-
-extern int mmapblock(int size);
 extern int addstring(const char* s);
 
 int main(void)

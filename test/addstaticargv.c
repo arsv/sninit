@@ -2,9 +2,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-extern struct nblock newblock;
-extern int mmapblock(int len);
-
 extern int addstaticargv(const char** args, int n);
 
 #define count(a) (sizeof(a)/sizeof(*a))

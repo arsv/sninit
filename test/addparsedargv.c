@@ -2,10 +2,7 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-extern struct nblock newblock;
-
 int addparsedargv(char* str);
-extern int mmapblock(int len);
 
 #define asoffset(ptr) ((offset)((void*)ptr - NULL))
 

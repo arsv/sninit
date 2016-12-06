@@ -19,20 +19,24 @@ struct test {
 	{ NULL, NULL }
 };
 
-int findentry(char* basename)
+/* This one has a public prototype in init.h now, but the test was
+   written before that and relied on passing ints instead of pointers.
+   TODO: make testfiles[] into actual initrecs */
+
+struct initrec* findentry(const char* basename)
 {
 	struct test* p;
 
 	for(p = testfiles; p->basename; p++)
 		if(!strcmp(p->basename, basename))
-			return (p - testfiles);
+			return (struct initrec*)(p - testfiles);
 
-	return -1;
+	return (struct initrec*)(-1);
 }
 
 int parsesrvfile(char* fullname, char* basename)
 {
-	int idx = findentry(basename);
+	long idx = (long)findentry(basename);
 	char* contents = (!strcmp(basename, "script") ? "script contents\n" : "plain contents\n");
 
 	if(idx < 0) {

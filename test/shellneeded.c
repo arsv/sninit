@@ -5,7 +5,6 @@
 struct nblock newblock;
 
 extern int shellneeded(const char* cmd);
-NOCALL(extendblock);
 
 #define shell(s) \
 	ASSERT(shellneeded(s))

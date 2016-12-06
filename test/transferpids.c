@@ -37,10 +37,6 @@ struct nblock newblock = { .addr = &ncf_struct, .len = 0, .ptr = 0 };
 
 extern void transferpids(void);
 
-NOCALL(readinittab);
-NOCALL(readinitdir);
-NOCALL(addptrsarray);
-NOCALL(addstruct);
 int levelmatch(struct initrec* p, int level) { return (p->rlvl & level); };
 
 int main(void)

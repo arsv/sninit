@@ -2,13 +2,7 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-struct nblock newblock;
-
-extern offset extendblock(int size);
-extern int mmapblock(int size);
 extern int linknode(offset listptr, offset ptr);
-
-NOCALL(setrunflags);
 
 int main(void)
 {

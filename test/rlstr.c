@@ -10,7 +10,6 @@ struct config* cfg;
    here just in case. */
 
 extern void rlstr(char* str, int len, int mask);
-NOCALL(levelmatch);
 
 void check(const char* file, int line, int len, const char* exp, int mask)
 {

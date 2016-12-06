@@ -3,9 +3,6 @@
 #include "_test.h"
 
 struct nblock newblock;
-NOCALL(extendblock);
-
-extern char* strssep(char** str);
 
 int main(void)
 {

@@ -5,8 +5,6 @@ int nextlevel;
 int currlevel;
 struct config* cfg;
 
-NOCALL(levelmatch);
-
 extern void joincmd(char* buf, int len, char** argv);
 
 #define CHECK(argv, len, expected) { \

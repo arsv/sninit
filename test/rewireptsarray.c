@@ -4,18 +4,8 @@
 
 struct nblock newblock;
 
-void* inittab;
-void* cfg;
 int currlevel;
 
-NOCALL(readinittab);
-NOCALL(readinitdir);
-NOCALL(findentry);
-NOCALL(addptrsarray);
-NOCALL(levelmatch);
-NOCALL(addstruct);
-
-extern int mmapblock(int size);
 extern void rewireptrsarray(void** a);
 
 int main(void)

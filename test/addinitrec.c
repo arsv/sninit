@@ -2,12 +2,6 @@
 #include "../init_conf.h"
 #include "_test.h"
 
-extern struct nblock newblock;
-extern struct fblock fileblock;
-
-extern int addinitrec(const char* name, const char* rlvl, char* cmd, int exe);
-extern int mmapblock(int length);
-
 int main(void)
 {
 	struct ptrnode* nptr;
