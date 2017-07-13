@@ -14,7 +14,24 @@ sninit is written mostly in raw syscalls and has no external
 dependencies on supported architectures — not even libc.
 
 
-Key features:
+Project status
+~~~~~~~~~~~~~~
+This project is FINISHED. The code available here is stable
+and may be used if it fits the purpose, but further changes
+in this repository are not expected.
+
+The development of what could have been sninit version 2 now
+happens in minibase project. That version however has moved away
+from SysV model and now follows daemontools design. See the docs
+there, and doc/others.txt here for description of what this means.
+
+The docs here dealing with general process supervision remain
+very much relevant, and most of that has not been transferred
+to minibase yet.
+
+
+Key features
+~~~~~~~~~~~~
 
 + SysV-style sequential inittab
 + SysV-style runlevels for process management
@@ -27,7 +44,7 @@ Key features:
 + Simplified memory management;
   no malloc, memory allocation only while reconfiguring
 
-Missing features:
+the following is not in sninit:
 
 - built-in system state management (network/mounts/sysconfig/ulimits)
 - inter-process dependencies, systemd-style
@@ -36,7 +53,7 @@ Missing features:
 - wall(8), shutdown(8) and some other sysvinit utilities
 - in-place restarting a-la sysvinit
 
-Features sninit has that are not in any way exceptional:
+features that are not in any way exceptional:
 
 * proper process supervision
 * parallel startups
