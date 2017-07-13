@@ -16,18 +16,17 @@ dependencies on supported architectures — not even libc.
 
 Project status
 ~~~~~~~~~~~~~~
-This project is FINISHED. The code available here is stable
-and may be used if it fits the purpose, but further changes
-in this repository are not expected.
+This project is FINISHED. The code available here is stable and may
+be used if it fits the purpose, but further changes in this repository
+are not very likely.
 
-The development of what could have been sninit version 2 now
-happens in minibase project. That version however has moved away
-from SysV model and now follows daemontools design. See the docs
-there, and doc/others.txt here for description of what this means.
+The development of what could have been sninit version 2 now happens
+in the minibase project. That version however has moved away from SysV model
+and now follows daemontools design.
+See the docs there, and doc/others.txt here for description of what it means.
 
-The docs here dealing with general process supervision remain
-very much relevant, and most of that has not been transferred
-to minibase yet.
+The docs here dealing with general process supervision remain relevant,
+and most of those docs have not been transferred to minibase yet.
 
 
 Key features
@@ -131,7 +130,7 @@ See also doc/others.txt for a list of other init implementations.
 
 Licensing
 ~~~~~~~~~
-GPL version 3, see COPYING.
+GPL version 2 or any later, see COPYING.
 
 
 Author
