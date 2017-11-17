@@ -21,9 +21,13 @@ be used if it fits the purpose, but further changes in this repository
 are not very likely.
 
 The development of what could have been sninit version 2 now happens
-in the minibase project. That version however has moved away from SysV model
-and now follows daemontools design.
-See the docs there, and doc/others.txt here for description of what it means.
+in the minibase project:
+
+    https://github.com/arsv/minibase
+
+That version however has moved away from SysV model and now follows
+daemontools design. See the docs there, and doc/others.txt here for
+description of what it means.
 
 The docs here dealing with general process supervision remain relevant,
 and most of those docs have not been transferred to minibase yet.
