@@ -34,15 +34,15 @@ to some kind of shell scripts.
     http://smarden.org/runit/
     http://skarnet.org/software/s6/
 
-Dependency-based init systems manage a tree of implicitly-ordered entries. 
+Dependency-based init systems manage a tree of implicitly-ordered entries.
 The order in which the entries are started is determined at runtime,
 in a way similar to how make orders targets to be rebuilt.
 
     http://upstart.ubuntu.com/
     http://www.freedesktop.org/wiki/Software/systemd/
-    https://wiki.gentoo.org/wiki/Project:OpenRC
     http://uselessd.darknedgy.net/ (attempt to reimplement systemd)
     https://github.com/android/platform_system_core/tree/master/init
+    https://github.com/davmac314/dinit
 
 Another approach to init design is to drop respawner altogether,
 with the assumption that the daemons are truly immortal.
@@ -52,16 +52,20 @@ PID files and daemon(3) originate from this branch of design.
         https://git.fedorahosted.org/git/initscripts.git
     BSD rc scripts derivatives, see intro here:
         https://www.freebsd.org/doc/en/books/porters-handbook/rc-scripts.html
-    https://gist.github.com/rofl0r/6168719 (minit aka minimal init)
-    http://git.suckless.org/sinit 
+    OpenRC, arguably:
+        https://wiki.gentoo.org/wiki/Project:OpenRC
+    Various "minimal init" projects:
+        https://gist.github.com/rofl0r/6168719 (minit aka minimal init)
+        http://git.suckless.org/sinit
+        https://github.com/Yelp/dumb-init
 
-Both SysV and BSD scripts need a dedicated reaper process. Common approach
-back at the time was to use sysvinit, which also handled few strict S-entries
+Initscripts usually need a dedicated reaper process. Common approach back
+at the time was to use sysvinit, which also handled the few strict S-entries
 like gettys. Another approach is to use a dedicated minimalistic reaper like
 minit or suckless init.
 
-Alternatively, "wait" shell built-in allows implementing init as a single
-sh script. With no respawner, it is in fact possible.
+POSIX shells with "wait" built-in typically allow implementing a simple
+reaper-only init as a shell script, though it rarely makes much sense.
 
 ---
 
