@@ -24,13 +24,13 @@ What could have been sninit version 2 now resides in this project:
 
     https://github.com/arsv/minibase
 
-That version has moved away from SysV design however to a split-stage
-design similar to daemontool or s6, with the supervisor handling a uniform
-unorderd set of respawning children. See doc/others.txt here on how it
+That version has moved away from SysV to a split-stage design similar
+(like daemontool, runit or s6), with the supervisor handling a uniform
+unordered set of respawning children. See doc/others.txt here on how it
 relates to sninit and other inits.
 
-Process supervision parts of sninit ended up in src/init/super.
-Command parsing code and the run tool got merged to become src/msh.
+Process supervision parts of sninit ended up in minibase/src/init/super.
+Command parsing code and the run tool got merged to become minibase/src/msh.
 
 The docs here dealing with general process supervision remain relevant,
 and most of those docs have not been transferred to minibase yet.
