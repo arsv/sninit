@@ -59,11 +59,11 @@ the following is not in sninit:
 - wall(8), shutdown(8) and some other sysvinit utilities
 - in-place restarting a-la sysvinit
 
-features that are not in any way exceptional:
+sninit features that are not in any way exceptional:
 
 * proper process supervision
 * parallel startups
-  (busybox init does both, never mind sysvinit)
+  (both can be done even with busybox init)
 
 
 What is init
