@@ -1,8 +1,9 @@
 Quick guide to various init implementations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Various Linux init systems tend to fall into several groups outlined below.
-There is a lot of variation within the groups as well, but the grouping should
-give an overall idea on how each particular project fits within the landscape.
+Linux init systems tend to fall into several groups roughly outlined below.
+The list is not comprehensive, its goal is only to give some idea on how
+sninit fits within the big picture. For a reasonably complete list of init
+systems, see http://without-systemd.org/wiki/index.php/Init .
 
 Most implementations have a notion of an "entry". An entry is a command
 to be run by init. W-entries should only be run once and S-entries should be
