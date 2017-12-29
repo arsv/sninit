@@ -13,6 +13,28 @@ Specifically, check INITCTL, INITTAB, LOGDIR in config.h,
 compiler setup and installation directories in config.mk.
 
 
+PIE issues / relocation errors / stack protector errors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Some distributions configure gcc with PIE and/or SSP enabled
+by default. Depending on gcc version, PIE may break -static
+builds with errors like this:
+
+  /usr/bin/ld: libc.a(sigaction.o): relocation R_X86_64_32S against `.text'
+          can not be used when making a shared object; recompile with -fPIC
+  /usr/bin/ld: final link failed: Nonrepresentable section on output
+
+In properly configured toolchains -static alone should fix this, but some
+toolchains also need -fno-pie.
+
+SSP may be enabled by default as well, resulting in error messages like this:
+
+  init.o: In function `setpasstime':
+  init.c:(.text+0x5e): undefined reference to `__stack_chk_fail'
+
+SSP must be disabled as it will probably not work with the bundled libc
+(and dietlibc, and possibly anything that's not system libc).
+
+
 Cross-compiling
 ~~~~~~~~~~~~~~~
 Set CC and AR in config.mk for your target architecture.

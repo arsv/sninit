@@ -276,6 +276,14 @@ if [ "$optimize" = 'auto' ]; then
 	esac
 fi
 
+# Static PIE viability depends on toolchain configuration.
+# SSP, if enabled, needs some(?) libc support which the bundled
+# libc doesn't provide at this moment.
+if [ "$libc" = "bundled" ]; then
+	cflags="${cflags:+$cflags }-fno-stack-protector"
+	ldflags="-static -fno-pie${ldflags:+ $ldflags}"
+fi
+
 # Join parts of CFLAGS into a single variable
 if [ -n "$optimize" ]; then
 	cflags=${cflags:+$cflags }$optimize
