@@ -76,8 +76,8 @@ int rbcode = RB_HALT_SYSTEM;
 extern int initctlfd;
 extern int warnfd;
 
-/* Init blocks most signals when not in ppoll. This is the orignal pre-block
-   signal mask, used for ppoll and passed to spawned children. */
+/* Init blocks most signals when not in ppoll.
+   This is the orignal pre-block signal mask, used for ppoll. */
 
 sigset_t defsigset;
 

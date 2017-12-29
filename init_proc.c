@@ -33,6 +33,15 @@ static int waitneeded(time_t* last, time_t wait)
 #define fork() vfork()
 #endif
 
+static void clrsigmask(void)
+{
+	sigset_t empty;
+
+	sigemptyset(&empty);
+
+	sigprocmask(SIG_SETMASK, &empty, NULL);
+}
+
 void spawn(struct initrec* p)
 {
 	if(p->pid > 0)
@@ -54,6 +63,7 @@ void spawn(struct initrec* p)
 		return;
 	} else {
 		/* ok, we're in the child process */
+		clrsigmask();
 
 		setsid();	/* become session *and* pgroup leader */
 		/* pgroup is needed to kill(-pid), and session is important
