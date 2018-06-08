@@ -22,7 +22,7 @@ are not very likely.
 
 What could have been sninit version 2 now resides in this project:
 
-    https://github.com/arsv/minibase
+    https://notabug.org/arsv/minibase
 
 That version has moved away from SysV to a split-stage design similar
 (like daemontool, runit or s6), with the supervisor handling a uniform
