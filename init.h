@@ -81,7 +81,7 @@ extern int nextlevel;
 extern int timetowait;
 extern int rbcode;
 extern int warnfd;
-time_t passtime;
+extern time_t passtime;
 
 /* Cross-referenced function prototypes */
 int configure(int);
