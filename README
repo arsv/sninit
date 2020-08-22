@@ -26,8 +26,8 @@ similar to daemontool/runit/s6, with the supervisor handling uniform
 unordered set of respawning children. See doc/others.txt here on how
 it relates to sninit and other inits.
 
-Process supervision parts of sninit ended up in minibase/src/init/,
-command parsing code and the `run` tool got merged to become msh.
+Process supervision parts of sninit ended up in svchub, command parsing
+code and the `run` tool got merged to become msh.
 
 
 Key features
